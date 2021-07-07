@@ -1,5 +1,6 @@
 <?php
 
+require_once 'isoInfo.php';
 require_once 'jobInfo.php';
 require_once 'qrCode.php';
 require_once 'timeCardInfo.php';
@@ -18,7 +19,8 @@ abstract class PanTicketLabelFields
    const HEAT_NUMBER = 5;
    const PAN_COUNT = 6;
    const URL = 7;
-   const LAST = 8;
+   const BARCODE = 8;
+   const LAST = 9;
    const COUNT = PanTicketLabelFields::LAST - PanTicketLabelFields::FIRST;
    
    public static function getKeyword($panTicketLabelField)
@@ -30,7 +32,8 @@ abstract class PanTicketLabelFields
                         "%mfgDate",
                         "%heatNumber",
                         "%panCount",
-                        "%url"
+                        "%url",
+                        "%BAR"
       );
       
       return ($keywords[$panTicketLabelField]);
@@ -90,6 +93,8 @@ class PanTicket
       
       $qrCodeSrc = "../common/qrCode.php?qrCodeContent=" . $this->getQRCodeURL($this->panTicketId);
       
+      $isoNumber = IsoInfo::getIsoNumber(IsoDoc::PAN_TICKET);
+      
       echo
 <<<HEREDOC
       <div class="pan-ticket">
@@ -109,6 +114,7 @@ class PanTicket
          <div class="bottom-panel">
             <div><img src="$qrCodeSrc" width="100px"></div>
             <div>$panTicketCode</div>
+            <div class="iso-number">ISO $isoNumber</div>
          </div>
       </div>
 HEREDOC;
@@ -223,6 +229,12 @@ HEREDOC;
                case PanTicketLabelFields::URL:
                {
                   $xml = str_replace(PanTicketLabelFields::getKeyword($field), PanTicket::getQRCodeURL($timeCardId), $xml);
+                  break;
+               }
+               
+               case PanTicketLabelFields::BARCODE:
+               {
+                  $xml = str_replace(PanTicketLabelFields::getKeyword($field), $panTicketCode, $xml);
                   break;
                }
                   

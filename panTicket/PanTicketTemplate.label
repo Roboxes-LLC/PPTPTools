@@ -8,32 +8,8 @@
 		<RoundRectangle X="0" Y="0" Width="3331" Height="5715" Rx="270" Ry="270" />
 	</DrawCommands>
 	<ObjectInfo>
-		<BarcodeObject>
-			<Name>Barcode</Name>
-			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
-			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
-			<LinkedObjectName />
-			<Rotation>Rotation0</Rotation>
-			<IsMirrored>False</IsMirrored>
-			<IsVariable>False</IsVariable>
-			<GroupID>-1</GroupID>
-			<IsOutlined>False</IsOutlined>
-			<Text>%url</Text>
-			<Type>QRCode</Type>
-			<Size>Large</Size>
-			<TextPosition>None</TextPosition>
-			<TextFont Family="Arial" Size="7.3125" Bold="False" Italic="False" Underline="False" Strikeout="False" />
-			<CheckSumFont Family="Arial" Size="7.3125" Bold="False" Italic="False" Underline="False" Strikeout="False" />
-			<TextEmbedding>None</TextEmbedding>
-			<ECLevel>0</ECLevel>
-			<HorizontalAlignment>Center</HorizontalAlignment>
-			<QuietZonesPadding Left="0" Top="0" Right="0" Bottom="0" />
-		</BarcodeObject>
-		<Bounds X="202" Y="3967.2001953125" Width="1527" Height="1579.20001220703" />
-	</ObjectInfo>
-	<ObjectInfo>
 		<AddressObject>
-			<Name>Address</Name>
+			<Name>TimeCardInfo</Name>
 			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
 			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
 			<LinkedObjectName />
@@ -149,7 +125,7 @@
 				<Font Family="Arial" Size="26" Bold="True" Italic="False" Underline="False" Strikeout="False" />
 			</LineFonts>
 		</AddressObject>
-		<Bounds X="82" Y="1552.80004882813" Width="3186.80004882813" Height="2168.39990234375" />
+		<Bounds X="87.1999511718704" Y="1327.80004882813" Width="3186.80004882813" Height="2168.39990234375" />
 	</ObjectInfo>
 	<ObjectInfo>
 		<ShapeObject Stroke="SolidLine">
@@ -167,7 +143,7 @@
 			<LineAlignment>Center</LineAlignment>
 			<FillColor Alpha="0" Red="255" Green="255" Blue="255" />
 		</ShapeObject>
-		<Bounds X="82" Y="3780" Width="3147" Height="45" />
+		<Bounds X="82" Y="3645" Width="3147" Height="45" />
 	</ObjectInfo>
 	<ObjectInfo>
 		<ShapeObject Stroke="SolidLine">
@@ -185,11 +161,11 @@
 			<LineAlignment>Center</LineAlignment>
 			<FillColor Alpha="0" Red="255" Green="255" Blue="255" />
 		</ShapeObject>
-		<Bounds X="82" Y="1410" Width="3147" Height="45" />
+		<Bounds X="82" Y="1125" Width="3147" Height="45" />
 	</ObjectInfo>
 	<ObjectInfo>
 		<TextObject>
-			<Name>Text</Name>
+			<Name>Instructions</Name>
 			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
 			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
 			<LinkedObjectName />
@@ -213,11 +189,11 @@
 				</Element>
 			</StyledText>
 		</TextObject>
-		<Bounds X="150" Y="336" Width="3015" Height="930" />
+		<Bounds X="135" Y="336" Width="3015" Height="675" />
 	</ObjectInfo>
 	<ObjectInfo>
 		<TextObject>
-			<Name>Text_1</Name>
+			<Name>PanTicketCode</Name>
 			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
 			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
 			<LinkedObjectName />
@@ -241,6 +217,58 @@
 				</Element>
 			</StyledText>
 		</TextObject>
-		<Bounds X="1507" Y="4221" Width="1620" Height="1095" />
+		<Bounds X="859" Y="3681" Width="1620" Height="1095" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<TextObject>
+			<Name>IsoNumber</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>False</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
+			<TextFitMode>ShrinkToFit</TextFitMode>
+			<UseFullFontHeight>True</UseFullFontHeight>
+			<Verticalized>False</Verticalized>
+			<StyledText>
+				<Element>
+					<String xml:space="preserve">ISO %iso</String>
+					<Attributes>
+						<Font Family="Arial" Size="10" Bold="False" Italic="True" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+			</StyledText>
+		</TextObject>
+		<Bounds X="289" Y="5284" Width="2805" Height="315" />
+	</ObjectInfo>
+	<ObjectInfo>
+		<BarcodeObject>
+			<Name>Barcode</Name>
+			<ForeColor Alpha="255" Red="0" Green="0" Blue="0" />
+			<BackColor Alpha="0" Red="255" Green="255" Blue="255" />
+			<LinkedObjectName />
+			<Rotation>Rotation0</Rotation>
+			<IsMirrored>False</IsMirrored>
+			<IsVariable>True</IsVariable>
+			<GroupID>-1</GroupID>
+			<IsOutlined>False</IsOutlined>
+			<Text>%BAR</Text>
+			<Type>Code39</Type>
+			<Size>Large</Size>
+			<TextPosition>None</TextPosition>
+			<TextFont Family="Arial" Size="8" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+			<CheckSumFont Family="Arial" Size="8" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+			<TextEmbedding>None</TextEmbedding>
+			<ECLevel>0</ECLevel>
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<QuietZonesPadding Left="0" Top="0" Right="0" Bottom="0" />
+		</BarcodeObject>
+		<Bounds X="229" Y="4686" Width="2880" Height="480" />
 	</ObjectInfo>
 </DieCutLabel>

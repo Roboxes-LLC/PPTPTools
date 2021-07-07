@@ -3,6 +3,7 @@
 require_once '../common/authentication.php';
 require_once '../common/database.php';
 require_once '../common/header.php';
+require_once '../common/isoInfo.php';
 require_once '../common/jobInfo.php';
 require_once '../common/menu.php';
 require_once '../common/newIndicator.php';
@@ -115,9 +116,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       <div class="content flex-vertical flex-top flex-left">
       
          <div class="flex-horizontal flex-v-center flex-h-center">
-            <div class="heading">Time Cards</div>&nbsp;&nbsp;
+            <div class="heading-with-iso">Time Cards</div>&nbsp;&nbsp;
             <i id="help-icon" class="material-icons icon-button">help</i>
          </div>
+         
+         <div class="iso-number">ISO <?php echo IsoInfo::getIsoNumber(IsoDoc::TIME_CARD); ?></div>
          
          <div id="description" class="description">Time cards record the time a machine operator spends working on a job, as well as a part count for that run.</div>
          
