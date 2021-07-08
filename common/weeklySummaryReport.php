@@ -165,19 +165,25 @@ abstract class Bonus
 class WeeklyOperatorSummary
 {
    public $runTime;
+   public $shiftTime;
    public $efficiency;
    public $machineHoursMade;
    public $pcOverG;
+   public $ratio;
    
    public function __construct($employeeNumber, $dailySummaryReports)
    {
       $this->runTime = WeeklyOperatorSummary::calculateRunTime($employeeNumber, $dailySummaryReports);
+      
+      $this->shiftTime = WeeklyOperatorSummary::calculateShiftTime($employeeNumber, $dailySummaryReports);
       
       $this->efficiency = WeeklyOperatorSummary::calculateAverageEfficiency($employeeNumber, $dailySummaryReports);
       
       $this->machineHoursMade = WeeklyOperatorSummary::calculateMachineHoursMade($employeeNumber, $dailySummaryReports);
       
       $this->pcOverG = WeeklyOperatorSummary::calculatePCOverG($employeeNumber, $dailySummaryReports);
+      
+      $this->ratio = Calculations::calculateRatio($this->machineHoursMade, $this->shiftTime);
    }
    
    private static function calculateRunTime($employeeNumber, $dailySummaryReports)
@@ -193,6 +199,21 @@ class WeeklyOperatorSummary
       }
       
       return ($runTime);
+   }
+   
+   private static function calculateShiftTime($employeeNumber, $dailySummaryReports)
+   {
+      $shiftTime = 0;
+      
+      foreach ($dailySummaryReports as $dailySummaryReport)
+      {
+         if (isset($dailySummaryReport->operatorSummaries[$employeeNumber]))
+         {
+            $shiftTime += $dailySummaryReport->operatorSummaries[$employeeNumber]->shiftTime;
+         }
+      }
+      
+      return ($shiftTime);
    }
    
    private static function calculateAverageEfficiency($employeeNumber, $dailySummaryReports)
@@ -259,15 +280,13 @@ class WeeklySummaryReport
 {
    public $dates;
    public $dailySummaryReports;
-   public $weeklyOperatorSummaries;
-   
    public $operatorSummaries;
    
    public function __construct()
    {
       $this->dates = array();
       $this->dailySummaryReports = array();
-      $this->weeklyOperatorSummaries = array();
+      $this->operatorSummaries = array();
    }
    
    public static function load($dateTime)
