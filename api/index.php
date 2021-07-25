@@ -1572,10 +1572,20 @@ $router->add("savePartWeightEntry", function($params) {
             $partWeightEntry->panCount = intval($params["panCount"]);
             $partWeightEntry->weight = floatval($params["partWeight"]);
             
+            // Validate the part count based on the supplied weight.
             if ($partWeightEntry->validatePartCount() == false)
             {
                $result->success = false;
                $result->error = "Unreasonable part weight.  Please check this value for errors.";
+            }
+            // For pan ticket entries, validate that a weight log entry does not already exist.
+            // (Customer request on 7/22/2021)
+            else if (($partWeightEntry->partWeightEntryId == PartWeightEntry::UNKNOWN_ENTRY_ID) &&            // New entry
+                     ($partWeightEntry->timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID) &&                  // Pan ticket entry
+                     (PartWeightEntry::getPartWeightEntryForTimeCard($partWeightEntry->timeCardId) != null))  // Entry exists
+            {
+               $result->success = false;
+               $result->error = "A part weight log entry already exists for this pan ticket.";
             }
             else
             {
