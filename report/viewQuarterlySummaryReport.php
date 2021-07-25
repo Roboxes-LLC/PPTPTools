@@ -334,7 +334,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                title:"Quarter",
                columns:[
                   {title:"Machine Hours", field:"quarter.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Shift Hours",   field:"quarter.shiftTime",        hozAlign:"left", print:true},
+                  {title:"Shift Time",    field:"quarter.shiftTime",        hozAlign:"left", print:true},
                   {title:"Ratio",         field:"quarter.ratio",            hozAlign:"left", print:true}
                ]
             }
