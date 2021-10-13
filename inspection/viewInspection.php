@@ -3,6 +3,7 @@
 require_once '../common/activity.php';
 require_once '../common/header.php';
 require_once '../common/inspection.php';
+require_once '../common/isoInfo.php';
 require_once '../common/menu.php';
 require_once '../common/params.php';
 
@@ -479,6 +480,41 @@ function getHeading()
    }
    
    return ($heading);
+}
+
+function getIso()
+{
+   $iso = "";
+   
+   switch (getInspectionType())
+   {
+      case InspectionType::IN_PROCESS:
+      {
+         $iso = IsoInfo::getIsoNumber(IsoDoc::IN_PROCESS_INSPECTION);
+         break;
+      }
+      
+      case InspectionType::QCP:
+      {
+         $iso = IsoInfo::getIsoNumber(IsoDoc::QCP_INSPECTION);
+         break;
+      }
+      
+      case InspectionType::LINE:
+      {
+         $iso = IsoInfo::getIsoNumber(IsoDoc::LINE_INSPECTION);
+         break;
+      }
+      
+      case InspectionType::OASIS:
+      default:
+      {
+         $iso = "undefined";
+         break;
+      }
+   }
+   
+   return ($iso);
 }
 
 function getDescription()
@@ -965,9 +1001,11 @@ if (!Authentication::isAuthenticated())
       <div class="content flex-vertical flex-top flex-left">
       
          <div class="flex-horizontal flex-v-center flex-h-center">
-            <div class="heading"><?php echo getHeading(); ?></div>&nbsp;&nbsp;
+            <div class="heading-with-iso"><?php echo getHeading(); ?></div>&nbsp;&nbsp;
             <i id="help-icon" class="material-icons icon-button">help</i>
          </div>
+         
+         <div class="iso-number">ISO <?php echo getIso(); ?></div>
          
          <div id="description" class="description"><?php echo getDescription(); ?></div>
          

@@ -10,6 +10,9 @@ abstract class IsoDoc
    const TIME_CARD = 2;
    const PART_WEIGHT_LOG = 3;
    const PART_WASHER_LOG = 4;
+   const IN_PROCESS_INSPECTION = 5;
+   const QCP_INSPECTION = 6;
+   const LINE_INSPECTION = 7;
    const LAST = 5;
    const COUNT = IsoDoc::LAST - IsoDoc::FIRST;
 }

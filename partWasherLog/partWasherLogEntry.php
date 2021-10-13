@@ -725,6 +725,9 @@ if (!Authentication::isAuthenticated())
 
       // Store the initial state of the form, for change detection.
       setInitialFormState("input-form");
+      
+      // Initial focus on pan ticket input, for bar code scanning.
+      document.getElementById("pan-ticket-code-input").focus();
             
    </script>
 

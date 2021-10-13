@@ -137,6 +137,7 @@ if (!Authentication::isAuthenticated())
    <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
    <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
    
+   <script src="../common/barcodeScanner.js<?php echo versionQuery();?>"></script>
    <script src="../common/common.js<?php echo versionQuery();?>"></script>
    <script src="../common/validate.js<?php echo versionQuery();?>"></script>
    <script src="partWeightLog.js<?php echo versionQuery();?>"></script>
@@ -455,6 +456,10 @@ if (!Authentication::isAuthenticated())
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
+      
+      // Listen for barcodes.
+      var barcodeScanner = new BarcodeScanner();
+      barcodeScanner.onBarcode = onBarcode;
    </script>
    
 </body>
