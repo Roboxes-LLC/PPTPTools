@@ -233,7 +233,7 @@ if (!Authentication::isAuthenticated())
          //Define Table Columns
          columns:[
             {title:"Id",           field:"partWasherEntryId", hozAlign:"left", visible:false},
-            {title:"Ticket",            field:"panTicketCode",     hozAlign:"left", responsive:0, headerFilter:true, print:false,
+            {title:"Ticket",            field:"panTicketCode",     hozAlign:"left", responsive:0, headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "";
                   
@@ -245,7 +245,10 @@ if (!Authentication::isAuthenticated())
                   }
                   
                   return (cellValue);
-               }
+               },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  return (cell.getValue());
+              }                 
             },  
             {title:"Job #",        field:"jobNumber",         hozAlign:"left", responsive:0, headerFilter:true},
             {title:"WC #",         field:"wcNumber",          hozAlign:"left", responsive:0, headerFilter:true},

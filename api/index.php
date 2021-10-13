@@ -12,6 +12,7 @@ require_once '../common/panTicket.php';
 require_once '../common/partWasherEntry.php';
 require_once '../common/partWeightEntry.php';
 require_once '../common/printerInfo.php';
+require_once '../common/quarterlySummaryReport.php';
 require_once '../common/root.php';
 require_once '../common/signInfo.php';
 require_once '../common/timeCardInfo.php';
@@ -1571,10 +1572,20 @@ $router->add("savePartWeightEntry", function($params) {
             $partWeightEntry->panCount = intval($params["panCount"]);
             $partWeightEntry->weight = floatval($params["partWeight"]);
             
+            // Validate the part count based on the supplied weight.
             if ($partWeightEntry->validatePartCount() == false)
             {
                $result->success = false;
                $result->error = "Unreasonable part weight.  Please check this value for errors.";
+            }
+            // For pan ticket entries, validate that a weight log entry does not already exist.
+            // (Customer request on 7/22/2021)
+            else if (($partWeightEntry->partWeightEntryId == PartWeightEntry::UNKNOWN_ENTRY_ID) &&            // New entry
+                     ($partWeightEntry->timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID) &&                  // Pan ticket entry
+                     (PartWeightEntry::getPartWeightEntryForTimeCard($partWeightEntry->timeCardId) != null))  // Entry exists
+            {
+               $result->success = false;
+               $result->error = "A part weight log entry already exists for this pan ticket.";
             }
             else
             {
@@ -2730,7 +2741,6 @@ $router->add("weeklySummaryReportDates", function($params) {
 
    $mfgDate = Time::startOfDay(Time::now("Y-m-d"));
 
-
    if (isset($params["mfgDate"]))
    {
       $mfgDate = Time::startOfDay($params["mfgDate"]);
@@ -2754,6 +2764,77 @@ $router->add("weeklySummaryReportDates", function($params) {
    
    $result->weekNumber = $weekNumber;
 
+   echo json_encode($result);
+});
+
+$router->add("quarterlySummaryReportData", function($params) {
+   $result = array();
+   
+   $quarter = Quarter::QUARTER_1;
+   $year = 2021;  // TODO
+   
+   if (isset($params["quarter"]))
+   {
+      $quarter = intval($params["quarter"]);
+   }
+   
+   if (isset($params["year"]))
+   {
+      $year = intval($params["year"]);
+   }
+   
+   $table = QuarterlySummaryReportTable::OPERATOR_SUMMARY;
+   if (isset($params["table"]))
+   {
+      $table = intval($params["table"]);
+   }
+   
+   $database = PPTPDatabase::getInstance();
+   
+   if ($database && $database->isConnected())
+   {
+      $quarterlySummaryReport = QuarterlySummaryReport::load($year, $quarter);
+      
+      if ($quarterlySummaryReport)
+      {
+         $result = $quarterlySummaryReport->getReportData($table);
+      }
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("quarterlySummaryReportDates", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $quarter = Quarter::QUARTER_1;
+   $year = 2021;  // TODO
+   
+   if (isset($params["quarter"]))
+   {
+      $quarter = intval($params["quarter"]);
+   }
+   
+   if (isset($params["year"]))
+   {
+      $year = intval($params["year"]);
+   }
+   
+   $dates = Quarter::getDates($year, $quarter);
+   
+   // Convert to "Sun 3/27" format.
+   foreach ($dates as $date)
+   {
+      $dateTime = new DateTime($date->start, new DateTimeZone('America/New_York'));  // TODO: Replace
+      $date->start = $dateTime->format("n/j");
+      
+      $dateTime = new DateTime($date->end, new DateTimeZone('America/New_York'));  // TODO: Replace
+      $date->end = $dateTime->format("n/j");
+   }
+   
+   $result->dates = $dates;
+   
    echo json_encode($result);
 });
 

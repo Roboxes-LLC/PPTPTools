@@ -196,10 +196,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          //Define Table Columns
          columns:[
             {title:"Id",           field:"timeCardId",      hozAlign:"left", visible:false},
-            {title:"Ticket",       field:"panTicketCode",   hozAlign:"left", responsive:0, headerFilter:true, print:false,
+            {title:"Ticket",       field:"panTicketCode",   hozAlign:"left", responsive:0, headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().panTicketCode);
                },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  return (cell.getValue());
+               }  
             },                   
             {title:"Date",         field:"dateTime",        hozAlign:"left", responsive:0, print:true,
                formatter:function(cell, formatterParams, onRendered){
