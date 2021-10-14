@@ -3,6 +3,7 @@
 require_once '../common/authentication.php';
 require_once '../common/database.php';
 require_once '../common/header.php';
+require_once '../common/isoInfo.php';
 require_once '../common/jobInfo.php';
 require_once '../common/menu.php';
 require_once '../common/newIndicator.php';
@@ -98,6 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
    <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
    
+   <script src="../common/barcodeScanner.js<?php echo versionQuery();?>"></script>   
    <script src="../common/common.js<?php echo versionQuery();?>"></script>
    <script src="../common/validate.js<?php echo versionQuery();?>"></script>
    <script src="timeCard.js<?php echo versionQuery();?>"></script>
@@ -118,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             <div class="heading">Time Cards</div>&nbsp;&nbsp;
             <i id="help-icon" class="material-icons icon-button">help</i>
          </div>
-         
+                  
          <div id="description" class="description">Time cards record the time a machine operator spends working on a job, as well as a part count for that run.</div>
          
          <br>
@@ -193,10 +195,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          //Define Table Columns
          columns:[
             {title:"Id",           field:"timeCardId",      hozAlign:"left", visible:false},
-            {title:"Ticket",       field:"panTicketCode",   hozAlign:"left", responsive:0, headerFilter:true, print:false,
+            {title:"Ticket",       field:"panTicketCode",   hozAlign:"left", responsive:0, headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().panTicketCode);
                },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  return (cell.getValue());
+               }  
             },                   
             {title:"Date",         field:"dateTime",        hozAlign:"left", responsive:0, print:true,
                formatter:function(cell, formatterParams, onRendered){
@@ -547,6 +552,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
+      
+      // Listen for barcodes.
+      var barcodeScanner = new BarcodeScanner();
+      barcodeScanner.onBarcode = onBarcode;
+      
    </script>
    
 </body>

@@ -137,6 +137,7 @@ if (!Authentication::isAuthenticated())
    <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
    <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
    
+   <script src="../common/barcodeScanner.js<?php echo versionQuery();?>"></script>
    <script src="../common/common.js<?php echo versionQuery();?>"></script>
    <script src="../common/validate.js<?php echo versionQuery();?>"></script>
    <script src="partWasherLog.js<?php echo versionQuery();?>"></script>
@@ -157,7 +158,7 @@ if (!Authentication::isAuthenticated())
             <div class="heading">Part Washer Log</div>&nbsp;&nbsp;
             <i id="help-icon" class="material-icons icon-button">help</i>
          </div>
-         
+                  
          <div id="description" class="description">The Part Washer Log provides an up-to-the-minute view into the part washing process.  Here you can track when your parts come through the wash line, and in what volume.</div>
          
          <br>
@@ -233,7 +234,7 @@ if (!Authentication::isAuthenticated())
          //Define Table Columns
          columns:[
             {title:"Id",           field:"partWasherEntryId", hozAlign:"left", visible:false},
-            {title:"Ticket",            field:"panTicketCode",     hozAlign:"left", responsive:0, headerFilter:true, print:false,
+            {title:"Ticket",            field:"panTicketCode",     hozAlign:"left", responsive:0, headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "";
                   
@@ -245,7 +246,10 @@ if (!Authentication::isAuthenticated())
                   }
                   
                   return (cellValue);
-               }
+               },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  return (cell.getValue());
+              }                 
             },  
             {title:"Job #",        field:"jobNumber",         hozAlign:"left", responsive:0, headerFilter:true},
             {title:"WC #",         field:"wcNumber",          hozAlign:"left", responsive:0, headerFilter:true},
@@ -451,6 +455,11 @@ if (!Authentication::isAuthenticated())
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
+      
+      // Listen for barcodes.
+      var barcodeScanner = new BarcodeScanner();
+      barcodeScanner.onBarcode = onBarcode;
+      
    </script>
    
 </body>

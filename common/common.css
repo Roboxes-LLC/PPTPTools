@@ -99,7 +99,7 @@ form {
 }
 
 .content {
-	width: 100%;
+   width: 100%;
    padding-left:20px;
    padding-right:20px;
    padding-top:10px;
@@ -110,6 +110,20 @@ form {
    font-size: 25px;
    margin-top: 10px;
    margin-bottom: 10px;
+}
+
+.heading-with-iso {
+   font-weight: bold;
+   font-size: 25px;
+   margin-top: 10px;
+
+   margin-bottom: 3px;
+}
+
+.iso-number {
+   font-size: 12px;
+   font-style: italic;
+   color: var(--text-color-dark);
 }
 
 /* ***** Header ***** */

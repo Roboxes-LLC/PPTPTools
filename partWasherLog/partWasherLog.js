@@ -473,3 +473,29 @@ function validatePartWasherEntry()
    
    return (valid);   
 }
+
+function onBarcode(barcode)
+{
+   // AJAX call to retrieve time card info from pan ticket.
+   requestUrl = "../api/timeCardInfo/?panTicketCode=" + barcode + "&expandedProperties=true";
+   
+   var xhttp = new XMLHttpRequest();
+   xhttp.onreadystatechange = function()
+   {
+      if (this.readyState == 4 && this.status == 200)
+      {
+         var json = JSON.parse(this.responseText);
+         
+         if (json.success == true)
+         {
+            document.location = "partWasherLogEntry.php?timeCardId=" + json.timeCardInfo.timeCardId;
+         }
+         else
+         {
+            alert("Invalid pan ticket code: " + barcode);
+         }
+      }
+   };
+   xhttp.open("GET", requestUrl, true);
+   xhttp.send();
+}

@@ -1,14 +1,13 @@
 @CHARSET "ISO-8859-1";
 
 .pan-ticket {
-	
-	display: flex;
+   display: flex;
    flex-direction: column;
    align-items: stretch;
    justify-content: space-evenly;
 	
-	width:215px;
-	height:400px;
+   width:215px;
+   height:400px;
    background-color: #fff;
    box-shadow: 5px 5px 5px  rgba(0,0,0,1.0);
    -moz-box-shadow: 5px 5px 5px  rgba(0,0,0,1.0);
@@ -20,15 +19,15 @@
 }
 
 .pan-ticket .top-panel {
-	display: flex;
-	justify-content: center;
-	align-items: center;
+   display: flex;
+   justify-content: center;
+   align-items: center;
 	   
    font: 15px arial, sans-serif;
 }
 
 .pan-ticket .middle-panel {
-	display: flex;
+   display: flex;
    justify-content: center;
    align-items: center; 
       
@@ -43,11 +42,15 @@
 }
 
 .pan-ticket .bottom-panel {
-	display: flex;
-	flex-direction: column;
+   display: flex;
+   flex-direction: column;
    justify-content: center;
    align-items: center; 
    
    font: bold 30px arial, sans-serif;
+}
+
+.pan-ticket .iso-number {
+   margin-top: 5px;
 }
 

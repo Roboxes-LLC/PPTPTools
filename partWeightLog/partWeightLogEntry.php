@@ -666,9 +666,11 @@ if (!Authentication::isAuthenticated())
       <div class="content flex-vertical flex-top flex-left">
       
          <div class="flex-horizontal flex-v-center flex-h-center">
-            <div class="heading"><?php echo getHeading(); ?></div>&nbsp;&nbsp;
+            <div class="heading-with-iso"><?php echo getHeading(); ?></div>&nbsp;&nbsp;
             <i id="help-icon" class="material-icons icon-button">help</i>
          </div>
+         
+         <div class="iso-number">ISO <?php echo IsoInfo::getIsoNumber(IsoDoc::PART_WEIGHT_LOG); ?></div>
          
          <div id="description" class="description"><?php echo getDescription(); ?></div>
          
@@ -808,6 +810,9 @@ if (!Authentication::isAuthenticated())
 
       // Store the initial state of the form, for change detection.
       setInitialFormState("input-form");
+      
+      // Initial focus on pan ticket input, for bar code scanning.
+      document.getElementById("pan-ticket-code-input").focus();
             
    </script>
 

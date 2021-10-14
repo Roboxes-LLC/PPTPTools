@@ -637,7 +637,7 @@ class PPTPDatabase extends MySqlDatabase
    public function getPartWasherEntriesByTimeCard($timeCardId)
    {
       $query = "SELECT * FROM partwasher WHERE timeCardId = \"$timeCardId\" ORDER BY dateTime DESC;";
-      
+
       $result = $this->query($query);
       
       return ($result);
@@ -1796,6 +1796,18 @@ class PPTPDatabase extends MySqlDatabase
       return ($result);
    }
    
+   // **************************************************************************
+   //                                    ISO
+   // **************************************************************************
+   
+   public function getIso($isoDoc)
+   {
+      $query = "SELECT * FROM iso WHERE isoDoc = \"$isoDoc\";";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
    
    // **************************************************************************
    //                                  Private
