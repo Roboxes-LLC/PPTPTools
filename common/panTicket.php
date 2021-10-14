@@ -20,7 +20,8 @@ abstract class PanTicketLabelFields
    const PAN_COUNT = 6;
    const URL = 7;
    const BARCODE = 8;
-   const LAST = 9;
+   const ISO = 9;
+   const LAST = 10;
    const COUNT = PanTicketLabelFields::LAST - PanTicketLabelFields::FIRST;
    
    public static function getKeyword($panTicketLabelField)
@@ -33,8 +34,8 @@ abstract class PanTicketLabelFields
                         "%heatNumber",
                         "%panCount",
                         "%url",
-                        "%BAR"
-      );
+                        "%BAR",
+                        "%iso");
       
       return ($keywords[$panTicketLabelField]);
    }
@@ -171,6 +172,8 @@ HEREDOC;
       $dateTime = new DateTime($timeCardInfo->manufactureDate, new DateTimeZone('America/New_York'));
       $mfgDate = $dateTime->format("m-d-Y");
       
+      $isoNumber = IsoInfo::getIsoNumber(IsoDoc::PAN_TICKET);
+      
       $file = fopen(PanTicket::LABEL_TEMPLATE_FILENAME, "r");
       
       if ($file)
@@ -235,6 +238,12 @@ HEREDOC;
                case PanTicketLabelFields::BARCODE:
                {
                   $xml = str_replace(PanTicketLabelFields::getKeyword($field), $panTicketCode, $xml);
+                  break;
+               }
+               
+               case PanTicketLabelFields::ISO:
+               {
+                  $xml = str_replace(PanTicketLabelFields::getKeyword($field), $isoNumber, $xml);
                   break;
                }
                   
