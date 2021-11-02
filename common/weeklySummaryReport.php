@@ -418,6 +418,7 @@ class WeeklySummaryReport
          $row->employeeNumber = $userInfo->employeeNumber;
          $row->runTime = $this->operatorSummaries[$employeeNumber]->runTime;
          $row->efficiency = round(($this->operatorSummaries[$employeeNumber]->efficiency * 100), 2);
+         $row->shiftTime = $this->operatorSummaries[$employeeNumber]->shiftTime;
          $row->machineHoursMade = round($this->operatorSummaries[$employeeNumber]->machineHoursMade, 2);
          $row->pcOverG = round($this->operatorSummaries[$employeeNumber]->pcOverG, 2);
          $row->tier = Bonus::getTier($this->operatorSummaries[$employeeNumber]->efficiency);
@@ -451,6 +452,7 @@ class WeeklySummaryReport
          $stats->date             = $this->dates[$workDay];
          $stats->runTime          = $operatorSummary->adjustedTopRunTime;
          $stats->efficiency       = round($operatorSummary->adjustedTopEfficiency * 100, 2);
+         $stats->shiftTime        = $operatorSummary->shiftTime;
          $stats->machineHoursMade = round($operatorSummary->machineHoursMade, 2);
          $stats->ratio            = round($operatorSummary->ratio, 2);
       }
@@ -458,6 +460,7 @@ class WeeklySummaryReport
       {
          $stats->runTime          = 0;
          $stats->efficiency       = 0;
+         $stats->shiftTime        = 0;
          $stats->machineHoursMade = 0;
          $stats->ratio            = 0;
       }

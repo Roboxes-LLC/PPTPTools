@@ -460,7 +460,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          ajaxParams:params,
          //Define Table Columns
          columns:[
-            {title:"Operator",           field:"operator",       hozAlign:"left", headerFilter:true, print:true},
+            {title:"Operator",           field:"operator",       hozAlign:"left", print:true, headerFilter:true},
             {title:"Employee #",         field:"employeeNumber", hozAlign:"left", print:true},
             {title:"Run Time",           field:"runTime",        hozAlign:"left", print:true,},
             {title:"Efficiency",         field:"efficiency",     hozAlign:"left", print:true,

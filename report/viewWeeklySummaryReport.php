@@ -238,12 +238,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             {
                title:"Sunday",
                columns:[
-                  {title:"Hours",         field:"sunday.runTime",         hozAlign:"left", print:true,},
+                  {title:"Hours",         field:"sunday.runTime",         hozAlign:"left", print:true},
                   {title:"Efficiency",    field:"sunday.efficiency",      hozAlign:"left", print:true,
                      formatter:function(cell, formatterParams, onRendered){
                         return (cell.getValue() + "%");
                      }
                   },
+                  {title:"Paid Hours",    field:"sunday.shiftTime",        hozAlign:"left", print:true},
                   {title:"Machine Hours", field:"sunday.machineHoursMade", hozAlign:"left", print:true},
                   {title:"Ratio",         field:"sunday.ratio",            hozAlign:"left", print:true}
                ],
@@ -252,12 +253,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             {
                title:"Monday",
                columns:[
-                  {title:"Hours",         field:"monday.runTime",         hozAlign:"left", print:true,},
+                  {title:"Hours",         field:"monday.runTime",         hozAlign:"left", print:true},
                   {title:"Efficiency",    field:"monday.efficiency",      hozAlign:"left", print:true,
                      formatter:function(cell, formatterParams, onRendered){
                         return (cell.getValue() + "%");
                      }
                   },
+                  {title:"Paid Hours",    field:"monday.shiftTime",        hozAlign:"left", print:true},
                   {title:"Machine Hours", field:"monday.machineHoursMade", hozAlign:"left", print:true},
                   {title:"Ratio",         field:"monday.ratio",            hozAlign:"left", print:true}
                ],
@@ -272,6 +274,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                         return (cell.getValue() + "%");
                      }
                   },
+                  {title:"Paid Hours",    field:"tuesday.shiftTime",        hozAlign:"left", print:true,},                  
                   {title:"Machine Hours", field:"tuesday.machineHoursMade", hozAlign:"left", print:true},
                   {title:"Ratio",         field:"tuesday.ratio",            hozAlign:"left", print:true}
                ],
@@ -286,6 +289,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                         return (cell.getValue() + "%");
                      }
                   },
+                  {title:"Paid Hours",    field:"wednesday.shiftTime",        hozAlign:"left", print:true,},                                    
                   {title:"Machine Hours", field:"wednesday.machineHoursMade", hozAlign:"left", print:true},
                   {title:"Ratio",         field:"wednesday.ratio",            hozAlign:"left", print:true}
                ],
@@ -300,6 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                         return (cell.getValue() + "%");
                      }
                   },
+                  {title:"Paid Hours",    field:"thursday.shiftTime",        hozAlign:"left", print:true,},                                                      
                   {title:"Machine Hours", field:"thursday.machineHoursMade", hozAlign:"left", print:true},
                   {title:"Ratio",         field:"thursday.ratio",            hozAlign:"left", print:true}
                ],
@@ -314,6 +319,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                         return (cell.getValue() + "%");
                      }
                   },
+                  {title:"Paid Hours",    field:"friday.shiftTime",        hozAlign:"left", print:true,},                  
                   {title:"Machine Hours", field:"friday.machineHoursMade", hozAlign:"left", print:true},
                   {title:"Ratio",         field:"friday.ratio",            hozAlign:"left", print:true}
                ],
@@ -328,6 +334,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                         return (cell.getValue() + "%");
                      }
                   },
+                  {title:"Paid Hours",    field:"saturday.shiftTime",        hozAlign:"left", print:true,},                  
                   {title:"Machine Hours", field:"saturday.machineHoursMade", hozAlign:"left", print:true},
                   {title:"Ratio",         field:"saturday.ratio",            hozAlign:"left", print:true}
                ],
@@ -393,16 +400,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          ajaxParams:params,
          //Define Table Columns
          columns:[
-            {title:"Operator",   field:"operator",          hozAlign:"left", headerFilter:true, print:true},
-            {title:"Employee #", field:"employeeNumber",    hozAlign:"left",                    print:true},         
-            {title:"Hours",      field:"runTime",      hozAlign:"left",                    print:true},
-            {title:"Efficiency", field:"efficiency", hozAlign:"left",                    print:true,
+            {title:"Operator",   field:"operator",       hozAlign:"left", headerFilter:true, print:true},
+            {title:"Employee #", field:"employeeNumber", hozAlign:"left",                    print:true},         
+            {title:"Hours",      field:"runTime",        hozAlign:"left",                    print:true},
+            {title:"Efficiency", field:"efficiency",     hozAlign:"left",                    print:true,
                formatter:function(cell, formatterParams, onRendered){
                   return (cell.getValue() + "%");
                }
             },
+            {title:"Paid Hours",    field:"shiftTime",        hozAlign:"left", print:true},
             {title:"Machine Hours", field:"machineHoursMade", hozAlign:"left", print:true},
-            {title:"PC/G", field:"pcOverG", hozAlign:"left", print:true},
+            {title:"PC/G",          field:"pcOverG",          hozAlign:"left", print:true},
             {
                title:"75%",
                columns:[
