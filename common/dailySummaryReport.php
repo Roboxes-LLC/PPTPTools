@@ -8,6 +8,9 @@ require_once 'partWeightEntry.php';
 require_once 'userInfo.php';
 require_once 'timeCardInfo.php';
 
+// Factory Stats integration.
+require_once '../factoryStats/factoryStats.php';
+
 // TODO: Find a better place for this?
 function array_copy($arr)
 {
@@ -446,11 +449,11 @@ class OperatorSummary
       $this->topEntryCount = $topEntryCount;
       
       $this->reportEntries = $reportEntries;
-      
+
       $this->topEntries = OperatorSummary::getTopReportEntries($reportEntries, $topEntryCount);
-      
+
       $this->bottomEntries = OperatorSummary::getBottomReportEntries($reportEntries, $topEntryCount);
-      
+
       $this->adjustedEntries = OperatorSummary::getAdjustedEntries($this->topEntries, $this->bottomEntries, OperatorSummary::TARGET_EFFICIENCY);
       
       $this->runTime = OperatorSummary::calculateRunTime($reportEntries);  // Approved run times
@@ -502,17 +505,23 @@ class OperatorSummary
       
       return ($runTime);
    }
-   
+
    private function getTopReportEntries()
    {
       $topReportEntries = $this->reportEntries;
       
+      // Sort by runTime, ascending.
       usort($topReportEntries, function ($left, $right) {
-         return (($left->efficiency < $right->efficiency) ? 1 : (($left->efficiency > $right->efficiency) ? -1 : 0));
+         return (($left->runTime < $right->runTime) ? 1 : (($left->runTime > $right->runTime) ? -1 : 0));
       });
          
       // Take the top entries.
       $topReportEntries = array_slice($topReportEntries, 0, $this->topEntryCount);
+      
+      // Now sort by efficiency, ascending.
+      usort($topReportEntries, function ($left, $right) {
+         return (($left->efficiency < $right->efficiency) ? 1 : (($left->efficiency > $right->efficiency) ? -1 : 0));
+      });
       
       return ($topReportEntries);
    }
@@ -527,12 +536,18 @@ class OperatorSummary
       }
       else
       {
+         // Sort by runTime, ascending.
          usort($bottomReportEntries, function ($left, $right) {
-            return (($left->efficiency < $right->efficiency) ? 1 : (($left->efficiency > $right->efficiency) ? -1 : 0));
+            return (($left->runTime < $right->runTime) ? 1 : (($left->runTime > $right->runTime) ? -1 : 0));
          });
             
          // Take the bottom entries.
          $bottomReportEntries = array_slice($bottomReportEntries, $this->topEntryCount);
+         
+         // Now sort by efficiency, ascending.
+         usort($bottomReportEntries, function ($left, $right) {
+            return (($left->efficiency < $right->efficiency) ? 1 : (($left->efficiency > $right->efficiency) ? -1 : 0));
+         });
       }
       
       return ($bottomReportEntries);
@@ -916,6 +931,20 @@ class DailySummaryReport
       
       $reportData = array();
       
+      // *****************************************************************
+      // Factory Stats integration
+            
+      $dt = new DateTime($this->dateTime);
+      $date = $dt->format("Y-m-d");
+      
+      // Hardcoded shiftId = 1
+      $factoryStatsShiftId = 1;
+      
+      $factoryStats = new FactoryStats();
+      $factoryStatsData = $factoryStats->getCount(null, $date, $factoryStatsShiftId);
+      
+      // ***********************************************************************
+      
       foreach ($this->reportEntries as $operatorEntries)
       {
          foreach ($operatorEntries as $reportEntry)
@@ -965,6 +994,40 @@ class DailySummaryReport
             $row->grossParts =       $reportEntry->grossParts;
             $row->efficiency =       round(($reportEntry->efficiency * 100), 2);
             $row->machineHoursMade = round($reportEntry->machineHoursMade, 2);
+            
+            // *****************************************************************
+            // Factory Stats integration
+            
+            $row->factoryStats = new stdClass();
+            $row->factoryStats->count = 0;
+            $row->factoryStats->firstEntry = null;
+            $row->factoryStats->updateTime = null;
+            
+            if ($factoryStatsData)
+            {
+               $stationId = $factoryStats->getStationId(strval($row->wcNumber));
+
+               if (($stationId != 0) &&
+                   isset($factoryStatsData->$stationId) &&
+                   isset($factoryStatsData->$stationId->$factoryStatsShiftId))
+               {
+                  $row->factoryStats->count = $factoryStatsData->$stationId->$factoryStatsShiftId->count;
+                  
+                  if ($factoryStatsData->$stationId->$factoryStatsShiftId->firstEntry)
+                  {
+                     $dt = new DateTime($factoryStatsData->$stationId->$factoryStatsShiftId->firstEntry);
+                     $row->factoryStats->firstEntry = $dt->format("g:i A");
+                  }
+                  
+                  if ($factoryStatsData->$stationId->$factoryStatsShiftId->updateTime)
+                  {
+                     $dt = new DateTime($factoryStatsData->$stationId->$factoryStatsShiftId->updateTime);
+                     $row->factoryStats->updateTime = $dt->format("g:i A");
+                  }
+               }
+            }
+            
+            // *****************************************************************
             
             $reportData[] = $row;
          }

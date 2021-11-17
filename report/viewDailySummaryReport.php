@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
    <?php Header::render("PPTP Tools"); ?>
    
-   <div class="main flex-horizontal flex-top flex-left" style="width: auto;">
+   <div class="main flex-horizontal flex-top flex-left"><!-- style="width: 90%;"-->
    
       <?php Menu::render(Activity::REPORT); ?>
       
@@ -176,7 +176,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
       function getTableQueryParams(table)
       {
-         
          var params = new Object();
          params.mfgDate =  document.getElementById("mfg-date-filter").value;
          params.table = table;
@@ -191,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       var params = getTableQueryParams(DAILY_SUMMARY_TABLE);
       
       tables[DAILY_SUMMARY_TABLE] = new Tabulator("#report-table", {
-         //height:500,            // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)      
          layout:"fitData",
          cellVertAlign:"middle",
          printAsHtml:true,          //enable HTML table printing
@@ -206,14 +205,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          ],
          //Define Table Columns
          columns:[
-            {title:"Time Card Id", field:"timeCardId",    hozAlign:"left", visible:false},
-            {title:"Status",       field:"dataStatusLabel", hozAlign:"center",
+            {title:"Time Card Id", field:"timeCardId",      hozAlign:"left",   frozen:true, visible:false},
+            {title:"Status",       field:"dataStatusLabel", hozAlign:"center", frozen:true,
                formatter:function(cell, formatterParams, onRendered){
                   cell.getElement().classList.add(cell.getRow().getData().dataStatusClass);
                   return ("<div class=\"" + cell.getRow().getData().dataStatusClass + "\">" + cell.getValue() + "</div>");
                },
             },
-            {title:"",       field:"panTicketCode", hozAlign:"left", print:false,
+            {title:"Mfg. Date", field:"manufactureDate", hozAlign:"left", frozen:true, print:true,
+               formatter:"datetime",  // Requires moment.js 
+               formatterParams:{
+                  outputFormat:"M/D/YYYY",
+                  invalidPlaceholder:"---"
+               }
+            },
+            {title:"Operator",     field:"operator",        hozAlign:"left", headerFilter:true, print:true, frozen:true},
+            {title:"Employee #",   field:"employeeNumber",  hozAlign:"left",                    print:true},
+            
+            {title:"",             field:"panTicketCode",   hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().panTicketCode);
                },
@@ -244,16 +253,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                tooltip:function(cell) {
                   return ("Part washer logs");                  
                }
-            },            
-            {title:"Mfg. Date", field:"manufactureDate", hozAlign:"left", print:true,
-               formatter:"datetime",  // Requires moment.js 
-               formatterParams:{
-                  outputFormat:"M/D/YYYY",
-                  invalidPlaceholder:"---"
-               }
             },
-            {title:"Operator",     field:"operator",        hozAlign:"left", headerFilter:true, print:true},
-            {title:"Employee #",   field:"employeeNumber",  hozAlign:"left",                    print:true},
             {title:"Job #",        field:"jobNumber",       hozAlign:"left", headerFilter:true, print:true},
             {title:"WC #",         field:"wcNumber",        hozAlign:"left", headerFilter:true, print:true},
             {title:"Shift Time",   field:"shiftTime",       hozAlign:"left",                    print:true,
@@ -341,6 +341,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cellValue);
                }
             },
+            // Factory Stats
+            {
+               title:"Factory Stats",
+               columns:[
+                  {title:"Count",      field:"factoryStats.count",      hozAlign:"left", print:true},
+                  {title:"First Part", field:"factoryStats.firstEntry", hozAlign:"left", print:true},
+                  {title:"Last Part",  field:"factoryStats.updateTime", hozAlign:"left", print:true},
+               ]
+            },             
             {title:"Sample Weight",           field:"sampleWeight",         hozAlign:"left", print:true},
             {title:"Total Weight",            field:"partWeight",           hozAlign:"left", print:true,
                formatter:function(cell, formatterParams, onRendered){
@@ -415,7 +424,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             },
             {title:"Scrap Count",             field:"scrapCount",           hozAlign:"left", print:true},
             {title:"Quoted Net",              field:"netPartsPerHour",      hozAlign:"left", print:true},
-            {title:"Machine Hours Made",      field:"machineHoursMade",     hozAlign:"left", print:true},            
+            {title:"Machine Hours Made",      field:"machineHoursMade",     hozAlign:"left", print:true}                      
          ],
          cellClick:function(e, cell){
             var timeCardId = cell.getRow().getData().timeCardId;
@@ -450,7 +459,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       params = getTableQueryParams(OPERATOR_SUMMARY_TABLE);
       
       tables[OPERATOR_SUMMARY_TABLE] = new Tabulator("#operator-summary-table", {
-         //height:500,            // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
          layout:"fitData",
          cellVertAlign:"middle",
          printAsHtml:true,          //enable HTML table printing
@@ -460,8 +469,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          ajaxParams:params,
          //Define Table Columns
          columns:[
-            {title:"Operator",           field:"operator",       hozAlign:"left", print:true, headerFilter:true},
-            {title:"Employee #",         field:"employeeNumber", hozAlign:"left", print:true},
+            {title:"Operator",           field:"operator",       hozAlign:"left", print:true, headerFilter:true, frozen:true},
+            {title:"Employee #",         field:"employeeNumber", hozAlign:"left", print:true, frozen:true},
             {title:"Run Time",           field:"runTime",        hozAlign:"left", print:true,},
             {title:"Efficiency",         field:"efficiency",     hozAlign:"left", print:true,
                formatter:function(cell, formatterParams, onRendered){
@@ -492,7 +501,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       params = getTableQueryParams(SHOP_SUMMARY_TABLE);
       
       tables[SHOP_SUMMARY_TABLE] = new Tabulator("#shop-summary-table", {
-         //height:500,            // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
          layout:"fitData",
          cellVertAlign:"middle",
          printAsHtml:true,          //enable HTML table printing

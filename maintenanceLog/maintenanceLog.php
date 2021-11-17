@@ -163,7 +163,7 @@ if (!Authentication::isAuthenticated())
       
       // Create Tabulator on DOM element maintenance-log-table.
       var table = new Tabulator("#maintenance-log-table", {
-         //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
          layout:"fitData",
          responsiveLayout:"hide", // enable responsive layouts
          cellVertAlign:"middle",
