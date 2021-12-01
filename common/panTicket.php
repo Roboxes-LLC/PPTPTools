@@ -45,7 +45,9 @@ class PanTicket
 {
    const UNKNOWN_PAN_TICKET_ID = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
    
-   const LABEL_TEMPLATE_FILENAME = "../panTicket/PanTicketTemplate.label";
+   //const LABEL_TEMPLATE_FILENAME = "../panTicket/PanTicketTemplate_8.6.2.label";
+   //const LABEL_TEMPLATE_FILENAME = "../panTicket/PanTicketTemplate_8.7.4.label";
+   const LABEL_TEMPLATE_FILENAME = "../panTicket/PanTicketTemplate_8.7.4_modified.label";
    
    public $panTicketId = PanTicket::UNKNOWN_PAN_TICKET_ID;
    
