@@ -346,6 +346,38 @@ class ReportEntry
       return (in_array($statusFlag, $this->statusFlags));
    }
    
+   public static function sorter($left, $right)
+   {
+      $returnVal = 0;
+      
+      if ($left->runTime != $right->runTime)
+      {
+         // Primary sort is on runTime.
+         if ($left->runTime > $right->runTime)
+         {
+            $returnVal = -1;
+         }
+         else if ($left->runTime < $right->runTime)
+         {
+            $returnVal = 1;
+         }
+      }
+      else 
+      {
+         // Secondary sort on efficiency.
+         if ($left->efficiency > $right->efficiency)
+         {
+            $returnVal = -1;
+         }
+         else if ($left->efficiency < $right->efficiency)
+         {
+            $returnVal = 1;
+         }
+      }
+      
+      return ($returnVal);
+   }
+   
    // **************************************************************************
    
    private function getPanCountByWeightLog()
@@ -509,19 +541,12 @@ class OperatorSummary
    private function getTopReportEntries()
    {
       $topReportEntries = $this->reportEntries;
-      
-      // Sort by runTime, ascending.
-      usort($topReportEntries, function ($left, $right) {
-         return (($left->runTime < $right->runTime) ? 1 : (($left->runTime > $right->runTime) ? -1 : 0));
-      });
+            
+      // Sort first by runTime, they by efficiency.
+      usort($topReportEntries, "ReportEntry::sorter");
          
       // Take the top entries.
       $topReportEntries = array_slice($topReportEntries, 0, $this->topEntryCount);
-      
-      // Now sort by efficiency, ascending.
-      usort($topReportEntries, function ($left, $right) {
-         return (($left->efficiency < $right->efficiency) ? 1 : (($left->efficiency > $right->efficiency) ? -1 : 0));
-      });
       
       return ($topReportEntries);
    }
@@ -536,18 +561,11 @@ class OperatorSummary
       }
       else
       {
-         // Sort by runTime, ascending.
-         usort($bottomReportEntries, function ($left, $right) {
-            return (($left->runTime < $right->runTime) ? 1 : (($left->runTime > $right->runTime) ? -1 : 0));
-         });
+         // Sort first by runTime, they by efficiency.
+         usort($bottomReportEntries, "ReportEntry::sorter");         
             
          // Take the bottom entries.
          $bottomReportEntries = array_slice($bottomReportEntries, $this->topEntryCount);
-         
-         // Now sort by efficiency, ascending.
-         usort($bottomReportEntries, function ($left, $right) {
-            return (($left->efficiency < $right->efficiency) ? 1 : (($left->efficiency > $right->efficiency) ? -1 : 0));
-         });
       }
       
       return ($bottomReportEntries);
