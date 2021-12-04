@@ -309,7 +309,7 @@ form {
 /* ***** Tabulator ***** */
 
 .tabulator {
-	width: 100%;
+	width: 90%;
 }
 
 .table-header {
@@ -386,19 +386,19 @@ button {
    white-space: nowrap;
 }
 
-.report-entry-valid {
+.report-entry-valid, .report-entry-valid.tabulator-frozen {
 	background: green;
 	color: white;
 	font-size: 12;
 }
 
-.report-entry-warning {
+.report-entry-warning, .report-entry-warning.tabulator-frozen {
    background: orange;
    color: white;
    font-size: 12;
 }
 
-.report-entry-error {
+.report-entry-error, .report-entry-error.tabulator-frozen {
    background: red;
    color: white;
    font-size: 12;

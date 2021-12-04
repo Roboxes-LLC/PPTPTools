@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
    <?php Header::render("PPTP Tools"); ?>
    
-   <div class="main flex-horizontal flex-top flex-left" style="width: auto;">
+   <div class="main flex-horizontal flex-top flex-left">
    
       <?php Menu::render(Activity::QUARTERLY_REPORT); ?>
       
@@ -213,7 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       var params = getTableQueryParams(OPERATOR_SUMMARY_TABLE);
       
       tables[OPERATOR_SUMMARY_TABLE] = new Tabulator("#operator-summary-table", {
-         //height:500,            // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)      
          layout:"fitData",
          cellVertAlign:"middle",
          printAsHtml:true,          //enable HTML table printing
@@ -223,8 +223,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          ajaxParams:params,
          //Define Table Columns
          columns:[
-            {title:"Operator",   field:"operator",       hozAlign:"left", headerFilter:true, print:true},
-            {title:"Employee #", field:"employeeNumber", hozAlign:"left",                    print:true},
+            {title:"Operator",   field:"operator",       hozAlign:"left", headerFilter:true, print:true, frozen:true},
+            {title:"Employee #", field:"employeeNumber", hozAlign:"left",                    print:true, frozen:true},
             // Week 1
             {
                title:"Week 1",
@@ -347,7 +347,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       params = getTableQueryParams(SHOP_SUMMARY_TABLE);
       
       tables[SHOP_SUMMARY_TABLE] = new Tabulator("#shop-summary-table", {
-         //height:500,            // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)      
          layout:"fitData",
          cellVertAlign:"middle",
          printAsHtml:true,          //enable HTML table printing
@@ -388,7 +388,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       } 
       
       tables[BONUS_TABLE] = new Tabulator("#bonus-table", {
-         //height:500,            // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)      
          layout:"fitData",
          cellVertAlign:"middle",
          printAsHtml:true,          //enable HTML table printing
