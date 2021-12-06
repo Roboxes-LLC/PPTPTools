@@ -30,7 +30,11 @@ class Permission
    const VIEW_REPORT              = 24;
    const VIEW_MAINTENANCE_LOG     = 25;
    const EDIT_MAINTENANCE_LOG     = 26;
-   const LAST                     = Permission::EDIT_MAINTENANCE_LOG;
+   const VIEW_MATERIAL            = 27;
+   const EDIT_MATERIAL            = 28;
+   const ISSUE_MATERIAL           = 29;
+   const ACKNOWLEDGE_MATERIAL     = 30;
+   const LAST                     = Permission::ACKNOWLEDGE_MATERIAL;
    
    const NO_PERMISSIONS = 0x00000000;
    const ALL_PERMISSIONS = 0xFFFFFFFF;
@@ -71,7 +75,10 @@ class Permission
                   new Permission(Permission::VIEW_PRINT_MANAGER,       "View print manager"),
                   new Permission(Permission::VIEW_REPORT,              "View reports"),
                   new Permission(Permission::VIEW_MAINTENANCE_LOG,     "View maintenance log"),
-                  new Permission(Permission::EDIT_MAINTENANCE_LOG,     "Edit maintenance log")
+                  new Permission(Permission::VIEW_MATERIAL,            "View materials"),
+                  new Permission(Permission::EDIT_MATERIAL,            "Edit materials"),
+                  new Permission(Permission::ISSUE_MATERIAL,           "Issue materials"),
+                  new Permission(Permission::ACKNOWLEDGE_MATERIAL,     "Acknowledge materials")
             );
       }
       

@@ -1810,6 +1810,116 @@ class PPTPDatabase extends MySqlDatabase
    }
    
    // **************************************************************************
+   //                                 Material
+   // **************************************************************************
+   
+   public function getMaterials()
+   {
+      $query = "SELECT * FROM material;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getMaterial($materialId)
+   {
+      $query = "SELECT * FROM material WHERE materialId = $materialId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                             Material Vendor
+   // **************************************************************************
+   
+   public function getMaterialVendors()
+   {
+      $query = "SELECT * FROM materialvendor;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getMaterialVendor($vendorId)
+   {
+      $query = "SELECT * FROM materialvendor WHERE vendorId = $vendorId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                Material Log
+   // **************************************************************************
+   
+   public function getMaterialEntry($materialEntryId)
+   {
+      $query = "SELECT * FROM materiallog WHERE materialEntryId = $materialEntryId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getMaterialEntries($startDate, $endDate)
+   {
+      $dateTimeClause = "enteredDateTime BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "'";
+            
+      $query = "SELECT * FROM materiallog WHERE $dateTimeClause ORDER BY enteredDateTime DESC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function newMaterialEntry($materialEntry)
+   {
+      $enteredDateTime = $materialEntry->enteredDateTime ? Time::toMySqlDate($materialEntry->enteredDateTime) : null;
+      $issuedDateTime = $materialEntry->issuedDateTime ? Time::toMySqlDate($materialEntry->issuedDateTime) : null;
+      $acknowledgedDateTime = $materialEntry->acknowledgedDateTime ? Time::toMySqlDate($materialEntry->acknowledgedDateTime) : null;
+      
+      $query =
+         "INSERT INTO materiallog " .
+         "(materialId, vendorId, tagNumber, heatNumber, quantity, pieces, enteredUserId, enteredDateTime, issuedUserId, issuedDateTime, issuedJobId, acknowlegedUserId, acknowledgedDateTime) " .
+         "VALUES " .
+         "('$materialEntry->materialId', '$materialEntry->vendorId', '$materialEntry->tagNumber', '$materialEntry->heatNumber', '$materialEntry->quantity', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime', '$materialEntry->issuedUserId', '$issuedDateTime', '$materialEntry->issuedJobId', '$materialEntry->acknowledgedUserId', '$acknowledgedDateTime');";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function updateMaterialEntry($materialEntry)
+   {
+      $enteredDateTime = $materialEntry->enteredDateTime ? Time::toMySqlDate($materialEntry->enteredDateTime) : null;
+      $issuedDateTime = $materialEntry->issuedDateTime ? Time::toMySqlDate($materialEntry->issuedDateTime) : null;
+      $acknowledgedDateTime = $materialEntry->acknowledgedDateTime ? Time::toMySqlDate($materialEntry->acknowledgedDateTime) : null;
+      
+      $query =
+      "UPDATE maintenance " .
+      "SET materialId = $materialEntry->materialId, vendorId = $materialEntry->vendorId, tagNumber = $materialEntry->tagNumber, heatNumber = $materialEntry->heatNumber, quantity = $materialEntry->quantity, pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', issuedUserId = $materialEntry->issuedUserId, issuedDateTime = '$issuedDateTime', issuedJobId = $materialEntry->issuedJobId, acknowledgedUserId = $materialEntry->acknowledgedUserId, acknowledgedDateTime = '$acknowledgedDateTime' " .
+      "WHERE materialEntryId = $materialEntry->materialEntryId;";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteMaterialEntry($materialEntryId)
+   {
+      $query = "DELETE FROM materiallog WHERE materialEntryId = $materialEntryId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
    //                                  Private
    // **************************************************************************
    
