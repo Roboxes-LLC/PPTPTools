@@ -13,7 +13,8 @@ abstract class IsoDoc
    const IN_PROCESS_INSPECTION = 5;
    const QCP_INSPECTION = 6;
    const LINE_INSPECTION = 7;
-   const LAST = 5;
+   const MATERIAL_TICKET = 8;
+   const LAST = 9;
    const COUNT = IsoDoc::LAST - IsoDoc::FIRST;
 }
 

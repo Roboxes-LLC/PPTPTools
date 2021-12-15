@@ -24,6 +24,20 @@
        
        return ($materials);
     }
+    
+    public static function getMaterial($materialId)
+    {
+       $material = "";
+       
+       $materials = Material::getMaterials();
+       
+       if (isset($materials[$materialId]))
+       {
+          $material = $materials[$materialId];
+       }
+       
+       return ($material);
+    }
  
     public static function getOptions($selectedMaterialId)
     {

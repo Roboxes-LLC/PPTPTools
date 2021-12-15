@@ -7,6 +7,8 @@ require_once '../common/inspection.php';
 require_once '../common/inspectionTemplate.php';
 require_once '../common/jobInfo.php';
 require_once '../common/maintenanceEntry.php';
+require_once '../common/materialEntry.php';
+require_once '../common/materialTicket.php';
 require_once '../common/oasisReport/oasisReport.php';
 require_once '../common/panTicket.php';
 require_once '../common/partWasherEntry.php';
@@ -3074,6 +3076,451 @@ $router->add("deleteMaintenanceEntry", function($params) {
    
    echo json_encode($result);
 });
+
+$router->add("materialData", function($params) {
+   $result = array();
    
+   $startDate = Time::startOfDay(Time::now("Y-m-d"));
+   $endDate = Time::endOfDay(Time::now("Y-m-d"));
+   
+   if (isset($params["startDate"]))
+   {
+      $startDate = Time::startOfDay($params["startDate"]);
+   }
+   
+   if (isset($params["endDate"]))
+   {
+      $endDate = Time::endOfDay($params["endDate"]);
+   }
+   
+   $database = PPTPDatabase::getInstance();
+   
+   if ($database && $database->isConnected())
+   {
+      $dbaseResult = $database->getMaterialEntries($startDate, $endDate);
+      
+      $materials = Material::getMaterials();
+      $vendors = MaterialVendor::getMaterialVendors();
+      
+      foreach ($dbaseResult as $row)
+      {
+         $materialEntry = new MaterialEntry();
+         $materialEntry->initialize($row);
+
+         if (($materialEntry->materialId != Material::UNKNOWN_MATERIAL_ID) &&
+             isset($materials[$materialEntry->materialId]))
+         {
+            $materialEntry->materialDescription = $materials[$materialEntry->materialId];
+         }
+         
+         if (($materialEntry->vendorId != MaterialVendor::UNKNOWN_MATERIAL_VENDOR_ID) &&
+             isset($vendors[$materialEntry->vendorId]))
+         {
+            $materialEntry->vendorName = $vendors[$materialEntry->vendorId];
+         }
+         
+         $materialEntry->materialTicketCode = MaterialTicket::getMaterialTicketCode($materialEntry->materialEntryId);
+         
+         if ($materialEntry->isIssued())
+         {
+            $jobInfo = JobInfo::load($materialEntry->issuedJobId);
+            
+            if ($jobInfo)
+            {
+               $materialEntry->issuedJobNumber = $jobInfo->jobNumber;
+               $materialEntry->issuedWCNumber = $jobInfo->wcNumber;
+            }
+         }
+         
+         $materialEntry->isIssued = $materialEntry->isIssued();
+         $materialEntry->isAcknowledged = $materialEntry->isAcknowledged();
+          
+         $result[] = $materialEntry;
+      }
+   }
+
+   echo json_encode($result);
+});
+
+$router->add("saveMaterialEntry", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $database = PPTPDatabase::getInstance();
+   $dbaseResult = null;
+   
+   $materialEntry = null;
+   
+   if (isset($params["entryId"]) &&
+       is_numeric($params["entryId"]) &&
+       (intval($params["entryId"]) != MaterialEntry::UNKNOWN_ENTRY_ID))
+   {
+      $entryId = intval($params["entryId"]);
+      
+      //  Updated entry
+      $materialEntry = MaterialEntry::load($entryId);
+      
+      if (!$materialEntry)
+      {
+         $result->success = false;
+         $result->error = "No existing material entry found.";
+      }
+   }
+   else
+   {
+      // New entry.
+      $materialEntry = new MaterialEntry();
+      
+      // Use current date/time as the entry time.
+      $materialEntry->enteredDateTime = Time::now("Y-m-d h:i:s A");
+   }
+   
+   if ($result->success)
+   {
+      if (isset($params["materialId"]) &&
+          isset($params["vendorId"]) &&
+          isset($params["tagNumber"]) &&
+          isset($params["heatNumber"]) &&
+          isset($params["quantity"]) &&
+          isset($params["pieces"]) &&
+          isset($params["enteredUserId"]))
+      {
+         // Required fields.
+         $materialEntry->materialId = $params->getInt("materialId");
+         $materialEntry->vendorId = $params->getInt("vendorId");
+         $materialEntry->tagNumber = $params->getInt("tagNumber");
+         $materialEntry->heatNumber = $params->getInt("heatNumber");
+         $materialEntry->quantity = $params->getInt("quantity");
+         $materialEntry->pieces = $params->getInt("pieces");
+         $materialEntry->enteredUserId = $params->getInt("enteredUserId");
+         
+         if ($materialEntry->materialEntryId == MaterialEntry::UNKNOWN_ENTRY_ID)
+         {
+            $dbaseResult = $database->newMaterialEntry($materialEntry);
+            
+            if ($dbaseResult)
+            {
+               $result->entryId = $database->lastInsertId();
+            }
+         }
+         else
+         {
+            $dbaseResult = $database->updateMaterialEntry($materialEntry);
+            $result->entryId = $materialEntry->materialEntryId;
+         }
+         
+         if (!$dbaseResult)
+         {
+            $result->success = false;
+            $result->error = "Database query failed.";
+         }
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "Missing parameters.";
+      }
+   }
+   
+   echo json_encode($result);
+});
+      
+$router->add("deleteMaterialEntry", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $database = PPTPDatabase::getInstance();
+   
+   if (isset($params["entryId"]) &&
+       is_numeric($params["entryId"]) &&
+       (intval($params["entryId"]) != MaterialEntry::UNKNOWN_ENTRY_ID))
+   {
+      $entryId = intval($params["entryId"]);
+      
+      $dbaseResult = $database->deleteMaterialEntry($entryId);
+      
+      if ($dbaseResult)
+      {
+         $result->success = true;
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "Database query failed.";
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("revokeMaterialEntry", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   if (isset($params["entryId"]) &&
+       is_numeric($params["entryId"]) &&
+       (intval($params["entryId"]) != MaterialEntry::UNKNOWN_ENTRY_ID))
+   {
+      $entryId = intval($params["entryId"]);
+      $materialEntry = MaterialEntry::load($entryId);
+      
+      if ($materialEntry)
+      {
+         $materialEntry->revokeMaterial();
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "No existing material entry found.";
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("issueMaterialEntry", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+
+   if (isset($params["entryId"]) &&
+       is_numeric($params["entryId"]) &&
+       (intval($params["entryId"]) != MaterialEntry::UNKNOWN_ENTRY_ID))
+   {
+      $entryId = intval($params["entryId"]);
+      $materialEntry = MaterialEntry::load($entryId);
+
+      if (!$materialEntry)
+      {
+         $result->success = false;
+         $result->error = "No existing material entry found.";
+      }
+      else
+      {
+         if (isset($params["jobNumber"]) &&
+             isset($params["wcNumber"]) &&
+             isset($params["issuedUserId"]))
+         {
+            // Required fields.
+            $jobNumber = $params->get("jobNumber");
+            $wcNumber = $params->getInt("wcNumber");
+            $employeeNumber = $params->getInt("issuedUserId");
+            
+            $jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
+            $userInfo = UserInfo::load($employeeNumber);
+            
+            if ($jobId == JobInfo::UNKNOWN_JOB_ID)
+            {
+               $result->success = false;
+               $result->error = "Failed to look up job.";
+            }
+            else if (!$userInfo)
+            {
+               $result->success = false;
+               $result->error = "Failed to look up user.";
+            }
+            else
+            {
+               $materialEntry->issueMaterial($jobId, $employeeNumber);
+            }
+         }
+         else
+         {
+            $result->success = false;
+            $result->error = "Missing parameters.";
+         }
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("acknowledgeMaterialEntry", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   if (isset($params["entryId"]) &&
+       is_numeric($params["entryId"]) &&
+       (intval($params["entryId"]) != MaterialEntry::UNKNOWN_ENTRY_ID))
+   {
+      $entryId = intval($params["entryId"]);
+      $materialEntry = MaterialEntry::load($entryId);
+      
+      if (!$materialEntry)
+      {
+         $result->success = false;
+         $result->error = "No existing material entry found.";
+      }
+      else if (!$materialEntry->isIssued())
+      {
+         $result->success = false;
+         $result->error = "Material has not been issued.";
+      }
+      else
+      {
+         if (isset($params["acknowledgedUserId"]))
+         {
+            // Required fields.
+            $employeeNumber = $params->getInt("acknowledgedUserId");
+            
+            $userInfo = UserInfo::load($employeeNumber);
+            
+            if (!$userInfo)
+            {
+               $result->success = false;
+               $result->error = "Failed to look up user.";
+            }
+            else
+            {
+               $materialEntry->acknowledge($employeeNumber);
+            }
+         }
+         else
+         {
+            $result->success = false;
+            $result->error = "Missing parameters.";
+         }
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("unacknowledgeMaterialEntry", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   if (isset($params["entryId"]) &&
+       is_numeric($params["entryId"]) &&
+       (intval($params["entryId"]) != MaterialEntry::UNKNOWN_ENTRY_ID))
+   {
+      $entryId = intval($params["entryId"]);
+      $materialEntry = MaterialEntry::load($entryId);
+      
+      if (!$materialEntry)
+      {
+         $result->success = false;
+         $result->error = "No existing material entry found.";
+      }
+      else if (!$materialEntry->isAcknowledged())
+      {
+         $result->success = false;
+         $result->error = "Material has not been acknowledged.";
+      }
+      else
+      {
+         $materialEntry->unacknowledge();
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("materialTicket", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   if (is_numeric($params["materialTicketId"]))
+   {
+      $materialTicket = new MaterialTicket(intval($params["materialTicketId"]));
+      
+      if ($materialTicket)
+      {
+         $result->success = true;
+         $result->panTicketId = $materialTicket->materialTicketId;
+         $result->labelXML = $materialTicket->labelXML;
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "Failed to create material ticket.";
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+   
+$router->add("printMaterialTicket", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $database = PPTPDatabase::getInstance();
+   
+   if (is_numeric($params["materialTicketId"]) &&
+       isset($params["printerName"]) &&
+       is_numeric($params["copies"]))
+   {
+      $materialTicket = new MaterialTicket(intval($params["materialTicketId"]));
+      
+      if ($materialTicket)
+      {
+         $printJob = new PrintJob();
+         $printJob->owner = Authentication::getAuthenticatedUser()->employeeNumber;
+         $printJob->dateTime = Time::now("Y-m-d H:i:s");
+         $printJob->description = $materialTicket->printDescription;
+         $printJob->printerName = $params["printerName"];
+         $printJob->copies = intval($params["copies"]);
+         $printJob->status = PrintJobStatus::QUEUED;
+         $printJob->xml = $materialTicket->labelXML;
+         
+         $dbaseResult = $database->newPrintJob($printJob);
+         
+         if ($dbaseResult)
+         {
+            $result->success = true;
+         }
+         else
+         {
+            $result->success = false;
+            $result->error = "Database query failed.";
+         }
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "Failed to create material ticket.";
+      }
+      
+      // Store preferred printer for session.
+      $_SESSION["preferredPrinter"] = $params["printerName"];
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
 $router->route();
 ?>

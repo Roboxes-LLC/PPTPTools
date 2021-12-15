@@ -129,7 +129,7 @@ if (!Authentication::isAuthenticated())
 
          <br>
         
-         <div id="material-log-table"></div>
+         <div id="material-table"></div>
 
          <br> 
         
@@ -143,7 +143,6 @@ if (!Authentication::isAuthenticated())
    
       preserveSession();
 
-      /*
       function getTableQuery()
       {
          return ("<?php echo $ROOT ?>/api/materialData/");
@@ -159,11 +158,16 @@ if (!Authentication::isAuthenticated())
          return (params);
       }
       
+      // Set the acknowledgedUserId to the authenticated user.
+      var hasIssuePermission = <?php echo Authentication::checkPermissions(Permission::ISSUE_MATERIAL) ? "true" : "false" ?>;
+      var hasAcknowledgePermission = <?php echo Authentication::checkPermissions(Permission::ACKNOWLEDGE_MATERIAL) ? "true" : "false" ?>;
+      var acknowledgedUserId = <?php echo Authentication::getAuthenticatedUser()->employeeNumber ?>;
+      
       var url = getTableQuery();
       var params = getTableQueryParams();
       
-      // Create Tabulator on DOM element maintenance-log-table.
-      var table = new Tabulator("#maintenance-log-table", {
+      // Create Tabulator on DOM element.
+      var table = new Tabulator("#material-table", {
          maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
          layout:"fitData",
          responsiveLayout:"hide", // enable responsive layouts
@@ -172,35 +176,50 @@ if (!Authentication::isAuthenticated())
          ajaxParams:params,
          //Define Table Columns
          columns:[
-            {title:"Id",          field:"maintenanceEntryId",       hozAlign:"left", visible:false},
-            {title:"Entry Date",  field:"dateTime",                 hozAlign:"left",
-               formatter:"datetime",  // Requires moment.js 
-               formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
-                  invalidPlaceholder:"---"
-               }
-            },
-            {title:"Maint. Date", field:"maintenanceDateTime",      hozAlign:"left",
-               formatter:"datetime",  // Requires moment.js 
-               formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
-                  invalidPlaceholder:"---"
-               }
-            },
-            {title:"Techician",   field:"technicianName",            hozAlign:"left", headerFilter:true},            
-            {title:"Job #",       field:"jobNumber",                 hozAlign:"left", headerFilter:true},
-            {title:"Equipment",   field:"equipmentName",             hozAlign:"left", headerFilter:true},
-            {title:"Maint. Type", field:"maintenanceCategory.maintenanceTypeLabel",  hozAlign:"left", headerFilter:true},
-            {title:"Category",    field:"maintenanceCategory.label", hozAlign:"left", headerFilter:true},
-            {title:"Maint. Time", field:"maintenanceTime",           hozAlign:"left",
+            {title:"Id",          field:"materialEntryId",       hozAlign:"left", visible:false},
+            {title:"Ticket",      field:"materialTicketCode",    hozAlign:"left", headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
-                  var minutes = parseInt(cell.getValue());
-                  var cellValue = Math.floor(minutes / 60) + ":" + ("0" + (minutes % 60)).slice(-2);
-                  return (cellValue);
+                  return ("<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().materialTicketCode);
+               },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  return (cell.getValue());
+               }  
+            },                   
+            {title:"Entry Date",  field:"enteredDateTime",       hozAlign:"left",
+               formatter:"datetime",  // Requires moment.js 
+               formatterParams:{
+                  outputFormat:"MM/DD/YYYY",
+                  invalidPlaceholder:"---"
                }
             },
-            {title:"Part #",      field:"partNumber",                hozAlign:"left", headerFilter:true},
-            {title:"Comments",    field:"comments",                  hozAlign:"left"},
+            {title:"Material",    field:"materialDescription",             hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Vendor",      field:"vendorName",                      hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Heat",        field:"heatNumber",                      hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Quantity",    field:"quantity",                        hozAlign:"left", visible:true},
+            {title:"Pieces",      field:"pieces",                          hozAlign:"left", visible:true},
+            {title:"",            field:"issue",                                            visible:hasIssuePermission,
+               formatter:function(cell, formatterParams, onRendered){
+                  let isIssued = cell.getRow().getData().isIssued;                  
+                  let buttonText = isIssued ? "Revoke" : "Issue";
+                  
+                  let disabled = hasIssuePermission ? "" : "disabled";
+               
+                  return (`<button class=\"small-button accent-button\" style=\"width:50px;\" ${disabled}>${buttonText}</button>`);
+               }
+            },
+            {title:"Job #",       field:"issuedJobNumber",                 hozAlign:"left", headerFilter:true, visible:true},
+            {title:"WC #",        field:"issuedWCNumber",                  hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Ack.",        field:"isAcknowledged",                  hozAlign:"left", visible:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  let isIssued = cell.getRow().getData().isIssued;
+                  let isAcknowledged = cell.getRow().getData().isAcknowledged;                   
+                  
+                  let disabled = (isIssued && hasAcknowledgePermission) ? "" : "disabled";
+                  let checked = isAcknowledged ? "checked" : "";
+               
+                  return (`<input type=\"checkbox\" ${checked} ${disabled}>`);
+               }
+            },
             {title:"", field:"delete", responsive:0,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
@@ -208,16 +227,46 @@ if (!Authentication::isAuthenticated())
             }
          ],
          cellClick:function(e, cell){
-            var entryId = parseInt(cell.getRow().getData().maintenanceEntryId);
-         
-            if (cell.getColumn().getField() == "delete")
+            var entryId = parseInt(cell.getRow().getData().materialEntryId);            
+                     
+            if (cell.getColumn().getField() == "materialTicketCode")
             {
-               onDeleteMaintenanceEntry(entryId);
+               document.location = `printMaterialTicket.php?materialTicketId=${entryId}`;
+            }
+            else if (cell.getColumn().getField() == "issue")
+            {
+               let isIssued = cell.getRow().getData().isIssued;      
+                              
+               if (!isIssued)
+               {
+                  document.location = `viewMaterial.php?entryId=${entryId}&issue=1`;
+               }
+               else
+               {
+                  onRevokeButton(entryId);
+               }
+            }
+            else if (cell.getColumn().getField() == "isAcknowledged")
+            {
+               let isAcknowledged = cell.getRow().getData().isAcknowledged;   
+
+               if (!isAcknowledged)
+               {                              
+                  onAcknowledge(entryId, acknowledgedUserId);  // Note: acknowledgedUserId set below.
+               }
+               else
+               {
+                  onUnacknowledge(entryId);               
+               }
+            }
+            else if (cell.getColumn().getField() == "delete")
+            {
+               onDeleteMaterialEntry(entryId);
             }
             else // Any other column
             {
-               // Open maintenance log entry for viewing/editing.
-               document.location = "<?php echo $ROOT?>/maintenanceLog/maintenanceLogEntry.php?entryId=" + entryId;               
+               // Open material entry for viewing/editing.
+               document.location = `viewMaterial.php?entryId=${entryId}`;               
             }
          },
          rowClick:function(e, row){
@@ -247,11 +296,11 @@ if (!Authentication::isAuthenticated())
 
                if (filterId == "start-date-filter")
                {
-                  setSession("maintenance.filter.startDate", document.getElementById("start-date-filter").value);
+                  setSession("material.filter.startDate", document.getElementById("start-date-filter").value);
                }
                else if (filterId == "end-date-filter")
                {
-                  setSession("maintenance.filter.endDate", document.getElementById("end-date-filter").value);
+                  setSession("material.filter.endDate", document.getElementById("end-date-filter").value);
                }
             }
          }
@@ -304,7 +353,6 @@ if (!Authentication::isAuthenticated())
             endDateFilter.dispatchEvent(new Event('change'));  // TODO: Avoid calling this!  "An active ajax request was blocked ..."
          }      
       }
-      */
 
       // Setup event handling on all DOM elements.
       document.getElementById("start-date-filter").addEventListener("change", updateFilter);      

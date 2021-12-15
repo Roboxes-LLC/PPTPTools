@@ -1873,21 +1873,19 @@ class PPTPDatabase extends MySqlDatabase
       $query = "SELECT * FROM materiallog WHERE $dateTimeClause ORDER BY enteredDateTime DESC;";
       
       $result = $this->query($query);
-      
+
       return ($result);
    }
    
    public function newMaterialEntry($materialEntry)
    {
       $enteredDateTime = $materialEntry->enteredDateTime ? Time::toMySqlDate($materialEntry->enteredDateTime) : null;
-      $issuedDateTime = $materialEntry->issuedDateTime ? Time::toMySqlDate($materialEntry->issuedDateTime) : null;
-      $acknowledgedDateTime = $materialEntry->acknowledgedDateTime ? Time::toMySqlDate($materialEntry->acknowledgedDateTime) : null;
       
       $query =
          "INSERT INTO materiallog " .
-         "(materialId, vendorId, tagNumber, heatNumber, quantity, pieces, enteredUserId, enteredDateTime, issuedUserId, issuedDateTime, issuedJobId, acknowlegedUserId, acknowledgedDateTime) " .
+         "(materialId, vendorId, tagNumber, heatNumber, quantity, pieces, enteredUserId, enteredDateTime) " .
          "VALUES " .
-         "('$materialEntry->materialId', '$materialEntry->vendorId', '$materialEntry->tagNumber', '$materialEntry->heatNumber', '$materialEntry->quantity', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime', '$materialEntry->issuedUserId', '$issuedDateTime', '$materialEntry->issuedJobId', '$materialEntry->acknowledgedUserId', '$acknowledgedDateTime');";
+         "('$materialEntry->materialId', '$materialEntry->vendorId', '$materialEntry->tagNumber', '$materialEntry->heatNumber', '$materialEntry->quantity', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime');";
 
       $result = $this->query($query);
       
@@ -1897,13 +1895,59 @@ class PPTPDatabase extends MySqlDatabase
    public function updateMaterialEntry($materialEntry)
    {
       $enteredDateTime = $materialEntry->enteredDateTime ? Time::toMySqlDate($materialEntry->enteredDateTime) : null;
-      $issuedDateTime = $materialEntry->issuedDateTime ? Time::toMySqlDate($materialEntry->issuedDateTime) : null;
-      $acknowledgedDateTime = $materialEntry->acknowledgedDateTime ? Time::toMySqlDate($materialEntry->acknowledgedDateTime) : null;
       
       $query =
-      "UPDATE maintenance " .
-      "SET materialId = $materialEntry->materialId, vendorId = $materialEntry->vendorId, tagNumber = $materialEntry->tagNumber, heatNumber = $materialEntry->heatNumber, quantity = $materialEntry->quantity, pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', issuedUserId = $materialEntry->issuedUserId, issuedDateTime = '$issuedDateTime', issuedJobId = $materialEntry->issuedJobId, acknowledgedUserId = $materialEntry->acknowledgedUserId, acknowledgedDateTime = '$acknowledgedDateTime' " .
-      "WHERE materialEntryId = $materialEntry->materialEntryId;";
+         "UPDATE materiallog " .
+         "SET materialId = $materialEntry->materialId, vendorId = $materialEntry->vendorId, tagNumber = $materialEntry->tagNumber, heatNumber = $materialEntry->heatNumber, quantity = $materialEntry->quantity, pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime' " .
+         "WHERE materialEntryId = $materialEntry->materialEntryId;";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function issueMaterial($materialEntry)
+   {
+      $issuedDateTime = $materialEntry->issuedDateTime ? Time::toMySqlDate($materialEntry->issuedDateTime) : null;
+
+      $dateTimeClause = "";
+      if ($issuedDateTime)
+      {
+         $dateTimeClause = ", issuedDateTime = \"$issuedDateTime\"";
+      }
+      else 
+      {
+         $dateTimeClause = ", issuedDateTime = NULL";
+      }
+      
+      $query =
+         "UPDATE materiallog " .
+         "SET issuedJobId = $materialEntry->issuedJobId, issuedUserId = $materialEntry->issuedUserId$dateTimeClause " .
+         "WHERE materialEntryId = $materialEntry->materialEntryId;";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function acknowledgeIssuedMaterial($materialEntry)
+   {
+      $acknowledgedDateTime = $materialEntry->acknowledgedDateTime ? Time::toMySqlDate($materialEntry->acknowledgedDateTime) : null;
+      
+      $dateTimeClause = "";
+      if ($acknowledgedDateTime)
+      {
+         $dateTimeClause = ", acknowledgedDateTime = \"$acknowledgedDateTime\"";
+      }
+      else
+      {
+         $dateTimeClause = ", acknowledgedDateTime = NULL";
+      }
+      
+      $query =
+         "UPDATE materiallog " .
+         "SET acknowledgedUserId = $materialEntry->acknowledgedUserId$dateTimeClause " .
+         "WHERE materialEntryId = $materialEntry->materialEntryId;";
 
       $result = $this->query($query);
       

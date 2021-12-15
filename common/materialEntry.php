@@ -79,7 +79,28 @@ class MaterialEntry
          $this->issuedUserId = $userId;
          $this->issuedDateTime = Time::now("Y-m-d H:i:s");
 
-         $returnStatus = $database->updateMaterialEntry($this);
+         $returnStatus = $database->issueMaterial($this);
+      }
+      
+      return ($returnStatus);
+   }
+   
+   public function revokeMaterial()
+   {
+      $returnStatus = false;
+      
+      $database = PPTPDatabase::getInstance();
+      
+      if ($database && ($database->isConnected()))
+      {
+         $this->issuedJobId = JobInfo::UNKNOWN_JOB_ID;
+         $this->issuedUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+         $this->issuedDateTime = null;
+         $this->acknowledgedUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+         $this->acknowledgedDateTime = null;
+         
+         $returnStatus = $database->issueMaterial($this);
+         $returnStatus &= $database->acknowledgeIssuedMaterial($this);
       }
       
       return ($returnStatus);
@@ -96,7 +117,7 @@ class MaterialEntry
          $this->acknowledgedUserId = $userId;
          $this->acknowledgedDateTime = Time::now("Y-m-d H:i:s");
          
-         $returnStatus = $database->updateMaterialEntry($this);
+         $returnStatus = $database->acknowledgeIssuedMaterial($this);
       }
       
       return ($returnStatus);
@@ -113,13 +134,13 @@ class MaterialEntry
          $this->acknowledgedUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
          $this->acknowledgedDateTime = null;
          
-         $returnStatus = $database->updateMaterialEntry($this);
+         $returnStatus = $database->acknowledgeIssuedMaterial($this);
       }
       
       return ($returnStatus);
    }
    
-   private function initialize($row)
+   public function initialize($row)
    {
       $this->materialEntryId = intval($row['materialEntryId']);
       $this->materialId = intval($row['materialId']);
@@ -129,12 +150,23 @@ class MaterialEntry
       $this->quantity = intval($row['quantity']);
       $this->pieces = intval($row['pieces']);
       $this->enteredUserId = intval($row['enteredUserId']);
-      $this->enteredDateTime = Time::fromMySqlDate($row['enteredDateTime'], "Y-m-d H:i:s");
+      $this->enteredDateTime = $row['enteredDateTime'] ? Time::fromMySqlDate($row['enteredDateTime'], "Y-m-d H:i:s") : null;
       $this->issuedUserId = intval($row['issuedUserId']);
-      $this->issuedDateTime = Time::fromMySqlDate($row['issuedDateTime'], "Y-m-d H:i:s");
+      $this->issuedDateTime = $row['issuedDateTime'] ? Time::fromMySqlDate($row['issuedDateTime'], "Y-m-d H:i:s") : null;
       $this->issuedJobId = intval($row['issuedJobId']);
       $this->acknowledgedUserId = intval($row['acknowledgedUserId']);
-      $this->acknowledgedDateTime = Time::fromMySqlDate($row['acknowledgedDateTime'], "Y-m-d H:i:s");
+      $this->acknowledgedDateTime = $row['acknowledgedDateTime'] ? Time::fromMySqlDate($row['acknowledgedDateTime'], "Y-m-d H:i:s") : null;
+   }
+   
+   public function isIssued()
+   {
+      return ($this->issuedJobId != JobInfo::UNKNOWN_JOB_ID);
+   }
+   
+   public function isAcknowledged()
+   {
+      return ($this->isIssued() && ($this->acknowledgedUserId != UserInfo::UNKNOWN_EMPLOYEE_NUMBER));
+      
    }
 }
 

@@ -75,6 +75,7 @@ class Permission
                   new Permission(Permission::VIEW_PRINT_MANAGER,       "View print manager"),
                   new Permission(Permission::VIEW_REPORT,              "View reports"),
                   new Permission(Permission::VIEW_MAINTENANCE_LOG,     "View maintenance log"),
+                  new Permission(Permission::EDIT_MAINTENANCE_LOG,     "Edit maintenance log"),
                   new Permission(Permission::VIEW_MATERIAL,            "View materials"),
                   new Permission(Permission::EDIT_MATERIAL,            "Edit materials"),
                   new Permission(Permission::ISSUE_MATERIAL,           "Issue materials"),

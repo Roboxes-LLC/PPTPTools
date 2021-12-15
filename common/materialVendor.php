@@ -24,6 +24,20 @@ class MaterialVendor
       
       return ($materials);
    }
+   
+   public static function getMaterialVendor($vendorId)
+   {
+      $vendor = "";
+      
+      $vendors = MaterialVendor::getMaterialVendors();
+      
+      if (isset($vendors[$vendorId]))
+      {
+         $vendor = $vendors[$vendorId];
+      }
+      
+      return ($vendor);
+   }
  
    public static function getOptions($selectedVendorId)
    {
