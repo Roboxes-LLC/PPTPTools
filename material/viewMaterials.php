@@ -192,7 +192,7 @@ if (!Authentication::isAuthenticated())
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Material",    field:"materialDescription",             hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Material",    field:"materialPartNumber",              hozAlign:"left", headerFilter:true, visible:true},
             {title:"Vendor",      field:"vendorName",                      hozAlign:"left", headerFilter:true, visible:true},
             {title:"Heat",        field:"heatNumber",                      hozAlign:"left", headerFilter:true, visible:true},
             {title:"Quantity",    field:"quantity",                        hozAlign:"left", visible:true},

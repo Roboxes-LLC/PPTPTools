@@ -71,7 +71,15 @@ class MaterialTicket
       
       $materialTicketCode = MaterialTicket::getMaterialTicketCode($this->materialTicketId);
       
-      $material = Material::getMaterial($materialEntry->materialId);
+      $materialDescription = "";
+      if ($materialEntry->materialId != MaterialInfo::UNKNOWN_MATERIAL_ID)
+      {
+         $materialInfo = MaterialInfo::load($materialEntry->materialId);
+         if ($materialInfo)
+         {
+            $materialDescription = $materialInfo->description;
+         }
+      }
       
       $vendor = MaterialVendor::getMaterialVendor($materialEntry->vendorId);
       
@@ -105,7 +113,7 @@ class MaterialTicket
 <<<HEREDOC
       <div class="material-ticket flex-vertical">
          <div>
-            $material
+            $materialDescription
          </div>
          <div class="flex-horizontal">
             <div class="flex-vertical">
@@ -156,7 +164,15 @@ HEREDOC;
       
       $materialTicketCode = MaterialTicket::getMaterialTicketCode($materialEntryId);
       
-      $material = Material::getMaterial($materialEntry->materialId);
+      $materialDescription = "";
+      if ($materialEntry->materialId != MaterialInfo::UNKNOWN_MATERIAL_ID)
+      {
+         $materialInfo = MaterialInfo::load($materialEntry->materialId);
+         if ($materialInfo)
+         {
+            $materialDescription = $materialInfo->description;
+         }
+      }
       
       $vendor = MaterialVendor::getMaterialVendor($materialEntry->vendorId);
 
@@ -186,6 +202,8 @@ HEREDOC;
       
       $isoNumber = IsoInfo::getIsoNumber(IsoDoc::MATERIAL_TICKET);
       
+      $totalLength = $materialEntry->getTotalLength();
+      
       $file = fopen(MaterialTicket::LABEL_TEMPLATE_FILENAME, "r");
       
       if ($file)
@@ -207,7 +225,7 @@ HEREDOC;
                   
                case MaterialTicketLabelFields::MATERIAL:
                {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $material, $xml);
+                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialDescription, $xml);
                   break;
                }
                
@@ -231,7 +249,7 @@ HEREDOC;
                   
                case MaterialTicketLabelFields::QUANTITY:
                {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialEntry->quantity, $xml);
+                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $totalLength, $xml);
                   break;
                }
                   
@@ -298,7 +316,8 @@ if (isset($_GET["preview"]) &&
          <link rel="stylesheet" type="text/css" href="common.css"/>
          <link rel="stylesheet" type="text/css" href="materialTicket.css"/>
 
-         <script src="http://www.labelwriter.com/software/dls/sdk/js/DYMO.Label.Framework.3.0.js" type="text/javascript" charset="UTF-8"></script>
+         <!--script src="http://www.labelwriter.com/software/dls/sdk/js/DYMO.Label.Framework.3.0.js" type="text/javascript" charset="UTF-8"></script-->
+         <script src="../thirdParty/dymo/DYMO.Label.Framework.3.0.js" type="text/javascript" charset="UTF-8"></script>
          <script src="materialTicket.js"></script>
       </head>
       <body>

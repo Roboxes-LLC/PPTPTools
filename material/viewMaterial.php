@@ -400,7 +400,7 @@ if (!Authentication::isAuthenticated())
                   <div class="form-label">Material type</div>
                   <div class="flex-horizontal">
                      <select id="material-id-input" name="materialId" form="input-form" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
-                        <?php echo Material::getOptions(getMaterialEntry()->materialId); ?>
+                        <?php echo MaterialInfo::getOptions(getMaterialEntry()->materialId); ?>
                      </select>
                   </div>
                </div>
@@ -427,25 +427,38 @@ if (!Authentication::isAuthenticated())
                   <div class="form-label">Heat</div>
                   <div class="flex-vertical">
                      <div class="flex-horizontal">
-                        <input id="heat-number-input" type="text" name="heatNumber" form="input-form" value="<?php echo getMaterialEntry()->heatNumber; ?>" <?php echo getDisabled(MaterialInputField::HEAT); ?> />
+                        <input id="heat-number-input" type="text" style="width:100px;" name="heatNumber" form="input-form" value="<?php echo getMaterialEntry()->heatNumber; ?>" <?php echo getDisabled(MaterialInputField::HEAT); ?> />
                      </div>
                   </div>
                </div>
                
-               <div class="form-item">
-                  <div class="form-label">Quantity</div>
-                  <div class="flex-vertical">
-                     <div class="flex-horizontal">
-                        <input id="quantity-input" type="text" name="quantity" form="input-form" value="<?php echo getMaterialEntry()->quantity; ?>" <?php echo getDisabled(MaterialInputField::QUANTITY); ?> />
+               <div class="flex-horizontal">
+               
+                  <div class="form-item" style="padding-right: 25px;">
+                     <div class="form-label">Quantity</div>
+                     <div class="flex-vertical">
+                        <div class="flex-horizontal">
+                           <input id="quantity-input" type="text" style="width:50px;" name="quantity" form="input-form" value="<?php echo getMaterialEntry()->quantity; ?>" <?php echo getDisabled(MaterialInputField::QUANTITY); ?> />
+                        </div>
                      </div>
-                  </div>
-               </div>                    
+                  </div>                    
+                  
+                  <!-- div class="form-item">
+                     <div class="form-label">Feet</div>
+                     <div class="flex-vertical">
+                        <div class="flex-horizontal">
+                           <input id="feet-input" type="text" style="width:50px;" value="<?php echo getMaterialEntry()->getTotalLength(); ?>" disabled/>
+                        </div>
+                     </div>
+                  </div-->
+                  
+               </div>
                
                <div class="form-item">
                   <div class="form-label">Pieces</div>
                   <div class="flex-vertical">
                      <div class="flex-horizontal">
-                        <input id="pieces-input" type="text" name="pieces" form="input-form" value="<?php echo getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
+                        <input id="pieces-input" type="text" style="width:50px;" name="pieces" form="input-form" value="<?php echo getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
                      </div>
                   </div>
                </div>

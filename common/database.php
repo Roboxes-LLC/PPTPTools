@@ -1815,7 +1815,7 @@ class PPTPDatabase extends MySqlDatabase
    
    public function getMaterials()
    {
-      $query = "SELECT * FROM material;";
+      $query = "SELECT * FROM material ORDER BY partNumber ASC;";
       
       $result = $this->query($query);
       

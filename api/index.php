@@ -3099,7 +3099,6 @@ $router->add("materialData", function($params) {
    {
       $dbaseResult = $database->getMaterialEntries($startDate, $endDate);
       
-      $materials = Material::getMaterials();
       $vendors = MaterialVendor::getMaterialVendors();
       
       foreach ($dbaseResult as $row)
@@ -3107,10 +3106,14 @@ $router->add("materialData", function($params) {
          $materialEntry = new MaterialEntry();
          $materialEntry->initialize($row);
 
-         if (($materialEntry->materialId != Material::UNKNOWN_MATERIAL_ID) &&
-             isset($materials[$materialEntry->materialId]))
+         if ($materialEntry->materialId != MaterialInfo::UNKNOWN_MATERIAL_ID)
          {
-            $materialEntry->materialDescription = $materials[$materialEntry->materialId];
+            $materialInfo = MaterialInfo::load($materialEntry->materialId);
+            if ($materialInfo)
+            {
+               $materialEntry->materialPartNumber = $materialInfo->partNumber;
+               $materialEntry->materialDescription = $materialInfo->description;
+            }
          }
          
          if (($materialEntry->vendorId != MaterialVendor::UNKNOWN_MATERIAL_VENDOR_ID) &&

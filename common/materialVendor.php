@@ -18,11 +18,11 @@ class MaterialVendor
           
          while ($result && ($row = $result->fetch_assoc()))
          {
-            $materials[intval($row["vendorId"])] = $row["name"];
+            $vendors[intval($row["vendorId"])] = $row["name"];
          }
       }
       
-      return ($materials);
+      return ($vendors);
    }
    
    public static function getMaterialVendor($vendorId)

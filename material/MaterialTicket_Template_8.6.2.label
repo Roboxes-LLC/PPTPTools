@@ -198,7 +198,7 @@
 				<Element>
 					<String xml:space="preserve">Vendor: </String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="12" Bold="True" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
@@ -206,14 +206,14 @@
 					<String xml:space="preserve">%vendor
 </String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="12" Bold="False" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
 				<Element>
 					<String xml:space="preserve">Tag</String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="12" Bold="True" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
@@ -221,14 +221,14 @@
 					<String xml:space="preserve">: %tag
 </String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="12" Bold="False" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
 				<Element>
 					<String xml:space="preserve">Heat</String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="12" Bold="True" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
@@ -236,36 +236,36 @@
 					<String xml:space="preserve">: %heat
 </String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="12" Bold="False" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
 				<Element>
 					<String xml:space="preserve">Quantity</String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="12" Bold="True" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
 				<Element>
-					<String xml:space="preserve">: %quantity
+					<String xml:space="preserve">: %quantity ft.
 </String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="12" Bold="False" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
 				<Element>
 					<String xml:space="preserve">Pcs</String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="12" Bold="True" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
 				<Element>
 					<String xml:space="preserve">: %pieces</String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="12" Bold="False" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>

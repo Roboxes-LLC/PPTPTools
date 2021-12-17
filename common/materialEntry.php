@@ -1,7 +1,7 @@
 <?php
 
 require_once 'jobInfo.php';
-require_once 'material.php';
+require_once 'materialInfo.php';
 require_once 'materialVendor.php';
 require_once 'userInfo.php';
 
@@ -31,7 +31,7 @@ class MaterialEntry
    public function __construct()
    {
       $this->materialEntryId = MaterialEntry::UNKNOWN_ENTRY_ID;
-      $this->materialId = Material::UNKNOWN_MATERIAL_ID;
+      $this->materialId = MaterialInfo::UNKNOWN_MATERIAL_ID;
       $this->vendorId = MaterialVendor::UNKNOWN_MATERIAL_VENDOR_ID;
       $this->tagNumber = MaterialEntry::UNKNOWN_TAG_NUMBER;
       $this->heatNumber = MaterialEntry::UNKNOWN_HEAT_NUMBER;
@@ -168,6 +168,19 @@ class MaterialEntry
       return ($this->isIssued() && ($this->acknowledgedUserId != UserInfo::UNKNOWN_EMPLOYEE_NUMBER));
       
    }
+   
+   public function getTotalLength()
+   {
+      $length = 0;
+      
+      if (($this->materialId != MaterialInfo::UNKNOWN_MATERIAL_ID) &&
+          ($materialInfo = MaterialInfo::load($this->materialId)))
+      {
+         $length = ($this->quantity * $materialInfo->length);
+      }
+      
+      return ($length);
+   }
 }
 
 /*
@@ -176,6 +189,7 @@ if (isset($_GET["materialEntryId"]))
    $materialEntryId = intval($_GET["materialEntryId"]);
    
    $materialEntry = MaterialEntry::load($materialEntryId);
+   $materialEntry->length = $materialEntry->getTotalLength();
  
    if ($materialEntry)
    {
