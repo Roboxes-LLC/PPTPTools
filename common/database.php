@@ -1813,10 +1813,16 @@ class PPTPDatabase extends MySqlDatabase
    //                                 Material
    // **************************************************************************
    
-   public function getMaterials()
+   public function getMaterials($materialType = MaterialType::UNKNOWN)
    {
-      $query = "SELECT * FROM material ORDER BY partNumber ASC;";
+      $materialTypeClause = "";
+      if ($materialType != MaterialType::UNKNOWN)
+      {
+         $materialTypeClause = "WHERE materialType = $materialType";
+      }
       
+      $query = "SELECT * FROM material $materialTypeClause ORDER BY partNumber ASC;";
+
       $result = $this->query($query);
       
       return ($result);
