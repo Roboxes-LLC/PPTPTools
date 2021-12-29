@@ -139,6 +139,16 @@ function onJobNumberChange()
    reloadWCNumbers();
 }
 
+function recalculateQuantity()
+{
+   let materialId = document.querySelector('#material-id-input').value;
+   let length = materialLengths[materialId];
+   let pieces = document.querySelector('#pieces-input').value;
+   let quantity = length * pieces;
+   
+   document.querySelector('#quantity-input').value = quantity;
+}
+
 function onRevokeButton(materialEntryId)
 {
    if (confirm("Are you sure you want to revoke this material?"))

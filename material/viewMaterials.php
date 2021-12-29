@@ -195,8 +195,9 @@ if (!Authentication::isAuthenticated())
             {title:"Material",    field:"materialPartNumber",              hozAlign:"left", headerFilter:true, visible:true},
             {title:"Vendor",      field:"vendorName",                      hozAlign:"left", headerFilter:true, visible:true},
             {title:"Heat",        field:"heatNumber",                      hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Length",      field:"length",                          hozAlign:"left", visible:true},
+            {title:"Pieces",      field:"pieces",                          hozAlign:"left", visible:true},            
             {title:"Quantity",    field:"quantity",                        hozAlign:"left", visible:true},
-            {title:"Pieces",      field:"pieces",                          hozAlign:"left", visible:true},
             {title:"",            field:"issue",                                            visible:hasIssuePermission,
                formatter:function(cell, formatterParams, onRendered){
                   let isIssued = cell.getRow().getData().isIssued;                  

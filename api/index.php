@@ -3113,6 +3113,8 @@ $router->add("materialData", function($params) {
             {
                $materialEntry->materialPartNumber = $materialInfo->partNumber;
                $materialEntry->materialDescription = $materialInfo->description;
+               $materialEntry->length = $materialInfo->length;
+               $materialEntry->quantity = $materialEntry->getQuantity();
             }
          }
          
@@ -3184,7 +3186,6 @@ $router->add("saveMaterialEntry", function($params) {
           isset($params["vendorId"]) &&
           isset($params["tagNumber"]) &&
           isset($params["heatNumber"]) &&
-          isset($params["quantity"]) &&
           isset($params["pieces"]) &&
           isset($params["enteredUserId"]))
       {
@@ -3193,7 +3194,6 @@ $router->add("saveMaterialEntry", function($params) {
          $materialEntry->vendorId = $params->getInt("vendorId");
          $materialEntry->tagNumber = $params->getInt("tagNumber");
          $materialEntry->heatNumber = $params->getInt("heatNumber");
-         $materialEntry->quantity = $params->getInt("quantity");
          $materialEntry->pieces = $params->getInt("pieces");
          $materialEntry->enteredUserId = $params->getInt("enteredUserId");
          

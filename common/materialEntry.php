@@ -18,7 +18,6 @@ class MaterialEntry
    public $vendorId;
    public $tagNumber;
    public $heatNumber;
-   public $quantity;   
    public $pieces;
    public $enteredUserId;
    public $enteredDateTime;
@@ -34,8 +33,7 @@ class MaterialEntry
       $this->materialId = MaterialInfo::UNKNOWN_MATERIAL_ID;
       $this->vendorId = MaterialVendor::UNKNOWN_MATERIAL_VENDOR_ID;
       $this->tagNumber = MaterialEntry::UNKNOWN_TAG_NUMBER;
-      $this->heatNumber = MaterialEntry::UNKNOWN_HEAT_NUMBER;
-      $this->quantity = 0;   
+      $this->heatNumber = MaterialEntry::UNKNOWN_HEAT_NUMBER; 
       $this->pieces = 0;
       $this->enteredUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->enteredDateTime = null;
@@ -147,7 +145,6 @@ class MaterialEntry
       $this->vendorId = intval($row['vendorId']);
       $this->tagNumber = intval($row['tagNumber']);
       $this->heatNumber = intval($row['heatNumber']);
-      $this->quantity = intval($row['quantity']);
       $this->pieces = intval($row['pieces']);
       $this->enteredUserId = intval($row['enteredUserId']);
       $this->enteredDateTime = $row['enteredDateTime'] ? Time::fromMySqlDate($row['enteredDateTime'], "Y-m-d H:i:s") : null;
@@ -169,14 +166,14 @@ class MaterialEntry
       
    }
    
-   public function getTotalLength()
+   public function getQuantity()
    {
       $length = 0;
       
       if (($this->materialId != MaterialInfo::UNKNOWN_MATERIAL_ID) &&
           ($materialInfo = MaterialInfo::load($this->materialId)))
       {
-         $length = ($this->quantity * $materialInfo->length);
+         $length = ($this->pieces * $materialInfo->length);
       }
       
       return ($length);

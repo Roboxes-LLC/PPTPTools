@@ -120,7 +120,7 @@ class MaterialTicket
                <div><b>Vendor: </b>$vendor</div>               
                <div><b>Tag: </b>$materialEntry->tagNumber</div> 
                <div><b>Heat: </b>$materialEntry->heatNumber</div>
-               <div><b>Quantity: </b>$materialEntry->quantity</div>
+               <div><b>Quantity: </b>$materialEntry->getQuantity()</div>
                <div><b>Pieces: </b>$materialEntry->pieces</div> 
             </div>
             <div class="flex-vertical">
@@ -202,8 +202,6 @@ HEREDOC;
       
       $isoNumber = IsoInfo::getIsoNumber(IsoDoc::MATERIAL_TICKET);
       
-      $totalLength = $materialEntry->getTotalLength();
-      
       $file = fopen(MaterialTicket::LABEL_TEMPLATE_FILENAME, "r");
       
       if ($file)
@@ -249,7 +247,7 @@ HEREDOC;
                   
                case MaterialTicketLabelFields::QUANTITY:
                {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $totalLength, $xml);
+                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialEntry->getQuantity(), $xml);
                   break;
                }
                   

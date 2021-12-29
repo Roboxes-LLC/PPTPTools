@@ -104,6 +104,36 @@
        return ($html);
     }
     
+    public static function getJavascriptLengthArray()
+    {
+       $html = "{";
+    
+       $database = PPTPDatabase::getInstance();
+       
+       if ($database && ($database->isConnected()))
+       {
+          $result = $database->getMaterials();
+          
+          $commaRequired = false;
+          
+          while ($result && ($row = $result->fetch_assoc()))
+          {
+             $materialInfo = new MaterialInfo();
+             
+             $materialInfo->initialize($row);
+           
+             $html .= ($commaRequired ? ", " : "");
+             $html .= "$materialInfo->materialId:$materialInfo->length";
+             
+             $commaRequired = true;
+          }
+       }
+       
+       $html .= "}";
+
+       return ($html);
+    }
+    
     private function initialize($row)
     {
        $this->materialId = intval($row['materialId']);

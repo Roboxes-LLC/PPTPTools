@@ -142,6 +142,7 @@ function isEditable($field)
       case MaterialInputField::ISSUED_USER:
       case MaterialInputField::ACKNOWLEDGED_DATE:
       case MaterialInputField::ACKNOWLEDGED_USER:
+      case MaterialInputField::QUANTITY:         
       {
          $isEditable = false;
          break;
@@ -151,7 +152,6 @@ function isEditable($field)
       case MaterialInputField::VENDOR:
       case MaterialInputField::TAG:
       case MaterialInputField::HEAT:
-      case MaterialInputField::QUANTITY:
       case MaterialInputField::PIECES:
       {
          $isEditable = (($view == View::NEW_MATERIAL) ||
@@ -399,7 +399,7 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label">Material type</div>
                   <div class="flex-horizontal">
-                     <select id="material-id-input" name="materialId" form="input-form" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
+                     <select id="material-id-input" name="materialId" form="input-form" oninput="recalculateQuantity()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
                         <?php echo MaterialInfo::getOptions(getMaterialEntry()->materialId); ?>
                      </select>
                   </div>
@@ -432,36 +432,23 @@ if (!Authentication::isAuthenticated())
                   </div>
                </div>
                
-               <div class="flex-horizontal">
-               
-                  <div class="form-item" style="padding-right: 25px;">
-                     <div class="form-label">Quantity</div>
-                     <div class="flex-vertical">
-                        <div class="flex-horizontal">
-                           <input id="quantity-input" type="text" style="width:50px;" name="quantity" form="input-form" value="<?php echo getMaterialEntry()->quantity; ?>" <?php echo getDisabled(MaterialInputField::QUANTITY); ?> />
-                        </div>
-                     </div>
-                  </div>                    
-                  
-                  <!-- div class="form-item">
-                     <div class="form-label">Feet</div>
-                     <div class="flex-vertical">
-                        <div class="flex-horizontal">
-                           <input id="feet-input" type="text" style="width:50px;" value="<?php echo getMaterialEntry()->getTotalLength(); ?>" disabled/>
-                        </div>
-                     </div>
-                  </div-->
-                  
-               </div>
-               
                <div class="form-item">
                   <div class="form-label">Pieces</div>
                   <div class="flex-vertical">
                      <div class="flex-horizontal">
-                        <input id="pieces-input" type="text" style="width:50px;" name="pieces" form="input-form" value="<?php echo getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
+                        <input id="pieces-input" type="text" style="width:50px;" name="pieces" form="input-form" oninput="recalculateQuantity()" value="<?php echo getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
                      </div>
                   </div>
                </div>
+               
+               <div class="form-item">
+                  <div class="form-label">Quantity</div>
+                  <div class="flex-vertical">
+                     <div class="flex-horizontal">
+                        <input id="quantity-input" type="text" style="width:50px;" form="input-form" value="<?php echo getMaterialEntry()->getQuantity() ?>" <?php echo getDisabled(MaterialInputField::QUANTITY); ?> />
+                     </div>
+                  </div>
+               </div>                    
                
             </div>
             
@@ -573,6 +560,9 @@ if (!Authentication::isAuthenticated())
 
       // Store the initial state of the form, for change detection.
       setInitialFormState("input-form");
+      
+      // Store an array of material lengths.
+      var materialLengths = <?php echo MaterialInfo::getJavascriptLengthArray() ?>;
 
    </script>
 
