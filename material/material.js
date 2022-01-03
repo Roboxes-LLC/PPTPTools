@@ -131,12 +131,13 @@ function onDeleteMaterialEntry(materialEntryId)
    }
 }
 
-function onJobNumberChange()
+function onWCNumberChange()
 {
-   clear("wc-number-input");
+   clear("job-number-input");
+   enable("job-number-input");
       
-   // Populate WC numbers based on selected job number.
-   reloadWCNumbers();
+   // Populate job numbers based on selected WC number.
+   reloadJobNumbers();
 }
 
 function recalculateQuantity()
@@ -233,15 +234,15 @@ function onUnacknowledge(materialEntryId)
    xhttp.send(); 
 }
 
-function reloadWCNumbers()
+function reloadJobNumbers()
 {
-   jobNumber = document.getElementById("job-number-input").value;
+   wcNumber = document.getElementById("wc-number-input").value;
    
    // AJAX call to populate WC numbers based on selected job number.
-   requestUrl = "../api/wcNumbers/";
-   if (jobNumber != 0)
+   requestUrl = "../api/jobNumbers/";
+   if (wcNumber != 0)
    {
-      requestUrl += "?jobNumber=" + jobNumber;
+      requestUrl += "?wcNumber=" + wcNumber;
    }
    
    var xhttp = new XMLHttpRequest();
@@ -255,11 +256,11 @@ function reloadWCNumbers()
             
             if (json.success == true)
             {
-               updateWcOptions(json.wcNumbers);               
+               updateJobOptions(json.jobNumbers);               
             }
             else
             {
-               console.log("API call to retrieve WC numbers failed.");
+               console.log("API call to retrieve job numbers failed.");
             }
          }
          catch (expection)
@@ -273,20 +274,20 @@ function reloadWCNumbers()
    xhttp.send(); 
 }
 
-function updateWcOptions(wcNumbers)
+function updateJobOptions(jobNumbers)
 {
-   element = document.getElementById("wc-number-input");
+   element = document.getElementById("job-number-input");
    
    while (element.firstChild)
    {
       element.removeChild(element.firstChild);
    }
 
-   for (var wcNumber of wcNumbers)
+   for (var jobNumber of jobNumbers)
    {
       var option = document.createElement('option');
-      option.innerHTML = wcNumber;
-      option.value = wcNumber;
+      option.innerHTML = jobNumber;
+      option.value = jobNumber;
       element.appendChild(option);
    }
    

@@ -26,11 +26,12 @@ abstract class MaterialInputField
    const PIECES = 6;
    const ISSUED_USER = 7;
    const ISSUED_DATE = 8;
-   const JOB_NUMBER = 9;
+   const RECEIVED_DATE = 9;
    const WC_NUMBER = 10;
-   const ACKNOWLEDGED_USER = 11;
-   const ACKNOWLEDGED_DATE = 12;
-   const LAST = 13;
+   const JOB_NUMBER = 11;
+   const ACKNOWLEDGED_USER = 12;
+   const ACKNOWLEDGED_DATE = 13;
+   const LAST = 14;
    const COUNT = MaterialInputField::LAST - MaterialInputField::FIRST;
 }
 
@@ -153,16 +154,23 @@ function isEditable($field)
       case MaterialInputField::TAG:
       case MaterialInputField::HEAT:
       case MaterialInputField::PIECES:
+      case MaterialInputField::RECEIVED_DATE:
       {
          $isEditable = (($view == View::NEW_MATERIAL) ||
                         ($view == View::EDIT_MATERIAL));
          break;
       }
       
-      case MaterialInputField::JOB_NUMBER:
       case MaterialInputField::WC_NUMBER:
       {
          $isEditable = ($view == View::ISSUE_MATERIAL);
+         break;
+      }
+      
+      case MaterialInputField::JOB_NUMBER:
+      {
+         $isEditable = (($view == View::ISSUE_MATERIAL) &&
+                        (getIssuedJobNumber() != JobInfo::UNKNOWN_JOB_NUMBER));
          break;
       }
          
@@ -246,6 +254,21 @@ function getEntryDate()
    }
    
    return ($entryDate);
+}
+
+function getReceivedDate()
+{
+   $receivedDate = Time::now(Time::$javascriptDateFormat);
+   
+   $materialEntry = getMaterialEntry();
+   
+   if ($materialEntry)
+   {
+      $dateTime = new DateTime($materialEntry->receivedDateTime, new DateTimeZone('America/New_York'));
+      $receivedDate = $dateTime->format(Time::$javascriptDateFormat);
+   }
+   
+   return ($receivedDate);
 }
 
 function getIssuedDate()
@@ -454,7 +477,17 @@ if (!Authentication::isAuthenticated())
             
             <div class="content flex-vertical flex-top flex-left" style="margin-right: 50px;">
             
-               <div class="form-section-header">Issue</div>
+               <div class="form-section-header">Received</div>
+                           
+               <div class="form-item" style="padding-right: 25px;">
+                  <div class="form-label">Received Date</div>
+                  <div class="flex-horizontal">
+                     <input id="received-date-input" type="date" name="receivedDate" form="input-form" oninput="" value="<?php echo getReceivedDate(); ?>" <?php echo getDisabled(MaterialInputField::RECEIVED_DATE); ?>>
+                  </div>
+               </div>
+            
+            
+               <div class="form-section-header">Issued</div>
                            
                <div class="form-item" style="padding-right: 25px;">
                   <div class="form-label">Issued Date</div>
@@ -471,26 +504,26 @@ if (!Authentication::isAuthenticated())
                      </select>
                   </div>
                </div>
+               
+               <div class="form-item">
+                  <div class="form-label">WC #</div>
+                  <div class="flex-horizontal">
+                     <select id="wc-number-input" name="wcNumber" form="input-form" oninput="onWCNumberChange()" <?php echo getDisabled(MaterialInputField::WC_NUMBER); ?>>
+                        <?php echo JobInfo::getWcNumberOptions(JobInfo::UNKNOWN_JOB_ID, getIssuedWcNumber()); ?>
+                     </select>
+                  </div>
+               </div>               
                                  
                <div class="form-item">
                   <div class="form-label">Job #</div>
                   <div class="flex-horizontal">
-                     <select id="job-number-input" name="jobNumber" form="input-form" oninput="onJobNumberChange()" <?php echo getDisabled(MaterialInputField::JOB_NUMBER); ?>>
+                     <select id="job-number-input" name="jobNumber" form="input-form" <?php echo getDisabled(MaterialInputField::JOB_NUMBER); ?>>
                         <?php echo JobInfo::getJobNumberOptions(getIssuedJobNumber(), true, true); ?>
                      </select>
                   </div>
                </div>
-         
-               <div class="form-item">
-                  <div class="form-label">WC #</div>
-                  <div class="flex-horizontal">
-                     <select id="wc-number-input" name="wcNumber" form="input-form" <?php echo getDisabled(MaterialInputField::WC_NUMBER); ?>>
-                        <?php echo JobInfo::getWcNumberOptions(JobInfo::UNKNOWN_JOB_ID, getIssuedWcNumber()); ?>
-                     </select>
-                  </div>
-               </div>
                
-               <div class="form-section-header">Acknowledge</div>
+               <div class="form-section-header">Acknowledged</div>
                            
                <div class="form-item" style="padding-right: 25px;">
                   <div class="form-label-long">Acknowledged Date</div>

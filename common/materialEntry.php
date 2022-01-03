@@ -5,6 +5,49 @@ require_once 'materialInfo.php';
 require_once 'materialVendor.php';
 require_once 'userInfo.php';
 
+abstract class MaterialEntryStatus
+{
+   const FIRST = 0;
+   const UNKNOWN = MaterialEntryStatus::FIRST;
+   const RECEIVED = 1;
+   const ISSUED = 2;
+   const ACKNOWLEDGED = 3;
+   const LAST = 4;
+   const COUNT = MaterialEntryStatus::LAST - MaterialEntryStatus::FIRST;
+   
+   public static $VALUES = array(MaterialEntryStatus::RECEIVED, MaterialEntryStatus::ISSUED, MaterialEntryStatus::ACKNOWLEDGED);
+   
+   public static function getLabel($materialEntryStatus)
+   {
+      $labels = array("---", "Received", "Issued", "Acknowledged");
+      
+      return ($labels[$materialEntryStatus]);
+   }
+   
+   public static function getOptions($selectedStatus, $includeAll = false)
+   {
+      $html = "<option style=\"display:none\">";
+      
+      if ($includeAll)
+      {
+         $all = MaterialEntryStatus::UNKNOWN;
+         $label = "All";
+         $selected = ($selectedStatus == $all) ? "selected" : "";
+         $html .= "<option value=\"$all\" $selected>$label</option>";
+      }
+      
+      foreach (MaterialEntryStatus::$VALUES as $materialEntryStatus)
+      {
+         $selected = ($materialEntryStatus == $selectedStatus) ? "selected" : "";
+         $label = MaterialEntryStatus::getLabel($materialEntryStatus);
+         
+         $html .= "<option value=\"$materialEntryStatus\" $selected>$label</option>";
+      }
+      
+      return ($html);
+   }
+}
+
 class MaterialEntry
 {
    const UNKNOWN_ENTRY_ID = 0;
@@ -21,6 +64,7 @@ class MaterialEntry
    public $pieces;
    public $enteredUserId;
    public $enteredDateTime;
+   public $receivedDateTime;
    public $issuedUserId;
    public $issuedDateTime;
    public $issuedJobId;
@@ -37,6 +81,7 @@ class MaterialEntry
       $this->pieces = 0;
       $this->enteredUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->enteredDateTime = null;
+      $this->receivedDateTime = null;
       $this->issuedUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->issuedDateTime = null;
       $this->issuedJobId = JobInfo::UNKNOWN_JOB_ID;
@@ -148,6 +193,7 @@ class MaterialEntry
       $this->pieces = intval($row['pieces']);
       $this->enteredUserId = intval($row['enteredUserId']);
       $this->enteredDateTime = $row['enteredDateTime'] ? Time::fromMySqlDate($row['enteredDateTime'], "Y-m-d H:i:s") : null;
+      $this->receivedDateTime = $row['receivedDateTime'] ? Time::fromMySqlDate($row['receivedDateTime'], "Y-m-d H:i:s") : null;
       $this->issuedUserId = intval($row['issuedUserId']);
       $this->issuedDateTime = $row['issuedDateTime'] ? Time::fromMySqlDate($row['issuedDateTime'], "Y-m-d H:i:s") : null;
       $this->issuedJobId = intval($row['issuedJobId']);

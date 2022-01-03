@@ -553,6 +553,40 @@ $router->add("wcNumbers", function($params) {
    echo json_encode($result);
 });
 
+$router->add("jobNumbers", function($params) {
+   $result = new stdClass();
+   
+   $database = PPTPDatabase::getInstance();
+   $dbaseResult = null;
+   
+   if (isset($params["wcNumber"]))
+   {
+      $dbaseResult = $database->getActiveJobs(intval($params["wcNumber"]));
+   }
+   else
+   {
+      $dbaseResult = $database->getActiveJobs();
+   }
+   
+   if ($dbaseResult)
+   {
+      $result->success = true;
+      $result->jobNumbers = array();
+      
+      while ($row = $dbaseResult->fetch_assoc())
+      {
+         $result->jobNumbers[] = $row["jobNumber"];
+      }
+   }
+   else
+   {
+      $result->status = false;
+      $result->error = "No work centers found.";
+   }
+   
+   echo json_encode($result);
+});
+
 $router->add("users", function($params) {
    $result = new stdClass();
    
@@ -3080,9 +3114,15 @@ $router->add("deleteMaintenanceEntry", function($params) {
 $router->add("materialData", function($params) {
    $result = array();
    
+   $materialEntryStatus = MaterialEntryStatus::UNKNOWN;
    $startDate = Time::startOfDay(Time::now("Y-m-d"));
    $endDate = Time::endOfDay(Time::now("Y-m-d"));
    
+   if (isset($params["status"]))
+   {
+      $materialEntryStatus = intval($params["status"]);
+   }
+      
    if (isset($params["startDate"]))
    {
       $startDate = Time::startOfDay($params["startDate"]);
@@ -3097,7 +3137,7 @@ $router->add("materialData", function($params) {
    
    if ($database && $database->isConnected())
    {
-      $dbaseResult = $database->getMaterialEntries($startDate, $endDate);
+      $dbaseResult = $database->getMaterialEntries($materialEntryStatus, $startDate, $endDate);
       
       $vendors = MaterialVendor::getMaterialVendors();
       
@@ -3113,6 +3153,9 @@ $router->add("materialData", function($params) {
             {
                $materialEntry->materialPartNumber = $materialInfo->partNumber;
                $materialEntry->materialDescription = $materialInfo->description;
+               $materialEntry->materialType = $materialInfo->materialType;
+               $materialEntry->materialTypeLabel = MaterialType::getLabel($materialInfo->materialType);
+               $materialEntry->size = $materialInfo->size;
                $materialEntry->length = $materialInfo->length;
                $materialEntry->quantity = $materialEntry->getQuantity();
             }
@@ -3187,7 +3230,8 @@ $router->add("saveMaterialEntry", function($params) {
           isset($params["tagNumber"]) &&
           isset($params["heatNumber"]) &&
           isset($params["pieces"]) &&
-          isset($params["enteredUserId"]))
+          isset($params["enteredUserId"]) &&
+          isset($params["receivedDate"]))
       {
          // Required fields.
          $materialEntry->materialId = $params->getInt("materialId");
@@ -3196,6 +3240,7 @@ $router->add("saveMaterialEntry", function($params) {
          $materialEntry->heatNumber = $params->getInt("heatNumber");
          $materialEntry->pieces = $params->getInt("pieces");
          $materialEntry->enteredUserId = $params->getInt("enteredUserId");
+         $materialEntry->receivedDateTime = Time::startOfDay($params->get("receivedDate"));
          
          if ($materialEntry->materialEntryId == MaterialEntry::UNKNOWN_ENTRY_ID)
          {

@@ -7,6 +7,18 @@ require_once '../common/materialEntry.php';
 require_once '../common/menu.php';
 require_once '../common/version.php';
 
+function getFilterStatus()
+{
+   $materialEntryStatus = MaterialEntryStatus::UNKNOWN;
+   
+   if (isset($_SESSION["material.filter.status"]))
+   {
+      $materialEntryStatus = intval($_SESSION["material.filter.status"]);
+   }
+   
+   return ($materialEntryStatus);
+}
+
 function getFilterStartDate()
 {
    $startDate = Time::now("Y-m-d");
@@ -110,6 +122,10 @@ if (!Authentication::isAuthenticated())
          <br>
          
          <div class="flex-horizontal flex-v-center flex-left">
+            <div style="white-space: nowrap">Status</div>
+            &nbsp;
+            <select id="status-filter"><?php echo MaterialEntryStatus::getOptions(getFilterStatus(), true)?></select>
+            &nbsp;&nbsp;
             <div style="white-space: nowrap">Start date</div>
             &nbsp;
             <input id="start-date-filter" type="date" value="<?php echo getFilterStartDate()?>">
@@ -121,6 +137,7 @@ if (!Authentication::isAuthenticated())
             <button id="today-button" class="small-button">Today</button>
             &nbsp;&nbsp;
             <button id="yesterday-button" class="small-button">Yesterday</button>
+            &nbsp;&nbsp;
          </div>
          
          <br>
@@ -152,6 +169,7 @@ if (!Authentication::isAuthenticated())
       {
          
          var params = new Object();
+         params.status =  document.getElementById("status-filter").value;
          params.startDate =  document.getElementById("start-date-filter").value;
          params.endDate =  document.getElementById("end-date-filter").value;
 
@@ -170,7 +188,6 @@ if (!Authentication::isAuthenticated())
       var table = new Tabulator("#material-table", {
          maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
          layout:"fitData",
-         responsiveLayout:"hide", // enable responsive layouts
          cellVertAlign:"middle",
          ajaxURL:url,
          ajaxParams:params,
@@ -185,7 +202,7 @@ if (!Authentication::isAuthenticated())
                   return (cell.getValue());
                }  
             },                   
-            {title:"Entry Date",  field:"enteredDateTime",       hozAlign:"left",
+            {title:"Received",    field:"receivedDateTime",       hozAlign:"left",
                formatter:"datetime",  // Requires moment.js 
                formatterParams:{
                   outputFormat:"MM/DD/YYYY",
@@ -194,22 +211,36 @@ if (!Authentication::isAuthenticated())
             },
             {title:"Material",    field:"materialPartNumber",              hozAlign:"left", headerFilter:true, visible:true},
             {title:"Vendor",      field:"vendorName",                      hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Type",        field:"materialTypeLabel",               hozAlign:"left", headerFilter:true, visible:true},
             {title:"Heat",        field:"heatNumber",                      hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Length",      field:"length",                          hozAlign:"left", visible:true},
+            {title:"Size",        field:"size",                            hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Length",      field:"length",                          hozAlign:"left", headerFilter:true, visible:true},
             {title:"Pieces",      field:"pieces",                          hozAlign:"left", visible:true},            
             {title:"Quantity",    field:"quantity",                        hozAlign:"left", visible:true},
-            {title:"",            field:"issue",                                            visible:hasIssuePermission,
+            {title:"",      field:"issue",                                                               visible:hasIssuePermission,
                formatter:function(cell, formatterParams, onRendered){
                   let isIssued = cell.getRow().getData().isIssued;                  
                   let buttonText = isIssued ? "Revoke" : "Issue";
-                  
+            
                   let disabled = hasIssuePermission ? "" : "disabled";
-               
+         
                   return (`<button class=\"small-button accent-button\" style=\"width:50px;\" ${disabled}>${buttonText}</button>`);
                }
+            },            
+            {
+               title:"Issued",
+               columns:[
+                  {title:"Issued Date", field:"issuedDateTime",                  hozAlign:"left",
+                     formatter:"datetime",  // Requires moment.js 
+                     formatterParams:{
+                        outputFormat:"MM/DD/YYYY",
+                        invalidPlaceholder:""
+                     }
+                  },
+                  {title:"Job #",       field:"issuedJobNumber",                 hozAlign:"left", headerFilter:true, visible:true},
+                  {title:"WC #",        field:"issuedWCNumber",                  hozAlign:"left", headerFilter:true, visible:true}
+               ]
             },
-            {title:"Job #",       field:"issuedJobNumber",                 hozAlign:"left", headerFilter:true, visible:true},
-            {title:"WC #",        field:"issuedWCNumber",                  hozAlign:"left", headerFilter:true, visible:true},
             {title:"Ack.",        field:"isAcknowledged",                  hozAlign:"left", visible:true,
                formatter:function(cell, formatterParams, onRendered){
                   let isIssued = cell.getRow().getData().isIssued;
@@ -281,7 +312,8 @@ if (!Authentication::isAuthenticated())
          {
             var filterId = event.srcElement.id;
    
-            if ((filterId == "start-date-filter") ||
+            if ((filterId == "status-filter") ||
+                (filterId == "start-date-filter") ||
                 (filterId == "end-date-filter"))
             {
                var url = getTableQuery();
@@ -295,6 +327,10 @@ if (!Authentication::isAuthenticated())
                   // Handle error loading data
                });
 
+               if (filterId == "status-filter")
+               {
+                  setSession("material.filter.status", document.getElementById("status-filter").value);
+               }
                if (filterId == "start-date-filter")
                {
                   setSession("material.filter.startDate", document.getElementById("start-date-filter").value);
@@ -356,6 +392,7 @@ if (!Authentication::isAuthenticated())
       }
 
       // Setup event handling on all DOM elements.
+      document.getElementById("status-filter").addEventListener("change", updateFilter);
       document.getElementById("start-date-filter").addEventListener("change", updateFilter);      
       document.getElementById("end-date-filter").addEventListener("change", updateFilter);
       document.getElementById("today-button").onclick = filterToday;

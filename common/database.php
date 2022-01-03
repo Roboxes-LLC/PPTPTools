@@ -1872,12 +1872,26 @@ class PPTPDatabase extends MySqlDatabase
       return ($result);
    }
    
-   public function getMaterialEntries($startDate, $endDate)
+   public function getMaterialEntries($materialEntryStatus, $startDate, $endDate)
    {
+      $statusClause = "";
+      if ($materialEntryStatus == MaterialEntryStatus::RECEIVED)
+      {
+         $statusClause = "AND issuedDateTime IS NULL";
+      }
+      else if ($materialEntryStatus == MaterialEntryStatus::ISSUED)
+      {
+         $statusClause = "AND issuedDateTime IS NOT NULL AND acknowledgedDateTime IS NULL";
+      }
+      else if ($materialEntryStatus == MaterialEntryStatus::ACKNOWLEDGED)
+      {
+         $statusClause = "AND acknowledgedDateTime IS NOT NULL";
+      }
+
       $dateTimeClause = "enteredDateTime BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "'";
             
-      $query = "SELECT * FROM materiallog WHERE $dateTimeClause ORDER BY enteredDateTime DESC;";
-      
+      $query = "SELECT * FROM materiallog WHERE $dateTimeClause $statusClause ORDER BY receivedDateTime DESC;";
+
       $result = $this->query($query);
 
       return ($result);
@@ -1887,11 +1901,13 @@ class PPTPDatabase extends MySqlDatabase
    {
       $enteredDateTime = $materialEntry->enteredDateTime ? Time::toMySqlDate($materialEntry->enteredDateTime) : null;
       
+      $receivedDateTime = $materialEntry->receivedDateTime ? Time::toMySqlDate($materialEntry->receivedDateTime) : null;
+      
       $query =
          "INSERT INTO materiallog " .
-         "(materialId, vendorId, tagNumber, heatNumber, pieces, enteredUserId, enteredDateTime) " .
+         "(materialId, vendorId, tagNumber, heatNumber, pieces, enteredUserId, enteredDateTime, receivedDateTime) " .
          "VALUES " .
-         "('$materialEntry->materialId', '$materialEntry->vendorId', '$materialEntry->tagNumber', '$materialEntry->heatNumber', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime');";
+         "('$materialEntry->materialId', '$materialEntry->vendorId', '$materialEntry->tagNumber', '$materialEntry->heatNumber', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime', '$receivedDateTime');";
 
       $result = $this->query($query);
       
@@ -1902,9 +1918,11 @@ class PPTPDatabase extends MySqlDatabase
    {
       $enteredDateTime = $materialEntry->enteredDateTime ? Time::toMySqlDate($materialEntry->enteredDateTime) : null;
       
+      $receivedDateTime = $materialEntry->receivedDateTime ? Time::toMySqlDate($materialEntry->receivedDateTime) : null;
+      
       $query =
          "UPDATE materiallog " .
-         "SET materialId = $materialEntry->materialId, vendorId = $materialEntry->vendorId, tagNumber = $materialEntry->tagNumber, heatNumber = $materialEntry->heatNumber, pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime' " .
+         "SET materialId = $materialEntry->materialId, vendorId = $materialEntry->vendorId, tagNumber = $materialEntry->tagNumber, heatNumber = $materialEntry->heatNumber, pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', receivedDateTime = '$receivedDateTime' " .
          "WHERE materialEntryId = $materialEntry->materialEntryId;";
 
       $result = $this->query($query);

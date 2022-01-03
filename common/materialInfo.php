@@ -30,6 +30,7 @@
     public $materialType;
     public $partNumber;
     public $description;
+    public $size;
     public $length;
     
     public function __construct()
@@ -38,7 +39,8 @@
        $this->materialType = MaterialType::UNKNOWN;
        $this->partNumber = "";
        $this->description = "";
-       $this->length = "";
+       $this->size = 0;
+       $this->length = 0;
     }
     
     public static function load($materialId)
@@ -140,6 +142,7 @@
        $this->materialType = intval($row['materialType']);
        $this->partNumber = $row['partNumber'];
        $this->description = $row['description'];
+       $this->size = floatval($row['size']);
        $this->length = $row['length'];
     }
  }
