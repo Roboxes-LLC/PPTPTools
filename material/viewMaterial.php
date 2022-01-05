@@ -450,7 +450,7 @@ if (!Authentication::isAuthenticated())
                   <div class="form-label">Heat</div>
                   <div class="flex-vertical">
                      <div class="flex-horizontal">
-                        <input id="heat-number-input" type="text" style="width:100px;" name="heatNumber" form="input-form" value="<?php echo getMaterialEntry()->heatNumber; ?>" <?php echo getDisabled(MaterialInputField::HEAT); ?> />
+                        <input id="heat-number-input" type="number" style="width:100px;" name="heatNumber" form="input-form" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->heatNumber; ?>" <?php echo getDisabled(MaterialInputField::HEAT); ?> />
                      </div>
                   </div>
                </div>
@@ -459,7 +459,7 @@ if (!Authentication::isAuthenticated())
                   <div class="form-label">Pieces</div>
                   <div class="flex-vertical">
                      <div class="flex-horizontal">
-                        <input id="pieces-input" type="text" style="width:50px;" name="pieces" form="input-form" oninput="recalculateQuantity()" value="<?php echo getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
+                        <input id="pieces-input" type="number" style="width:50px;" name="pieces" form="input-form" oninput="recalculateQuantity()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
                      </div>
                   </div>
                </div>
@@ -468,7 +468,7 @@ if (!Authentication::isAuthenticated())
                   <div class="form-label">Quantity</div>
                   <div class="flex-vertical">
                      <div class="flex-horizontal">
-                        <input id="quantity-input" type="text" style="width:50px;" form="input-form" value="<?php echo getMaterialEntry()->getQuantity() ?>" <?php echo getDisabled(MaterialInputField::QUANTITY); ?> />
+                        <input id="quantity-input" type="number" style="width:50px;" form="input-form" value="<?php echo getMaterialEntry()->getQuantity() ?>" <?php echo getDisabled(MaterialInputField::QUANTITY); ?> />
                      </div>
                   </div>
                </div>                    

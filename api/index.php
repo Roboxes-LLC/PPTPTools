@@ -3236,7 +3236,7 @@ $router->add("saveMaterialEntry", function($params) {
          // Required fields.
          $materialEntry->materialId = $params->getInt("materialId");
          $materialEntry->vendorId = $params->getInt("vendorId");
-         $materialEntry->tagNumber = $params->getInt("tagNumber");
+         $materialEntry->tagNumber = $params->get("tagNumber");
          $materialEntry->heatNumber = $params->getInt("heatNumber");
          $materialEntry->pieces = $params->getInt("pieces");
          $materialEntry->enteredUserId = $params->getInt("enteredUserId");

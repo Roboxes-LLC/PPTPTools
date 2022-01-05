@@ -52,8 +52,6 @@ class MaterialEntry
 {
    const UNKNOWN_ENTRY_ID = 0;
 
-   const UNKNOWN_TAG_NUMBER = 0;
-
    const UNKNOWN_HEAT_NUMBER = 0;
    
    public $materialEntryId;
@@ -76,7 +74,7 @@ class MaterialEntry
       $this->materialEntryId = MaterialEntry::UNKNOWN_ENTRY_ID;
       $this->materialId = MaterialInfo::UNKNOWN_MATERIAL_ID;
       $this->vendorId = MaterialVendor::UNKNOWN_MATERIAL_VENDOR_ID;
-      $this->tagNumber = MaterialEntry::UNKNOWN_TAG_NUMBER;
+      $this->tagNumber = null;
       $this->heatNumber = MaterialEntry::UNKNOWN_HEAT_NUMBER; 
       $this->pieces = 0;
       $this->enteredUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
@@ -188,7 +186,7 @@ class MaterialEntry
       $this->materialEntryId = intval($row['materialEntryId']);
       $this->materialId = intval($row['materialId']);
       $this->vendorId = intval($row['vendorId']);
-      $this->tagNumber = intval($row['tagNumber']);
+      $this->tagNumber = $row['tagNumber'];
       $this->heatNumber = intval($row['heatNumber']);
       $this->pieces = intval($row['pieces']);
       $this->enteredUserId = intval($row['enteredUserId']);

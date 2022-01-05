@@ -1922,7 +1922,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
          "UPDATE materiallog " .
-         "SET materialId = $materialEntry->materialId, vendorId = $materialEntry->vendorId, tagNumber = $materialEntry->tagNumber, heatNumber = $materialEntry->heatNumber, pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', receivedDateTime = '$receivedDateTime' " .
+         "SET materialId = $materialEntry->materialId, vendorId = $materialEntry->vendorId, tagNumber = '$materialEntry->tagNumber', heatNumber = $materialEntry->heatNumber, pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', receivedDateTime = '$receivedDateTime' " .
          "WHERE materialEntryId = $materialEntry->materialEntryId;";
 
       $result = $this->query($query);

@@ -48,36 +48,24 @@ abstract class WorkDay
       
       return ($labels[$workDay]);
    }
-   
+
    public static function getDates($dateTime)
    {
       $dates = array();
       
       $dt = new DateTime($dateTime, new DateTimeZone('America/New_York'));
       
-      $phpDayNumber = (int)$dt->format("N");
       $weekNumber = Time::weekNumber($dateTime);
       
-      if ($phpDayNumber == WorkDay::PHP_SUNDAY)
-      {
-         $weekNumber++;
-      }
+      $year = $dt->format("o");  // ISO year.  (Ex. 1/1/2022 = 2021)
+      
+      $dt->setISODate($year, $weekNumber, WorkDay::getPHPDayNumber(WorkDay::MONDAY));
       
       for ($workDay = WorkDay::FIRST; $workDay < WorkDay::LAST; $workDay++)
       {
-         // Translate our day (Su-Sa) to a PHP day (M-Su).
-         $phpDayNumber = WorkDay::getPHPDayNumber($workDay);
-
-         // Decrement the week number for Sundays.
-         $adjustedWeekNumber = $weekNumber;
-         if ($phpDayNumber == WorkDay::PHP_SUNDAY)
-         {
-            $adjustedWeekNumber--;
-         }
+         $dates[$workDay] = $dt->format("Y-m-d H:i:s");
          
-         $evalDt = clone $dt->setISODate($dt->format("Y"), $adjustedWeekNumber, $phpDayNumber);
-         
-         $dates[$workDay] = $evalDt->format("Y-m-d H:i:s");
+         $dt->modify('+1 days');
       }
       
       return ($dates);
@@ -532,4 +520,11 @@ if (isset($_GET["mfgDate"]))
       echo "<br>";
    }
 }
+*/
+
+/*
+$date = "12/26/2021";
+$dates = WorkDay::getDates($date);
+echo "$date<br>";
+var_dump($dates);
 */

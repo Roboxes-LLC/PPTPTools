@@ -211,6 +211,7 @@ if (!Authentication::isAuthenticated())
             },
             {title:"Material",    field:"materialPartNumber",              hozAlign:"left", headerFilter:true, visible:true},
             {title:"Vendor",      field:"vendorName",                      hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Tag",         field:"tagNumber",                       hozAlign:"left", headerFilter:true, visible:true},
             {title:"Type",        field:"materialTypeLabel",               hozAlign:"left", headerFilter:true, visible:true},
             {title:"Heat",        field:"heatNumber",                      hozAlign:"left", headerFilter:true, visible:true},
             {title:"Size",        field:"size",                            hozAlign:"left", headerFilter:true, visible:true},
