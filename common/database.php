@@ -1860,12 +1860,95 @@ class PPTPDatabase extends MySqlDatabase
    }
    
    // **************************************************************************
+   //                                Material Heat
+   // **************************************************************************
+   
+   public function getMaterialHeat($heatNumber, $useInternalHeatNumber = false)
+   {
+      $heatClause = "";
+      if ($useInternalHeatNumber)
+      {
+         $heatClause = "WHERE internalHeatNumber = $heatNumber";
+      }
+      else
+      {
+         $heatClause = "WHERE vendorHeatNumber = '$heatNumber'";
+      }
+   
+      $query = "SELECT * FROM materialheat $heatClause;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function newMaterialHeat($materialHeatInfo)
+   {
+      $query =
+         "INSERT INTO materialheat " .
+         "(vendorHeatNumber, internalHeatNumber, materialId, vendorId) " .
+         "VALUES " .
+         "('$materialHeatInfo->vendorHeatNumber', '$materialHeatInfo->internalHeatNumber', '$materialHeatInfo->materialId', '$materialHeatInfo->vendorId');";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function updateMaterialHeat($materialHeatInfo)
+   {
+      $query =
+         "UPDATE materialheat " .
+         "SET internalHeatNumber = $materialHeatInfo->internalHeatNumber, materialId = $materialHeatInfo->materialId, vendorId = $materialHeatInfo->vendorId " .
+         "WHERE vendorHeatNumber = '$materialHeatInfo->vendorHeatNumber';";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteMaterialHeat($heatNumber, $useInternalHeatNumber = false)
+   {
+      $heatClause = "";
+      if ($useInternalHeatNumber)
+      {
+         $heatClause = "WHERE internalHeatNumber = $heatNumber";
+      }
+      else
+      {
+         $heatClause = "WHERE vendorHeatNumber = '$heatNumber'";
+      }
+      
+      $query = "DELETE FROM materialheat $heatClause;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getNextInternalHeatNumber()
+   {
+      $internalHeatNumber = 0;
+      
+      $query = "select MAX(internalHeatNumber) from materialheat";
+      
+      $result = $this->query($query);
+      
+      if ($result && ($row = $result->fetch_assoc()))
+      {
+         $internalHeatNumber = intval($row["MAX(internalHeatNumber)"]) + 1;
+      }
+      
+      return ($internalHeatNumber);
+   }
+      
+   // **************************************************************************
    //                                Material Log
    // **************************************************************************
    
    public function getMaterialEntry($materialEntryId)
    {
-      $query = "SELECT * FROM materiallog WHERE materialEntryId = $materialEntryId;";
+      $query = "SELECT * FROM materiallog WHERE materialEntryId = $materialEntryId";
       
       $result = $this->query($query);
       
@@ -1905,9 +1988,9 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
          "INSERT INTO materiallog " .
-         "(materialId, vendorId, tagNumber, heatNumber, pieces, enteredUserId, enteredDateTime, receivedDateTime) " .
+         "(vendorHeatNumber, tagNumber, pieces, enteredUserId, enteredDateTime, receivedDateTime) " .
          "VALUES " .
-         "('$materialEntry->materialId', '$materialEntry->vendorId', '$materialEntry->tagNumber', '$materialEntry->heatNumber', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime', '$receivedDateTime');";
+         "('$materialEntry->vendorHeatNumber', '$materialEntry->tagNumber', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime', '$receivedDateTime');";
 
       $result = $this->query($query);
       
@@ -1922,7 +2005,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
          "UPDATE materiallog " .
-         "SET materialId = $materialEntry->materialId, vendorId = $materialEntry->vendorId, tagNumber = '$materialEntry->tagNumber', heatNumber = $materialEntry->heatNumber, pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', receivedDateTime = '$receivedDateTime' " .
+         "SET vendorHeatNumber = '$materialEntry->vendorHeatNumber', tagNumber = '$materialEntry->tagNumber', pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', receivedDateTime = '$receivedDateTime' " .
          "WHERE materialEntryId = $materialEntry->materialEntryId;";
 
       $result = $this->query($query);

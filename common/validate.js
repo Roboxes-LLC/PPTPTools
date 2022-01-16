@@ -285,4 +285,62 @@ function SelectValidator(inputId)
       return (valid);
    }
 }
+
+class RegExpressionValidator
+{
+   constructor(inputId, regExpression, validOnMatch, maxLength)
+   {
+      this.inputId = inputId;
+      this.regExpression = regExpression;
+      this.validOnMatch = validOnMatch;
+      this.maxLength = maxLength;
+   }
+   
+   init()
+   {
+      var element = document.getElementById(this.inputId);
+      
+      if (element)
+      {         
+         element.validator = this;
+         element.maxLength = this.maxLength;
+      }
+   }
+   
+   isValid()
+   {   
+      let element = document.getElementById(this.inputId);
+      
+      let isMatch = this.regExpression.test(element.value);
+      let isValid = (isMatch == this.validOnMatch);
+      
+      return (isValid);
+   }
+   
+   color(color)
+   {
+      var element = document.getElementById(this.inputId);
+      
+      if (element)
+      {
+         element.style.color = color;
+      }
+   }
+   
+   validate()
+   {
+      var valid = this.isValid();
+      
+      if (valid)
+      {
+         this.color("#000000");
+      }
+      else
+      {
+         this.color("#FF0000");
+      }
+
+      return (valid);
+   }   
+}
    

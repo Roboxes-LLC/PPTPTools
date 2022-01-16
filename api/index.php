@@ -3111,6 +3111,26 @@ $router->add("deleteMaintenanceEntry", function($params) {
    echo json_encode($result);
 });
 
+$router->add("materialHeat", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   if (isset($params["heatNumber"]))
+   {
+      $heatNumber = $params["heatNumber"];
+      $result->heatNumber = $heatNumber;
+      
+      $result->materialHeatInfo = MaterialHeatInfo::load($heatNumber);
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
 $router->add("materialData", function($params) {
    $result = array();
    
@@ -3143,47 +3163,44 @@ $router->add("materialData", function($params) {
       
       foreach ($dbaseResult as $row)
       {
-         $materialEntry = new MaterialEntry();
-         $materialEntry->initialize($row);
-
-         if ($materialEntry->materialId != MaterialInfo::UNKNOWN_MATERIAL_ID)
+         $materialEntry = MaterialEntry::load(intval($row["materialEntryId"]));
+         
+         if ($materialEntry)
          {
-            $materialInfo = MaterialInfo::load($materialEntry->materialId);
-            if ($materialInfo)
+            if ($materialEntry->materialInfo)
             {
-               $materialEntry->materialPartNumber = $materialInfo->partNumber;
-               $materialEntry->materialDescription = $materialInfo->description;
-               $materialEntry->materialType = $materialInfo->materialType;
-               $materialEntry->materialTypeLabel = MaterialType::getLabel($materialInfo->materialType);
-               $materialEntry->size = $materialInfo->size;
-               $materialEntry->length = $materialInfo->length;
+               $materialEntry->materialPartNumber = $materialEntry->materialInfo->partNumber;
+               $materialEntry->materialDescription = $materialEntry->materialInfo->description;
+               $materialEntry->materialType = $materialEntry->materialInfo->materialType;
+               $materialEntry->materialTypeLabel = MaterialType::getLabel($materialEntry->materialType);
+               $materialEntry->size = $materialEntry->materialInfo->size;
+               $materialEntry->length = $materialEntry->materialInfo->length;
                $materialEntry->quantity = $materialEntry->getQuantity();
             }
-         }
-         
-         if (($materialEntry->vendorId != MaterialVendor::UNKNOWN_MATERIAL_VENDOR_ID) &&
-             isset($vendors[$materialEntry->vendorId]))
-         {
-            $materialEntry->vendorName = $vendors[$materialEntry->vendorId];
-         }
-         
-         $materialEntry->materialTicketCode = MaterialTicket::getMaterialTicketCode($materialEntry->materialEntryId);
-         
-         if ($materialEntry->isIssued())
-         {
-            $jobInfo = JobInfo::load($materialEntry->issuedJobId);
             
-            if ($jobInfo)
+            if ($materialEntry->materialHeatInfo)
             {
-               $materialEntry->issuedJobNumber = $jobInfo->jobNumber;
-               $materialEntry->issuedWCNumber = $jobInfo->wcNumber;
+               $materialEntry->vendorName = $vendors[$materialEntry->materialHeatInfo->vendorId];
             }
+            
+            $materialEntry->materialTicketCode = MaterialTicket::getMaterialTicketCode($materialEntry->materialEntryId);
+            
+            if ($materialEntry->isIssued())
+            {
+               $jobInfo = JobInfo::load($materialEntry->issuedJobId);
+               
+               if ($jobInfo)
+               {
+                  $materialEntry->issuedJobNumber = $jobInfo->jobNumber;
+                  $materialEntry->issuedWCNumber = $jobInfo->wcNumber;
+               }
+            }
+            
+            $materialEntry->isIssued = $materialEntry->isIssued();
+            $materialEntry->isAcknowledged = $materialEntry->isAcknowledged();
+             
+            $result[] = $materialEntry;
          }
-         
-         $materialEntry->isIssued = $materialEntry->isIssued();
-         $materialEntry->isAcknowledged = $materialEntry->isAcknowledged();
-          
-         $result[] = $materialEntry;
       }
    }
 
@@ -3225,42 +3242,79 @@ $router->add("saveMaterialEntry", function($params) {
    
    if ($result->success)
    {
-      if (isset($params["materialId"]) &&
-          isset($params["vendorId"]) &&
+      // Required fields.
+      if (isset($params["vendorHeatNumber"]) &&
           isset($params["tagNumber"]) &&
-          isset($params["heatNumber"]) &&
           isset($params["pieces"]) &&
           isset($params["enteredUserId"]) &&
           isset($params["receivedDate"]))
       {
-         // Required fields.
-         $materialEntry->materialId = $params->getInt("materialId");
-         $materialEntry->vendorId = $params->getInt("vendorId");
+         $materialEntry->vendorHeatNumber = $params->get("vendorHeatNumber");
          $materialEntry->tagNumber = $params->get("tagNumber");
-         $materialEntry->heatNumber = $params->getInt("heatNumber");
          $materialEntry->pieces = $params->getInt("pieces");
          $materialEntry->enteredUserId = $params->getInt("enteredUserId");
          $materialEntry->receivedDateTime = Time::startOfDay($params->get("receivedDate"));
          
-         if ($materialEntry->materialEntryId == MaterialEntry::UNKNOWN_ENTRY_ID)
+         // Material heat update (optional).
+         if (isset($params["vendorHeatNumber"]) &&
+             isset($params["internalHeatNumber"]) &&
+             isset($params["materialId"]) &&
+             isset($params["vendorId"]))
          {
-            $dbaseResult = $database->newMaterialEntry($materialEntry);
+            $vendorHeatNumber = $params["vendorHeatNumber"];
             
-            if ($dbaseResult)
+            $materialHeatInfo = MaterialHeatInfo::load($vendorHeatNumber);
+            $newMaterialHeat = ($materialHeatInfo == null);
+            
+            if ($newMaterialHeat)
             {
-               $result->entryId = $database->lastInsertId();
+               // New heat.
+               $materialHeatInfo = new MaterialHeatInfo();
+               $materialHeatInfo->vendorHeatNumber = $vendorHeatNumber;
+            }
+            
+            $materialHeatInfo->internalHeatNumber = $params->getInt("internalHeatNumber");
+            $materialHeatInfo->materialId = $params->getInt("materialId");
+            $materialHeatInfo->vendorId = $params->getInt("vendorId");
+            
+            if ($newMaterialHeat)
+            {
+               $dbaseResult = $database->newMaterialHeat($materialHeatInfo);
+            }
+            else
+            {
+               $dbaseResult = $database->updateMaterialHeat($materialHeatInfo);
+            }
+            
+            if (!$dbaseResult)
+            {
+               $result->success = false;
+               $result->error = "Database query failed.";
             }
          }
-         else
+
+         if ($result->success)
          {
-            $dbaseResult = $database->updateMaterialEntry($materialEntry);
-            $result->entryId = $materialEntry->materialEntryId;
-         }
+            if ($materialEntry->materialEntryId == MaterialEntry::UNKNOWN_ENTRY_ID)
+            {
+               $dbaseResult = $database->newMaterialEntry($materialEntry);
+               
+               if ($dbaseResult)
+               {
+                  $result->entryId = $database->lastInsertId();
+               }
+            }
+            else
+            {
+               $dbaseResult = $database->updateMaterialEntry($materialEntry);
+               $result->entryId = $materialEntry->materialEntryId;
+            }
          
-         if (!$dbaseResult)
-         {
-            $result->success = false;
-            $result->error = "Database query failed.";
+            if (!$dbaseResult)
+            {
+               $result->success = false;
+               $result->error = "Database query failed.";
+            }
          }
       }
       else

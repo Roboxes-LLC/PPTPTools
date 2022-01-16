@@ -21,17 +21,18 @@ abstract class MaterialInputField
    const TAG = 2;
    const MATERIAL = 2;
    const VENDOR = 3;
-   const HEAT = 4;
-   const QUANTITY = 5;
-   const PIECES = 6;
-   const ISSUED_USER = 7;
-   const ISSUED_DATE = 8;
-   const RECEIVED_DATE = 9;
-   const WC_NUMBER = 10;
-   const JOB_NUMBER = 11;
-   const ACKNOWLEDGED_USER = 12;
-   const ACKNOWLEDGED_DATE = 13;
-   const LAST = 14;
+   const VENDOR_HEAT = 4;
+   const INTERNAL_HEAT = 6;
+   const QUANTITY = 7;
+   const PIECES = 8;
+   const ISSUED_USER = 9;
+   const ISSUED_DATE = 10;
+   const RECEIVED_DATE = 11;
+   const WC_NUMBER = 12;
+   const JOB_NUMBER = 13;
+   const ACKNOWLEDGED_USER = 13;
+   const ACKNOWLEDGED_DATE = 15;
+   const LAST = 16;
    const COUNT = MaterialInputField::LAST - MaterialInputField::FIRST;
 }
 
@@ -143,6 +144,7 @@ function isEditable($field)
       case MaterialInputField::ISSUED_USER:
       case MaterialInputField::ACKNOWLEDGED_DATE:
       case MaterialInputField::ACKNOWLEDGED_USER:
+      case MaterialInputField::INTERNAL_HEAT:
       case MaterialInputField::QUANTITY:         
       {
          $isEditable = false;
@@ -152,7 +154,7 @@ function isEditable($field)
       case MaterialInputField::MATERIAL:
       case MaterialInputField::VENDOR:
       case MaterialInputField::TAG:
-      case MaterialInputField::HEAT:
+      case MaterialInputField::VENDOR_HEAT:
       case MaterialInputField::PIECES:
       case MaterialInputField::RECEIVED_DATE:
       {
@@ -197,15 +199,15 @@ function getHeading()
    
    if ($view == View::NEW_MATERIAL)
    {
-      $heading = "Add a material";
+      $heading = "Receive material";
    }
    else if ($view == View::EDIT_MATERIAL)
    {
-      $heading = "Update an existing material";
+      $heading = "Edit material details";
    }
    else if ($view == View::VIEW_MATERIAL)
    {
-      $heading = "Edit or assign a material";
+      $heading = "View material details";
    }
    else if ($view == View::ISSUE_MATERIAL)
    {
@@ -239,6 +241,20 @@ function getDescription()
    }
    
    return ($description);
+}
+
+function getInternalHeatNumber()
+{
+   $internalHeatNumber = null;
+   
+   $materialEntry = getMaterialEntry();
+   
+   if ($materialEntry && $materialEntry->materialHeatInfo)   
+   {
+      $internalHeatNumber = $materialEntry->materialHeatInfo->internalHeatNumber;
+   }
+   
+   return ($internalHeatNumber);
 }
 
 function getEntryDate()
@@ -378,6 +394,7 @@ if (!Authentication::isAuthenticated())
       <input id="entry-id-input" type="hidden" name="entryId" value="<?php echo getEntryId(); ?>">
       <input id="entered-user-id-input" type="hidden" name="enteredUserId" value="<?php echo getMaterialEntry()->enteredUserId; ?>">
       <input id="issued-user-id-input" type="hidden" name="issuedUserId" value="<?php echo getMaterialEntry()->issuedUserId; ?>">
+      <input id="hidden-internal-heat-number-input" type="hidden" name="internalHeatNumber">
    </form>
 
    <?php Header::render("PPTP Tools"); ?>
@@ -417,22 +434,42 @@ if (!Authentication::isAuthenticated())
                   </div>
                </div>
                
-               <div class="form-section-header">Material</div>
-                                 
+               <div class="form-section-header">Heat</div>
+               
                <div class="form-item">
-                  <div class="form-label">Material type</div>
+                  <div class="form-label">Vendor Heat</div>
+                  <div class="flex-vertical">
+                     <div class="flex-horizontal">
+                        <input id="vendor-heat-number-input" type="text" name="vendorHeatNumber" form="input-form" oninput="this.validator.validate(); onVendorHeatNumberChange()" value="<?php echo getMaterialEntry()->vendorHeatNumber; ?>" <?php echo getDisabled(MaterialInputField::VENDOR_HEAT); ?> />
+                     </div>
+                  </div>
+               </div>  
+               
+               <div class="form-item">
+                  <div class="form-label">Vendor</div>
                   <div class="flex-horizontal">
-                     <select id="material-id-input" name="materialId" form="input-form" oninput="recalculateQuantity()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
-                        <?php echo MaterialInfo::getOptions(getMaterialEntry()->materialId); ?>
+                     <select id="vendor-id-input" name="vendorId" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(MaterialInputField::VENDOR); ?>>
+                        <?php echo MaterialVendor::getOptions(getMaterialEntry()->materialHeatInfo->vendorId); ?>
                      </select>
                   </div>
                </div>
                
                <div class="form-item">
-                  <div class="form-label">Vendor</div>
+                  <div class="form-label">PPTP Heat</div>
+                  <div class="flex-vertical">
+                     <div class="flex-horizontal">
+                        <input id="internal-heat-number-input" type="number" style="width:100px;" name="internalHeatNumber" form="input-form" oninput="this.validator.validate();" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getInternalHeatNumber(); ?>" readonly="readonly" <?php echo getDisabled(MaterialInputField::INTERNAL_HEAT); ?> />
+                     </div>
+                  </div>
+               </div>
+               
+               <div class="form-section-header">Material</div>
+                                 
+               <div class="form-item">
+                  <div class="form-label">Material type</div>
                   <div class="flex-horizontal">
-                     <select id="vendor-id-input" name="vendorId" form="input-form" <?php echo getDisabled(MaterialInputField::VENDOR); ?>>
-                        <?php echo MaterialVendor::getOptions(getMaterialEntry()->vendorId); ?>
+                     <select id="material-id-input" name="materialId" form="input-form" oninput="this.validator.validate(); recalculateQuantity()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
+                        <?php echo MaterialInfo::getOptions(getMaterialEntry()->materialHeatInfo->materialId); ?>
                      </select>
                   </div>
                </div>
@@ -441,25 +478,16 @@ if (!Authentication::isAuthenticated())
                   <div class="form-label">Tag #</div>
                   <div class="flex-vertical">
                      <div class="flex-horizontal">
-                        <input id="tag-number-input" type="text" name="tagNumber" form="input-form" value="<?php echo getMaterialEntry()->tagNumber; ?>" <?php echo getDisabled(MaterialInputField::TAG); ?> />
+                        <input id="tag-number-input" type="text" name="tagNumber" form="input-form" oninput="this.validator.validate();" value="<?php echo getMaterialEntry()->tagNumber; ?>" <?php echo getDisabled(MaterialInputField::TAG); ?> />
                      </div>
                   </div>
                </div>         
                
                <div class="form-item">
-                  <div class="form-label">Heat</div>
-                  <div class="flex-vertical">
-                     <div class="flex-horizontal">
-                        <input id="heat-number-input" type="number" style="width:100px;" name="heatNumber" form="input-form" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->heatNumber; ?>" <?php echo getDisabled(MaterialInputField::HEAT); ?> />
-                     </div>
-                  </div>
-               </div>
-               
-               <div class="form-item">
                   <div class="form-label">Pieces</div>
                   <div class="flex-vertical">
                      <div class="flex-horizontal">
-                        <input id="pieces-input" type="number" style="width:50px;" name="pieces" form="input-form" oninput="recalculateQuantity()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
+                        <input id="pieces-input" type="number" style="width:50px;" name="pieces" form="input-form" oninput="this.validator.validate(); recalculateQuantity()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
                      </div>
                   </div>
                </div>
@@ -508,7 +536,7 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label">WC #</div>
                   <div class="flex-horizontal">
-                     <select id="wc-number-input" name="wcNumber" form="input-form" oninput="onWCNumberChange()" <?php echo getDisabled(MaterialInputField::WC_NUMBER); ?>>
+                     <select id="wc-number-input" name="wcNumber" form="input-form" oninput="this.validator.validate(); onWCNumberChange()" <?php echo getDisabled(MaterialInputField::WC_NUMBER); ?>>
                         <?php echo JobInfo::getWcNumberOptions(JobInfo::UNKNOWN_JOB_ID, getIssuedWcNumber()); ?>
                      </select>
                   </div>
@@ -517,7 +545,7 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label">Job #</div>
                   <div class="flex-horizontal">
-                     <select id="job-number-input" name="jobNumber" form="input-form" <?php echo getDisabled(MaterialInputField::JOB_NUMBER); ?>>
+                     <select id="job-number-input" name="jobNumber" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(MaterialInputField::JOB_NUMBER); ?>>
                         <?php echo JobInfo::getJobNumberOptions(getIssuedJobNumber(), true, true); ?>
                      </select>
                   </div>
@@ -560,30 +588,23 @@ if (!Authentication::isAuthenticated())
    <script>
    
       preserveSession();
-      
-      /*
-      var maintentanceTimeHourValidator = new IntValidator("maintenance-time-hour-input", 2, 0, 16, true);
-      var maintenanceTimeMinuteValidator = new IntValidator("maintenance-time-minute-input", 2, 0, 59, true);  
-      var employeeNumberValidator = new SelectValidator("employee-number-input");
-      var wcNumberValidator = new SelectValidator("wc-number-input");
-      var equipmentValidator = new SelectValidator("equipment-input");
-      var maintenanceTypeValidator = new SelectValidator("maintenance-type-input");
-      var repairTypeValidator = new SelectValidator("repair-type-input");
-      var preventativeTypeValidator = new SelectValidator("preventative-type-input");
-      var cleaningTypeValidator = new SelectValidator("cleaning-type-input");
-      var partNumberValidator = new SelectValidator("part-number-input");
+      var vendorHeatValidator = new RegExpressionValidator("vendor-heat-number-input", /^[a-zA-Z0-9]+$/, true, 16);
+      var vendorValidator = new SelectValidator("vendor-id-input");
+      var internalHeatValidator = new IntValidator("internal-heat-number-input", 5, 1, 99999, false);
+      var materialValidator = new SelectValidator("material-id-input");
+      var tagNumberValidator = new RegExpressionValidator("tag-number-input", /^[0-9-]+$/, true, 16);
+      var piecesValidator = new IntValidator("pieces-input", 2, 1, 99, false);
+      var jobNumberValidator = new SelectValidator("job-number-input");
+      var wcValidator = new SelectValidator("wc-number-input");
 
-      maintentanceTimeHourValidator.init();
-      maintenanceTimeMinuteValidator.init();
-      employeeNumberValidator.init();
-      wcNumberValidator.init();
-      equipmentValidator.init();
-      maintenanceTypeValidator.init();
-      repairTypeValidator.init();
-      preventativeTypeValidator.init();
-      cleaningTypeValidator.init();
-      partNumberValidator.init();
-      */
+      vendorHeatValidator.init();
+      vendorValidator.init();
+      internalHeatValidator.init();
+      materialValidator.init();
+      tagNumberValidator.init();
+      piecesValidator.init();
+      jobNumberValidator.init();
+      wcValidator.init();
       
       // Setup event handling on all DOM elements.
       document.getElementById("cancel-button").onclick = function(){onCancel();};
@@ -596,6 +617,10 @@ if (!Authentication::isAuthenticated())
       
       // Store an array of material lengths.
       var materialLengths = <?php echo MaterialInfo::getJavascriptLengthArray() ?>;
+      
+      var nextInternalHeatNumber = <?php echo MaterialHeatInfo::getNextInternalHeatNumber(); ?>;
+      
+      onVendorHeatNumberChange();
 
    </script>
 

@@ -142,7 +142,7 @@ if (!Authentication::isAuthenticated())
          
          <br>
         
-         <button id="new-material-button" class="accent-button">New Material</button>
+         <button id="new-material-button" class="accent-button">Receive Material</button>
 
          <br>
         
@@ -209,15 +209,16 @@ if (!Authentication::isAuthenticated())
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Material",    field:"materialPartNumber",              hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Vendor",      field:"vendorName",                      hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Tag",         field:"tagNumber",                       hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Type",        field:"materialTypeLabel",               hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Heat",        field:"heatNumber",                      hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Size",        field:"size",                            hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Length",      field:"length",                          hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Pieces",      field:"pieces",                          hozAlign:"left", visible:true},            
-            {title:"Quantity",    field:"quantity",                        hozAlign:"left", visible:true},
+            {title:"Material",    field:"materialPartNumber",                  hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Vendor",      field:"vendorName",                          hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Vendor Heat", field:"vendorHeatNumber",                    hozAlign:"left", headerFilter:true, visible:true},            
+            {title:"PPTP Heat",   field:"materialHeatInfo.internalHeatNumber", hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Tag",         field:"tagNumber",                           hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Type",        field:"materialTypeLabel",                   hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Size",        field:"size",                                hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Length",      field:"length",                              hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Pieces",      field:"pieces",                              hozAlign:"left", visible:true},            
+            {title:"Quantity",    field:"quantity",                            hozAlign:"left", visible:true},
             {title:"",      field:"issue",                                                               visible:hasIssuePermission,
                formatter:function(cell, formatterParams, onRendered){
                   let isIssued = cell.getRow().getData().isIssued;                  

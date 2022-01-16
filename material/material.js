@@ -131,6 +131,41 @@ function onDeleteMaterialEntry(materialEntryId)
    }
 }
 
+function onVendorHeatNumberChange()
+{
+   let heatNumber = document.getElementById("vendor-heat-number-input").value;
+   
+   clear("vendor-id-input");
+   // TODO: Others
+   
+   if (heatNumber != null)
+   {
+      // AJAX call to retrieve vendor heat info.
+      requestUrl = "../api/materialHeat/?heatNumber=" + heatNumber;
+      
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function()
+      {
+         if (this.readyState == 4 && this.status == 200)
+         {
+            var json = JSON.parse(this.responseText);
+            
+            if (json.success == true)
+            {
+               updateVendorHeatInfo(json.materialHeatInfo);
+            }
+            else
+            {
+               console.log("API call to retrieve vendor heat info failed.");
+               alert(json.error);
+            }
+         }
+      };
+      xhttp.open("GET", requestUrl, true);
+      xhttp.send();
+   }
+}
+
 function onWCNumberChange()
 {
    clear("job-number-input");
@@ -142,10 +177,15 @@ function onWCNumberChange()
 
 function recalculateQuantity()
 {
-   let materialId = document.querySelector('#material-id-input').value;
-   let length = materialLengths[materialId];
-   let pieces = document.querySelector('#pieces-input').value;
-   let quantity = length * pieces;
+   let materialId = parseInt(document.querySelector('#material-id-input').value);
+   let pieces = parseInt(document.querySelector('#pieces-input').value);
+   let quantity = 0;
+
+   if (Number.isInteger(materialId) && Number.isInteger(pieces))
+   {
+      let length = materialLengths[materialId];
+      quantity = length * pieces;
+   }
    
    document.querySelector('#quantity-input').value = quantity;
 }
@@ -274,6 +314,30 @@ function reloadJobNumbers()
    xhttp.send(); 
 }
 
+function updateVendorHeatInfo(vendorHeatInfo)
+{
+   if (vendorHeatInfo)
+   {
+      document.getElementById("vendor-id-input").value = vendorHeatInfo.vendorId;
+      document.getElementById("material-id-input").value = vendorHeatInfo.materialId;
+      document.getElementById("internal-heat-number-input").value = vendorHeatInfo.internalHeatNumber;
+      document.getElementById("hidden-internal-heat-number-input").value = vendorHeatInfo.internalHeatNumber;
+      
+      disable("vendor-id-input");
+      disable("material-id-input");
+   }
+   else
+   {
+      clear("vendor-id-input");
+      clear("material-id-input");      
+      document.getElementById("internal-heat-number-input").value = nextInternalHeatNumber;
+      document.getElementById("hidden-internal-heat-number-input").value = nextInternalHeatNumber;
+            
+      enable("vendor-id-input");
+      enable("material-id-input");
+   }
+}
+
 function updateJobOptions(jobNumbers)
 {
    element = document.getElementById("job-number-input");
@@ -313,55 +377,51 @@ function formattedDate(date)
 
 function validateMaterialEntry()
 {
-   valid = true;
+   let valid = false;
+   
+   console.log(document.getElementById("wc-number-input").disabled);
+   let issuingMaterial = !document.getElementById("wc-number-input").disabled;
 
-   /*   
-   var maintenanceType = parseInt(document.getElementById("maintenance-type-input").value);
-   
-   if (isNaN(Date.parse(document.getElementById("maintenance-date-input").value)))
+   if (!(document.getElementById("vendor-heat-number-input").validator.validate()))
    {
-      alert("Please enter a valid maintenance date.");    
+      alert("Please enter a valid vendor heat number.");    
    }
-   else if ((document.getElementById("maintenance-time-hour-input").value == 0) &&
-            (document.getElementById("maintenance-time-minute-input").value == 0))
+   else if (isNaN(Date.parse(document.getElementById("received-date-input").value)))
    {
-      alert("Please enter some valid maintenance time.")  
+      alert("Please enter a valid received date.");    
    }
-   else if (!(document.getElementById("employee-number-input").validator.validate()))
+   else if (!(document.getElementById("vendor-id-input").validator.validate()))
    {
-      alert("Please select a technician.");    
+      alert("Please select a vendor.");    
    }
-   else if (!(document.getElementById("wc-number-input").validator.validate()) &&
-            !(document.getElementById("equipment-input").validator.validate()))
+   else if (!(document.getElementById("internal-heat-number-input").validator.validate()))
    {
-      alert("Please select a work center.");    
+      alert("Internal heat number is invalid.");    
    }
-   else if (!(document.getElementById("maintenance-type-input").validator.validate()))
+   else if (!(document.getElementById("material-id-input").validator.validate()))
    {
-      alert("Please select a maintenance type.");    
+      alert("Please select a material type.");    
    }
-   else if (((maintenanceType == 1) &&
-             !(document.getElementById("repair-type-input").validator.validate())) ||
-            ((maintenanceType == 2) &&
-             !(document.getElementById("preventative-type-input").validator.validate())) ||            
-            ((maintenanceType == 3) &&
-             !(document.getElementById("cleaning-type-input").validator.validate())))             
+   else if (!(document.getElementById("tag-number-input").validator.validate()))
    {
-      alert("Please complete the maintenance type.");    
+      alert("Please enter a valid tag number.");    
    }
-   else if (((document.getElementById("new-part-number-input").value != "") &&
-             (document.getElementById("new-part-description-input").value == "")) ||
-            ((document.getElementById("new-part-description-input").value != "") &&
-             (document.getElementById("new-part-number-input").value == "")))
-   
+   else if (!(document.getElementById("pieces-input").validator.validate()))
    {
-      alert("Please complete all new part info.");    
+      alert("Please enter a valid pieces count.");    
+   }
+   else if (issuingMaterial && !(document.getElementById("wc-number-input").validator.validate()))
+   {
+      alert("Please select a work center.");  
+   }
+   else if (issuingMaterial && !(document.getElementById("job-number-input").validator.validate()))
+   {
+      alert("Please select a job number.");  
    }
    else
    {
       valid = true;
    }
-   */
    
    return (valid);     
 }

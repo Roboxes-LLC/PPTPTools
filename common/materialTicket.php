@@ -69,74 +69,77 @@ class MaterialTicket
    {
       $materialEntry = MaterialEntry::load($this->materialTicketId);
       
-      $materialTicketCode = MaterialTicket::getMaterialTicketCode($this->materialTicketId);
-      
-      $materialDescription = "";
-      if ($materialEntry->materialId != MaterialInfo::UNKNOWN_MATERIAL_ID)
-      {
-         $materialInfo = MaterialInfo::load($materialEntry->materialId);
-         if ($materialInfo)
+      if ($materialEntry)
+      {      
+         $materialTicketCode = MaterialTicket::getMaterialTicketCode($this->materialTicketId);
+         
+         $materialDescription = "";
+         if ($materialEntry->materialInfo)
          {
-            $materialDescription = $materialInfo->description;
-         }
-      }
-      
-      $vendor = MaterialVendor::getMaterialVendor($materialEntry->vendorId);
-      
-      $issuedDate = "";
-      $employeeNumber = "";
-      $jobNumber = "";
-      $wcNumber = "";
-      
-      if ($materialEntry->isIssued())
-      {
-         $jobInfo = JobInfo::load($materialEntry->issuedJobId);
-         if ($jobInfo)
-         {
-            $jobNumber = $jobInfo->jobNumber;
-            $wcNumber = $jobInfo->wcNumber;
+            $materialDescription = $materialEntry->materialInfo->description;
          }
          
-         $userInfo = UserInfo::load($materialEntry->issuedUserId);
-         if ($userInfo)
+         $vendor = "";
+         if ($materialEntry->materialHeatInfo)
          {
-            $employeeNumber = $userInfo->employeeNumber;
+            $vendor = MaterialVendor::getMaterialVendor($materialEntry->materialHeatInfo->vendorId);
          }
          
-         $dateTime = new DateTime($materialEntry->issuedDateTime, new DateTimeZone('America/New_York'));
-         $issuedDate = $dateTime->format("m-d-Y");
-      }
-      
-      $isoNumber = IsoInfo::getIsoNumber(IsoDoc::MATERIAL_TICKET);
-      
-      echo
+         $issuedDate = "";
+         $employeeNumber = "";
+         $jobNumber = "";
+         $wcNumber = "";
+         
+         if ($materialEntry->isIssued())
+         {
+            $jobInfo = JobInfo::load($materialEntry->issuedJobId);
+            if ($jobInfo)
+            {
+               $jobNumber = $jobInfo->jobNumber;
+               $wcNumber = $jobInfo->wcNumber;
+            }
+            
+            $userInfo = UserInfo::load($materialEntry->issuedUserId);
+            if ($userInfo)
+            {
+               $employeeNumber = $userInfo->employeeNumber;
+            }
+            
+            $dateTime = new DateTime($materialEntry->issuedDateTime, new DateTimeZone('America/New_York'));
+            $issuedDate = $dateTime->format("m-d-Y");
+         }
+         
+         $isoNumber = IsoInfo::getIsoNumber(IsoDoc::MATERIAL_TICKET);
+         
+         echo
 <<<HEREDOC
-      <div class="material-ticket flex-vertical">
-         <div>
-            $materialDescription
-         </div>
-         <div class="flex-horizontal">
-            <div class="flex-vertical">
-               <div><b>Vendor: </b>$vendor</div>               
-               <div><b>Tag: </b>$materialEntry->tagNumber</div> 
-               <div><b>Heat: </b>$materialEntry->heatNumber</div>
-               <div><b>Quantity: </b>$materialEntry->getQuantity()</div>
-               <div><b>Pieces: </b>$materialEntry->pieces</div> 
+         <div class="material-ticket flex-vertical">
+            <div>
+               $materialDescription
             </div>
-            <div class="flex-vertical">
-               <div><b>Job</b></div>
+            <div class="flex-horizontal">
                <div class="flex-vertical">
-                  <div>$jobNumber</div>
-                  <div><b>WC: </b>$wcNumber</div> 
-                  <div><b>Inspector: </b>$employeeNumber</div> 
-                  <div><b>Issued: </b>$issuedDate</div>
-               </div> 
+                  <div><b>Vendor: </b>$vendor</div>               
+                  <div><b>Tag: </b>$materialEntry->tagNumber</div> 
+                  <div><b>Heat: </b>{$materialEntry->materialHeatInfo->internalHeatNumber}</div>
+                  <div><b>Quantity: </b>{$materialEntry->getQuantity()}</div>
+                  <div><b>Pieces: </b>$materialEntry->pieces</div> 
+               </div>
+               <div class="flex-vertical">
+                  <div><b>Job</b></div>
+                  <div class="flex-vertical">
+                     <div>$jobNumber</div>
+                     <div><b>WC: </b>$wcNumber</div> 
+                     <div><b>Inspector: </b>$employeeNumber</div> 
+                     <div><b>Issued: </b>$issuedDate</div>
+                  </div> 
+               </div>
             </div>
+            <div>$materialTicketCode</div>
+            <div><i>ISO $isoNumber</i></div>
          </div>
-         <div>$materialTicketCode</div>
-         <div><i>ISO $isoNumber</i></div>
-      </div>
 HEREDOC;
+      }
    }
    
    public static function getMaterialTicketCode($materialTicketId)
@@ -162,134 +165,137 @@ HEREDOC;
       
       $materialEntry = MaterialEntry::load($materialEntryId);
       
-      $materialTicketCode = MaterialTicket::getMaterialTicketCode($materialEntryId);
-      
-      $materialDescription = "";
-      if ($materialEntry->materialId != MaterialInfo::UNKNOWN_MATERIAL_ID)
+      if ($materialEntry)
       {
-         $materialInfo = MaterialInfo::load($materialEntry->materialId);
-         if ($materialInfo)
+         $materialTicketCode = MaterialTicket::getMaterialTicketCode($materialEntryId);
+         
+         $materialDescription = "";
+         if ($materialEntry->materialInfo)
          {
-            $materialDescription = $materialInfo->description;
-         }
-      }
-      
-      $vendor = MaterialVendor::getMaterialVendor($materialEntry->vendorId);
-
-      $issuedDate = "";
-      $employeeNumber = "";
-      $jobNumber = "";
-      $wcNumber = "";
-      
-      if ($materialEntry->isIssued())
-      {
-         $jobInfo = JobInfo::load($materialEntry->issuedJobId);
-         if ($jobInfo)
-         {
-            $jobNumber = $jobInfo->jobNumber;
-            $wcNumber = $jobInfo->wcNumber;
+            $materialDescription = $materialEntry->materialInfo->description;
          }
          
-         $userInfo = UserInfo::load($materialEntry->issuedUserId);
-         if ($userInfo)
+         $vendor = "";
+         if ($materialEntry->materialHeatInfo)
          {
-            $employeeNumber = $userInfo->employeeNumber;
+            $vendor = MaterialVendor::getMaterialVendor($materialEntry->materialHeatInfo->vendorId);
          }
+   
+         $issuedDate = "";
+         $employeeNumber = "";
+         $jobNumber = "";
+         $wcNumber = "";
          
-         $dateTime = new DateTime($materialEntry->issuedDateTime, new DateTimeZone('America/New_York'));
-         $issuedDate = $dateTime->format("m-d-Y");
-      }
-      
-      $isoNumber = IsoInfo::getIsoNumber(IsoDoc::MATERIAL_TICKET);
-      
-      $file = fopen(MaterialTicket::LABEL_TEMPLATE_FILENAME, "r");
-      
-      if ($file)
-      {
-         $xml = fread($file, filesize(MaterialTicket::LABEL_TEMPLATE_FILENAME));
-         $xml = substr($xml, 3);  // Three odd characters at beginning when reading from file.
-         
-         fclose($file);
-         
-         for ($field = MaterialTicketLabelFields::FIRST; $field < MaterialTicketLabelFields::LAST; $field++)
+         if ($materialEntry->isIssued())
          {
-            switch ($field)
+            $jobInfo = JobInfo::load($materialEntry->issuedJobId);
+            if ($jobInfo)
             {
-               case MaterialTicketLabelFields::MATERIAL_TICKET_CODE:
+               $jobNumber = $jobInfo->jobNumber;
+               $wcNumber = $jobInfo->wcNumber;
+            }
+            
+            $userInfo = UserInfo::load($materialEntry->issuedUserId);
+            if ($userInfo)
+            {
+               $employeeNumber = $userInfo->employeeNumber;
+            }
+            
+            $dateTime = new DateTime($materialEntry->issuedDateTime, new DateTimeZone('America/New_York'));
+            $issuedDate = $dateTime->format("m-d-Y");
+         }
+         
+         $isoNumber = IsoInfo::getIsoNumber(IsoDoc::MATERIAL_TICKET);
+         
+         $file = fopen(MaterialTicket::LABEL_TEMPLATE_FILENAME, "r");
+         
+         if ($file)
+         {
+            $xml = fread($file, filesize(MaterialTicket::LABEL_TEMPLATE_FILENAME));
+            $xml = substr($xml, 3);  // Three odd characters at beginning when reading from file.
+            
+            fclose($file);
+            
+            for ($field = MaterialTicketLabelFields::FIRST; $field < MaterialTicketLabelFields::LAST; $field++)
+            {
+               switch ($field)
                {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialTicketCode, $xml);
-                  break;
-               }
+                  case MaterialTicketLabelFields::MATERIAL_TICKET_CODE:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialTicketCode, $xml);
+                     break;
+                  }
+                     
+                  case MaterialTicketLabelFields::MATERIAL:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialDescription, $xml);
+                     break;
+                  }
                   
-               case MaterialTicketLabelFields::MATERIAL:
-               {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialDescription, $xml);
-                  break;
-               }
-               
-               case MaterialTicketLabelFields::VENDOR:
-               {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $vendor, $xml);
-                  break;
-               }
+                  case MaterialTicketLabelFields::VENDOR:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $vendor, $xml);
+                     break;
+                  }
+                     
+                  case MaterialTicketLabelFields::TAG_NUMBER:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialEntry->tagNumber, $xml);
+                     break;
+                  }
+                     
+                  case MaterialTicketLabelFields::HEAT_NUMBER:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialEntry->materialHeatInfo->internalHeatNumber, $xml);
+                     break;
+                  }
+                     
+                  case MaterialTicketLabelFields::QUANTITY:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialEntry->getQuantity(), $xml);
+                     break;
+                  }
+                     
+                  case MaterialTicketLabelFields::PIECES:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialEntry->pieces, $xml);
+                     break;
+                  }
+                     
+                  case MaterialTicketLabelFields::JOB_NUMBER:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $jobNumber, $xml);
+                     break;
+                  }
+                     
+                  case MaterialTicketLabelFields::WC_NUMBER:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $wcNumber, $xml);
+                     break;
+                  }
                   
-               case MaterialTicketLabelFields::TAG_NUMBER:
-               {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialEntry->tagNumber, $xml);
-                  break;
-               }
+                  case MaterialTicketLabelFields::ISSUED_DATE:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $issuedDate, $xml);
+                     break;
+                  }
                   
-               case MaterialTicketLabelFields::HEAT_NUMBER:
-               {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialEntry->heatNumber, $xml);
-                  break;
-               }
+                  case MaterialTicketLabelFields::ISSUED_USER_ID:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $employeeNumber, $xml);
+                     break;
+                  }
                   
-               case MaterialTicketLabelFields::QUANTITY:
-               {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialEntry->getQuantity(), $xml);
-                  break;
-               }
-                  
-               case MaterialTicketLabelFields::PIECES:
-               {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $materialEntry->pieces, $xml);
-                  break;
-               }
-                  
-               case MaterialTicketLabelFields::JOB_NUMBER:
-               {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $jobNumber, $xml);
-                  break;
-               }
-                  
-               case MaterialTicketLabelFields::WC_NUMBER:
-               {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $wcNumber, $xml);
-                  break;
-               }
-               
-               case MaterialTicketLabelFields::ISSUED_DATE:
-               {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $issuedDate, $xml);
-                  break;
-               }
-               
-               case MaterialTicketLabelFields::ISSUED_USER_ID:
-               {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $employeeNumber, $xml);
-                  break;
-               }
-               
-               case MaterialTicketLabelFields::ISO:
-               {
-                  $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $isoNumber, $xml);
-                  break;
-               }
-                  
-               default:
-               {
-                  break;
+                  case MaterialTicketLabelFields::ISO:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $isoNumber, $xml);
+                     break;
+                  }
+                     
+                  default:
+                  {
+                     break;
+                  }
                }
             }
          }
