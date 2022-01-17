@@ -136,7 +136,6 @@ function onVendorHeatNumberChange()
    let heatNumber = document.getElementById("vendor-heat-number-input").value;
    
    clear("vendor-id-input");
-   // TODO: Others
    
    if (heatNumber != null)
    {
@@ -173,6 +172,16 @@ function onWCNumberChange()
       
    // Populate job numbers based on selected WC number.
    reloadJobNumbers();
+}
+
+function onEditInternalHeatButton()
+{
+   if (document.getElementById("internal-heat-number-input").disabled)
+   {
+      disable("edit-internal-heat-number-button");
+      hide("edit-internal-heat-number-button");
+      enable("internal-heat-number-input");
+   }
 }
 
 function recalculateQuantity()
@@ -325,6 +334,8 @@ function updateVendorHeatInfo(vendorHeatInfo)
       
       disable("vendor-id-input");
       disable("material-id-input");
+      disable("internal-heat-number-input");
+      hide("edit-internal-heat-number-button");
    }
    else
    {
@@ -335,6 +346,8 @@ function updateVendorHeatInfo(vendorHeatInfo)
             
       enable("vendor-id-input");
       enable("material-id-input");
+      disable("internal-heat-number-input");
+      show("edit-internal-heat-number-button", "block");
    }
 }
 

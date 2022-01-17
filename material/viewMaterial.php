@@ -420,85 +420,59 @@ if (!Authentication::isAuthenticated())
                            
                <div class="form-item" style="padding-right: 25px;">
                   <div class="form-label">Entry Date</div>
-                  <div class="flex-horizontal">
-                     <input id="entry-date-input" type="date" name="entryDate" form="input-form" oninput="" value="<?php echo getEntryDate(); ?>" <?php echo getDisabled(MaterialInputField::ENTRY_DATE); ?>>
-                  </div>
+                   <input id="entry-date-input" type="date" name="entryDate" form="input-form" oninput="" value="<?php echo getEntryDate(); ?>" <?php echo getDisabled(MaterialInputField::ENTRY_DATE); ?>/>
                </div>
                
                <div class="form-item">
                   <div class="form-label">Entered By</div>
-                  <div class="flex-horizontal">
-                     <select id="employee-number-input" name="employeeNumber" form="input-form" oninput="" <?php echo getDisabled(MaterialInputField::ENTRY_USER); ?>>
-                        <?php echo UserInfo::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->enteredUserId], getMaterialEntry()->enteredUserId); ?>
-                     </select>
-                  </div>
+                  <select id="employee-number-input" name="employeeNumber" form="input-form" oninput="" <?php echo getDisabled(MaterialInputField::ENTRY_USER); ?>>
+                     <?php echo UserInfo::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->enteredUserId], getMaterialEntry()->enteredUserId); ?>
+                  </select>
                </div>
                
                <div class="form-section-header">Heat</div>
                
                <div class="form-item">
                   <div class="form-label">Vendor Heat</div>
-                  <div class="flex-vertical">
-                     <div class="flex-horizontal">
-                        <input id="vendor-heat-number-input" type="text" name="vendorHeatNumber" form="input-form" oninput="this.validator.validate(); onVendorHeatNumberChange()" value="<?php echo getMaterialEntry()->vendorHeatNumber; ?>" <?php echo getDisabled(MaterialInputField::VENDOR_HEAT); ?> />
-                     </div>
-                  </div>
+                  <input id="vendor-heat-number-input" type="text" name="vendorHeatNumber" form="input-form" oninput="this.validator.validate(); onVendorHeatNumberChange()" value="<?php echo getMaterialEntry()->vendorHeatNumber; ?>" <?php echo getDisabled(MaterialInputField::VENDOR_HEAT); ?> />
                </div>  
                
                <div class="form-item">
                   <div class="form-label">Vendor</div>
-                  <div class="flex-horizontal">
-                     <select id="vendor-id-input" name="vendorId" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(MaterialInputField::VENDOR); ?>>
-                        <?php echo MaterialVendor::getOptions(getMaterialEntry()->materialHeatInfo->vendorId); ?>
-                     </select>
-                  </div>
+                  <select id="vendor-id-input" name="vendorId" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(MaterialInputField::VENDOR); ?>>
+                     <?php echo MaterialVendor::getOptions(getMaterialEntry()->materialHeatInfo->vendorId); ?>
+                  </select>
                </div>
                
                <div class="form-item">
                   <div class="form-label">PPTP Heat</div>
-                  <div class="flex-vertical">
-                     <div class="flex-horizontal">
-                        <input id="internal-heat-number-input" type="number" style="width:100px;" name="internalHeatNumber" form="input-form" oninput="this.validator.validate();" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getInternalHeatNumber(); ?>" readonly="readonly" <?php echo getDisabled(MaterialInputField::INTERNAL_HEAT); ?> />
-                     </div>
-                  </div>
+                  <input id="internal-heat-number-input" type="number" style="width:100px;" name="internalHeatNumber" form="input-form" oninput="this.validator.validate();" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getInternalHeatNumber(); ?>" <?php echo getDisabled(MaterialInputField::INTERNAL_HEAT); ?> />
+                  &nbsp;&nbsp;
+                  <button id="edit-internal-heat-number-button" class="small-button accent-button" onclick="onEditInternalHeatButton()">Custom</button>
                </div>
                
                <div class="form-section-header">Material</div>
                                  
                <div class="form-item">
                   <div class="form-label">Material type</div>
-                  <div class="flex-horizontal">
-                     <select id="material-id-input" name="materialId" form="input-form" oninput="this.validator.validate(); recalculateQuantity()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
-                        <?php echo MaterialInfo::getOptions(getMaterialEntry()->materialHeatInfo->materialId); ?>
-                     </select>
-                  </div>
+                  <select id="material-id-input" name="materialId" form="input-form" oninput="this.validator.validate(); recalculateQuantity()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
+                     <?php echo MaterialInfo::getOptions(getMaterialEntry()->materialHeatInfo->materialId); ?>
+                  </select>
                </div>
                
                <div class="form-item">
                   <div class="form-label">Tag #</div>
-                  <div class="flex-vertical">
-                     <div class="flex-horizontal">
-                        <input id="tag-number-input" type="text" name="tagNumber" form="input-form" oninput="this.validator.validate();" value="<?php echo getMaterialEntry()->tagNumber; ?>" <?php echo getDisabled(MaterialInputField::TAG); ?> />
-                     </div>
-                  </div>
+                  <input id="tag-number-input" type="text" name="tagNumber" form="input-form" oninput="this.validator.validate();" value="<?php echo getMaterialEntry()->tagNumber; ?>" <?php echo getDisabled(MaterialInputField::TAG); ?> />
                </div>         
                
                <div class="form-item">
                   <div class="form-label">Pieces</div>
-                  <div class="flex-vertical">
-                     <div class="flex-horizontal">
-                        <input id="pieces-input" type="number" style="width:50px;" name="pieces" form="input-form" oninput="this.validator.validate(); recalculateQuantity()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
-                     </div>
-                  </div>
+                  <input id="pieces-input" type="number" style="width:50px;" name="pieces" form="input-form" oninput="this.validator.validate(); recalculateQuantity()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
                </div>
                
                <div class="form-item">
                   <div class="form-label">Quantity</div>
-                  <div class="flex-vertical">
-                     <div class="flex-horizontal">
-                        <input id="quantity-input" type="number" style="width:50px;" form="input-form" value="<?php echo getMaterialEntry()->getQuantity() ?>" <?php echo getDisabled(MaterialInputField::QUANTITY); ?> />
-                     </div>
-                  </div>
+                  <input id="quantity-input" type="number" style="width:50px;" form="input-form" value="<?php echo getMaterialEntry()->getQuantity() ?>" <?php echo getDisabled(MaterialInputField::QUANTITY); ?> />
                </div>                    
                
             </div>
@@ -509,66 +483,50 @@ if (!Authentication::isAuthenticated())
                            
                <div class="form-item" style="padding-right: 25px;">
                   <div class="form-label">Received Date</div>
-                  <div class="flex-horizontal">
-                     <input id="received-date-input" type="date" name="receivedDate" form="input-form" oninput="" value="<?php echo getReceivedDate(); ?>" <?php echo getDisabled(MaterialInputField::RECEIVED_DATE); ?>>
-                  </div>
-               </div>
-            
+                  <input id="received-date-input" type="date" name="receivedDate" form="input-form" oninput="" value="<?php echo getReceivedDate(); ?>" <?php echo getDisabled(MaterialInputField::RECEIVED_DATE); ?>>
+               </div>            
             
                <div class="form-section-header">Issued</div>
                            
                <div class="form-item" style="padding-right: 25px;">
                   <div class="form-label">Issued Date</div>
-                  <div class="flex-horizontal">
-                     <input id="issued-date-input" type="date" name="issuedDate" form="input-form" oninput="" value="<?php echo getIssuedDate(); ?>" <?php echo getDisabled(MaterialInputField::ISSUED_DATE); ?>>
-                  </div>
+                  <input id="issued-date-input" type="date" name="issuedDate" form="input-form" oninput="" value="<?php echo getIssuedDate(); ?>" <?php echo getDisabled(MaterialInputField::ISSUED_DATE); ?>>
                </div>
                
                <div class="form-item">
                   <div class="form-label">Issued By</div>
-                  <div class="flex-horizontal">
-                     <select id="issued-user-id-input" name="issuedUserId" form="input-form" oninput="" <?php echo getDisabled(MaterialInputField::ISSUED_USER); ?>>
-                        <?php echo UserInfo::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->issuedUserId], getMaterialEntry()->issuedUserId); ?>
-                     </select>
-                  </div>
+                  <select id="issued-user-id-input" name="issuedUserId" form="input-form" oninput="" <?php echo getDisabled(MaterialInputField::ISSUED_USER); ?>>
+                     <?php echo UserInfo::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->issuedUserId], getMaterialEntry()->issuedUserId); ?>
+                  </select>
                </div>
                
                <div class="form-item">
                   <div class="form-label">WC #</div>
-                  <div class="flex-horizontal">
-                     <select id="wc-number-input" name="wcNumber" form="input-form" oninput="this.validator.validate(); onWCNumberChange()" <?php echo getDisabled(MaterialInputField::WC_NUMBER); ?>>
-                        <?php echo JobInfo::getWcNumberOptions(JobInfo::UNKNOWN_JOB_ID, getIssuedWcNumber()); ?>
-                     </select>
-                  </div>
+                  <select id="wc-number-input" name="wcNumber" form="input-form" oninput="this.validator.validate(); onWCNumberChange()" <?php echo getDisabled(MaterialInputField::WC_NUMBER); ?>>
+                     <?php echo JobInfo::getWcNumberOptions(JobInfo::UNKNOWN_JOB_ID, getIssuedWcNumber()); ?>
+                  </select>
                </div>               
                                  
                <div class="form-item">
                   <div class="form-label">Job #</div>
-                  <div class="flex-horizontal">
-                     <select id="job-number-input" name="jobNumber" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(MaterialInputField::JOB_NUMBER); ?>>
-                        <?php echo JobInfo::getJobNumberOptions(getIssuedJobNumber(), true, true); ?>
-                     </select>
-                  </div>
+                  <select id="job-number-input" name="jobNumber" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(MaterialInputField::JOB_NUMBER); ?>>
+                     <?php echo JobInfo::getJobNumberOptions(getIssuedJobNumber(), true, true); ?>
+                  </select>
                </div>
                
                <div class="form-section-header">Acknowledged</div>
                            
                <div class="form-item" style="padding-right: 25px;">
                   <div class="form-label-long">Acknowledged Date</div>
-                  <div class="flex-horizontal">
-                     <input id="acknowledged-date-input" type="date" name="acknowledgedDate" form="input-form" oninput="" value="<?php echo getAcknowledgedDate(); ?>" <?php echo getDisabled(MaterialInputField::ACKNOWLEDGED_DATE); ?>>
-                  </div>
+                  <input id="acknowledged-date-input" type="date" name="acknowledgedDate" form="input-form" oninput="" value="<?php echo getAcknowledgedDate(); ?>" <?php echo getDisabled(MaterialInputField::ACKNOWLEDGED_DATE); ?>>
                </div>
                
                <div class="form-item">
                   <div class="form-label-long">Acknowledged By</div>
-                  <div class="flex-horizontal">
-                     <select id="acknowleged-user-id-input" name="acknowledgedUserId" form="input-form" oninput="" <?php echo getDisabled(MaterialInputField::ACKNOWLEDGED_USER); ?>>
-                        <?php echo UserInfo::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->acknowledgedUserId], getMaterialEntry()->acknowledgedUserId); ?>
-                     </select>
-                  </div>
+                  <select id="acknowleged-user-id-input" name="acknowledgedUserId" form="input-form" oninput="" <?php echo getDisabled(MaterialInputField::ACKNOWLEDGED_USER); ?>>
+                     <?php echo UserInfo::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->acknowledgedUserId], getMaterialEntry()->acknowledgedUserId); ?>
+                  </select>
                </div>
-               
             
             </div>
             
@@ -593,7 +551,7 @@ if (!Authentication::isAuthenticated())
       var internalHeatValidator = new IntValidator("internal-heat-number-input", 5, 1, 99999, false);
       var materialValidator = new SelectValidator("material-id-input");
       var tagNumberValidator = new RegExpressionValidator("tag-number-input", /^[0-9-]+$/, true, 16);
-      var piecesValidator = new IntValidator("pieces-input", 2, 1, 99, false);
+      var piecesValidator = new IntValidator("pieces-input", 4, 1, 1000, false);
       var jobNumberValidator = new SelectValidator("job-number-input");
       var wcValidator = new SelectValidator("wc-number-input");
 
