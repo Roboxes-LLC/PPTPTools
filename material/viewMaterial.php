@@ -546,7 +546,7 @@ if (!Authentication::isAuthenticated())
    <script>
    
       preserveSession();
-      var vendorHeatValidator = new RegExpressionValidator("vendor-heat-number-input", /^[a-zA-Z0-9]+$/, true, 16);
+      var vendorHeatValidator = new RegExpressionValidator("vendor-heat-number-input", /^[a-zA-Z0-9-.]+$/, true, 16);
       var vendorValidator = new SelectValidator("vendor-id-input");
       var internalHeatValidator = new IntValidator("internal-heat-number-input", 5, 1, 99999, false);
       var materialValidator = new SelectValidator("material-id-input");
