@@ -14,31 +14,20 @@ abstract class WeeklySummaryReportTable
 
 abstract class WorkDay
 {
-   const UNKNOWN = 0;
-   const FIRST = 1;
+   const FIRST = 0;
    const SUNDAY = WorkDay::FIRST;
-   const MONDAY = 2;
-   const TUESDAY = 3;
-   const WEDNESDAY = 4;
-   const THURSDAY = 5;
-   const FRIDAY = 6;
-   const SATURDAY = 7;
-   const LAST = 8;
+   const MONDAY = 1;
+   const TUESDAY = 2;
+   const WEDNESDAY = 3;
+   const THURSDAY = 4;
+   const FRIDAY = 5;
+   const SATURDAY = 6;
+   const LAST = 7;
    const COUNT = (WorkDay::LAST - WorkDay::FIRST);
-   
-   const PHP_SUNDAY = 7;
-   
-   public static function getPHPDayNumber($dayNumber)
-   {
-      $phpDayNumbers = array(0, 7, 1, 2, 3, 4, 5, 6);
-      
-      return ($phpDayNumbers[$dayNumber]);
-   }
    
    public static function getLabel($workDay)
    {
-      $labels = array("---",
-                      "Sunday",
+      $labels = array("Sunday",
                       "Monday",
                       "Tuesday",
                       "Wednesday",
@@ -55,11 +44,12 @@ abstract class WorkDay
       
       $dt = new DateTime($dateTime, new DateTimeZone('America/New_York'));
       
-      $weekNumber = Time::weekNumber($dateTime);
+      $dayOfTheWeek = intval($dt->format("w"));
       
-      $year = $dt->format("o");  // ISO year.  (Ex. 1/1/2022 = 2021)
-      
-      $dt->setISODate($year, $weekNumber, WorkDay::getPHPDayNumber(WorkDay::MONDAY));
+      if ($dayOfTheWeek != WorkDay::SUNDAY)
+      {
+         $dt->modify('last Sunday');
+      }
       
       for ($workDay = WorkDay::FIRST; $workDay < WorkDay::LAST; $workDay++)
       {
@@ -523,8 +513,13 @@ if (isset($_GET["mfgDate"]))
 */
 
 /*
-$date = "12/26/2021";
+$date = "1/22/2022";
 $dates = WorkDay::getDates($date);
 echo "$date<br>";
-var_dump($dates);
+foreach ($dates as $date)
+{
+   $dt = new DateTime($date, new DateTimeZone('America/New_York'));
+   echo $dt->format("l m-d-Y") . "<br>";
+}
 */
+

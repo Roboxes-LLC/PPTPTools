@@ -2790,15 +2790,7 @@ $router->add("weeklySummaryReportDates", function($params) {
    $dateTime = new DateTime($dates[WorkDay::SATURDAY], new DateTimeZone('America/New_York'));  // TODO: Replace
    $result->weekEndDate = $dateTime->format("D n/j");
    
-   $dateTime = new DateTime($mfgDate, new DateTimeZone('America/New_York'));  // TODO: Replace
-   $phpDayNumber =$dateTime->format("N");
-   $weekNumber = Time::weekNumber($mfgDate);
-   if ($phpDayNumber == WorkDay::PHP_SUNDAY)
-   {
-      $weekNumber++;
-   }
-   
-   $result->weekNumber = $weekNumber;
+   $result->weekNumber = Time::weekNumber($dates[WorkDay::MONDAY]);  // ISO weeks start on Mondays
 
    echo json_encode($result);
 });
