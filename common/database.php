@@ -1810,6 +1810,267 @@ class PPTPDatabase extends MySqlDatabase
    }
    
    // **************************************************************************
+   //                                 Material
+   // **************************************************************************
+   
+   public function getMaterials($materialType = MaterialType::UNKNOWN)
+   {
+      $materialTypeClause = "";
+      if ($materialType != MaterialType::UNKNOWN)
+      {
+         $materialTypeClause = "WHERE materialType = $materialType";
+      }
+      
+      $query = "SELECT * FROM material $materialTypeClause ORDER BY partNumber ASC;";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getMaterial($materialId)
+   {
+      $query = "SELECT * FROM material WHERE materialId = $materialId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                             Material Vendor
+   // **************************************************************************
+   
+   public function getMaterialVendors()
+   {
+      $query = "SELECT * FROM materialvendor;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getMaterialVendor($vendorId)
+   {
+      $query = "SELECT * FROM materialvendor WHERE vendorId = $vendorId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                Material Heat
+   // **************************************************************************
+   
+   public function getMaterialHeat($heatNumber, $useInternalHeatNumber = false)
+   {
+      $heatClause = "";
+      if ($useInternalHeatNumber)
+      {
+         $heatClause = "WHERE internalHeatNumber = $heatNumber";
+      }
+      else
+      {
+         $heatClause = "WHERE vendorHeatNumber = '$heatNumber'";
+      }
+   
+      $query = "SELECT * FROM materialheat $heatClause;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function newMaterialHeat($materialHeatInfo)
+   {
+      $query =
+         "INSERT INTO materialheat " .
+         "(vendorHeatNumber, internalHeatNumber, materialId, vendorId) " .
+         "VALUES " .
+         "('$materialHeatInfo->vendorHeatNumber', '$materialHeatInfo->internalHeatNumber', '$materialHeatInfo->materialId', '$materialHeatInfo->vendorId');";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function updateMaterialHeat($materialHeatInfo)
+   {
+      $query =
+         "UPDATE materialheat " .
+         "SET internalHeatNumber = $materialHeatInfo->internalHeatNumber, materialId = $materialHeatInfo->materialId, vendorId = $materialHeatInfo->vendorId " .
+         "WHERE vendorHeatNumber = '$materialHeatInfo->vendorHeatNumber';";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteMaterialHeat($heatNumber, $useInternalHeatNumber = false)
+   {
+      $heatClause = "";
+      if ($useInternalHeatNumber)
+      {
+         $heatClause = "WHERE internalHeatNumber = $heatNumber";
+      }
+      else
+      {
+         $heatClause = "WHERE vendorHeatNumber = '$heatNumber'";
+      }
+      
+      $query = "DELETE FROM materialheat $heatClause;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getNextInternalHeatNumber()
+   {
+      $internalHeatNumber = 0;
+      
+      $query = "select MAX(internalHeatNumber) from materialheat";
+      
+      $result = $this->query($query);
+      
+      if ($result && ($row = $result->fetch_assoc()))
+      {
+         $internalHeatNumber = intval($row["MAX(internalHeatNumber)"]) + 1;
+      }
+      
+      return ($internalHeatNumber);
+   }
+      
+   // **************************************************************************
+   //                                Material Log
+   // **************************************************************************
+   
+   public function getMaterialEntry($materialEntryId)
+   {
+      $query = "SELECT * FROM materiallog WHERE materialEntryId = $materialEntryId";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getMaterialEntries($materialEntryStatus, $startDate, $endDate)
+   {
+      $statusClause = "";
+      if ($materialEntryStatus == MaterialEntryStatus::RECEIVED)
+      {
+         $statusClause = "AND issuedDateTime IS NULL";
+      }
+      else if ($materialEntryStatus == MaterialEntryStatus::ISSUED)
+      {
+         $statusClause = "AND issuedDateTime IS NOT NULL AND acknowledgedDateTime IS NULL";
+      }
+      else if ($materialEntryStatus == MaterialEntryStatus::ACKNOWLEDGED)
+      {
+         $statusClause = "AND acknowledgedDateTime IS NOT NULL";
+      }
+
+      $dateTimeClause = "enteredDateTime BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "'";
+            
+      $query = "SELECT * FROM materiallog WHERE $dateTimeClause $statusClause ORDER BY receivedDateTime DESC;";
+
+      $result = $this->query($query);
+
+      return ($result);
+   }
+   
+   public function newMaterialEntry($materialEntry)
+   {
+      $enteredDateTime = $materialEntry->enteredDateTime ? Time::toMySqlDate($materialEntry->enteredDateTime) : null;
+      
+      $receivedDateTime = $materialEntry->receivedDateTime ? Time::toMySqlDate($materialEntry->receivedDateTime) : null;
+      
+      $query =
+         "INSERT INTO materiallog " .
+         "(vendorHeatNumber, tagNumber, pieces, enteredUserId, enteredDateTime, receivedDateTime) " .
+         "VALUES " .
+         "('$materialEntry->vendorHeatNumber', '$materialEntry->tagNumber', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime', '$receivedDateTime');";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function updateMaterialEntry($materialEntry)
+   {
+      $enteredDateTime = $materialEntry->enteredDateTime ? Time::toMySqlDate($materialEntry->enteredDateTime) : null;
+      
+      $receivedDateTime = $materialEntry->receivedDateTime ? Time::toMySqlDate($materialEntry->receivedDateTime) : null;
+      
+      $query =
+         "UPDATE materiallog " .
+         "SET vendorHeatNumber = '$materialEntry->vendorHeatNumber', tagNumber = '$materialEntry->tagNumber', pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', receivedDateTime = '$receivedDateTime' " .
+         "WHERE materialEntryId = $materialEntry->materialEntryId;";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function issueMaterial($materialEntry)
+   {
+      $issuedDateTime = $materialEntry->issuedDateTime ? Time::toMySqlDate($materialEntry->issuedDateTime) : null;
+
+      $dateTimeClause = "";
+      if ($issuedDateTime)
+      {
+         $dateTimeClause = ", issuedDateTime = \"$issuedDateTime\"";
+      }
+      else 
+      {
+         $dateTimeClause = ", issuedDateTime = NULL";
+      }
+      
+      $query =
+         "UPDATE materiallog " .
+         "SET issuedJobId = $materialEntry->issuedJobId, issuedUserId = $materialEntry->issuedUserId$dateTimeClause " .
+         "WHERE materialEntryId = $materialEntry->materialEntryId;";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function acknowledgeIssuedMaterial($materialEntry)
+   {
+      $acknowledgedDateTime = $materialEntry->acknowledgedDateTime ? Time::toMySqlDate($materialEntry->acknowledgedDateTime) : null;
+      
+      $dateTimeClause = "";
+      if ($acknowledgedDateTime)
+      {
+         $dateTimeClause = ", acknowledgedDateTime = \"$acknowledgedDateTime\"";
+      }
+      else
+      {
+         $dateTimeClause = ", acknowledgedDateTime = NULL";
+      }
+      
+      $query =
+         "UPDATE materiallog " .
+         "SET acknowledgedUserId = $materialEntry->acknowledgedUserId$dateTimeClause " .
+         "WHERE materialEntryId = $materialEntry->materialEntryId;";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteMaterialEntry($materialEntryId)
+   {
+      $query = "DELETE FROM materiallog WHERE materialEntryId = $materialEntryId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
    //                                  Private
    // **************************************************************************
    
