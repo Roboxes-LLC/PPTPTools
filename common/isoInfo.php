@@ -14,7 +14,8 @@ abstract class IsoDoc
    const QCP_INSPECTION = 6;
    const LINE_INSPECTION = 7;
    const MATERIAL_TICKET = 8;
-   const LAST = 9;
+   const SHIPPING_CARD = 9;
+   const LAST = 10;
    const COUNT = IsoDoc::LAST - IsoDoc::FIRST;
 }
 

@@ -17,6 +17,7 @@ require_once '../common/printerInfo.php';
 require_once '../common/quarterlySummaryReport.php';
 require_once '../common/root.php';
 require_once '../common/signInfo.php';
+require_once '../common/shippingCardInfo.php';
 require_once '../common/timeCardInfo.php';
 require_once '../common/upload.php';
 require_once '../common/userInfo.php';
@@ -3606,6 +3607,255 @@ $router->add("printMaterialTicket", function($params) {
       
       // Store preferred printer for session.
       $_SESSION["preferredPrinter"] = $params["printerName"];
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("shippingCardData", function($params) {
+   $result = array();
+   
+   $startDate = Time::startOfDay(Time::now("Y-m-d"));
+   $endDate = Time::endOfDay(Time::now("Y-m-d"));
+   
+   if (isset($params["filters"]))
+   {
+      foreach ($params["filters"] as $filter)
+      {
+         if ($filter->field == "date")
+         {
+            if ($filter->type == ">=")
+            {
+               $startDate = Time::startOfDay($filter->value);
+            }
+            else if ($filter->type == "<=")
+            {
+               $endDate = Time::endOfDay($filter->value);
+            }
+         }
+      }
+   }
+   
+   if (isset($params["startDate"]))
+   {
+      $startDate = Time::startOfDay($params["startDate"]);
+   }
+   
+   if (isset($params["endDate"]))
+   {
+      $endDate = Time::endOfDay($params["endDate"]);
+   }
+   
+   $employeeNumberFilter =
+      (Authentication::checkPermissions(Permission::VIEW_OTHER_USERS)) ?
+         UserInfo::UNKNOWN_EMPLOYEE_NUMBER :                      // No filter
+         Authentication::getAuthenticatedUser()->employeeNumber;  // Filter on authenticated user
+   
+   $database = PPTPDatabase::getInstance();
+   
+   if ($database && $database->isConnected())
+   {
+      $shippingCards = $database->getShippingCards($employeeNumberFilter, $startDate, $endDate);
+      
+      // Populate data table.
+      foreach ($shippingCards as $shippingCard)
+      {
+         $shippingCardInfo = ShippingCardInfo::load($shippingCard["shippingCardId"]);
+         
+         $userInfo = UserInfo::load($shippingCard["employeeNumber"]);
+         if ($userInfo)
+         {
+            $shippingCard["shipper"] = $userInfo->getFullName() . " (" . $shippingCard["employeeNumber"] . ")";
+         }
+         
+         $jobInfo = JobInfo::load($shippingCard["jobId"]);
+         if ($jobInfo)
+         {
+            $shippingCard["jobNumber"] = $jobInfo->jobNumber;
+            $shippingCard["wcNumber"] = $jobInfo->wcNumber;
+         }
+         
+         $shippingCard["isNew"] = Time::isNew($shippingCardInfo->dateTime, Time::NEW_THRESHOLD);
+         $shippingCard["incompleteShiftTime"] = $shippingCardInfo->incompleteShiftTime();
+         $shippingCard["incompleteShippingTime"] = $shippingCardInfo->incompleteShippingTime();
+         $shippingCard["incompletePartCount"] = $shippingCardInfo->incompletePartCount();
+         
+         $result[] = $shippingCard;
+      }
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("saveShippingCard", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $database = PPTPDatabase::getInstance();
+   $dbaseResult = null;
+   
+   $timeCardInfo = null;
+   
+   if (isset($params["shippingCardId"]) &&
+       is_numeric($params["shippingCardId"]) &&
+       (intval($params["shippingCardId"]) != ShippingCardInfo::UNKNOWN_SHIPPING_CARD_ID))
+   {
+      $shippingCardId = intval($params["shippingCardId"]);
+      
+      //  Updated entry
+      $shippingCardInfo = ShippingCardInfo::load($shippingCardId);
+      
+      if (!$shippingCardInfo)
+      {
+         $result->success = false;
+         $result->error = "No existing shipping card found.";
+      }
+   }
+   else
+   {
+      // New shipping card.
+      $shippingCardInfo = new ShippingCardInfo();
+      
+      // Use current date/time as time card time.
+      $shippingCardInfo->dateTime = Time::now("Y-m-d h:i:s A");
+   }
+   
+   if ($result->success)
+   {
+      if (isset($params["shipper"]) &&
+          isset($params["manufactureDate"]) &&
+          isset($params["jobNumber"]) &&
+          isset($params["shiftTime"]) &&
+          isset($params["shippingTime"]) &&
+          isset($params["partCount"]) &&
+          isset($params["scrapCount"]) &&
+          isset($params["comments"]))
+      {
+         //$jobId = JobInfo::getJobIdByComponents($params->get("jobNumber"), $params->getInt("wcNumber"));
+         
+         // For now, set the job to the first job that matches the job number.
+         $jobId = JobInfo::UNKNOWN_JOB_ID;
+         $dbaseResult = $database->getJobsByJobNumber($params["jobNumber"]);
+         if ($dbaseResult && ($row = $dbaseResult->fetch_assoc()))
+         {
+            $jobId = intval($row["jobId"]);
+         }
+                  
+         if ($jobId != JobInfo::UNKNOWN_JOB_ID)
+         {
+            $shippingCardInfo->employeeNumber = intval($params["shipper"]);
+            $shippingCardInfo->manufactureDate = Time::startOfDay($params->get("manufactureDate"));
+            $shippingCardInfo->jobId = $jobId;
+            $shippingCardInfo->shiftTime = intval($params["shiftTime"]);
+            $shippingCardInfo->shippingTime = intval($params["shippingTime"]);
+            $shippingCardInfo->partCount = intval($params["partCount"]);
+            $shippingCardInfo->scrapCount = intval($params["scrapCount"]);
+            $shippingCardInfo->comments = $params["comments"];
+            
+            $commentCodes = CommentCode::getCommentCodes();
+            
+            foreach ($commentCodes as $commentCode)
+            {
+               $code = $commentCode->code;
+               $name = "code-" . $code;
+               
+               if (isset($params[$name]))
+               {
+                  $shippingCardInfo->setCommentCode($code);
+               }
+               else
+               {
+                  $shippingCardInfo->clearCommentCode($code);
+               }
+            }
+            
+            if ($shippingCardInfo->shippingCardId == ShippingCardInfo::UNKNOWN_SHIPPING_CARD_ID)
+            {
+               // Check for unique shipping card.
+               if (!ShippingCardInfo::isUniqueShippingCard(
+                     $shippingCardInfo->jobId,
+                     $shippingCardInfo->employeeNumber,
+                     $shippingCardInfo->manufactureDate))
+               {
+                  $result->success = false;
+                  $result->error = "Duplicate time card.";
+               }
+               else
+               {
+                  $dbaseResult = $database->newShippingCard($shippingCardInfo);
+                  
+                  if ($dbaseResult)
+                  {
+                     $result->shippingCardId = $database->lastInsertId();
+                  }
+               }
+            }
+            else
+            {
+               $dbaseResult = $database->updateShippingCard($shippingCardInfo);
+               $result->shippingCardId = $shippingCardInfo->shippingCardId;
+            }
+            
+            if ($result->success && !$dbaseResult)
+            {
+               $result->success = false;
+               $result->error = "Database query failed.";
+            }
+         }
+         else
+         {
+            $result->success = false;
+            $result->error = "Failed to lookup job ID.";
+         }
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "Missing parameters.";
+      }
+   }
+   
+   echo json_encode($result);
+});
+   
+$router->add("deleteShippingCard", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $database = PPTPDatabase::getInstance();
+
+   if (isset($params["shippingCardId"]) &&
+       is_numeric($params["shippingCardId"]) &&
+       (intval($params["shippingCardId"]) != ShippingCardInfo::UNKNOWN_SHIPPING_CARD_ID))
+   {
+      $shippingCardId = intval($params["shippingCardId"]);
+      
+      $shippingCardInfo = ShippingCardInfo::load($shippingCardId);
+      
+      if ($shippingCardInfo)
+      {
+         $dbaseResult = $database->deleteShippingCard($shippingCardId);
+         
+         if ($dbaseResult)
+         {
+            $result->success = true;
+         }
+         else
+         {
+            $result->success = false;
+            $result->error = "Database query failed.";
+         }
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "No existing shipping card found.";
+      }
    }
    else
    {

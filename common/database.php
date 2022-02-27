@@ -326,6 +326,108 @@ class PPTPDatabase extends MySqlDatabase
    }
    
    // **************************************************************************
+   //                               Shipping Cards
+   // **************************************************************************
+   
+   public function getShippingCard(
+      $shippingCardId)
+   {
+      $query = "SELECT * FROM shippingcard WHERE shippingCardId = $shippingCardId";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function matchShippingCard(
+      $jobId,
+      $employeeNumber,
+      $manufactureDate)
+   {
+      $startDate = Time::startOfDay($manufactureDate);
+      $endDate = Time::endOfDay($manufactureDate);
+      
+      $query = "SELECT * FROM shippingcard WHERE jobId = $jobId AND employeeNumber = $employeeNumber AND manufactureDate BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "';";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+
+   public function getShippingCards(
+      $employeeNumber,
+      $startDate,
+      $endDate,
+      $useMfgDate = false)
+   {
+      $result = null;
+      
+      $dateField = ($useMfgDate ? "manufactureDate" : "dateTime");
+      
+      if ($employeeNumber == UserInfo::UNKNOWN_EMPLOYEE_NUMBER)
+      {
+         $query = "SELECT * FROM shippingcard WHERE $dateField BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY $dateField DESC, shippingCardId DESC;";
+
+         $result = $this->query($query);
+      }
+      else
+      {
+         $query = "SELECT * FROM shippingcard WHERE employeeNumber=" . $employeeNumber . " AND $dateField BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY $dateField DESC, shippingCardId DESC;";
+         
+         $result = $this->query($query);
+      }
+
+      return ($result);
+   }
+
+   public function newShippingCard(
+      $shippingCardInfo)
+   {
+      $date = Time::toMySqlDate($shippingCardInfo->dateTime);
+      $manufactureDate = Time::toMySqlDate($shippingCardInfo->manufactureDate);
+      
+      $comments = mysqli_real_escape_string($this->getConnection(), $shippingCardInfo->comments);
+      
+      $query =
+         "INSERT INTO shippingcard " .
+         "(employeeNumber, dateTime, manufactureDate, jobId, shiftTime, shippingTime, partCount, scrapCount, commentCodes, comments) " .
+         "VALUES " .
+         "('$shippingCardInfo->employeeNumber', '$date', '$manufactureDate', '$shippingCardInfo->jobId', '$shippingCardInfo->shiftTime', '$shippingCardInfo->shippingTime', '$shippingCardInfo->partCount', '$shippingCardInfo->scrapCount', '$shippingCardInfo->commentCodes', '$comments');";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+
+   public function updateShippingCard(
+      $shippingCardInfo)
+   {
+      $dateTime = Time::toMySqlDate($shippingCardInfo->dateTime);
+      $manufactureDate = Time::toMySqlDate($shippingCardInfo->manufactureDate);      
+      
+      $comments = mysqli_real_escape_string($this->getConnection(), $shippingCardInfo->comments);
+      
+      $query =
+      "UPDATE shippingcard " .
+      "SET employeeNumber = $shippingCardInfo->employeeNumber, dateTime = \"$dateTime\", manufactureDate = \"$manufactureDate\", jobId = \"$shippingCardInfo->jobId\", shiftTime = $shippingCardInfo->shiftTime, shippingTime = $shippingCardInfo->shippingTime, partCount = $shippingCardInfo->partCount, scrapCount = $shippingCardInfo->scrapCount, commentCodes = $shippingCardInfo->commentCodes, comments = \"$comments\" " .
+      "WHERE shippingCardId = $shippingCardInfo->shippingCardId;";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteShippingCard(
+      $shippingCardId)
+   {
+      $query = "DELETE FROM shippingcard WHERE shippingCardId = $shippingCardId;";
+
+      $result = $this->query($query);
+            
+      return ($result);
+   }
+   
+   // **************************************************************************
    //                                 Users
    // **************************************************************************
    
