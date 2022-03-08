@@ -3673,17 +3673,46 @@ $router->add("shippingCardData", function($params) {
             $shippingCard["shipper"] = $userInfo->getFullName() . " (" . $shippingCard["employeeNumber"] . ")";
          }
          
-         $jobInfo = JobInfo::load($shippingCard["jobId"]);
+         $jobId = $shippingCardInfo->jobId;
+         
+         $operator = $shippingCardInfo->operator;
+         
+         $shippingCardInfo->panTicketCode =
+            ($shippingCardInfo->timeCardId == TimeCardInfo::UNKNOWN_TIME_CARD_ID) ?
+            "0000" :
+            PanTicket::getPanTicketCode($shippingCardInfo->timeCardId);
+         
+         if ($shippingCardInfo->timeCardId)
+         {
+            $timeCardInfo = TimeCardInfo::load($shippingCardInfo->timeCardId);
+            
+            if ($timeCardInfo)
+            {
+               $shippingCardInfo->panTicketCode = PanTicket::getPanTicketCode($timeCardInfo->timeCardId);
+               
+               $jobId = $timeCardInfo->jobId;
+               
+               $operator = $timeCardInfo->employeeNumber;
+               
+               $shippingCardInfo->manufactureDate = $timeCardInfo->manufactureDate;
+            }
+         }
+         
+         // Start here!!!
+         
+         $jobInfo = JobInfo::load($jobId);
          if ($jobInfo)
          {
-            $shippingCard["jobNumber"] = $jobInfo->jobNumber;
-            $shippingCard["wcNumber"] = $jobInfo->wcNumber;
+            $shippingCardInfo->jobNumber = $jobInfo->jobNumber;
+            $shippingCardInfo->wcNumber = $jobInfo->wcNumber;
          }
          
          $shippingCard["isNew"] = Time::isNew($shippingCardInfo->dateTime, Time::NEW_THRESHOLD);
          $shippingCard["incompleteShiftTime"] = $shippingCardInfo->incompleteShiftTime();
          $shippingCard["incompleteShippingTime"] = $shippingCardInfo->incompleteShippingTime();
          $shippingCard["incompletePartCount"] = $shippingCardInfo->incompletePartCount();
+         $shippingCard["activityLabel"] = ShippingActivity::getLabel($shippingCardInfo->activity);
+         $shippingCard["scrapTypeLabel"] = ScrapType::getLabel($shippingCardInfo->scrapType);
          
          $result[] = $shippingCard;
       }
@@ -3727,72 +3756,85 @@ $router->add("saveShippingCard", function($params) {
    
    if ($result->success)
    {
-      if (isset($params["shipper"]) &&
-          isset($params["manufactureDate"]) &&
-          isset($params["jobNumber"]) &&
-          isset($params["shiftTime"]) &&
-          isset($params["shippingTime"]) &&
-          isset($params["partCount"]) &&
-          isset($params["scrapCount"]) &&
-          isset($params["comments"]))
+      if (isset($params["panTicketCode"]) &&
+          ($params["panTicketCode"] != ""))
       {
-         //$jobId = JobInfo::getJobIdByComponents($params->get("jobNumber"), $params->getInt("wcNumber"));
+         //
+         // Pan ticket entry
+         //
          
-         // For now, set the job to the first job that matches the job number.
-         $jobId = JobInfo::UNKNOWN_JOB_ID;
-         $dbaseResult = $database->getJobsByJobNumber($params["jobNumber"]);
-         if ($dbaseResult && ($row = $dbaseResult->fetch_assoc()))
+         $panTicketId = PanTicket::getPanTicketId($params["panTicketCode"]);
+         
+         // Validate panTicketId.
+         if (TimeCardInfo::load($panTicketId) != null)
          {
-            $jobId = intval($row["jobId"]);
+            $shippingCardInfo->timeCardId = $panTicketId;
          }
-                  
+         else
+         {
+            $result->success = false;
+            $result->error = "Invalid pan ticket code.";
+         }
+      }
+      else if (isset($params["jobNumber"]) &&
+               isset($params["wcNumber"]) &&
+               isset($params["manufactureDate"]) &&
+               isset($params["operator"]))
+      {
+         //
+         // Manual entry
+         //
+         
+         $jobId = JobInfo::getJobIdByComponents($params->get("jobNumber"), $params->getInt("wcNumber"));
+         
          if ($jobId != JobInfo::UNKNOWN_JOB_ID)
          {
-            $shippingCardInfo->employeeNumber = intval($params["shipper"]);
-            $shippingCardInfo->manufactureDate = Time::startOfDay($params->get("manufactureDate"));
             $shippingCardInfo->jobId = $jobId;
+            $shippingCardInfo->manufactureDate = $params["manufactureDate"];
+            $shippingCardInfo->operator = intval($params["operator"]);
+         }
+         else
+         {
+            $result->success = false;
+            $result->error = "Failed to lookup job ID.";
+         }
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "Missing parameters.";
+      }
+      
+      if ($result->success)
+      {
+         // Required parameters.
+         if (isset($params["shipper"]) &&
+             isset($params["shiftTime"]) &&
+             isset($params["shippingTime"]) &&
+             isset($params["activity"]) &&
+             isset($params["partCount"]) &&
+             isset($params["scrapCount"]))
+         {
+            $shippingCardInfo->employeeNumber = intval($params["shipper"]);
             $shippingCardInfo->shiftTime = intval($params["shiftTime"]);
             $shippingCardInfo->shippingTime = intval($params["shippingTime"]);
+            $shippingCardInfo->activity = intval($params["activity"]);
             $shippingCardInfo->partCount = intval($params["partCount"]);
             $shippingCardInfo->scrapCount = intval($params["scrapCount"]);
-            $shippingCardInfo->comments = $params["comments"];
             
-            $commentCodes = CommentCode::getCommentCodes();
-            
-            foreach ($commentCodes as $commentCode)
+            // Optional parameters.
+            if (isset($params["scrapType"]))
             {
-               $code = $commentCode->code;
-               $name = "code-" . $code;
-               
-               if (isset($params[$name]))
-               {
-                  $shippingCardInfo->setCommentCode($code);
-               }
-               else
-               {
-                  $shippingCardInfo->clearCommentCode($code);
-               }
+               $shippingCardInfo->scrapType = intval($params["scrapType"]);
             }
-            
+               
             if ($shippingCardInfo->shippingCardId == ShippingCardInfo::UNKNOWN_SHIPPING_CARD_ID)
             {
-               // Check for unique shipping card.
-               if (!ShippingCardInfo::isUniqueShippingCard(
-                     $shippingCardInfo->jobId,
-                     $shippingCardInfo->employeeNumber,
-                     $shippingCardInfo->manufactureDate))
+               $dbaseResult = $database->newShippingCard($shippingCardInfo);
+               
+               if ($dbaseResult)
                {
-                  $result->success = false;
-                  $result->error = "Duplicate time card.";
-               }
-               else
-               {
-                  $dbaseResult = $database->newShippingCard($shippingCardInfo);
-                  
-                  if ($dbaseResult)
-                  {
-                     $result->shippingCardId = $database->lastInsertId();
-                  }
+                  $result->shippingCardId = $database->lastInsertId();
                }
             }
             else
@@ -3810,13 +3852,8 @@ $router->add("saveShippingCard", function($params) {
          else
          {
             $result->success = false;
-            $result->error = "Failed to lookup job ID.";
+            $result->error = "Missing parameters.";
          }
-      }
-      else
-      {
-         $result->success = false;
-         $result->error = "Missing parameters.";
       }
    }
    

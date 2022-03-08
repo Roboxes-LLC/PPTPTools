@@ -9,14 +9,15 @@ abstract class MaintenanceType
    const REPAIR = MaintenanceType::FIRST;
    const PREVENTATIVE = 2;
    const CLEANING = 3;
-   const LAST = 4;
+   const TOOL_ROOM = 4;
+   const LAST = 5;
    const COUNT = MaintenanceType::LAST - MaintenanceType::FIRST;
    
-   public static $values = array(MaintenanceType::REPAIR, MaintenanceType::PREVENTATIVE, MaintenanceType::CLEANING);
+   public static $values = array(MaintenanceType::REPAIR, MaintenanceType::PREVENTATIVE, MaintenanceType::CLEANING, MaintenanceType::TOOL_ROOM);
    
    public static function getLabel($maintenanceCategory)
    {
-      $labels = array("---", "Repair", "Preventative", "Cleaning");
+      $labels = array("---", "Repair", "Preventative", "Cleaning", "Tool Room");
       
       return ($labels[$maintenanceCategory]);
    }

@@ -390,9 +390,9 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
          "INSERT INTO shippingcard " .
-         "(employeeNumber, dateTime, manufactureDate, jobId, shiftTime, shippingTime, partCount, scrapCount, commentCodes, comments) " .
+         "(employeeNumber, dateTime, manufactureDate, jobId, shiftTime, shippingTime, activity, partCount, scrapCount, scrapType, comments) " .
          "VALUES " .
-         "('$shippingCardInfo->employeeNumber', '$date', '$manufactureDate', '$shippingCardInfo->jobId', '$shippingCardInfo->shiftTime', '$shippingCardInfo->shippingTime', '$shippingCardInfo->partCount', '$shippingCardInfo->scrapCount', '$shippingCardInfo->commentCodes', '$comments');";
+         "('$shippingCardInfo->employeeNumber', '$date', '$manufactureDate', '$shippingCardInfo->jobId', '$shippingCardInfo->shiftTime', '$shippingCardInfo->shippingTime', '$shippingCardInfo->activity', '$shippingCardInfo->partCount', '$shippingCardInfo->scrapCount', '$shippingCardInfo->scrapType', '$comments');";
 
       $result = $this->query($query);
       
@@ -409,7 +409,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "UPDATE shippingcard " .
-      "SET employeeNumber = $shippingCardInfo->employeeNumber, dateTime = \"$dateTime\", manufactureDate = \"$manufactureDate\", jobId = \"$shippingCardInfo->jobId\", shiftTime = $shippingCardInfo->shiftTime, shippingTime = $shippingCardInfo->shippingTime, partCount = $shippingCardInfo->partCount, scrapCount = $shippingCardInfo->scrapCount, commentCodes = $shippingCardInfo->commentCodes, comments = \"$comments\" " .
+      "SET employeeNumber = $shippingCardInfo->employeeNumber, dateTime = \"$dateTime\", manufactureDate = \"$manufactureDate\", jobId = \"$shippingCardInfo->jobId\", shiftTime = $shippingCardInfo->shiftTime, shippingTime = $shippingCardInfo->shippingTime, activity = $shippingCardInfo->activity, partCount = $shippingCardInfo->partCount, scrapCount = $shippingCardInfo->scrapCount, scrapType = $shippingCardInfo->scrapType, comments = \"$comments\" " .
       "WHERE shippingCardId = $shippingCardInfo->shippingCardId;";
 
       $result = $this->query($query);

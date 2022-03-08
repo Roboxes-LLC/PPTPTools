@@ -195,6 +195,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          //Define Table Columns
          columns:[
             {title:"Id",           field:"shippingCardId",  hozAlign:"left", visible:false},
+            {title:"Ticket",       field:"panTicketCode",   hozAlign:"left", responsive:0, headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = "";
+                  
+                  var timeCardId = cell.getRow().getData().timeCardId;
+                  
+                  if (timeCardId != 0)
+                  {
+                     cellValue = "<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().panTicketCode;
+                  }
+                  
+                  return (cellValue);
+               },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  return (cell.getValue());
+              }                 
+            },  
+            {title:"Job #",        field:"jobNumber",         hozAlign:"left", responsive:0, headerFilter:true},
+            /*
+            {title:"WC #",         field:"wcNumber",          hozAlign:"left", responsive:0, headerFilter:true},
+            {title:"Operator",     field:"operatorName",      hozAlign:"left", responsive:0, headerFilter:true},
+            */
+            {title:"Mfg. Date",    field:"manufactureDate",   hozAlign:"left", responsive:0, headerFilter:true,
+               formatter:"datetime",  // Requires moment.js 
+               formatterParams:{
+                  outputFormat:"MM/DD/YYYY",
+                  invalidPlaceholder:"---"
+               }
+            },
             {title:"Date",         field:"dateTime",        hozAlign:"left", responsive:0, print:true,
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "---";
@@ -225,13 +254,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
                  return (cellValue);
               },
-            },
-            {title:"Mfg. Date",    field:"manufactureDate", hozAlign:"left", responsive:0, headerFilter:true, print:true,
-               formatter:"datetime",  // Requires moment.js 
-               formatterParams:{
-                  outputFormat:"M/D/YYYY",
-                  invalidPlaceholder:"---"
-               }
             },
             {title:"Shipper",      field:"shipper",         hozAlign:"left", responsive:0, headerFilter:true, print:true},
             {title:"Job #",        field:"jobNumber",       hozAlign:"left", responsive:0, headerFilter:true, print:true},
@@ -274,8 +296,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   var cellValue = Math.floor(minutes / 60) + ":" + ("0" + (minutes % 60)).slice(-2);
                   
                   return (cellValue);
-                }
-             },
+               }
+            },
+            {title:"Activity",     field:"activityLabel",   hozAlign:"left", responsive:0, headerFilter:true, print:true},
             {title:"Part Count",   field:"partCount",       hozAlign:"left", responsive:4, print:true,
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
@@ -292,6 +315,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                 }                
             },
             {title:"Scrap Count",  field:"scrapCount",      hozAlign:"left", responsive:5, print:true},
+            {title:"Scrap Type",   field:"scrapTypeLabel",  hozAlign:"left", responsive:5, headerFilter:true, print:true},
             {title:"", field:"delete", responsive:0, width:75, print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");

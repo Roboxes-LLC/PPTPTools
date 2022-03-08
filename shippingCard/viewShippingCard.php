@@ -143,6 +143,20 @@ function getShippingCardInfo()
    return ($shippingCardInfo);
 }
 
+function getTimeCardId()
+{
+   $timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
+   
+   $shippingCardInfo = getShippingCardInfo();
+   
+   if ($shippingCardInfo)
+   {
+      $timeCardId = $shippingCardInfo->timeCardId;
+   }
+   
+   return ($timeCardId);
+}
+
 function getShipper()
 {
    $shipper = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
@@ -224,64 +238,6 @@ function getJobNumberOptions()
    return ($options);
 }
 
-
-function getCommentCodesDiv()
-{
-   $shippingCardInfo = getShippingCardInfo();
-   
-   $disabled = !isEditable(ShippingCardInputField::COMMENTS);
-   
-   $commentCodes = CommentCode::getCommentCodes();
-   
-   $leftColumn = "";
-   $rightColumn = "";
-   $index = 0;
-   foreach ($commentCodes as $commentCode)
-   {
-      $id = "code-" . $commentCode->code . "-input";
-      $name = "code-" . $commentCode->code;
-      $checked = ($shippingCardInfo->hasCommentCode($commentCode->code) ? "checked" : "");
-      $description = $commentCode->description;
-      
-      $codeDiv =
-<<< HEREDOC
-      <div class="form-item">
-         <input id="$id" type="checkbox" class="comment-checkbox" form="input-form" name="$name" $checked $disabled/>
-         &nbsp;
-         <label for="$id" class="form-input-medium">$description</label>
-      </div>
-HEREDOC;
-      
-      if (($index % 2) == 0)
-      {
-         $leftColumn .= $codeDiv;
-      }
-      else
-      {
-         $rightColumn .= $codeDiv;
-      }
-      
-      $index++;
-   }
-   
-   $html =
-<<<HEREDOC
-   <input type="hidden" form="input-form" name="commentCodes" value="true"/>
-   <div class="form-col">
-      <div class="form-section-header">Codes</div>
-      <div class="form-row">
-         <div class="form-col" style="margin-right: 10px;">
-            $leftColumn
-         </div>
-         <div class="form-col">
-            $rightColumn
-         </div>
-      </div>
-   </div>
-HEREDOC;
-   
-   return ($html);
-}
 
 function getJobNumber()
 {
@@ -466,88 +422,96 @@ if (!Authentication::isAuthenticated())
          
          <div class="flex-horizontal flex-left flex-wrap">
 
-            <div class="flex-vertical flex-left" style="margin-right: 50px;">
+            <div class="flex-vertical" style="margin-right: 20px;">
+              
+               <div class="form-section-header">Pan Ticket Entry</div>               
+               <div class="form-item">
+                  <div class="form-label">Pan Ticket #</div>
+                  <input id="pan-ticket-code-input" type="text" style="width:50px;" name="panTicketCode" form="input-form" oninput="this.validator.validate(); onPanTicketCodeChange()" value="<?php $timeCardId = getTimeCardId(); echo ($timeCardId == 0) ? "" : PanTicket::getPanTicketCode($timeCardId);?>" <?php echo getDisabled(ShippingCardInputField::TIME_CARD_ID); ?>>
+                  &nbsp;&nbsp;
+                  <button id="link-button" class="small-button" onclick="onLinkButton()"><i class="material-icons">link</i></button>               
+               </div>               
+            
+               <div class="form-section-header">Manual Entry</div>
+               <div class="form-item">
+                  <div class="form-label">Job Number</div>
+                  <select id="job-number-input" name="jobNumber" form="input-form" oninput="this.validator.validate(); onJobNumberChange();" <?php echo getDisabled(ShippingCardInputField::JOB_NUMBER); ?>>
+                     <?php echo getJobNumberOptions(); ?>
+                  </select>
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label">Work Center</div>
+                  <select id="wc-number-input" name="wcNumber" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(ShippingCardInputField::WC_NUMBER); ?>>
+                     <?php echo getWcNumberOptions(); ?>
+                  </select>
+               </div>
+               
+               <div class="flex-horizontal">
+                  <div class="form-item">
+                     <div class="form-label">Manufacture Date</div>
+                     <div class="flex-horizontal">
+                        <input id="manufacture-date-input" type="date" name="manufactureDate" form="input-form" oninput="" value="<?php echo getManufactureDate(); ?>" <?php echo getDisabled(ShippingCardInputField::MANUFACTURE_DATE); ?>>
+                        &nbsp<button id="today-button" class="small-button" <?php echo getDisabled(ShippingCardInputField::MANUFACTURE_DATE); ?>>Today</button>
+                        &nbsp<button id="yesterday-button"  class="small-button" <?php echo getDisabled(ShippingCardInputField::MANUFACTURE_DATE); ?>>Yesterday</button>
+                     </div>
+                  </div>
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label">Operator</div>
+                  <select id="operator-input" name="operator" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(ShippingCardInputField::OPERATOR); ?>>
+                     <?php echo getOperatorOptions(); ?>
+                  </select>
+               </div>
+               
+            </div> <!-- column -->
 
+            <div class="flex-vertical">
+            
+               <!--  Purely for display -->
                <div class="form-item">
                   <div class="form-label">Entry Date</div>
-                  <input type="datetime-local" class="form-input-medium" value="<?php echo getEntryDateTime(); ?>" <?php echo getDisabled(ShippingCardInputField::ENTRY_DATE); ?>>
+                  <input type="date" value="<?php echo getEntryDate(); ?>" <?php echo getDisabled(ShippingCardInputField::WASH_DATE); ?>>
                </div>
-               
-               <div class="form-item">
-                  <div class="form-label">Mfg. Date</div>
-                  <input type="date" class="form-input-medium" name="manufactureDate" form="input-form" value="<?php echo getManufactureDate(); ?>" <?php echo getDisabled(ShippingCardInputField::MANUFACTURE_DATE); ?>>
-               </div>
-               
+                           
                <div class="form-item">
                   <div class="form-label">Shipper</div>
-                  <select id="shipper-input" class="form-input-medium" name="shipper" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(ShippingCardInputField::SHIPPER); ?>>
+                  <select id="part-washer-input" name="washer" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(ShippingCardInputField::ENTRY_DATE); ?>>
                      <?php echo getShipperOptions(); ?>
                   </select>
                </div>
-         
-               <div class="form-section-header">Job</div>         
+               
+               <div class="form-section-header">Time</div>
+               
                <div class="form-item">
-                  <div class="form-label">Job Number</div>
-                  <select id="job-number-input" class="form-input-medium" name="jobNumber" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(ShippingCardInputField::JOB_NUMBER); ?>>
-                     <?php echo getJobNumberOptions(); ?>
-                  </select>
-               </div>       
-      
-            </div>
-            
-            <div class="flex-vertical flex-top" style="margin-right: 50px;">
-            
-               <div class="form-col">
+                  <div class="form-label">Shift time</div>
+                  <input id="shift-time-hour-input" type="number" class="form-input-medium" form="input-form" name="shiftTimeHours" style="width:50px;" oninput="this.validator.validate(); onShiftTimeChange();" value="<?php echo getShippingCardInfo()->getShiftTimeHours(); ?>" <?php echo getDisabled(ShippingCardInputField::SHIFT_TIME); ?> />
+                  <div style="padding: 5px;">:</div>
+                  <input id="shift-time-minute-input" type="number" class="form-input-medium" form="input-form" name="shiftTimeMinutes" style="width:50px;" oninput="this.validator.validate(); onShiftTimeChange();" value="<?php echo getShippingCardInfo()->getShiftTimeMinutes(); ?>" step="15" <?php echo getDisabled(ShippingCardInputField::SHIFT_TIME); ?> />
+               </div>
                
-                  <div class="form-section-header">Time</div>
-                  
-                  <div class="form-item">
-                     <div class="form-label">Shift time</div>
-                     <input id="shift-time-hour-input" type="number" class="form-input-medium" form="input-form" name="shiftTimeHours" style="width:50px;" oninput="this.validator.validate(); onShiftTimeChange();" value="<?php echo getShippingCardInfo()->getShiftTimeHours(); ?>" <?php echo getDisabled(ShippingCardInputField::SHIFT_TIME); ?> />
+               <div class="form-item">
+                  <div class="form-label">Ship time</div>
+                  <div class="form-row flex-left">
+                     <input id="shipping-time-hour-input" type="number" class="form-input-medium" form="input-form" name="shippingTimeHours" style="width:50px;" oninput="this.validator.validate(); onShippingTimeChange();" value="<?php echo getShippingCardInfo()->getShippingTimeHours(); ?>" <?php echo getDisabled(ShippingCardInputField::SHIPPING_TIME); ?> />
                      <div style="padding: 5px;">:</div>
-                     <input id="shift-time-minute-input" type="number" class="form-input-medium" form="input-form" name="shiftTimeMinutes" style="width:50px;" oninput="this.validator.validate(); onShiftTimeChange();" value="<?php echo getShippingCardInfo()->getShiftTimeMinutes(); ?>" step="15" <?php echo getDisabled(ShippingCardInputField::SHIFT_TIME); ?> />
+                     <input id="shipping-time-minute-input" type="number" class="form-input-medium" form="input-form" name="shippingTimeMinutes" style="width:50px;" oninput="this.validator.validate(); onShippingTimeChange();" value="<?php echo getShippingCardInfo()->getShippingTimeMinutes(); ?>" step="15" <?php echo getDisabled(ShippingCardInputField::SHIPPING_TIME); ?> />
                   </div>
+               </div>
                   
-                  <div class="form-item">
-                     <div class="form-label">Ship time</div>
-                     <div class="form-row flex-left">
-                        <input id="shipping-time-hour-input" type="number" class="form-input-medium" form="input-form" name="shippingTimeHours" style="width:50px;" oninput="this.validator.validate(); onShippingTimeChange();" value="<?php echo getShippingCardInfo()->getShippingTimeHours(); ?>" <?php echo getDisabled(ShippingCardInputField::SHIPPING_TIME); ?> />
-                        <div style="padding: 5px;">:</div>
-                        <input id="shipping-time-minute-input" type="number" class="form-input-medium" form="input-form" name="shippingTimeMinutes" style="width:50px;" oninput="this.validator.validate(); onShippingTimeChange();" value="<?php echo getShippingCardInfo()->getShippingTimeMinutes(); ?>" step="15" <?php echo getDisabled(ShippingCardInputField::SHIPPING_TIME); ?> />
-                     </div>
-                  </div>
-                  
+               <div class="form-section-header">Part Counts</div>
+                           
+               <div class="form-item">
+                  <div class="form-label">Good count</div>
+                  <input id="part-count-input" type="number" class="form-input-medium" form="input-form" name="partCount" style="width:100px;" oninput="partsCountValidator.validate();" value="<?php echo getShippingCardInfo()->partCount; ?>" <?php echo getDisabled(ShippingCardInputField::PART_COUNT); ?> />
                </div>
                
-               <div class="form-col">
-                  
-                  <div class="form-section-header">Part Counts</div>
-                              
-                  <div class="form-item">
-                     <div class="form-label">Good count</div>
-                     <input id="part-count-input" type="number" class="form-input-medium" form="input-form" name="partCount" style="width:100px;" oninput="partsCountValidator.validate();" value="<?php echo getShippingCardInfo()->partCount; ?>" <?php echo getDisabled(ShippingCardInputField::PART_COUNT); ?> />
-                  </div>
-                  
-                  <div class="form-item">
-                     <div class="form-label">Scrap count</div>
-                     <input id="scrap-count-input" type="number" class="form-input-medium" form="input-form" name="scrapCount" style="width:100px;" oninput="scrapCountValidator.validate();" value="<?php echo getShippingCardInfo()->scrapCount; ?>" <?php echo getDisabled(ShippingCardInputField::SCRAP_COUNT); ?> />
-                  </div>
+               <div class="form-item">
+                  <div class="form-label">Scrap count</div>
+                  <input id="scrap-count-input" type="number" class="form-input-medium" form="input-form" name="scrapCount" style="width:100px;" oninput="scrapCountValidator.validate();" value="<?php echo getShippingCardInfo()->scrapCount; ?>" <?php echo getDisabled(ShippingCardInputField::SCRAP_COUNT); ?> />
+               </div>
                         
-               </div>
-               
-            </div>
-            
-            <div class="flex-vertical flex-top" style="margin-right: 50px;">
-            
-               <?php echo getCommentCodesDiv(); ?>
-               
-               <div class="form-col">
-                  <div class="form-section-header">Comments</div>
-                  <div class="form-item">
-                     <textarea form="input-form" id="comments-input" class="comments-input" type="text" form="input-form" name="comments" rows="4" maxlength="256" style="width:300px" <?php echo getDisabled(ShippingCardInputField::COMMENTS); ?>><?php echo getShippingCardInfo()->comments; ?></textarea>
-                  </div>
-               </div>
-                              
             </div>
 
          </div>

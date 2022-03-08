@@ -5,6 +5,77 @@ require_once 'jobInfo.php';
 require_once 'time.php';
 require_once 'userInfo.php';
 
+abstract class ShippingActivity
+{
+   const UNKNOWN = 0;
+   const FIRST = 1;
+   const SHIPPING_ROOM = ShippingActivity::FIRST;
+   const QUALILTY_ROOM = 2;
+   const SORTING_MACHINE = 3;
+   const REPAIR_REWORK = 4;
+   const LAST = 5;
+   const COUNT = ShippingActivity::LAST - ShippingActivity::FIRST;
+   
+   public static $values = array(ShippingActivity::SHIPPING_ROOM, ShippingActivity::QUALILTY_ROOM, ShippingActivity::SORTING_MACHINE, ShippingActivity::REPAIR_REWORK);
+   
+   public static function getLabel($shippingActivity)
+   {
+      $labels = array("---", "Shipping Room Sort/Pack", "Quality Room Sort", "Sorting Machine Sort", "Repair/Rework");
+      
+      return ($labels[$shippingActivity]);
+   }
+   
+   public static function getOptions($selectedActivity)
+   {
+      $html = "<option style=\"display:none\">";
+      
+      foreach (ShippingActivity::$values as $shippingActivity)
+      {
+         $selected = ($shippingActivity == $selectedActivity) ? "selected" : "";
+         $label = ShippingActivity::getLabel($selectedActivity);
+         
+         $html .= "<option value=\"$shippingActivity\" $selected>$label</option>";
+      }
+      
+      return ($html);
+   }
+}
+
+abstract class ScrapType
+{
+   const UNKNOWN = 0;
+   const FIRST = 1;
+   const SHIPPING_ROOM = ScrapType::FIRST;
+   const QUALILTY_ROOM = 2;
+   const SORTING_MACHINE = 3;
+   const LAST = 5;
+   const COUNT = ScrapType::LAST - ScrapType::FIRST;
+   
+   public static $values = array(ScrapType::SHIPPING_ROOM, ScrapType::QUALILTY_ROOM, ScrapType::SORTING_MACHINE);
+   
+   public static function getLabel($scrapType)
+   {
+      $labels = array("---", "Quality Room Scrap", "Shipping Room Scrap", "Sorting Machine Scrap");
+      
+      return ($labels[$scrapType]);
+   }
+   
+   public static function getOptions($selectedScrapType)
+   {
+      $html = "<option style=\"display:none\">";
+      
+      foreach (ScrapType::$values as $scrapType)
+      {
+         $selected = ($scrapType == $selectedScrapType) ? "selected" : "";
+         $label = ScrapType::getLabel($selectedScrapType);
+         
+         $html .= "<option value=\"$scrapType\" $selected>$label</option>";
+      }
+      
+      return ($html);
+   }
+}
+
 class ShippingCardInfo
 {
    const UNKNOWN_SHIPPING_CARD_ID = 0;
@@ -17,30 +88,42 @@ class ShippingCardInfo
    
    const DEFAULT_SHIFT_TIME = (ShippingCardInfo::DEFAULT_SHIFT_HOURS * ShippingCardInfo::MINUTES_PER_HOUR);  // minutes
    
-   public $shippingCardId = ShippingCardInfo::UNKNOWN_SHIPPING_CARD_ID;
+   public $shippingCardId;
    public $dateTime;
-   public $manufactureDate;
-   public $employeeNumber = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
-   public $jobId;
+   public $employeeNumber;
+   public $timeCardId;
    public $shiftTime;   
    public $shippingTime;
+   public $activity;
    public $partCount;
    public $scrapCount;
-   public $commentCodes;
+   public $scrapType;
    public $comments;
    
-   public function isPlaceholder()
+   // These attributes were added for manual entry when no time card is available.
+   public $jobId = PartWeightEntry::UNKNOWN_JOB_ID;
+   public $operator = PartWeightEntry::UNKNOWN_OPERATOR;
+   public $manufactureDate = null;
+   
+   
+   public function __construct()
    {
-      $isPlaceholder = false;
+      $this->shippingCardId = ShippingCardInfo::UNKNOWN_SHIPPING_CARD_ID;
+      $this->dateTime = null;
+      $this->employeeNumber = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
+      $this->shiftTime = 0;
+      $this->shippingTime = 0;
+      $this->activity = ShippingActivity::UNKNOWN;
+      $this->partCount = 0;
+      $this->scrapCount = 0;
+      $this->scrapType = ScrapType::UNKNOWN;
+      $this->comments = null;
       
-      if ($this->jobId != JobInfo::UNKNOWN_JOB_ID)
-      {
-         $jobInfo = JobInfo::load($this->jobId);
-         
-         $isPlaceholder = ($jobInfo && $jobInfo->isPlaceholder());
-      }
+      $this->jobId = JobInfo::UNKNOWN_JOB_ID;
+      $this->operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->manufactureDate = null;
       
-      return ($isPlaceholder);
    }
       
    public function formatShiftTime()
@@ -82,40 +165,6 @@ class ShippingCardInfo
    {
       return (round(($this->shippingTime / ShippingCardInfo::MINUTES_PER_HOUR), 2));
    }
-      
-   public function hasCommentCode($code)
-   {
-      $hasCode = false;
-      
-      $commentCode = CommentCode::getCommentCode($code);
-      
-      if ($commentCode)
-      {
-         $hasCode = (($this->commentCodes & $commentCode->bits) != 0);
-      }
-      
-      return ($hasCode);
-   }
-   
-   public function setCommentCode($code)
-   {
-      $commentCode = CommentCode::getCommentCode($code);
-      
-      if ($commentCode)
-      {
-         $this->commentCodes |= $commentCode->bits;
-      }
-   }
-   
-   public function clearCommentCode($code)
-   {
-      $commentCode = CommentCode::getCommentCode($code);
-      
-      if ($commentCode)
-      {
-         $this->commentCodes &= ~($commentCode->bits);
-      }
-   }
    
    public static function load($shippingCardId)
    {
@@ -133,68 +182,27 @@ class ShippingCardInfo
             
             $shippingCardInfo->shippingCardId = intval($row['shippingCardId']);
             $shippingCardInfo->dateTime = Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
-            $shippingCardInfo->manufactureDate = Time::fromMySqlDate($row['manufactureDate'], "Y-m-d H:i:s");
             $shippingCardInfo->employeeNumber = intval($row['employeeNumber']);
-            $shippingCardInfo->jobId = $row['jobId'];
+            $shippingCardInfo->timeCardId = intval($row['timeCardId']);
             $shippingCardInfo->shiftTime = $row['shiftTime'];
             $shippingCardInfo->shippingTime = $row['shippingTime'];
+            $shippingCardInfo->activity = intval($row['activity']);
             $shippingCardInfo->partCount = intval($row['partCount']);
             $shippingCardInfo->scrapCount = intval($row['scrapCount']);
-            $shippingCardInfo->commentCodes = intval($row['commentCodes']);
+            $shippingCardInfo->scrapType = intval($row['scrapType']);
             $shippingCardInfo->comments = $row['comments'];
+            
+            // These attributes were added for manual entry when no time card is available.
+            $shippingCardInfo->jobId = intval($row['jobId']);
+            $shippingCardInfo->operator = intval($row['operator']);
+            if ($row['manufactureDate'])
+            {
+               $shippingCardInfo->manufactureDate = Time::fromMySqlDate($row['manufactureDate'], "Y-m-d H:i:s");
+            }
          }
       }
       
       return ($shippingCardInfo);
-   }
-   
-   public static function matchTimeCard(
-      $jobId,
-      $employeeNumber,
-      $manufactureDate)
-   {
-      $shippingCardId = ShippingCardInfo::UNKNOWN_SHIPPING_CARD_ID;
-      
-      $database = PPTPDatabase::getInstance();
-      
-      if ($database && $database->isConnected())
-      {
-         $result = $database->matchTimeCard($jobId, $employeeNumber, $manufactureDate);
-         
-         if ($result && ($row = $result->fetch_assoc()))
-         {
-            $shippingCardId = intval($row["shippingCardId"]);
-         }
-      }
-      
-      return ($shippingCardId);
-   }
-   
-   public static function isUniqueShippingCard(
-      $jobId,
-      $employeeNumber,
-      $manufactureDate)
-   {
-      $isUnique = (TimeCardInfo::matchTimeCard($jobId, $employeeNumber, $manufactureDate) == TimeCardInfo::UNKNOWN_TIME_CARD_ID);
-      
-      return ($isUnique);
-   }
-   
-   public static function calculateEfficiency(
-      $shippingTime,       // Actual run time, in hours
-      $grossPartsPerHour,  // Expected part count, based on cycle time
-      $partCount)          // Actual part count
-   {
-      $efficiency = 0.0;
-      
-      return ($efficiency);
-   }   
-   
-   public function getEfficiency()
-   {
-      $efficiency = 0.0;
-      
-      return ($efficiency);
    }
    
    public function incompleteShiftTime()
