@@ -390,9 +390,9 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
          "INSERT INTO shippingcard " .
-         "(employeeNumber, dateTime, manufactureDate, jobId, shiftTime, shippingTime, activity, partCount, scrapCount, scrapType, comments) " .
+         "(employeeNumber, dateTime, timeCardId, shiftTime, shippingTime, activity, partCount, scrapCount, scrapType, comments, jobId, operator, manufactureDate) " .
          "VALUES " .
-         "('$shippingCardInfo->employeeNumber', '$date', '$manufactureDate', '$shippingCardInfo->jobId', '$shippingCardInfo->shiftTime', '$shippingCardInfo->shippingTime', '$shippingCardInfo->activity', '$shippingCardInfo->partCount', '$shippingCardInfo->scrapCount', '$shippingCardInfo->scrapType', '$comments');";
+         "('$shippingCardInfo->employeeNumber', '$date', '$shippingCardInfo->timeCardId', '$shippingCardInfo->shiftTime', '$shippingCardInfo->shippingTime', '$shippingCardInfo->activity', '$shippingCardInfo->partCount', '$shippingCardInfo->scrapCount', '$shippingCardInfo->scrapType', '$comments', '$shippingCardInfo->jobId', '$shippingCardInfo->operator', '$manufactureDate');";
 
       $result = $this->query($query);
       
@@ -409,7 +409,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "UPDATE shippingcard " .
-      "SET employeeNumber = $shippingCardInfo->employeeNumber, dateTime = \"$dateTime\", manufactureDate = \"$manufactureDate\", jobId = \"$shippingCardInfo->jobId\", shiftTime = $shippingCardInfo->shiftTime, shippingTime = $shippingCardInfo->shippingTime, activity = $shippingCardInfo->activity, partCount = $shippingCardInfo->partCount, scrapCount = $shippingCardInfo->scrapCount, scrapType = $shippingCardInfo->scrapType, comments = \"$comments\" " .
+      "SET employeeNumber = $shippingCardInfo->employeeNumber, dateTime = \"$dateTime\", timeCardId = $shippingCardInfo->timeCardId, shiftTime = $shippingCardInfo->shiftTime, shippingTime = $shippingCardInfo->shippingTime, activity = $shippingCardInfo->activity, partCount = $shippingCardInfo->partCount, scrapCount = $shippingCardInfo->scrapCount, scrapType = $shippingCardInfo->scrapType, comments = \"$comments\", jobId = $shippingCardInfo->jobId, operator =  $shippingCardInfo->operator, manufactureDate = \"$manufactureDate\" " .
       "WHERE shippingCardId = $shippingCardInfo->shippingCardId;";
 
       $result = $this->query($query);

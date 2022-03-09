@@ -211,18 +211,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                formatterPrint:function(cell, formatterParams, onRendered){
                   return (cell.getValue());
               }                 
-            },  
-            {title:"Job #",        field:"jobNumber",         hozAlign:"left", responsive:0, headerFilter:true},
-            /*
-            {title:"WC #",         field:"wcNumber",          hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Operator",     field:"operatorName",      hozAlign:"left", responsive:0, headerFilter:true},
-            */
-            {title:"Mfg. Date",    field:"manufactureDate",   hozAlign:"left", responsive:0, headerFilter:true,
-               formatter:"datetime",  // Requires moment.js 
-               formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
-                  invalidPlaceholder:"---"
-               }
             },
             {title:"Date",         field:"dateTime",        hozAlign:"left", responsive:0, print:true,
                formatter:function(cell, formatterParams, onRendered){
@@ -256,7 +244,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
               },
             },
             {title:"Shipper",      field:"shipper",         hozAlign:"left", responsive:0, headerFilter:true, print:true},
-            {title:"Job #",        field:"jobNumber",       hozAlign:"left", responsive:0, headerFilter:true, print:true},
+            {title:"Job #",        field:"jobNumber",         hozAlign:"left", responsive:0, headerFilter:true},
+            /*
+            {title:"WC #",         field:"wcNumber",          hozAlign:"left", responsive:0, headerFilter:true},
+            {title:"Operator",     field:"operatorName",      hozAlign:"left", responsive:0, headerFilter:true},
+            */
+            {title:"Mfg. Date",    field:"manufactureDate",   hozAlign:"left", responsive:0, headerFilter:true,
+               formatter:"datetime",  // Requires moment.js 
+               formatterParams:{
+                  outputFormat:"MM/DD/YYYY",
+                  invalidPlaceholder:"---"
+               }
+            },
             {title:"Shift Time",   field:"shiftTime",       hozAlign:"left", responsive:1, print:true,
                formatter:function(cell, formatterParams, onRendered){
 
@@ -287,6 +286,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   
                   var cellValue = Math.floor(minutes / 60) + ":" + ("0" + (minutes % 60)).slice(-2);
                   
+                  if (cell.getRow().getData().incompleteShippingTime)
+                  {
+                     cellValue += "&nbsp<span class=\"incomplete-indicator\">incomplete</div>";
+                  }
+                  
                   return (cellValue);
                },
                formatterPrint:function(cell, formatterParams, onRendered){
@@ -310,7 +314,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   
                   return (cellValue);
                 },
-                formatter:function(cell, formatterParams, onRendered){
+                formatterPrint:function(cell, formatterParams, onRendered){
                    return (cell.getValue());
                 }                
             },

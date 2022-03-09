@@ -112,47 +112,47 @@ function isEditable($field)
       case PartWasherLogInputField::JOB_NUMBER:
       case PartWasherLogInputField::OPERATOR:
       case PartWasherLogInputField::MANUFACTURE_DATE:
-         {
-            // Edit status disabled by time card ID.
-            $isEditable &= (getTimeCardId() == TimeCardInfo::UNKNOWN_TIME_CARD_ID);
-            break;
-         }
+      {
+         // Edit status disabled by time card ID.
+         $isEditable &= (getTimeCardId() == TimeCardInfo::UNKNOWN_TIME_CARD_ID);
+         break;
+      }
          
       case PartWasherLogInputField::WC_NUMBER:
-         {
-            // Edit status determined by both time card ID and job number selection.
-            $isEditable &= ((getTimeCardId() == TimeCardInfo::UNKNOWN_TIME_CARD_ID) &&
-               (getJobNumber() != JobInfo::UNKNOWN_JOB_NUMBER));
-            break;
-         }
+      {
+         // Edit status determined by both time card ID and job number selection.
+         $isEditable &= ((getTimeCardId() == TimeCardInfo::UNKNOWN_TIME_CARD_ID) &&
+            (getJobNumber() != JobInfo::UNKNOWN_JOB_NUMBER));
+         break;
+      }
          
       case PartWasherLogInputField::WASH_DATE:
-         {
-            // Wash date is restricted to current date/time.
-            $isEditable = false;
-            break;
-         }
+      {
+         // Wash date is restricted to current date/time.
+         $isEditable = false;
+         break;
+      }
          
       case PartWasherLogInputField::WASHER:
+      {
+         // Only administrative users can make an entry under another user's name.
+         $userInfo = Authentication::getAuthenticatedUser();
+         if ($userInfo)
          {
-            // Only administrative users can make an entry under another user's name.
-            $userInfo = Authentication::getAuthenticatedUser();
-            if ($userInfo)
-            {
-               $isEditable &= (($userInfo->roles == Role::SUPER_USER) ||
-                  ($userInfo->roles == Role::ADMIN));
-            }
-            break;
+            $isEditable &= (($userInfo->roles == Role::SUPER_USER) ||
+               ($userInfo->roles == Role::ADMIN));
          }
+         break;
+      }
          
       case PartWasherLogInputField::TIME_CARD_ID:
       case PartWasherLogInputField::PAN_COUNT:
       case PartWasherLogInputField::PART_COUNT:
       default:
-         {
-            // Edit status based solely on view.
-            break;
-         }
+      {
+         // Edit status based solely on view.
+         break;
+      }
    }
    
    return ($isEditable);

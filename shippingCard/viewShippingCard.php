@@ -6,8 +6,10 @@ require_once '../common/header.php';
 require_once '../common/isoInfo.php';
 require_once '../common/jobInfo.php';
 require_once '../common/menu.php';
+require_once '../common/panTicket.php';
 require_once '../common/params.php';
 require_once '../common/shippingCardInfo.php';
+require_once '../common/timeCardInfo.php';
 require_once '../common/userInfo.php';
 require_once '../common/version.php';
 
@@ -18,16 +20,21 @@ const ONLY_ACTIVE = true;
 abstract class ShippingCardInputField
 {
    const FIRST = 0;
-   const ENTRY_DATE = ShippingCardInputField::FIRST;   
-   const MANUFACTURE_DATE = 1;
-   const SHIPPER = 2;
-   const JOB_NUMBER = 3;
-   const SHIFT_TIME = 4;   
-   const SHIPPING_TIME = 5;
-   const PART_COUNT = 6;
-   const SCRAP_COUNT = 7;
-   const COMMENTS = 8;
-   const LAST = 9;
+   const TIME_CARD_ID = ShippingCardInputField::FIRST;
+   const JOB_NUMBER = 2;
+   const WC_NUMBER = 3;
+   const MANUFACTURE_DATE = 4;
+   const OPERATOR = 5;
+   const ENTRY_DATE = 6;
+   const SHIPPER = 7;
+   const SHIFT_TIME = 8;   
+   const SHIPPING_TIME = 9;
+   const ACTIVITY = 11;
+   const PART_COUNT = 10;
+   const SCRAP_COUNT = 11;
+   const SCRAP_TYPE = 12;
+   const COMMENTS = 13;
+   const LAST = 14;
    const COUNT = ShippingCardInputField::LAST - ShippingCardInputField::FIRST;
 }
 
@@ -76,20 +83,55 @@ function isEditable($field)
    
    switch ($field)
    {
+      case ShippingCardInputField::JOB_NUMBER:
+      case ShippingCardInputField::OPERATOR:
+      case ShippingCardInputField::MANUFACTURE_DATE:
+      {
+         // Edit status disabled by time card ID.
+         $isEditable &= (getTimeCardId() == TimeCardInfo::UNKNOWN_TIME_CARD_ID);
+         break;
+      }
+         
+      case ShippingCardInputField::WC_NUMBER:
+      {
+         // Edit status determined by both time card ID and job number selection.
+         $isEditable &= ((getTimeCardId() == TimeCardInfo::UNKNOWN_TIME_CARD_ID) &&
+                         (getJobNumber() != JobInfo::UNKNOWN_JOB_NUMBER));
+         break;
+      }
+         
       case ShippingCardInputField::ENTRY_DATE:
       {
+         // Wash date is restricted to current date/time.
          $isEditable = false;
          break;
       }
-      
+         
       case ShippingCardInputField::SHIPPER:
-      case ShippingCardInputField::MANUFACTURE_DATE:
       {
-         $isEditable = ((Authentication::getAuthenticatedUser()->roles == Role::ADMIN) ||
-                        (Authentication::getAuthenticatedUser()->roles == Role::SUPER_USER));
+         // Only administrative users can make an entry under another user's name.
+         $userInfo = Authentication::getAuthenticatedUser();
+         if ($userInfo)
+         {
+            $isEditable &= (($userInfo->roles == Role::SUPER_USER) ||
+                            ($userInfo->roles == Role::ADMIN));
+         }
          break;
       }
-                  
+      
+      case ShippingCardInputField::SCRAP_TYPE:
+      {
+         $isEditable = (getShippingCardInfo()->scrapCount > 0);   
+      }
+         
+      case ShippingCardInputField::TIME_CARD_ID:         
+      case ShippingCardInputField::SHIFT_TIME:
+      case ShippingCardInputField::SHIPPING_TIME:
+      case ShippingCardInputField::ACTIVITY:
+      case ShippingCardInputField::PART_COUNT:
+      case ShippingCardInputField::SCRAP_COUNT:
+      case ShippingCardInputField::SCRAP_TYPE:
+      case ShippingCardInputField::COMMENTS:
       default:
       {
          // Edit status based solely on view.
@@ -157,6 +199,20 @@ function getTimeCardId()
    return ($timeCardId);
 }
 
+function getTimeCardInfo()
+{
+   $timeCardInfo = null;
+   
+   $timeCardId = getTimeCardId();
+   
+   if ($timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+   {
+      $timeCardInfo = TimeCardInfo::load($timeCardId);
+   }
+   
+   return ($timeCardInfo);
+}
+
 function getShipper()
 {
    $shipper = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
@@ -169,6 +225,46 @@ function getShipper()
    }
    
    return ($shipper);
+}
+
+function getOperatorOptions()
+{
+   $options = "<option style=\"display:none\">";
+   
+   $operators = PPTPDatabase::getInstance()->getUsersByRole(Role::OPERATOR);
+   
+   // Create an array of employee numbers.
+   $employeeNumbers = array();
+   foreach ($operators as $operator)
+   {
+      $employeeNumbers[] = intval($operator["employeeNumber"]);
+   }
+   
+   $selectedOperator = getOperator();
+   
+   // Add selected job number, if not already in the array.
+   // Note: This handles the case of viewing an entry with an operator that is not assigned to the OPERATOR role.
+   if (($selectedOperator != UserInfo::UNKNOWN_EMPLOYEE_NUMBER) &&
+       (!in_array($selectedOperator, $employeeNumbers)))
+   {
+      $employeeNumbers[] = $selectedOperator;
+      sort($employeeNumbers);
+   }
+   
+   foreach ($employeeNumbers as $employeeNumber)
+   {
+      $userInfo = UserInfo::load($employeeNumber);
+      if ($userInfo)
+      {
+         $selected = ($employeeNumber == $selectedOperator) ? "selected" : "";
+         
+         $name = $employeeNumber . " - " . $userInfo->getFullName();
+         
+         $options .= "<option value=\"$employeeNumber\" $selected>$name</option>";
+      }
+   }
+   
+   return ($options);
 }
 
 function getShipperOptions()
@@ -238,26 +334,110 @@ function getJobNumberOptions()
    return ($options);
 }
 
+function getWcNumberOptions()
+{
+   $options = "<option style=\"display:none\">";
+   
+   $jobNumber = getJobNumber();
+   
+   $workCenters = null;
+   if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
+   {
+      $workCenters = PPTPDatabase::getInstance()->getWorkCentersForJob($jobNumber);
+   }
+   else
+   {
+      $workCenters = PPTPDatabase::getInstance()->getWorkCenters();
+   }
+   
+   $selectedWcNumber = getWcNumber();
+   
+   foreach ($workCenters as $workCenter)
+   {
+      $selected = ($workCenter["wcNumber"] == $selectedWcNumber) ? "selected" : "";
+      
+      $options .= "<option value=\"{$workCenter["wcNumber"]}\" $selected>{$workCenter["wcNumber"]}</option>";
+   }
+   
+   return ($options);
+}
+
+function getJobId()
+{
+   $jobId = JobInfo::UNKNOWN_JOB_ID;
+   
+   $timeCardInfo = getTimeCardInfo();
+   
+   if ($timeCardInfo)
+   {
+      $jobId = $timeCardInfo->jobId;
+   }
+   else
+   {
+      $shippingCardInfo = getShippingCardInfo();
+      
+      if ($shippingCardInfo)
+      {
+         $jobId = $shippingCardInfo->jobId;
+      }
+   }
+   
+   return ($jobId);
+}
 
 function getJobNumber()
 {
    $jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
    
-   $shippingCardInfo = getShippingCardInfo();
+   $jobId = getJobId();
    
-   if ($shippingCardInfo)
+   $jobInfo = JobInfo::load($jobId);
+   
+   if ($jobInfo)
    {
-      $jobId = $shippingCardInfo->jobId;
-      
-      $jobInfo = JobInfo::load($jobId);
-      
-      if ($jobInfo)
-      {
-         $jobNumber = $jobInfo->jobNumber;
-      }
+      $jobNumber = $jobInfo->jobNumber;
    }
    
    return ($jobNumber);
+}
+
+function getWcNumber()
+{
+   $wcNumber = JobInfo::UNKNOWN_WC_NUMBER;
+   
+   $jobId = getJobId();
+   
+   $jobInfo = JobInfo::load($jobId);
+   
+   if ($jobInfo)
+   {
+      $wcNumber = $jobInfo->wcNumber;
+   }
+   
+   return ($wcNumber);
+}
+
+function getOperator()
+{
+   $operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+   
+   $timeCardInfo = getTimeCardInfo();
+   
+   if ($timeCardInfo)
+   {
+      $operator = $timeCardInfo->employeeNumber;
+   }
+   else
+   {
+      $shippingCardInfo = getShippingCardInfo();
+      
+      if ($shippingCardInfo)
+      {
+         $operator = $shippingCardInfo->operator;
+      }
+   }
+   
+   return ($operator);
 }
 
 function getHeading()
@@ -318,7 +498,7 @@ function getDescription()
    return ($description);
 }
 
-function getEntryDateTime()
+function getEntryDate()
 {
    $dateTime = new DateTime();  // now
    
@@ -398,7 +578,7 @@ if (!Authentication::isAuthenticated())
       <input type="hidden" name="manufactureDate" value="<?php echo getManufactureDate(); ?>">
       <input type="hidden" name="shipper" value="<?php echo getShipper(); ?>">
       <input id="shift-time-input" type="hidden" name="shiftTime" value="<?php echo getShippingCardInfo()->shiftTime; ?>">
-      <input id="shipping-time-input" type="hidden" name="shippingTime" value="<?php echo getShippingCardInfo()->shipTime; ?>">
+      <input id="shipping-time-input" type="hidden" name="shippingTime" value="<?php echo getShippingCardInfo()->shippingTime; ?>">
    </form>
 
    <?php Header::render("PPTP Tools"); ?>
@@ -422,7 +602,7 @@ if (!Authentication::isAuthenticated())
          
          <div class="flex-horizontal flex-left flex-wrap">
 
-            <div class="flex-vertical" style="margin-right: 20px;">
+            <div class="flex-vertical" style="margin-right: 50px">
               
                <div class="form-section-header">Pan Ticket Entry</div>               
                <div class="form-item">
@@ -467,17 +647,17 @@ if (!Authentication::isAuthenticated())
                
             </div> <!-- column -->
 
-            <div class="flex-vertical">
+            <div class="flex-vertical" style="margin-right: 50px">
             
                <!--  Purely for display -->
                <div class="form-item">
                   <div class="form-label">Entry Date</div>
-                  <input type="date" value="<?php echo getEntryDate(); ?>" <?php echo getDisabled(ShippingCardInputField::WASH_DATE); ?>>
+                  <input type="datetime-local" value="<?php echo getEntryDate(); ?>" <?php echo getDisabled(ShippingCardInputField::ENTRY_DATE); ?>>
                </div>
                            
                <div class="form-item">
                   <div class="form-label">Shipper</div>
-                  <select id="part-washer-input" name="washer" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(ShippingCardInputField::ENTRY_DATE); ?>>
+                  <select id="shipper-input" name="washer" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(ShippingCardInputField::SHIPPER); ?>>
                      <?php echo getShipperOptions(); ?>
                   </select>
                </div>
@@ -499,6 +679,13 @@ if (!Authentication::isAuthenticated())
                      <input id="shipping-time-minute-input" type="number" class="form-input-medium" form="input-form" name="shippingTimeMinutes" style="width:50px;" oninput="this.validator.validate(); onShippingTimeChange();" value="<?php echo getShippingCardInfo()->getShippingTimeMinutes(); ?>" step="15" <?php echo getDisabled(ShippingCardInputField::SHIPPING_TIME); ?> />
                   </div>
                </div>
+               
+              <div class="form-item">
+                  <div class="form-label">Activity</div>
+                  <select id="activity-input" name="activity" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(ShippingCardInputField::ACTIVITY); ?>>
+                     <?php echo ShippingActivity::getOptions(getShippingCardInfo()->activity) ?>
+                  </select>
+               </div>
                   
                <div class="form-section-header">Part Counts</div>
                            
@@ -509,10 +696,28 @@ if (!Authentication::isAuthenticated())
                
                <div class="form-item">
                   <div class="form-label">Scrap count</div>
-                  <input id="scrap-count-input" type="number" class="form-input-medium" form="input-form" name="scrapCount" style="width:100px;" oninput="scrapCountValidator.validate();" value="<?php echo getShippingCardInfo()->scrapCount; ?>" <?php echo getDisabled(ShippingCardInputField::SCRAP_COUNT); ?> />
+                  <input id="scrap-count-input" type="number" class="form-input-medium" form="input-form" name="scrapCount" style="width:100px;" oninput="scrapCountValidator.validate();  onScrapCountChange();" value="<?php echo getShippingCardInfo()->scrapCount; ?>" <?php echo getDisabled(ShippingCardInputField::SCRAP_COUNT); ?> />
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label">Scrap type</div>
+                  <select id="scrap-type-input" name="scrapType" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(ShippingCardInputField::SCRAP_TYPE); ?>>
+                     <?php echo ScrapType::getOptions(getShippingCardInfo()->scrapType) ?>
+                  </select>
                </div>
                         
             </div>
+            
+            <div class="flex-vertical">
+            
+               <div class="form-col">
+                  <div class="form-section-header">Comments</div>
+                  <div class="form-item">
+                     <textarea form="input-form" id="comments-input" class="comments-input" type="text" form="input-form" name="comments" rows="4" maxlength="256" style="width:300px" <?php echo getDisabled(ShippingCardInputField::COMMENTS); ?>><?php echo getShippingCardInfo()->comments; ?></textarea>
+                  </div>
+               </div>
+            
+            </div> <!-- column -->
 
          </div>
          
@@ -529,23 +734,33 @@ if (!Authentication::isAuthenticated())
    
       preserveSession();
       
-      var shipperValidator = new SelectValidator("shipper-input");
+      var panTicketCodeValidator = new HexValidator("pan-ticket-code-input", 4, 1, 65536, true);
       var jobNumberValidator = new SelectValidator("job-number-input");
+      var wcNumberValidator = new SelectValidator("wc-number-input");
+      var operatorValidator = new SelectValidator("operator-input");
+      var shipperValidator = new SelectValidator("shipper-input");
       var shiftTimeHourValidator = new IntValidator("shift-time-hour-input", 2, 0, 16, true);
       var shiftTimeMinuteValidator = new IntValidator("shift-time-minute-input", 2, 0, 59, true);      
       var shippingTimeHourValidator = new IntValidator("shipping-time-hour-input", 2, 0, 16, true);
       var shippingTimeMinuteValidator = new IntValidator("shipping-time-minute-input", 2, 0, 59, true);
+      var activityValidator = new SelectValidator("activity-input");
       var partsCountValidator = new IntValidator("part-count-input", 6, 0, 100000, true);
       var scrapCountValidator = new IntValidator("scrap-count-input", 6, 0, 100000, true);
+      var scrapTypeValidator = new SelectValidator("scrap-type-input");
 
-      shipperValidator.init();
+      panTicketCodeValidator.init();
       jobNumberValidator.init();
+      wcNumberValidator.init();
+      operatorValidator.init();
+      shipperValidator.init();
       shiftTimeHourValidator.init();
       shiftTimeMinuteValidator.init();
       shippingTimeHourValidator.init();
       shippingTimeMinuteValidator.init();
+      activityValidator.init();
       partsCountValidator.init();
       scrapCountValidator.init();
+      scrapTypeValidator.init();
 
       // Setup event handling on all DOM elements.
       document.getElementById("cancel-button").onclick = function(){onCancel();};

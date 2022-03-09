@@ -20,7 +20,7 @@ abstract class ShippingActivity
    
    public static function getLabel($shippingActivity)
    {
-      $labels = array("---", "Shipping Room Sort/Pack", "Quality Room Sort", "Sorting Machine Sort", "Repair/Rework");
+      $labels = array("", "Shipping Room Sort/Pack", "Quality Room Sort", "Sorting Machine Sort", "Repair/Rework");
       
       return ($labels[$shippingActivity]);
    }
@@ -32,7 +32,7 @@ abstract class ShippingActivity
       foreach (ShippingActivity::$values as $shippingActivity)
       {
          $selected = ($shippingActivity == $selectedActivity) ? "selected" : "";
-         $label = ShippingActivity::getLabel($selectedActivity);
+         $label = ShippingActivity::getLabel($shippingActivity);
          
          $html .= "<option value=\"$shippingActivity\" $selected>$label</option>";
       }
@@ -55,7 +55,7 @@ abstract class ScrapType
    
    public static function getLabel($scrapType)
    {
-      $labels = array("---", "Quality Room Scrap", "Shipping Room Scrap", "Sorting Machine Scrap");
+      $labels = array("", "Quality Room Scrap", "Shipping Room Scrap", "Sorting Machine Scrap");
       
       return ($labels[$scrapType]);
    }
@@ -67,7 +67,7 @@ abstract class ScrapType
       foreach (ScrapType::$values as $scrapType)
       {
          $selected = ($scrapType == $selectedScrapType) ? "selected" : "";
-         $label = ScrapType::getLabel($selectedScrapType);
+         $label = ScrapType::getLabel($scrapType);
          
          $html .= "<option value=\"$scrapType\" $selected>$label</option>";
       }
@@ -101,8 +101,8 @@ class ShippingCardInfo
    public $comments;
    
    // These attributes were added for manual entry when no time card is available.
-   public $jobId = PartWeightEntry::UNKNOWN_JOB_ID;
-   public $operator = PartWeightEntry::UNKNOWN_OPERATOR;
+   public $jobId = JobInfo::UNKNOWN_JOB_ID;
+   public $operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
    public $manufactureDate = null;
    
    
@@ -180,44 +180,49 @@ class ShippingCardInfo
          {
             $shippingCardInfo = new ShippingCardInfo();
             
-            $shippingCardInfo->shippingCardId = intval($row['shippingCardId']);
-            $shippingCardInfo->dateTime = Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
-            $shippingCardInfo->employeeNumber = intval($row['employeeNumber']);
-            $shippingCardInfo->timeCardId = intval($row['timeCardId']);
-            $shippingCardInfo->shiftTime = $row['shiftTime'];
-            $shippingCardInfo->shippingTime = $row['shippingTime'];
-            $shippingCardInfo->activity = intval($row['activity']);
-            $shippingCardInfo->partCount = intval($row['partCount']);
-            $shippingCardInfo->scrapCount = intval($row['scrapCount']);
-            $shippingCardInfo->scrapType = intval($row['scrapType']);
-            $shippingCardInfo->comments = $row['comments'];
-            
-            // These attributes were added for manual entry when no time card is available.
-            $shippingCardInfo->jobId = intval($row['jobId']);
-            $shippingCardInfo->operator = intval($row['operator']);
-            if ($row['manufactureDate'])
-            {
-               $shippingCardInfo->manufactureDate = Time::fromMySqlDate($row['manufactureDate'], "Y-m-d H:i:s");
-            }
+            $shippingCardInfo->initialize($row);
          }
       }
       
       return ($shippingCardInfo);
    }
    
+   public function initialize($row)
+   {
+      $this->shippingCardId = intval($row['shippingCardId']);
+      $this->dateTime = Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
+      $this->employeeNumber = intval($row['employeeNumber']);
+      $this->timeCardId = intval($row['timeCardId']);
+      $this->shiftTime = $row['shiftTime'];
+      $this->shippingTime = $row['shippingTime'];
+      $this->activity = intval($row['activity']);
+      $this->partCount = intval($row['partCount']);
+      $this->scrapCount = intval($row['scrapCount']);
+      $this->scrapType = intval($row['scrapType']);
+      $this->comments = $row['comments'];
+      
+      // These attributes were added for manual entry when no time card is available.
+      $this->jobId = intval($row['jobId']);
+      $this->operator = intval($row['operator']);
+      if ($row['manufactureDate'])
+      {
+         $this->manufactureDate = Time::fromMySqlDate($row['manufactureDate'], "Y-m-d H:i:s");
+      }
+   }
+   
    public function incompleteShiftTime()
    {
-      return (!$this->isPlaceholder() && $this->shiftTime == 0);
+      return ($this->shiftTime == 0);
    }
    
    public function incompleteShippingTime()
    {
-      return (!$this->isPlaceholder() && ($this->shippingTime == 0));
+      return ($this->shippingTime == 0);
    }
       
    public function incompletePartCount()
    {
-      return (!$this->isPlaceholder() && ($this->partCount == 0));
+      return ($this->partCount == 0);
    }
    
    public function isComplete()

@@ -3660,29 +3660,27 @@ $router->add("shippingCardData", function($params) {
    
    if ($database && $database->isConnected())
    {
-      $shippingCards = $database->getShippingCards($employeeNumberFilter, $startDate, $endDate);
+      $dbResult = $database->getShippingCards($employeeNumberFilter, $startDate, $endDate);
       
       // Populate data table.
-      foreach ($shippingCards as $shippingCard)
+      foreach ($dbResult as $row)
       {
-         $shippingCardInfo = ShippingCardInfo::load($shippingCard["shippingCardId"]);
+         $shippingCardInfo = new ShippingCardInfo();
+         $shippingCardInfo->initialize($row);
          
-         $userInfo = UserInfo::load($shippingCard["employeeNumber"]);
+         $userInfo = UserInfo::load($shippingCardInfo->employeeNumber);
          if ($userInfo)
          {
-            $shippingCard["shipper"] = $userInfo->getFullName() . " (" . $shippingCard["employeeNumber"] . ")";
+            $shippingCardInfo->shipper = $userInfo->getFullName() . " (" . $shippingCardInfo->employeeNumber . ")";
          }
+
+         $shippingCardInfo->panTicketCode = "0000";
          
          $jobId = $shippingCardInfo->jobId;
          
          $operator = $shippingCardInfo->operator;
          
-         $shippingCardInfo->panTicketCode =
-            ($shippingCardInfo->timeCardId == TimeCardInfo::UNKNOWN_TIME_CARD_ID) ?
-            "0000" :
-            PanTicket::getPanTicketCode($shippingCardInfo->timeCardId);
-         
-         if ($shippingCardInfo->timeCardId)
+         if ($shippingCardInfo->timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
          {
             $timeCardInfo = TimeCardInfo::load($shippingCardInfo->timeCardId);
             
@@ -3698,8 +3696,6 @@ $router->add("shippingCardData", function($params) {
             }
          }
          
-         // Start here!!!
-         
          $jobInfo = JobInfo::load($jobId);
          if ($jobInfo)
          {
@@ -3707,14 +3703,20 @@ $router->add("shippingCardData", function($params) {
             $shippingCardInfo->wcNumber = $jobInfo->wcNumber;
          }
          
-         $shippingCard["isNew"] = Time::isNew($shippingCardInfo->dateTime, Time::NEW_THRESHOLD);
-         $shippingCard["incompleteShiftTime"] = $shippingCardInfo->incompleteShiftTime();
-         $shippingCard["incompleteShippingTime"] = $shippingCardInfo->incompleteShippingTime();
-         $shippingCard["incompletePartCount"] = $shippingCardInfo->incompletePartCount();
-         $shippingCard["activityLabel"] = ShippingActivity::getLabel($shippingCardInfo->activity);
-         $shippingCard["scrapTypeLabel"] = ScrapType::getLabel($shippingCardInfo->scrapType);
+         $userInfo = UserInfo::load($operator);
+         if ($userInfo)
+         {
+            $shippingCardInfo->operatorName = $userInfo->getFullName() .  " (" . $operator . ")";
+         }
          
-         $result[] = $shippingCard;
+         $shippingCardInfo->isNew = Time::isNew($shippingCardInfo->dateTime, Time::NEW_THRESHOLD);
+         $shippingCardInfo->incompleteShiftTime = $shippingCardInfo->incompleteShiftTime();
+         $shippingCardInfo->incompleteShippingTime = $shippingCardInfo->incompleteShippingTime();
+         $shippingCardInfo->incompletePartCount = $shippingCardInfo->incompletePartCount();
+         $shippingCardInfo->activityLabel = ShippingActivity::getLabel($shippingCardInfo->activity);
+         $shippingCardInfo->scrapTypeLabel = ScrapType::getLabel($shippingCardInfo->scrapType);
+         
+         $result[] = $shippingCardInfo;
       }
    }
    
@@ -3826,6 +3828,12 @@ $router->add("saveShippingCard", function($params) {
             if (isset($params["scrapType"]))
             {
                $shippingCardInfo->scrapType = intval($params["scrapType"]);
+            }
+            
+            // Optional parameters.
+            if (isset($params["comments"]))
+            {
+               $shippingCardInfo->comments = $params["comments"];
             }
                
             if ($shippingCardInfo->shippingCardId == ShippingCardInfo::UNKNOWN_SHIPPING_CARD_ID)
