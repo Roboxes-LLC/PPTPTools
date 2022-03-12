@@ -763,6 +763,8 @@ if (!Authentication::isAuthenticated())
       scrapTypeValidator.init();
 
       // Setup event handling on all DOM elements.
+      document.getElementById("today-button").onclick = onTodayButton;
+      document.getElementById("yesterday-button").onclick = onYesterdayButton;      
       document.getElementById("cancel-button").onclick = function(){onCancel();};
       document.getElementById("save-button").onclick = function(){onSaveShippingCard();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
