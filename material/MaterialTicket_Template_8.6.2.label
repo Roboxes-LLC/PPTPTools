@@ -73,13 +73,13 @@
 				<Element>
 					<String xml:space="preserve">%id</String>
 					<Attributes>
-						<Font Family="Arial" Size="36" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="28" Bold="False" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
 			</StyledText>
 		</TextObject>
-		<Bounds X="798.439024390246" Y="2357.0487804878" Width="1767.80487804878" Height="673.170731707317" />
+		<Bounds X="843.439024390246" Y="2522.0487804878" Width="1767.80487804878" Height="418.170731707317" />
 	</ObjectInfo>
 	<ObjectInfo>
 		<BarcodeObject>
@@ -103,7 +103,7 @@
 			<HorizontalAlignment>Center</HorizontalAlignment>
 			<QuietZonesPadding Left="0" Top="0" Right="0" Bottom="0" />
 		</BarcodeObject>
-		<Bounds X="2622.43902439026" Y="2421.43902439024" Width="2423.41463414634" Height="544.390243902438" />
+		<Bounds X="2652.43902439026" Y="2451.43902439024" Width="2423.41463414634" Height="544.390243902438" />
 	</ObjectInfo>
 	<ObjectInfo>
 		<TextObject>
@@ -191,10 +191,25 @@
 			<IsOutlined>False</IsOutlined>
 			<HorizontalAlignment>Left</HorizontalAlignment>
 			<VerticalAlignment>Middle</VerticalAlignment>
-			<TextFitMode>None</TextFitMode>
+			<TextFitMode>AlwaysFit</TextFitMode>
 			<UseFullFontHeight>True</UseFullFontHeight>
 			<Verticalized>False</Verticalized>
 			<StyledText>
+				<Element>
+					<String xml:space="preserve">Received:</String>
+					<Attributes>
+						<Font Family="Arial" Size="12" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
+				<Element>
+					<String xml:space="preserve"> %received
+</String>
+					<Attributes>
+						<Font Family="Arial" Size="12" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
+					</Attributes>
+				</Element>
 				<Element>
 					<String xml:space="preserve">Vendor: </String>
 					<Attributes>
@@ -271,7 +286,7 @@
 				</Element>
 			</StyledText>
 		</TextObject>
-		<Bounds X="336" Y="688.536585365854" Width="2745.36585365854" Height="1578.65853658538" />
+		<Bounds X="336" Y="688.536585365854" Width="2745.36585365854" Height="1728" />
 	</ObjectInfo>
 	<ObjectInfo>
 		<TextObject>
