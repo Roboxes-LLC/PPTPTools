@@ -21,12 +21,13 @@ abstract class MaintenanceLogInputField
    const MAINTENANCE_TIME = 2;
    const MAINTENANCE_TYPE = 3;
    const MAINTENANCE_CATEGORY = 4;
-   const EMPLOYEE_NUMBER = 5;
-   const JOB_NUMBER = 6;
-   const WC_NUMBER = 7;
-   const PART_NUMBER = 8;
-   const COMMENTS = 9;
-   const LAST = 10;
+   const MAINTENANCE_SUBCATEGORY = 5;
+   const EMPLOYEE_NUMBER = 6;
+   const JOB_NUMBER = 7;
+   const WC_NUMBER = 8;
+   const PART_NUMBER = 9;
+   const COMMENTS = 10;
+   const LAST = 11;
    const COUNT = MaintenanceLogInputField::LAST - MaintenanceLogInputField::FIRST;
 }
 
@@ -205,35 +206,6 @@ function getMaintenanceDate()
    return ($maintenanceDate);
 }
 
-function getMaintenanceCategory()
-{
-   $maintenanceCategory = null;
-   
-   $maintenanceEntry = getMaintenanceEntry();
-   
-   if (($maintenanceEntry) && 
-       ($maintenanceEntry->categoryId != MaintenanceCategory::UNKNOWN_CATEGORY_ID))
-   {
-      $maintenanceCategory = MaintenanceCategory::load($maintenanceEntry->categoryId);
-   }
-   
-   return ($maintenanceCategory);
-}
-
-function getMaintenanceType()
-{
-   $maintenanceType = MaintenanceType::UNKNOWN;
-   
-   $maintenanceCategory = getMaintenanceCategory();
-   
-   if ($maintenanceCategory)
-   {
-      $maintenanceType = $maintenanceCategory->maintenanceType;
-   }
-   
-   return ($maintenanceType);
-}
-
 // ********************************** BEGIN ************************************
 
 Time::init();
@@ -368,30 +340,19 @@ if (!Authentication::isAuthenticated())
          <div class="form-item">
             <div class="form-label-long">Maintenance Type</div>
             <div class="flex-horizontal">
-               <select id="maintenance-type-input" name="maintenanceType" form="input-form" oninput="onMaintenanceTypeChange()" <?php echo getDisabled(MaintenanceLogInputField::MAINTENANCE_TYPE); ?>>
-                  <?php echo MaintenanceType::getOptions(getMaintenanceType()); ?>
+               <select id="maintenance-type-input" name="typeId" form="input-form" oninput="onMaintenanceTypeChange()" <?php echo getDisabled(MaintenanceLogInputField::MAINTENANCE_TYPE); ?>>
+                  <?php echo MaintenanceEntry::getTypeOptions(getMaintenanceEntry()->typeId); ?>
                </select>
                
-               &nbsp;
-               &nbsp;
+               &nbsp;&nbsp;
                
-               <div id="repair-type-block" class="flex-horizontal">
-                  <select id="repair-type-input" name="categoryId" form="input-form" oninput="" <?php echo getDisabled(MaintenanceLogInputField::MAINTENANCE_CATEGORY); ?>>
-                     <?php echo MaintenanceCategory::getOptions(MaintenanceType::REPAIR, getMaintenanceCategory()->maintenanceCategoryId); ?>
-                  </select>
-               </div>
+               <select id="maintenance-category-input" name="categoryId" form="input-form" oninput="onMaintenanceCategoryChange()" <?php echo getDisabled(MaintenanceLogInputField::MAINTENANCE_CATEGORY); ?>>
+               </select>
                
-               <div id="preventative-type-block" class="flex-horizontal">
-                  <select id="preventative-type-input" name="categoryId" form="input-form" oninput="" <?php echo getDisabled(MaintenanceLogInputField::MAINTENANCE_CATEGORY); ?>>
-                     <?php echo MaintenanceCategory::getOptions(MaintenanceType::PREVENTATIVE, getMaintenanceCategory()->maintenanceCategoryId); ?>
-                  </select>
-               </div>
+               &nbsp;&nbsp;
                
-               <div id="cleaning-type-block" class="flex-horizontal">
-                  <select id="cleaning-type-input" name="categoryId" form="input-form" oninput="" <?php echo getDisabled(MaintenanceLogInputField::MAINTENANCE_CATEGORY); ?>>
-                     <?php echo MaintenanceCategory::getOptions(MaintenanceType::CLEANING, getMaintenanceCategory()->maintenanceCategoryId); ?>
-                  </select>
-               </div>
+               <select id="maintenance-subcategory-input" name="subcategoryId" form="input-form" <?php echo getDisabled(MaintenanceLogInputField::MAINTENANCE_SUBCATEGORY); ?>>
+               </select>
                
             </div>
          </div>
@@ -458,9 +419,8 @@ if (!Authentication::isAuthenticated())
       var wcNumberValidator = new SelectValidator("wc-number-input");
       var equipmentValidator = new SelectValidator("equipment-input");
       var maintenanceTypeValidator = new SelectValidator("maintenance-type-input");
-      var repairTypeValidator = new SelectValidator("repair-type-input");
-      var preventativeTypeValidator = new SelectValidator("preventative-type-input");
-      var cleaningTypeValidator = new SelectValidator("cleaning-type-input");
+      var maintenanceCategoryValidator = new SelectValidator("maintenance-category-input");
+      var maintenanceSubcategoryValidator = new SelectValidator("maintenance-subcategory-input");
       var partNumberValidator = new SelectValidator("part-number-input");
 
       maintentanceTimeHourValidator.init();
@@ -469,9 +429,8 @@ if (!Authentication::isAuthenticated())
       wcNumberValidator.init();
       equipmentValidator.init();
       maintenanceTypeValidator.init();
-      repairTypeValidator.init();
-      preventativeTypeValidator.init();
-      cleaningTypeValidator.init();
+      maintenanceCategoryValidator.init();
+      maintenanceSubcategoryValidator.init();      
       partNumberValidator.init();
       
       // Setup event handling on all DOM elements.

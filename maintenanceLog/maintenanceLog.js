@@ -84,56 +84,6 @@ function onDeleteMaintenanceEntry(maintenanceEntryId)
    }
 }
 
-function onMaintenanceTypeChange()
-{
-   var maintenanceTypeId = parseInt(document.getElementById("maintenance-type-input").value);
-   
-   hide("repair-type-block");
-   hide("preventative-type-block");
-   hide("cleaning-type-block");
-   
-   disable("repair-type-input");
-   disable("preventative-type-input");
-   disable("cleaning-type-input");
-   
-   disable("part-number-input");
-   disable("new-part-number-input");
-   disable("new-part-description-input");
-   
-   switch (maintenanceTypeId)
-   {
-      case 1:
-      {
-         show("repair-type-block", "block");
-         enable("repair-type-input");
-         
-         enable("part-number-input", "block");
-         enable("new-part-number-input");
-         enable("new-part-description-input");
-         break;
-      }
-      
-      case 2:
-      {
-         show("preventative-type-block", "block");
-         enable("preventative-type-input");
-         break;
-      }
-      
-      case 3:
-      {
-         show("cleaning-type-block", "block");
-         enable("cleaning-type-input");
-         break;
-      }
-      
-      default:
-      {
-         break;
-      }      
-   }
-}
-
 function onMaintenanceTimeChange()
 {
    var hours = parseInt(document.getElementById("maintenance-time-hour-input").value);
@@ -237,6 +187,198 @@ function onWCNumberChange()
    clear("equipment-input");
 }
 
+function onMaintenanceTypeChange()
+{
+   if (document.getElementById("maintenance-type-input").value > 0)
+   {
+      reloadMaintenanceCategories();
+      
+      onMaintenanceCategoryChange();
+   }
+   else
+   {
+      hide("maintenance-category-input");
+      hide("maintenance-subcategory-input");
+   }
+}
+
+function reloadMaintenanceCategories()
+{
+   let entryId = document.getElementById("entry-id-input").value;
+   let maintenanceTypeId = document.getElementById("maintenance-type-input").value;
+   
+   // AJAX call to populate WC numbers based on selected job number.
+   requestUrl = "../api/maintenanceCategories/";
+   if (maintenanceTypeId != 0)
+   {
+      requestUrl += "?typeId=" + maintenanceTypeId;
+   
+      if (entryId != 0)
+      {
+         requestUrl += "&entryId=" + entryId;
+      }
+   }
+   
+   var xhttp = new XMLHttpRequest();
+   xhttp.onreadystatechange = function()
+   {
+      if (this.readyState == 4 && this.status == 200)
+      {
+         try
+         {            
+            var json = JSON.parse(this.responseText);
+            
+            if (json.success == true)
+            {
+               updateMaintenanceCategoryOptions(json.maintenanceCategories, json.selectedCategoryId);               
+            }
+            else
+            {
+               console.log("API call to retrieve maintenance categories failed.");
+            }
+         }
+         catch (exception)
+         {
+            if (exception.name == "SyntaxError")
+            {
+               console.log("JSON syntax error");
+               console.log(this.responseText);
+            }
+            else
+            {
+               throw(exception);
+            }
+         }               
+      }
+   };
+   xhttp.open("GET", requestUrl, true);
+   xhttp.send(); 
+}
+
+function updateMaintenanceCategoryOptions(maintenanceCategories, selectedCategoryId)
+{
+   element = document.getElementById("maintenance-category-input");
+   
+   while (element.firstChild)
+   {
+      element.removeChild(element.firstChild);
+   }
+   
+   if (maintenanceCategories.length == 0)
+   {
+      hide("maintenance-category-input");
+      hide("maintenance-subcategory-input");
+   }
+   else
+   {
+      for (var maintenanceCategory of maintenanceCategories)
+      {
+         var option = document.createElement('option');
+         option.innerHTML = maintenanceCategory.label;
+         option.value = maintenanceCategory.categoryId;
+         element.appendChild(option);
+      }
+      
+      show("maintenance-category-input", "flex");
+   }
+   
+   element.value = (selectedCategoryId != 0) ? selectedCategoryId : null;
+}
+
+function onMaintenanceCategoryChange()
+{
+   if (document.getElementById("maintenance-category-input").value > 0)
+   {
+      reloadMaintenanceSubcategories();
+   }
+   else
+   {
+      hide("maintenance-subcategory-input");
+   }
+}
+
+function reloadMaintenanceSubcategories()
+{
+   let entryId = document.getElementById("entry-id-input").value;
+   let maintenanceCategoryId = document.getElementById("maintenance-category-input").value;
+   
+   // AJAX call to populate WC numbers based on selected job number.
+   requestUrl = "../api/maintenanceSubcategories/";
+   if (maintenanceCategoryId != 0)
+   {
+      requestUrl += "?categoryId=" + maintenanceCategoryId;
+      
+      if (entryId != 0)
+      {
+         requestUrl += "&entryId=" + entryId;
+      }
+   }
+   
+   var xhttp = new XMLHttpRequest();
+   xhttp.onreadystatechange = function()
+   {
+      if (this.readyState == 4 && this.status == 200)
+      {
+         try
+         {            
+            var json = JSON.parse(this.responseText);
+            
+            if (json.success == true)
+            {
+               updateMaintenanceSubcategoryOptions(json.maintenanceSubcategories, json.selectedSubcategoryId);               
+            }
+            else
+            {
+               console.log("API call to retrieve maintenance categories failed.");
+            }
+         }
+         catch (exception)
+         {
+            if (exception.name == "SyntaxError")
+            {
+               console.log("JSON syntax error");
+               console.log(this.responseText);
+            }
+            else
+            {
+               throw(exception);
+            }
+         }               
+      }
+   };
+   xhttp.open("GET", requestUrl, true);
+   xhttp.send(); 
+}
+
+function updateMaintenanceSubcategoryOptions(maintenanceSubcategories, selectedSubcategoryId)
+{
+   element = document.getElementById("maintenance-subcategory-input");
+   
+   while (element.firstChild)
+   {
+      element.removeChild(element.firstChild);
+   }
+   
+   if (maintenanceSubcategories.length == 0)
+   {
+      hide("maintenance-subcategory-input");
+   }
+   else
+   {
+      for (var maintenanceSubcategory of maintenanceSubcategories)
+      {
+         var option = document.createElement('option');
+         option.innerHTML = maintenanceSubcategory.label;
+         option.value = maintenanceSubcategory.subcategoryId;
+         element.appendChild(option);
+      }
+      
+      show("maintenance-subcategory-input", "flex");
+   }
+   
+   element.value = (selectedSubcategoryId != 0) ? selectedSubcategoryId : null;
+}
+
 function onEquipmentChange()
 {
    clear("job-number-input");
@@ -302,20 +444,21 @@ function validateMaintenanceEntry()
    else if (!(document.getElementById("wc-number-input").validator.validate()) &&
             !(document.getElementById("equipment-input").validator.validate()))
    {
-      alert("Please select a work center.");    
+      alert("Please select a work center or support equipment.");    
    }
    else if (!(document.getElementById("maintenance-type-input").validator.validate()))
    {
       alert("Please select a maintenance type.");    
    }
-   else if (((maintenanceType == 1) &&
-             !(document.getElementById("repair-type-input").validator.validate())) ||
-            ((maintenanceType == 2) &&
-             !(document.getElementById("preventative-type-input").validator.validate())) ||            
-            ((maintenanceType == 3) &&
-             !(document.getElementById("cleaning-type-input").validator.validate())))             
+   else if (isVisible("maintenance-category-input") &&
+            !(document.getElementById("maintenance-category-input").validator.validate()))
    {
-      alert("Please complete the maintenance type.");    
+      alert("Please select a maintenance category.");    
+   }
+   else if (isVisible("maintenance-subcategory-input") &&
+            !(document.getElementById("maintenance-subcategory-input").validator.validate()))
+   {
+      alert("Please select a maintenance subcategory.");    
    }
    else if (((document.getElementById("new-part-number-input").value != "") &&
              (document.getElementById("new-part-description-input").value == "")) ||

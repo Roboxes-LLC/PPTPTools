@@ -8,6 +8,11 @@ function show(elementId, display)
    document.getElementById(elementId).style.display = display;
 }
 
+function isVisible(elementId)
+{
+   return (document.getElementById(elementId).style.display != "none");
+}
+
 function set(elementId, value)
 {
    document.getElementById(elementId).value = value;

@@ -189,8 +189,9 @@ if (!Authentication::isAuthenticated())
             {title:"Techician",   field:"technicianName",            hozAlign:"left", headerFilter:true},            
             {title:"Job #",       field:"jobNumber",                 hozAlign:"left", headerFilter:true},
             {title:"Equipment",   field:"equipmentName",             hozAlign:"left", headerFilter:true},
-            {title:"Maint. Type", field:"maintenanceCategory.maintenanceTypeLabel",  hozAlign:"left", headerFilter:true},
-            {title:"Category",    field:"maintenanceCategory.label", hozAlign:"left", headerFilter:true},
+            {title:"Maint. Type", field:"typeLabel",                 hozAlign:"left", headerFilter:true},
+            {title:"Category",    field:"categoryLabel",             hozAlign:"left", headerFilter:true},
+            {title:"Subcategory", field:"subcategoryLabel",          hozAlign:"left", headerFilter:true},
             {title:"Maint. Time", field:"maintenanceTime",           hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
                   var minutes = parseInt(cell.getValue());

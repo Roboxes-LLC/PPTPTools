@@ -2921,12 +2921,9 @@ $router->add("maintenanceLogData", function($params) {
                }
             }
 
-            $maintenanceCategory = MaintenanceCategory::load($maintenanceEntry->categoryId);
-            if ($maintenanceCategory)
-            {
-               $maintenanceEntry->maintenanceCategory = $maintenanceCategory;
-               $maintenanceEntry->maintenanceCategory->maintenanceTypeLabel = MaintenanceType::getLabel($maintenanceCategory->maintenanceType);               
-            }
+            $maintenanceEntry->typeLabel = MaintenanceEntry::getTypeLabel($maintenanceEntry->typeId);
+            $maintenanceEntry->categoryLabel = MaintenanceEntry::getCategoryLabel($maintenanceEntry->categoryId);
+            $maintenanceEntry->subcategoryLabel = MaintenanceEntry::getSubcategoryLabel($maintenanceEntry->subcategoryId);
             
             if ($maintenanceEntry->partId != MachinePartInfo::UNKNOWN_PART_ID)
             {
@@ -2983,7 +2980,7 @@ $router->add("saveMaintenanceEntry", function($params) {
       if (isset($params["maintenanceDate"]) &&
           isset($params["employeeNumber"]) &&
           (isset($params["wcNumber"]) || isset($params["equipmentId"])) &&
-          isset($params["categoryId"]) &&
+          ((isset($params["typeId"]) || isset($params["categoryId"]) || isset($params["subcategoryId"]))) &&
           isset($params["maintenanceTime"]) &&
           isset($params["comments"]))
       {
@@ -2992,7 +2989,7 @@ $router->add("saveMaintenanceEntry", function($params) {
          $maintenancEntry->employeeNumber = intval($params["employeeNumber"]);
          $maintenancEntry->wcNumber = isset($params["wcNumber"]) ? intval($params["wcNumber"]) : JobInfo::UNKNOWN_WC_NUMBER;
          $maintenancEntry->equipmentId = isset($params["equipmentId"]) ? intval($params["equipmentId"]) : EquipmentInfo::UNKNOWN_EQUIPMENT_ID;
-         $maintenancEntry->categoryId = intval($params["categoryId"]);
+         $maintenancEntry->typeId = intval($params["typeId"]);
          $maintenancEntry->maintenanceTime = intval($params["maintenanceTime"]);
          $maintenancEntry->comments = $params["comments"];
          
@@ -3009,6 +3006,9 @@ $router->add("saveMaintenanceEntry", function($params) {
             // Clear the value.
             $maintenancEntry->jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
          }
+         
+         $maintenancEntry->categoryId = isset($params["categoryId"]) ? $params->getInt("categoryId") : MaintenanceEntry::UNKNOWN_CATEGORY_ID;
+         $maintenancEntry->subcategoryId = isset($params["subcategoryId"]) ? $params->getInt("subcategoryId") : MaintenanceEntry::UNKNOWN_SUBCATEGORY_ID;
 
          if (isset($params["partId"]))
          {
@@ -3088,6 +3088,120 @@ $router->add("deleteMaintenanceEntry", function($params) {
       if ($dbaseResult)
       {
          $result->success = true;
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "Database query failed.";
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("maintenanceCategories", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $database = PPTPDatabase::getInstance();
+   
+   if (isset($params["typeId"]))
+   {
+      $typeId = intval($params["typeId"]);
+      
+      $dbaseResult = $database->getMaintenanceCategories($typeId);
+      
+      if ($dbaseResult)
+      {
+         $result->success = true;
+         
+         // Requires mysqlnd driver
+         // https://stackoverflow.com/questions/6694437/mysqli-fetch-all-not-a-valid-function
+         //$result->maintenanceCategories = $dbaseResult->fetch_all(MYSQLI_ASSOC);
+         
+         $result->maintenanceCategories = array();
+         while ($dbaseResult && ($row = $dbaseResult->fetch_assoc()))
+         {
+            $maintenanceCategory = new stdClass();
+            $maintenanceCategory->categoryId = intval($row["categoryId"]);
+            $maintenanceCategory->typeId = intval($row["typeId"]);
+            $maintenanceCategory->label = $row["label"];
+
+            $result->maintenanceCategories[] = $maintenanceCategory;
+         }
+         
+         $result->selectedCategoryId = MaintenanceEntry::UNKNOWN_CATEGORY_ID;
+         if (isset($params["entryId"]))
+         {
+            $maintenanceEntry = MaintenanceEntry::load($params->getInt("entryId"));
+            
+            if ($maintenanceEntry)
+            {
+               $result->selectedCategoryId = $maintenanceEntry->categoryId;
+            }
+         }
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "Database query failed.";
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("maintenanceSubcategories", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $database = PPTPDatabase::getInstance();
+   
+   if (isset($params["categoryId"]))
+   {
+      $categoryId = intval($params["categoryId"]);
+      
+      $dbaseResult = $database->getMaintenanceSubcategories($categoryId);
+      
+      if ($dbaseResult)
+      {
+         $result->success = true;
+         
+         // Requires mysqlnd driver
+         // https://stackoverflow.com/questions/6694437/mysqli-fetch-all-not-a-valid-function
+         //$result->maintenanceSubcategories = $dbaseResult->fetch_all(MYSQLI_ASSOC);
+         
+         $result->maintenanceSubcategories = array();
+         while ($dbaseResult && ($row = $dbaseResult->fetch_assoc()))
+         {
+            $maintenanceSubcategory = new stdClass();
+            $maintenanceSubcategory->subcategoryId = intval($row["subcategoryId"]);
+            $maintenanceSubcategory->categoryId = intval($row["categoryId"]);
+            $maintenanceSubcategory->label = $row["label"];
+            
+            $result->maintenanceSubcategories[] = $maintenanceSubcategory;
+         }
+         
+         $result->selectedSubcategoryId = MaintenanceEntry::UNKNOWN_SUBCATEGORY_ID;
+         if (isset($params["entryId"]))
+         {
+            $maintenanceEntry = MaintenanceEntry::load($params->getInt("entryId"));
+            
+            if ($maintenanceEntry)
+            {
+               $result->selectedSubcategoryId = $maintenanceEntry->subcategoryId;
+            }
+         }
       }
       else
       {
