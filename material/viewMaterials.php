@@ -152,6 +152,8 @@ if (!Authentication::isAuthenticated())
         
          <div id="download-link" class="download-link">Download CSV file</div>
          
+         <div id="print-link" class="download-link">Print</div>  
+         
       </div> <!-- content -->
       
    </div> <!-- main -->
@@ -191,6 +193,7 @@ if (!Authentication::isAuthenticated())
          cellVertAlign:"middle",
          ajaxURL:url,
          ajaxParams:params,
+         //printAsHtml:true,
          //Define Table Columns
          columns:[
             {title:"Id",          field:"materialEntryId",       hozAlign:"left", visible:false},
@@ -219,7 +222,7 @@ if (!Authentication::isAuthenticated())
             {title:"Length",      field:"length",                              hozAlign:"left", headerFilter:true, visible:true},
             {title:"Pieces",      field:"pieces",                              hozAlign:"left", visible:true},            
             {title:"Quantity",    field:"quantity",                            hozAlign:"left", visible:true},
-            {title:"",      field:"issue",                                                               visible:hasIssuePermission,
+            {title:"",            field:"issue",                                                visible:hasIssuePermission, print:false,
                formatter:function(cell, formatterParams, onRendered){
                   let isIssued = cell.getRow().getData().isIssued;                  
                   let buttonText = isIssued ? "Revoke" : "Issue";
@@ -252,9 +255,13 @@ if (!Authentication::isAuthenticated())
                   let checked = isAcknowledged ? "checked" : "";
                
                   return (`<input type=\"checkbox\" ${checked} ${disabled}>`);
-               }
+               },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  let isAcknowledged = cell.getValue();   
+                  return (isAcknowledged ? "YES" : "");
+               }  
             },
-            {title:"", field:"delete", responsive:0,
+            {title:"", field:"delete", responsive:0, print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
@@ -401,6 +408,7 @@ if (!Authentication::isAuthenticated())
       document.getElementById("yesterday-button").onclick = filterYesterday;
       document.getElementById("new-material-button").onclick = function(){location.href = 'viewMaterial.php';};
       document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};
+      document.getElementById("print-link").onclick = function(){table.print(false, true);};
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};

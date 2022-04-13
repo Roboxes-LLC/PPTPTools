@@ -244,6 +244,34 @@ function getDescription()
    return ($description);
 }
 
+function getVendorId()
+{
+   $vendorId = MaterialVendor::UNKNOWN_MATERIAL_VENDOR_ID;
+   
+   $materialEntry = getMaterialEntry();
+   
+   if ($materialEntry && $materialEntry->materialHeatInfo)
+   {
+      $vendorId = $materialEntry->materialHeatInfo->vendorId;
+   }
+   
+   return ($vendorId);
+}
+
+function getMaterialId()
+{
+   $materialId = MaterialInfo::UNKNOWN_MATERIAL_ID;
+   
+   $materialEntry = getMaterialEntry();
+   
+   if ($materialEntry && $materialEntry->materialHeatInfo)
+   {
+      $materialId = $materialEntry->materialHeatInfo->materialId;
+   }
+   
+   return ($materialId);   
+}
+
 function getInternalHeatNumber()
 {
    $internalHeatNumber = null;
@@ -443,7 +471,7 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label">Vendor</div>
                   <select id="vendor-id-input" name="vendorId" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(MaterialInputField::VENDOR); ?>>
-                     <?php echo MaterialVendor::getOptions(getMaterialEntry()->materialHeatInfo->vendorId); ?>
+                     <?php echo MaterialVendor::getOptions(getVendorId()); ?>
                   </select>
                </div>
                
@@ -459,7 +487,7 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label">Material type</div>
                   <select id="material-id-input" name="materialId" form="input-form" oninput="this.validator.validate(); recalculateQuantity()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
-                     <?php echo MaterialInfo::getOptions(getMaterialEntry()->materialHeatInfo->materialId); ?>
+                     <?php echo MaterialInfo::getOptions(getMaterialId()); ?>
                   </select>
                </div>
                
