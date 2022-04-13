@@ -3,17 +3,23 @@
 require_once '../common/authentication.php';
 require_once '../common/database.php';
 require_once '../common/header.php';
-require_once '../common/maintenanceEntry.php';
+require_once '../common/isoInfo.php';
+require_once '../common/jobInfo.php';
 require_once '../common/menu.php';
+require_once '../common/newIndicator.php';
+require_once '../common/permissions.php';
+require_once '../common/roles.php';
+require_once '../common/shippingCardInfo.php';
+require_once '../common/userInfo.php';
 require_once '../common/version.php';
 
 function getFilterStartDate()
 {
    $startDate = Time::now("Y-m-d");
    
-   if (isset($_SESSION["maintenance.filter.startDate"]))
+   if (isset($_SESSION["shippingCard.filter.startDate"]))
    {
-      $startDate = $_SESSION["maintenance.filter.startDate"];
+      $startDate = $_SESSION["shippingCard.filter.startDate"];
    }
 
    // Convert to Javascript date format.
@@ -27,9 +33,9 @@ function getFilterEndDate()
 {
    $startDate = Time::now("Y-m-d");
    
-   if (isset($_SESSION["maintenance.filter.endDate"]))
+   if (isset($_SESSION["shippingCard.filter.endDate"]))
    {
-      $startDate = $_SESSION["maintenance.filter.endDate"];
+      $startDate = $_SESSION["shippingCard.filter.endDate"];
    }
    
    // Convert to Javascript date format.
@@ -50,7 +56,7 @@ function getReportFilename()
       $dateString .= "_to_" . $endDate;
    }
    
-   $filename = "MaintenanceLog_" . $dateString . ".csv";
+   $filename = "ShippingCards_" . $dateString . ".csv";
    
    return ($filename);
 }
@@ -67,6 +73,15 @@ if (!Authentication::isAuthenticated())
    exit;
 }
 
+// Post/Redirect/Get idiom.
+// getFilter() stores all $_POST data in the $_SESSION variable.
+// header() redirects to this page, but with a GET request.
+if ($_SERVER['REQUEST_METHOD'] === 'POST')
+{
+   // Redirect to this page.
+   header("Location: " . $_SERVER['REQUEST_URI']);
+   exit();
+}
 ?>
 
 <html>
@@ -84,9 +99,10 @@ if (!Authentication::isAuthenticated())
    <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
    <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
    
+   <script src="../common/barcodeScanner.js<?php echo versionQuery();?>"></script>   
    <script src="../common/common.js<?php echo versionQuery();?>"></script>
    <script src="../common/validate.js<?php echo versionQuery();?>"></script>
-   <script src="maintenanceLog.js<?php echo versionQuery();?>"></script>
+   <script src="shippingCard.js<?php echo versionQuery();?>"></script>
       
 </head>
 
@@ -96,16 +112,16 @@ if (!Authentication::isAuthenticated())
    
    <div class="main flex-horizontal flex-top flex-left">
    
-      <?php Menu::render(Activity::MAINTENANCE_LOG); ?>
+      <?php Menu::render(Activity::SHIPPING_CARD); ?>
       
       <div class="content flex-vertical flex-top flex-left">
       
          <div class="flex-horizontal flex-v-center flex-h-center">
-            <div class="heading">Maintenance Log</div>&nbsp;&nbsp;
+            <div class="heading">Shipping Cards</div>&nbsp;&nbsp;
             <i id="help-icon" class="material-icons icon-button">help</i>
          </div>
-         
-         <div id="description" class="description">The Maintenace Log records upgrades and repairs to your work centers.</div>
+                  
+         <div id="description" class="description">Shipping cards record the time a shipper spends packaging parts for a job.</div>
          
          <br>
          
@@ -125,15 +141,17 @@ if (!Authentication::isAuthenticated())
          
          <br>
         
-         <button id="new-log-entry-button" class="accent-button">New Log Entry</button>
+         <button id="new-shipping-card-button" class="accent-button">New Shipping Card</button>
 
          <br>
         
-         <div id="maintenance-log-table"></div>
-
+         <div id="shipping-card-table"></div>
+         
          <br> 
         
          <div id="download-link" class="download-link">Download CSV file</div>
+         
+         <div id="print-link" class="download-link">Print</div>         
          
       </div> <!-- content -->
       
@@ -145,7 +163,7 @@ if (!Authentication::isAuthenticated())
 
       function getTableQuery()
       {
-         return ("<?php echo $ROOT ?>/api/maintenanceLogData/");
+         return ("<?php echo $ROOT ?>/api/shippingCardData/");
       }
 
       function getTableQueryParams()
@@ -157,67 +175,168 @@ if (!Authentication::isAuthenticated())
 
          return (params);
       }
-      
+
       var url = getTableQuery();
       var params = getTableQueryParams();
       
-      // Create Tabulator on DOM element maintenance-log-table.
-      var table = new Tabulator("#maintenance-log-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+      // Create Tabulator on DOM element shipping-card-table.
+      var table = new Tabulator("#shipping-card-table", {
+         //height:500,            // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         index:"shippingCardId",
          layout:"fitData",
-         responsiveLayout:"hide", // enable responsive layouts
+         responsiveLayout:"hide",   // enable responsive layouts
          cellVertAlign:"middle",
+         printAsHtml:true,          //enable HTML table printing
+         printRowRange:"all",       // print all rows 
+         printHeader:"<h1>Shipping Cards<h1>",
+         printFooter:"<h2>TODO: Date range<h2>",
          ajaxURL:url,
          ajaxParams:params,
          //Define Table Columns
          columns:[
-            {title:"Id",          field:"maintenanceEntryId",       hozAlign:"left", visible:false},
-            {title:"Entry Date",  field:"dateTime",                 hozAlign:"left",
-               formatter:"datetime",  // Requires moment.js 
-               formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
-                  invalidPlaceholder:"---"
-               }
-            },
-            {title:"Maint. Date", field:"maintenanceDateTime",      hozAlign:"left",
-               formatter:"datetime",  // Requires moment.js 
-               formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
-                  invalidPlaceholder:"---"
-               }
-            },
-            {title:"Techician",   field:"technicianName",            hozAlign:"left", headerFilter:true},            
-            {title:"Job #",       field:"jobNumber",                 hozAlign:"left", headerFilter:true},
-            {title:"Equipment",   field:"equipmentName",             hozAlign:"left", headerFilter:true},
-            {title:"Maint. Type", field:"typeLabel",                 hozAlign:"left", headerFilter:true},
-            {title:"Category",    field:"categoryLabel",             hozAlign:"left", headerFilter:true},
-            {title:"Subcategory", field:"subcategoryLabel",          hozAlign:"left", headerFilter:true},
-            {title:"Maint. Time", field:"maintenanceTime",           hozAlign:"left",
+            {title:"Id",           field:"shippingCardId",  hozAlign:"left", visible:false},
+            {title:"Ticket",       field:"panTicketCode",   hozAlign:"left", responsive:0, headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = "";
+                  
+                  var timeCardId = cell.getRow().getData().timeCardId;
+                  
+                  if (timeCardId != 0)
+                  {
+                     cellValue = "<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().panTicketCode;
+                  }
+                  
+                  return (cellValue);
+               },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  return (cell.getValue());
+              }                 
+            },
+            {title:"Date",         field:"dateTime",        hozAlign:"left", responsive:0, print:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = "---";
+                  
+                  var date = new Date(cell.getValue());
+
+                  if (date.getTime() === date.getTime())  // check for valid date
+                  {
+                     var cellValue = formatDate(date);
+                     
+                     if (cell.getRow().getData().isNew)
+                     {
+                        cellValue += "&nbsp<span class=\"new-indicator\">new</div>";
+                     }
+                  }
+
+                  return (cellValue);
+              },
+              formatterPrint:function(cell, formatterParams, onRendered){
+                 var cellValue = "---";
+                  
+                 var date = new Date(cell.getValue());
+
+                 if (date.getTime() === date.getTime())  // check for valid date
+                 {
+                    var cellValue = formatDate(date);
+                 }
+
+                 return (cellValue);
+              },
+            },
+            {title:"Shipper",      field:"shipper",         hozAlign:"left", responsive:0, headerFilter:true, print:true},
+            {title:"Job #",        field:"jobNumber",         hozAlign:"left", responsive:0, headerFilter:true},
+            /*
+            {title:"WC #",         field:"wcNumber",          hozAlign:"left", responsive:0, headerFilter:true},
+            {title:"Operator",     field:"operatorName",      hozAlign:"left", responsive:0, headerFilter:true},
+            */
+            {title:"Mfg. Date",    field:"manufactureDate",   hozAlign:"left", responsive:0, headerFilter:true,
+               formatter:"datetime",  // Requires moment.js 
+               formatterParams:{
+                  outputFormat:"MM/DD/YYYY",
+                  invalidPlaceholder:"---"
+               }
+            },
+            {title:"Shift Time",   field:"shiftTime",       hozAlign:"left", responsive:1, print:true,
+               formatter:function(cell, formatterParams, onRendered){
+
                   var minutes = parseInt(cell.getValue());
+                  
                   var cellValue = Math.floor(minutes / 60) + ":" + ("0" + (minutes % 60)).slice(-2);
+                  
+                  if (cell.getRow().getData().incompleteShiftTime)
+                  {
+                     cellValue += "&nbsp<span class=\"incomplete-indicator\">incomplete</div>";
+                  }
+                  
+                  return (cellValue);
+                },
+               formatterPrint:function(cell, formatterParams, onRendered){
+
+                  var minutes = parseInt(cell.getValue());
+                  
+                  var cellValue = Math.floor(minutes / 60) + ":" + ("0" + (minutes % 60)).slice(-2);
+                  
+                  return (cellValue);
+                }                
+            },
+            {title:"Shipping Time",     field:"shippingTime",         hozAlign:"left", responsive:1, print:true,
+               formatter:function(cell, formatterParams, onRendered){
+
+                  var minutes = parseInt(cell.getValue());
+                  
+                  var cellValue = Math.floor(minutes / 60) + ":" + ("0" + (minutes % 60)).slice(-2);
+                  
+                  if (cell.getRow().getData().incompleteShippingTime)
+                  {
+                     cellValue += "&nbsp<span class=\"incomplete-indicator\">incomplete</div>";
+                  }
+                  
+                  return (cellValue);
+               },
+               formatterPrint:function(cell, formatterParams, onRendered){
+
+                  var minutes = parseInt(cell.getValue());
+                  
+                  var cellValue = Math.floor(minutes / 60) + ":" + ("0" + (minutes % 60)).slice(-2);
+                  
                   return (cellValue);
                }
             },
-            {title:"Part #",      field:"partNumber",                hozAlign:"left", headerFilter:true},
-            {title:"Comments",    field:"comments",                  hozAlign:"left"},
-            {title:"", field:"delete", responsive:0,
+            {title:"Activity",     field:"activityLabel",   hozAlign:"left", responsive:0, headerFilter:true, print:true},
+            {title:"Part Count",   field:"partCount",       hozAlign:"left", responsive:4, print:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = cell.getValue();
+                  
+                  if (cell.getRow().getData().incompletePartCount)
+                  {
+                     cellValue += "&nbsp<span class=\"incomplete-indicator\">incomplete</div>";
+                  }
+                  
+                  return (cellValue);
+                },
+                formatterPrint:function(cell, formatterParams, onRendered){
+                   return (cell.getValue());
+                }                
+            },
+            {title:"Scrap Count",  field:"scrapCount",      hozAlign:"left", responsive:5, print:true},
+            {title:"Scrap Type",   field:"scrapTypeLabel",  hozAlign:"left", responsive:5, headerFilter:true, print:true},
+            {title:"", field:"delete", responsive:0, width:75, print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
          ],
          cellClick:function(e, cell){
-            var entryId = parseInt(cell.getRow().getData().maintenanceEntryId);
-         
+            var shippingCardId = parseInt(cell.getRow().getData().shippingCardId);
+
             if (cell.getColumn().getField() == "delete")
             {
-               onDeleteMaintenanceEntry(entryId);
+               onDeleteShippingCard(shippingCardId);
             }
             else // Any other column
             {
-               // Open maintenance log entry for viewing/editing.
-               document.location = "<?php echo $ROOT?>/maintenanceLog/maintenanceLogEntry.php?entryId=" + entryId;               
+               // Open shipping card for viewing/editing.
+               document.location = "<?php echo $ROOT?>/shippingCard/viewShippingCard.php?shippingCardId=" + shippingCardId;               
             }
          },
          rowClick:function(e, row){
@@ -247,11 +366,11 @@ if (!Authentication::isAuthenticated())
 
                if (filterId == "start-date-filter")
                {
-                  setSession("maintenance.filter.startDate", document.getElementById("start-date-filter").value);
+                  setSession("shippingCard.filter.startDate", document.getElementById("start-date-filter").value);
                }
                else if (filterId == "end-date-filter")
                {
-                  setSession("maintenance.filter.endDate", document.getElementById("end-date-filter").value);
+                  setSession("shippingCard.filter.endDate", document.getElementById("end-date-filter").value);
                }
             }
          }
@@ -267,8 +386,7 @@ if (!Authentication::isAuthenticated())
          var formattedDate = date.getFullYear() + "-" + (month) + "-" + (day);
 
          return (formattedDate);
-      }
-            
+      }            
 
       function filterToday()
       {
@@ -306,16 +424,18 @@ if (!Authentication::isAuthenticated())
       }
 
       // Setup event handling on all DOM elements.
+      window.addEventListener('resize', function() { table.redraw(); });
       document.getElementById("start-date-filter").addEventListener("change", updateFilter);      
       document.getElementById("end-date-filter").addEventListener("change", updateFilter);
       document.getElementById("today-button").onclick = filterToday;
       document.getElementById("yesterday-button").onclick = filterYesterday;
-      document.getElementById("new-log-entry-button").onclick = function(){location.href = 'maintenanceLogEntry.php';};
+      document.getElementById("new-shipping-card-button").onclick = function(){location.href = 'viewShippingCard.php';};
       document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};
+      document.getElementById("print-link").onclick = function(){table.print(false, true);};
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
-
+      
    </script>
    
 </body>

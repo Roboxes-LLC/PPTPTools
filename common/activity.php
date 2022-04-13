@@ -22,7 +22,8 @@ class Activity
    const QUARTERLY_REPORT = 13;  // TODO: Submenus
    const MAINTENANCE_LOG = 14;
    const MATERIAL = 15;
-   const LAST = 16;
+   const SHIPPING_CARD = 16;
+   const LAST = 17;
    
    public $id;
    public $label;
@@ -43,7 +44,7 @@ class Activity
       Activity::USER,
       Activity::JOBS,
       Activity::MATERIAL,
-      Activity::TIME_CARD,
+      Activity::TIME_CARD,         
       Activity::PART_WEIGHT,
       Activity::PART_WASH,
       Activity::INSPECTION_TEMPLATE,
@@ -55,6 +56,7 @@ class Activity
       Activity::WEEKLY_REPORT,
       Activity::QUARTERLY_REPORT,
       Activity::MAINTENANCE_LOG,
+      Activity::SHIPPING_CARD
    );
    
    private static $ACTIVITIES = null;
@@ -80,7 +82,8 @@ class Activity
             Activity::REPORT =>              new Activity(Activity::REPORT,              "Reports",              "bar_chart",            Permission::getPermission(Permission::VIEW_REPORT)->bits,              "$ROOT/report/viewDailySummaryReport.php"),
             Activity::WEEKLY_REPORT =>       new Activity(Activity::WEEKLY_REPORT,       "Reports",              "bar_chart",            Permission::getPermission(Permission::VIEW_REPORT)->bits,              "$ROOT/report/viewWeeklySummaryReport.php"),
             Activity::QUARTERLY_REPORT =>    new Activity(Activity::QUARTERLY_REPORT,    "Reports",              "bar_chart",            Permission::getPermission(Permission::VIEW_REPORT)->bits,              "$ROOT/report/viewQuarterlySummaryReport.php"),
-            Activity::MAINTENANCE_LOG =>     new Activity(Activity::MAINTENANCE_LOG,     "Maintenance Log",      "build",                Permission::getPermission(Permission::VIEW_MAINTENANCE_LOG)->bits,     "$ROOT/maintenanceLog/maintenanceLog.php")
+            Activity::MAINTENANCE_LOG =>     new Activity(Activity::MAINTENANCE_LOG,     "Maintenance Log",      "build",                Permission::getPermission(Permission::VIEW_MAINTENANCE_LOG)->bits,     "$ROOT/maintenanceLog/maintenanceLog.php"),
+            Activity::SHIPPING_CARD =>       new Activity(Activity::SHIPPING_CARD,       "Shipping Time Cards",  "local_shipping",       Permission::getPermission(Permission::VIEW_SHIPPING_CARD)->bits,       "$ROOT/shippingCard/viewShippingCards.php")
          );
       }
       

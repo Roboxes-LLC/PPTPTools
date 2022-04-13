@@ -326,6 +326,108 @@ class PPTPDatabase extends MySqlDatabase
    }
    
    // **************************************************************************
+   //                               Shipping Cards
+   // **************************************************************************
+   
+   public function getShippingCard(
+      $shippingCardId)
+   {
+      $query = "SELECT * FROM shippingcard WHERE shippingCardId = $shippingCardId";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function matchShippingCard(
+      $jobId,
+      $employeeNumber,
+      $manufactureDate)
+   {
+      $startDate = Time::startOfDay($manufactureDate);
+      $endDate = Time::endOfDay($manufactureDate);
+      
+      $query = "SELECT * FROM shippingcard WHERE jobId = $jobId AND employeeNumber = $employeeNumber AND manufactureDate BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "';";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+
+   public function getShippingCards(
+      $employeeNumber,
+      $startDate,
+      $endDate,
+      $useMfgDate = false)
+   {
+      $result = null;
+      
+      $dateField = ($useMfgDate ? "manufactureDate" : "dateTime");
+      
+      if ($employeeNumber == UserInfo::UNKNOWN_EMPLOYEE_NUMBER)
+      {
+         $query = "SELECT * FROM shippingcard WHERE $dateField BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY $dateField DESC, shippingCardId DESC;";
+
+         $result = $this->query($query);
+      }
+      else
+      {
+         $query = "SELECT * FROM shippingcard WHERE employeeNumber=" . $employeeNumber . " AND $dateField BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY $dateField DESC, shippingCardId DESC;";
+         
+         $result = $this->query($query);
+      }
+
+      return ($result);
+   }
+
+   public function newShippingCard(
+      $shippingCardInfo)
+   {
+      $date = Time::toMySqlDate($shippingCardInfo->dateTime);
+      $manufactureDate = Time::toMySqlDate($shippingCardInfo->manufactureDate);
+      
+      $comments = mysqli_real_escape_string($this->getConnection(), $shippingCardInfo->comments);
+      
+      $query =
+         "INSERT INTO shippingcard " .
+         "(employeeNumber, dateTime, timeCardId, shiftTime, shippingTime, activity, partCount, scrapCount, scrapType, comments, jobId, operator, manufactureDate) " .
+         "VALUES " .
+         "('$shippingCardInfo->employeeNumber', '$date', '$shippingCardInfo->timeCardId', '$shippingCardInfo->shiftTime', '$shippingCardInfo->shippingTime', '$shippingCardInfo->activity', '$shippingCardInfo->partCount', '$shippingCardInfo->scrapCount', '$shippingCardInfo->scrapType', '$comments', '$shippingCardInfo->jobId', '$shippingCardInfo->operator', '$manufactureDate');";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+
+   public function updateShippingCard(
+      $shippingCardInfo)
+   {
+      $dateTime = Time::toMySqlDate($shippingCardInfo->dateTime);
+      $manufactureDate = Time::toMySqlDate($shippingCardInfo->manufactureDate);      
+      
+      $comments = mysqli_real_escape_string($this->getConnection(), $shippingCardInfo->comments);
+      
+      $query =
+      "UPDATE shippingcard " .
+      "SET employeeNumber = $shippingCardInfo->employeeNumber, dateTime = \"$dateTime\", timeCardId = $shippingCardInfo->timeCardId, shiftTime = $shippingCardInfo->shiftTime, shippingTime = $shippingCardInfo->shippingTime, activity = $shippingCardInfo->activity, partCount = $shippingCardInfo->partCount, scrapCount = $shippingCardInfo->scrapCount, scrapType = $shippingCardInfo->scrapType, comments = \"$comments\", jobId = $shippingCardInfo->jobId, operator =  $shippingCardInfo->operator, manufactureDate = \"$manufactureDate\" " .
+      "WHERE shippingCardId = $shippingCardInfo->shippingCardId;";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteShippingCard(
+      $shippingCardId)
+   {
+      $query = "DELETE FROM shippingcard WHERE shippingCardId = $shippingCardId;";
+
+      $result = $this->query($query);
+            
+      return ($result);
+   }
+   
+   // **************************************************************************
    //                                 Users
    // **************************************************************************
    
@@ -1594,63 +1696,200 @@ class PPTPDatabase extends MySqlDatabase
    }
    
    // **************************************************************************
+   //                             Maintenance Type
+   // **************************************************************************
+   
+   public function getMaintenanceType($typeId)
+   {
+      $query = "SELECT * FROM maintenancetype WHERE typeId = $typeId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getMaintenanceTypes()
+   {
+      $query = "SELECT * FROM maintenancetype ORDER BY label ASC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function newMaintenanceType($label)
+   {
+      $query = "INSERT INTO maintenancetype (label) VALUES (\"$label\");";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function updateMaintenanceType($typeId, $label)
+   {
+      $query = "UPDATE maintenancetype SET label = $label WHERE typeId = typeId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteMaintenanceType($typeId)
+   {
+      $UNKNOWN_TYPE_ID = MaintenanceEntry::UNKNOWN_TYPE_ID;
+      $UNKNOWN_CATEGORY_ID = MaintenanceEntry::UNKNOWN__CATEGORY_ID;
+      $UNKNOWN_SUBCATEGORY_ID = MaintenanceEntry::UNKNOWN_SUBCATEGORY_ID;
+
+      /*   
+      // Clean up maintenancesubcategory table.      
+      $query = "DELETE FROM maintenancesubcategory INNER JOIN maintenancetype maintenance SET categoryId = $UNKNOWN_SUBCATEGORY_ID\" WHERE typeId = $maintenanceTypeId;";      
+      $result = $this->query($query);
+      
+      // Clean up maintenancecategory table.      
+      $query = "UPDATE maintenance SET categoryId = $UNKNOWN_CATEGORY_ID\" WHERE typeId = $maintenanceTypeId;";      
+      $result = $this->query($query);
+      */
+      
+      // Clean up maintenancetype table. 
+      $query = "DELETE FROM maintenancetype WHERE yypeId = $typeId;"; 
+      $result = $this->query($query);
+
+      // Clean up maintenance table.    
+      $query = "UPDATE maintenance SET typeId = $UNKNOWN_TYPE_ID, categoryId = $UNKNOWN_CATEGORY_ID, subcategoryId = $UNKNOWN_SUBCATEGORY_ID WHERE typeId = $typeId;";      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
    //                             Maintenance Category
    // **************************************************************************
    
-   public function getMaintenanceCategory($maintenanceCategoryId)
+   public function getMaintenanceCategory($categoryId)
    {
-      $query = "SELECT * FROM maintenancecategory WHERE maintenanceCategoryId = \"$maintenanceCategoryId\";";
+      $query = "SELECT * FROM maintenancecategory WHERE categoryId = $categoryId;";
       
       $result = $this->query($query);
       
       return ($result);
    }
    
-   public function getMaintenanceCategories(
-      $maintenanceType)
+   public function getMaintenanceCategories($typeId)
    {
-      $typeClause = "";
-      if ($maintenanceType != MaintenanceType::UNKNOWN)
+      $typeClause = "TRUE";
+      if ($typeId != MaintenanceEntry::UNKNOWN_TYPE_ID)
       {
-         $typeClause = "WHERE maintenanceType = \"$maintenanceType\" ";
+         $typeClause = "typeId = $typeId";
       }
       
-      $query = "SELECT * FROM maintenancecategory $typeClause ORDER BY label DESC;";
+      $query = "SELECT * FROM maintenancecategory WHERE $typeClause ORDER BY label ASC;";
       
       $result = $this->query($query);
       
       return ($result);
    }
    
-   public function newMaintenanceCategory(
-      $maintenanceCategory)
+   public function newMaintenanceCategory($label)
    {
-      $query =
-      "INSERT INTO maintenancecategory " .
-      "(maintenanceType, label) " .
-      "VALUES " .
-      "('$maintenanceCategory->maintenanceType', '$maintenanceCategory->label');";
+      $query = "INSERT INTO maintenancecategory (label) VALUES (\"$label\");";
       
       $result = $this->query($query);
       
       return ($result);
    }
    
-   public function deleteMaintenanceCategory(
-      $maintenanceCategoryId)
+   public function updateMaintenanceCategory($categoryId, $label)
+   {
+      $query = "UPDATE maintenancecategory set label = \"$label\" WHERE categoryId = $categoryId);";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteMaintenanceCategory($categoryId)
    {
       $UNKNOWN_CATEGORY_ID = MaintenanceCategory::UNKNOWN_CATEGORY_ID;
+      $UNKNOWN_SUBCATEGORY_ID = MaintenanceEntry::UNKNOWN_SUBCATEGORY_ID;
+            
+      /*   
+      // Clean up maintenancesubcategory table.      
+      $query = "DELETE FROM maintenancesubcategory INNER JOIN maintenancetype maintenance SET categoryId = $UNKNOWN_SUBCATEGORY_ID\" WHERE categoryId = $categoryId;";      
+      $result = $this->query($query);
+      */
       
-      $query = "DELETE FROM maintenancecategory WHERE maintenanceCategoryId = $maintenanceCategoryId;";
-      
+      // Clean up maintenancecategory table.      
+      $query = "DELETE FROM maintenancecategory WHERE categoryId = $categoryId;";      
+      $result = $this->query($query);
+
+      // Clean up maintenance table.    
+      $query = "UPDATE maintenance SET categoryId = $UNKNOWN_CATEGORY_ID, subcategoryId = $UNKNOWN_SUBCATEGORY_ID WHERE categoryId = $categoryId;";      
       $result = $this->query($query);
       
-      $query = "UPDATE maintenance SET categoryId = \"$UNKNOWN_CATEGORY_ID\" WHERE categoryId = $maintenanceCategoryId;";
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                             Maintenance Subcategory
+   // **************************************************************************
+   
+   public function getMaintenanceSubcategory($subcategoryId)
+   {
+      $query = "SELECT * FROM maintenancesubcategory WHERE subcategoryId = $subcategoryId;";
       
       $result = $this->query($query);
       
       return ($result);
    }
+   
+   public function getMaintenanceSubcategories($categoryId)
+   {
+      $categoryClause = "TRUE";
+      if ($categoryId != MaintenanceEntry::UNKNOWN_CATEGORY_ID)
+      {
+         $categoryClause = "categoryId = $categoryId";
+      }
+      
+      $query = "SELECT * FROM maintenancesubcategory WHERE $categoryClause ORDER BY label ASC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function newMaintenanceSubcategory($label)
+   {
+      $query = "INSERT INTO maintenancesubcategory (label) VALUES (\"$label\");";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function updateMaintenanceSubcategory($subcategoryId, $label)
+   {
+      $query = "UPDATE maintenancesubcategory set label = \"$label\" WHERE subcategoryId = $subcategoryId);";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteMaintenanceSubcategory($subcategoryId)
+   {
+      $UNKNOWN_SUBCATEGORY_ID = MaintenanceEntry::UNKNOWN_SUBCATEGORY_ID;
+            
+      // Clean up maintenancesubcategory table.      
+      $query = "DELETE FROM maintenancesubcategory WHERE subcategoryId = $subcategoryId;";      
+      $result = $this->query($query);
+
+      // Clean up maintenance table.    
+      $query = "UPDATE maintenance SET subcategoryId = $UNKNOWN_SUBCATEGORY_ID WHERE subcategoryId = $subcategoryId;";      
+      $result = $this->query($query);
+      
+      return ($result);
+   }   
    
    // **************************************************************************
    //                              Maintenance Log
@@ -1702,9 +1941,9 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "INSERT INTO maintenance " .
-      "(dateTime, maintenanceDateTime, employeeNumber, categoryId, jobNumber, wcNumber, equipmentId, maintenanceTime, partId, comments) " .
+      "(dateTime, maintenanceDateTime, employeeNumber, typeId, categoryId, subcategoryId, jobNumber, wcNumber, equipmentId, maintenanceTime, partId, comments) " .
       "VALUES " .
-      "('$dateTime', '$maintenanceDateTime', '$maintenanceEntry->employeeNumber', '$maintenanceEntry->categoryId', '$maintenanceEntry->jobNumber', '$maintenanceEntry->wcNumber', '$maintenanceEntry->equipmentId', '$maintenanceEntry->maintenanceTime', '$maintenanceEntry->partId', '$maintenanceEntry->comments');";
+      "('$dateTime', '$maintenanceDateTime', '$maintenanceEntry->employeeNumber', '$maintenanceEntry->typeId', '$maintenanceEntry->categoryId', '$maintenanceEntry->subcategoryId', '$maintenanceEntry->jobNumber', '$maintenanceEntry->wcNumber', '$maintenanceEntry->equipmentId', '$maintenanceEntry->maintenanceTime', '$maintenanceEntry->partId', '$maintenanceEntry->comments');";
 
       $result = $this->query($query);
       
@@ -1719,7 +1958,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "UPDATE maintenance " .
-      "SET dateTime = \"$dateTime\", maintenanceDateTime = \"$maintenanceDateTime\", employeeNumber = $maintenanceEntry->employeeNumber, categoryId = $maintenanceEntry->categoryId, jobNumber = '$maintenanceEntry->jobNumber', wcNumber = $maintenanceEntry->wcNumber, equipmentId = $maintenanceEntry->equipmentId, maintenanceTime = $maintenanceEntry->maintenanceTime, partId = $maintenanceEntry->partId, comments = \"$maintenanceEntry->comments\" " .
+      "SET dateTime = \"$dateTime\", maintenanceDateTime = \"$maintenanceDateTime\", employeeNumber = $maintenanceEntry->employeeNumber, typeId = $maintenanceEntry->typeId, categoryId = $maintenanceEntry->categoryId, subcategoryId = $maintenanceEntry->subcategoryId, jobNumber = '$maintenanceEntry->jobNumber', wcNumber = $maintenanceEntry->wcNumber, equipmentId = $maintenanceEntry->equipmentId, maintenanceTime = $maintenanceEntry->maintenanceTime, partId = $maintenanceEntry->partId, comments = \"$maintenanceEntry->comments\" " .
       "WHERE maintenanceEntryId = $maintenanceEntry->maintenanceEntryId;";
 
       $result = $this->query($query);

@@ -3,12 +3,15 @@
 require_once 'equipmentInfo.php';
 require_once 'jobInfo.php';
 require_once 'machinePartInfo.php';
-require_once 'maintenanceCategory.php';
 require_once 'userInfo.php';
 
 class MaintenanceEntry
 {
    const UNKNOWN_ENTRY_ID = 0;
+   
+   const UNKNOWN_TYPE_ID = 0;
+   const UNKNOWN_CATEGORY_ID = 0;
+   const UNKNOWN_SUBCATEGORY_ID = 0;
    
    const MINUTES_PER_HOUR = 60;
    
@@ -19,7 +22,9 @@ class MaintenanceEntry
    public $jobNumber;
    public $wcNumber;   
    public $equipmentId;
+   public $typeId;
    public $categoryId;
+   public $subcategoryId;
    public $maintenanceTime;  // minutes
    public $partId;
    public $comments;
@@ -33,7 +38,9 @@ class MaintenanceEntry
       $this->jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
       $this->wcNumber = JobInfo::UNKNOWN_WC_NUMBER;
       $this->equipmentId = EquipmentInfo::UNKNOWN_EQUIPMENT_ID;
-      $this->categoryId = MaintenanceCategory::UNKNOWN_CATEGORY_ID;
+      $this->typeId = MaintenanceEntry::UNKNOWN_TYPE_ID;
+      $this->categoryId = MaintenanceEntry::UNKNOWN_CATEGORY_ID;
+      $this->subcategoryId = MaintenanceEntry::UNKNOWN_SUBCATEGORY_ID;
       $this->maintenanceTime = 0;  // minutes
       $this->partId = MachinePartInfo::UNKNOWN_PART_ID;
       $this->comments = "";
@@ -75,14 +82,151 @@ class MaintenanceEntry
             $maintenanceEntry->jobNumber = $row['jobNumber'];
             $maintenanceEntry->wcNumber = intval($row['wcNumber']);
             $maintenanceEntry->equipmentId = intval($row['equipmentId']);
-            $maintenanceEntry->categoryId = intval($row['categoryId']);
             $maintenanceEntry->maintenanceTime = intval($row['maintenanceTime']);
             $maintenanceEntry->partId = intval($row['partId']);
             $maintenanceEntry->comments = $row['comments'];            
+            
+            $maintenanceEntry->subcategoryId = intval($row['subcategoryId']);
+            if ($maintenanceEntry->subcategoryId != MaintenanceEntry::UNKNOWN_SUBCATEGORY_ID)
+            {
+               $maintenanceEntry->categoryId = MaintenanceEntry::getParentCategory($maintenanceEntry->subcategoryId);
+               $maintenanceEntry->typeId = MaintenanceEntry::getParentType($maintenanceEntry->categoryId);
+            }
+            else
+            {
+               $maintenanceEntry->categoryId = intval($row['categoryId']);
+
+               if ($maintenanceEntry->categoryId != MaintenanceEntry::UNKNOWN_CATEGORY_ID)
+               {
+                  $maintenanceEntry->typeId = MaintenanceEntry::getParentType($maintenanceEntry->categoryId);
+               }
+               else
+               {
+                  $maintenanceEntry->typeId = intval($row['typeId']);
+               }
+            }
          }
       }
       
       return ($maintenanceEntry);
+   }
+   
+   public static function getTypeLabel($typeId)
+   {
+      $label = "";
+      
+      $database = PPTPDatabase::getInstance();
+      
+      if ($database && ($database->isConnected()))
+      {
+         $result = $database->getMaintenanceType($typeId);
+         
+         if ($result && ($row = $result->fetch_assoc()))
+         {
+            $label = $row["label"];
+         }
+      }
+      
+      return ($label);
+   }
+   
+   public static function getTypeOptions($selectedTypeId)
+   {
+      $html = "<option style=\"display:none\">";
+      
+      $database = PPTPDatabase::getInstance();
+      
+      if ($database && $database->isConnected())
+      {
+         $result = $database->getMaintenanceTypes();
+         
+         while ($result && ($row = $result->fetch_assoc()))
+         {
+            $typeId = intval($row["typeId"]);
+            $label = $row["label"];
+            $selected = ($typeId == $selectedTypeId) ? "selected" : "";
+            
+            $html .= "<option value=\"$typeId\" $selected>$label</option>";
+         }
+      }
+      
+      return ($html);
+   }
+   
+   public static function getCategoryLabel($categoryId)
+   {
+      $label = "";
+      
+      $database = PPTPDatabase::getInstance();
+      
+      if ($database && ($database->isConnected()))
+      {
+         $result = $database->getMaintenanceCategory($categoryId);
+         
+         if ($result && ($row = $result->fetch_assoc()))
+         {
+            $label = $row["label"];
+         }
+      }
+      
+      return ($label);
+   }
+   
+   public static function getSubcategoryLabel($subcategoryId)
+   {
+      $label = "";
+      
+      $database = PPTPDatabase::getInstance();
+      
+      if ($database && ($database->isConnected()))
+      {
+         $result = $database->getMaintenanceSubcategory($subcategoryId);
+         
+         if ($result && ($row = $result->fetch_assoc()))
+         {
+            $label = $row["label"];
+         }
+      }
+      
+      return ($label);
+   }
+   
+   public static function getParentCategory($subcategoryId)
+   {
+      $parentId = MaintenanceEntry::UNKNOWN_CATEGORY_ID;
+      
+      $database = PPTPDatabase::getInstance();
+      
+      if ($database && ($database->isConnected()))
+      {
+         $result = $database->getMaintenanceSubcategory($subcategoryId);
+         
+         if ($result && ($row = $result->fetch_assoc()))
+         {
+            $parentId = intval($row["categoryId"]);
+         }
+      }
+
+      return ($parentId);
+   }
+   
+   public static function getParentType($categoryId)
+   {
+      $parentId = MaintenanceEntry::UNKNOWN_TYPE_ID;
+      
+      $database = PPTPDatabase::getInstance();
+      
+      if ($database && ($database->isConnected()))
+      {
+         $result = $database->getMaintenanceCategory($categoryId);
+         
+         if ($result && ($row = $result->fetch_assoc()))
+         {
+            $parentId = intval($row["typeId"]);
+         }
+      }
+      
+      return ($parentId);
    }
 }
 
@@ -115,8 +259,6 @@ if (isset($_GET["maintenanceEntryId"]))
 }
 
 echo "<select>" . MaintenanceType::getOptions(MaintenanceType::UNKNOWN) . "</select><br/><br/>";
-echo "<select>" . MaintenanceCategory::getOptions(MaintenanceCategory::UNKNOWN_CATEGORY_ID, MaintenanceType::UNKNOWN) . "</select><br/><br/>";
-echo "<select>" . MachinePartInfo::getOptions(MachinePartInfo::UNKNOWN_PART_ID) . "</select><br/><br/>";
 */
 
 ?>

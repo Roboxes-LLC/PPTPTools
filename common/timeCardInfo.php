@@ -13,9 +13,13 @@ class TimeCardInfo
    
    const MAX_SHIFT_HOURS = 13;  // hours
    
-   const DEFAULT_SHIFT_HOURS = 10;  // hours
-   
+   const DEFAULT_SHIFT_HOURS = 8;  // hours
+      
    const DEFAULT_SHIFT_TIME = (TimeCardInfo::DEFAULT_SHIFT_HOURS * TimeCardInfo::MINUTES_PER_HOUR);  // minutes
+   
+   const DEFAULT_RUN_HOURS = 8;  // hours   
+   
+   const DEFAULT_RUN_TIME = (TimeCardInfo::DEFAULT_RUN_HOURS * TimeCardInfo::MINUTES_PER_HOUR);  // minutes
    
    public $timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
    public $dateTime;

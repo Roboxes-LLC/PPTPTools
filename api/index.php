@@ -17,6 +17,7 @@ require_once '../common/printerInfo.php';
 require_once '../common/quarterlySummaryReport.php';
 require_once '../common/root.php';
 require_once '../common/signInfo.php';
+require_once '../common/shippingCardInfo.php';
 require_once '../common/timeCardInfo.php';
 require_once '../common/upload.php';
 require_once '../common/userInfo.php';
@@ -2920,12 +2921,9 @@ $router->add("maintenanceLogData", function($params) {
                }
             }
 
-            $maintenanceCategory = MaintenanceCategory::load($maintenanceEntry->categoryId);
-            if ($maintenanceCategory)
-            {
-               $maintenanceEntry->maintenanceCategory = $maintenanceCategory;
-               $maintenanceEntry->maintenanceCategory->maintenanceTypeLabel = MaintenanceType::getLabel($maintenanceCategory->maintenanceType);               
-            }
+            $maintenanceEntry->typeLabel = MaintenanceEntry::getTypeLabel($maintenanceEntry->typeId);
+            $maintenanceEntry->categoryLabel = MaintenanceEntry::getCategoryLabel($maintenanceEntry->categoryId);
+            $maintenanceEntry->subcategoryLabel = MaintenanceEntry::getSubcategoryLabel($maintenanceEntry->subcategoryId);
             
             if ($maintenanceEntry->partId != MachinePartInfo::UNKNOWN_PART_ID)
             {
@@ -2982,7 +2980,7 @@ $router->add("saveMaintenanceEntry", function($params) {
       if (isset($params["maintenanceDate"]) &&
           isset($params["employeeNumber"]) &&
           (isset($params["wcNumber"]) || isset($params["equipmentId"])) &&
-          isset($params["categoryId"]) &&
+          ((isset($params["typeId"]) || isset($params["categoryId"]) || isset($params["subcategoryId"]))) &&
           isset($params["maintenanceTime"]) &&
           isset($params["comments"]))
       {
@@ -2991,7 +2989,7 @@ $router->add("saveMaintenanceEntry", function($params) {
          $maintenancEntry->employeeNumber = intval($params["employeeNumber"]);
          $maintenancEntry->wcNumber = isset($params["wcNumber"]) ? intval($params["wcNumber"]) : JobInfo::UNKNOWN_WC_NUMBER;
          $maintenancEntry->equipmentId = isset($params["equipmentId"]) ? intval($params["equipmentId"]) : EquipmentInfo::UNKNOWN_EQUIPMENT_ID;
-         $maintenancEntry->categoryId = intval($params["categoryId"]);
+         $maintenancEntry->typeId = intval($params["typeId"]);
          $maintenancEntry->maintenanceTime = intval($params["maintenanceTime"]);
          $maintenancEntry->comments = $params["comments"];
          
@@ -3008,6 +3006,9 @@ $router->add("saveMaintenanceEntry", function($params) {
             // Clear the value.
             $maintenancEntry->jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
          }
+         
+         $maintenancEntry->categoryId = isset($params["categoryId"]) ? $params->getInt("categoryId") : MaintenanceEntry::UNKNOWN_CATEGORY_ID;
+         $maintenancEntry->subcategoryId = isset($params["subcategoryId"]) ? $params->getInt("subcategoryId") : MaintenanceEntry::UNKNOWN_SUBCATEGORY_ID;
 
          if (isset($params["partId"]))
          {
@@ -3087,6 +3088,120 @@ $router->add("deleteMaintenanceEntry", function($params) {
       if ($dbaseResult)
       {
          $result->success = true;
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "Database query failed.";
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("maintenanceCategories", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $database = PPTPDatabase::getInstance();
+   
+   if (isset($params["typeId"]))
+   {
+      $typeId = intval($params["typeId"]);
+      
+      $dbaseResult = $database->getMaintenanceCategories($typeId);
+      
+      if ($dbaseResult)
+      {
+         $result->success = true;
+         
+         // Requires mysqlnd driver
+         // https://stackoverflow.com/questions/6694437/mysqli-fetch-all-not-a-valid-function
+         //$result->maintenanceCategories = $dbaseResult->fetch_all(MYSQLI_ASSOC);
+         
+         $result->maintenanceCategories = array();
+         while ($dbaseResult && ($row = $dbaseResult->fetch_assoc()))
+         {
+            $maintenanceCategory = new stdClass();
+            $maintenanceCategory->categoryId = intval($row["categoryId"]);
+            $maintenanceCategory->typeId = intval($row["typeId"]);
+            $maintenanceCategory->label = $row["label"];
+
+            $result->maintenanceCategories[] = $maintenanceCategory;
+         }
+         
+         $result->selectedCategoryId = MaintenanceEntry::UNKNOWN_CATEGORY_ID;
+         if (isset($params["entryId"]))
+         {
+            $maintenanceEntry = MaintenanceEntry::load($params->getInt("entryId"));
+            
+            if ($maintenanceEntry)
+            {
+               $result->selectedCategoryId = $maintenanceEntry->categoryId;
+            }
+         }
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "Database query failed.";
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("maintenanceSubcategories", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $database = PPTPDatabase::getInstance();
+   
+   if (isset($params["categoryId"]))
+   {
+      $categoryId = intval($params["categoryId"]);
+      
+      $dbaseResult = $database->getMaintenanceSubcategories($categoryId);
+      
+      if ($dbaseResult)
+      {
+         $result->success = true;
+         
+         // Requires mysqlnd driver
+         // https://stackoverflow.com/questions/6694437/mysqli-fetch-all-not-a-valid-function
+         //$result->maintenanceSubcategories = $dbaseResult->fetch_all(MYSQLI_ASSOC);
+         
+         $result->maintenanceSubcategories = array();
+         while ($dbaseResult && ($row = $dbaseResult->fetch_assoc()))
+         {
+            $maintenanceSubcategory = new stdClass();
+            $maintenanceSubcategory->subcategoryId = intval($row["subcategoryId"]);
+            $maintenanceSubcategory->categoryId = intval($row["categoryId"]);
+            $maintenanceSubcategory->label = $row["label"];
+            
+            $result->maintenanceSubcategories[] = $maintenanceSubcategory;
+         }
+         
+         $result->selectedSubcategoryId = MaintenanceEntry::UNKNOWN_SUBCATEGORY_ID;
+         if (isset($params["entryId"]))
+         {
+            $maintenanceEntry = MaintenanceEntry::load($params->getInt("entryId"));
+            
+            if ($maintenanceEntry)
+            {
+               $result->selectedSubcategoryId = $maintenanceEntry->subcategoryId;
+            }
+         }
       }
       else
       {
@@ -3606,6 +3721,300 @@ $router->add("printMaterialTicket", function($params) {
       
       // Store preferred printer for session.
       $_SESSION["preferredPrinter"] = $params["printerName"];
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("shippingCardData", function($params) {
+   $result = array();
+   
+   $startDate = Time::startOfDay(Time::now("Y-m-d"));
+   $endDate = Time::endOfDay(Time::now("Y-m-d"));
+   
+   if (isset($params["filters"]))
+   {
+      foreach ($params["filters"] as $filter)
+      {
+         if ($filter->field == "date")
+         {
+            if ($filter->type == ">=")
+            {
+               $startDate = Time::startOfDay($filter->value);
+            }
+            else if ($filter->type == "<=")
+            {
+               $endDate = Time::endOfDay($filter->value);
+            }
+         }
+      }
+   }
+   
+   if (isset($params["startDate"]))
+   {
+      $startDate = Time::startOfDay($params["startDate"]);
+   }
+   
+   if (isset($params["endDate"]))
+   {
+      $endDate = Time::endOfDay($params["endDate"]);
+   }
+   
+   $employeeNumberFilter =
+      (Authentication::checkPermissions(Permission::VIEW_OTHER_USERS)) ?
+         UserInfo::UNKNOWN_EMPLOYEE_NUMBER :                      // No filter
+         Authentication::getAuthenticatedUser()->employeeNumber;  // Filter on authenticated user
+   
+   $database = PPTPDatabase::getInstance();
+   
+   if ($database && $database->isConnected())
+   {
+      $dbResult = $database->getShippingCards($employeeNumberFilter, $startDate, $endDate);
+      
+      // Populate data table.
+      foreach ($dbResult as $row)
+      {
+         $shippingCardInfo = new ShippingCardInfo();
+         $shippingCardInfo->initialize($row);
+         
+         $userInfo = UserInfo::load($shippingCardInfo->employeeNumber);
+         if ($userInfo)
+         {
+            $shippingCardInfo->shipper = $userInfo->getFullName() . " (" . $shippingCardInfo->employeeNumber . ")";
+         }
+
+         $shippingCardInfo->panTicketCode = "0000";
+         
+         $jobId = $shippingCardInfo->jobId;
+         
+         $operator = $shippingCardInfo->operator;
+         
+         if ($shippingCardInfo->timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+         {
+            $timeCardInfo = TimeCardInfo::load($shippingCardInfo->timeCardId);
+            
+            if ($timeCardInfo)
+            {
+               $shippingCardInfo->panTicketCode = PanTicket::getPanTicketCode($timeCardInfo->timeCardId);
+               
+               $jobId = $timeCardInfo->jobId;
+               
+               $operator = $timeCardInfo->employeeNumber;
+               
+               $shippingCardInfo->manufactureDate = $timeCardInfo->manufactureDate;
+            }
+         }
+         
+         $jobInfo = JobInfo::load($jobId);
+         if ($jobInfo)
+         {
+            $shippingCardInfo->jobNumber = $jobInfo->jobNumber;
+            $shippingCardInfo->wcNumber = $jobInfo->wcNumber;
+         }
+         
+         $userInfo = UserInfo::load($operator);
+         if ($userInfo)
+         {
+            $shippingCardInfo->operatorName = $userInfo->getFullName() .  " (" . $operator . ")";
+         }
+         
+         $shippingCardInfo->isNew = Time::isNew($shippingCardInfo->dateTime, Time::NEW_THRESHOLD);
+         $shippingCardInfo->incompleteShiftTime = $shippingCardInfo->incompleteShiftTime();
+         $shippingCardInfo->incompleteShippingTime = $shippingCardInfo->incompleteShippingTime();
+         $shippingCardInfo->incompletePartCount = $shippingCardInfo->incompletePartCount();
+         $shippingCardInfo->activityLabel = ShippingActivity::getLabel($shippingCardInfo->activity);
+         $shippingCardInfo->scrapTypeLabel = ScrapType::getLabel($shippingCardInfo->scrapType);
+         
+         $result[] = $shippingCardInfo;
+      }
+   }
+   
+   echo json_encode($result);
+});
+
+$router->add("saveShippingCard", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $database = PPTPDatabase::getInstance();
+   $dbaseResult = null;
+   
+   $timeCardInfo = null;
+   
+   if (isset($params["shippingCardId"]) &&
+       is_numeric($params["shippingCardId"]) &&
+       (intval($params["shippingCardId"]) != ShippingCardInfo::UNKNOWN_SHIPPING_CARD_ID))
+   {
+      $shippingCardId = intval($params["shippingCardId"]);
+      
+      //  Updated entry
+      $shippingCardInfo = ShippingCardInfo::load($shippingCardId);
+      
+      if (!$shippingCardInfo)
+      {
+         $result->success = false;
+         $result->error = "No existing shipping card found.";
+      }
+   }
+   else
+   {
+      // New shipping card.
+      $shippingCardInfo = new ShippingCardInfo();
+      
+      // Use current date/time as time card time.
+      $shippingCardInfo->dateTime = Time::now("Y-m-d h:i:s A");
+   }
+   
+   if ($result->success)
+   {
+      if (isset($params["panTicketCode"]) &&
+          ($params["panTicketCode"] != ""))
+      {
+         //
+         // Pan ticket entry
+         //
+         
+         $panTicketId = PanTicket::getPanTicketId($params["panTicketCode"]);
+         
+         // Validate panTicketId.
+         if (TimeCardInfo::load($panTicketId) != null)
+         {
+            $shippingCardInfo->timeCardId = $panTicketId;
+         }
+         else
+         {
+            $result->success = false;
+            $result->error = "Invalid pan ticket code.";
+         }
+      }
+      else if (isset($params["jobNumber"]) &&
+               isset($params["wcNumber"]) &&
+               isset($params["manufactureDate"]) &&
+               isset($params["operator"]))
+      {
+         //
+         // Manual entry
+         //
+         
+         $jobId = JobInfo::getJobIdByComponents($params->get("jobNumber"), $params->getInt("wcNumber"));
+         
+         if ($jobId != JobInfo::UNKNOWN_JOB_ID)
+         {
+            $shippingCardInfo->jobId = $jobId;
+            $shippingCardInfo->manufactureDate = $params["manufactureDate"];
+            $shippingCardInfo->operator = intval($params["operator"]);
+         }
+         else
+         {
+            $result->success = false;
+            $result->error = "Failed to lookup job ID.";
+         }
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "Missing parameters.";
+      }
+      
+      if ($result->success)
+      {
+         // Required parameters.
+         if (isset($params["shipper"]) &&
+             isset($params["shiftTime"]) &&
+             isset($params["shippingTime"]) &&
+             isset($params["activity"]) &&
+             isset($params["partCount"]) &&
+             isset($params["scrapCount"]))
+         {
+            $shippingCardInfo->employeeNumber = intval($params["shipper"]);
+            $shippingCardInfo->shiftTime = intval($params["shiftTime"]);
+            $shippingCardInfo->shippingTime = intval($params["shippingTime"]);
+            $shippingCardInfo->activity = intval($params["activity"]);
+            $shippingCardInfo->partCount = intval($params["partCount"]);
+            $shippingCardInfo->scrapCount = intval($params["scrapCount"]);
+            
+            // Optional parameters.
+            if (isset($params["scrapType"]))
+            {
+               $shippingCardInfo->scrapType = intval($params["scrapType"]);
+            }
+            
+            // Optional parameters.
+            if (isset($params["comments"]))
+            {
+               $shippingCardInfo->comments = $params["comments"];
+            }
+               
+            if ($shippingCardInfo->shippingCardId == ShippingCardInfo::UNKNOWN_SHIPPING_CARD_ID)
+            {
+               $dbaseResult = $database->newShippingCard($shippingCardInfo);
+               
+               if ($dbaseResult)
+               {
+                  $result->shippingCardId = $database->lastInsertId();
+               }
+            }
+            else
+            {
+               $dbaseResult = $database->updateShippingCard($shippingCardInfo);
+               $result->shippingCardId = $shippingCardInfo->shippingCardId;
+            }
+            
+            if ($result->success && !$dbaseResult)
+            {
+               $result->success = false;
+               $result->error = "Database query failed.";
+            }
+         }
+         else
+         {
+            $result->success = false;
+            $result->error = "Missing parameters.";
+         }
+      }
+   }
+   
+   echo json_encode($result);
+});
+   
+$router->add("deleteShippingCard", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   $database = PPTPDatabase::getInstance();
+
+   if (isset($params["shippingCardId"]) &&
+       is_numeric($params["shippingCardId"]) &&
+       (intval($params["shippingCardId"]) != ShippingCardInfo::UNKNOWN_SHIPPING_CARD_ID))
+   {
+      $shippingCardId = intval($params["shippingCardId"]);
+      
+      $shippingCardInfo = ShippingCardInfo::load($shippingCardId);
+      
+      if ($shippingCardInfo)
+      {
+         $dbaseResult = $database->deleteShippingCard($shippingCardId);
+         
+         if ($dbaseResult)
+         {
+            $result->success = true;
+         }
+         else
+         {
+            $result->success = false;
+            $result->error = "Database query failed.";
+         }
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "No existing shipping card found.";
+      }
    }
    else
    {

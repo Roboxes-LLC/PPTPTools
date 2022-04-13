@@ -148,6 +148,7 @@ function getTimeCardInfo()
          
          $timeCardInfo->employeeNumber = Authentication::getAuthenticatedUser()->employeeNumber;
          $timeCardInfo->shiftTime = TimeCardInfo::DEFAULT_SHIFT_TIME;
+         $timeCardInfo->runTime = TimeCardInfo::DEFAULT_RUN_TIME;
       }
    }
    

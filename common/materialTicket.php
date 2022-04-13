@@ -21,7 +21,8 @@ abstract class MaterialTicketLabelFields
    const ISSUED_DATE = 9;
    const ISSUED_USER_ID = 10;
    const ISO = 11;
-   const LAST = 12;
+   const RECEIVED_DATE = 12;
+   const LAST = 13;
    const COUNT = MaterialTicketLabelFields::LAST - MaterialTicketLabelFields::FIRST;
    
    public static function getKeyword($materialTicketLabelField)
@@ -37,7 +38,9 @@ abstract class MaterialTicketLabelFields
                         "%wc",
                         "%date",
                         "%user",
-                        "%iso");
+                        "%iso",
+                        "%received"
+      );
       
       return ($keywords[$materialTicketLabelField]);
    }
@@ -79,6 +82,9 @@ class MaterialTicket
             $materialDescription = $materialEntry->materialInfo->description;
          }
          
+         $dateTime = new DateTime($materialEntry->receivedDateTime, new DateTimeZone('America/New_York'));
+         $receivedDate = $dateTime->format("m-d-Y");
+                  
          $vendor = "";
          if ($materialEntry->materialHeatInfo)
          {
@@ -119,6 +125,7 @@ class MaterialTicket
             </div>
             <div class="flex-horizontal">
                <div class="flex-vertical">
+                  <div><b>Received: </b>$receivedDate</div>                  
                   <div><b>Vendor: </b>$vendor</div>               
                   <div><b>Tag: </b>$materialEntry->tagNumber</div> 
                   <div><b>Heat: </b>{$materialEntry->materialHeatInfo->internalHeatNumber}</div>
@@ -175,6 +182,9 @@ HEREDOC;
             $materialDescription = $materialEntry->materialInfo->description;
          }
          
+         $dateTime = new DateTime($materialEntry->receivedDateTime, new DateTimeZone('America/New_York'));
+         $receivedDate = $dateTime->format("n-j-Y");
+         
          $vendor = "";
          if ($materialEntry->materialHeatInfo)
          {
@@ -202,7 +212,7 @@ HEREDOC;
             }
             
             $dateTime = new DateTime($materialEntry->issuedDateTime, new DateTimeZone('America/New_York'));
-            $issuedDate = $dateTime->format("m-d-Y");
+            $issuedDate = $dateTime->format("n-j-Y");
          }
          
          $isoNumber = IsoInfo::getIsoNumber(IsoDoc::MATERIAL_TICKET);
@@ -289,6 +299,12 @@ HEREDOC;
                   case MaterialTicketLabelFields::ISO:
                   {
                      $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $isoNumber, $xml);
+                     break;
+                  }
+                  
+                  case MaterialTicketLabelFields::RECEIVED_DATE:
+                  {
+                     $xml = str_replace(MaterialTicketLabelFields::getKeyword($field), $receivedDate, $xml);
                      break;
                   }
                      
