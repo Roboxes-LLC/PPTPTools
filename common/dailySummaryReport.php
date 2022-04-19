@@ -269,6 +269,35 @@ class ReportEntry
       return ($entry);
    }
    
+   public static function loadMaintenanceEntry($maintenaceEntryId)
+   {
+      $entry = new ReportEntry();
+      
+      //
+      // Load source data.
+      //
+      
+      $maintenaceEntry = MaintenanceEntry::load($maintenaceEntryId);
+      
+      if ($maintenaceEntry)
+      {
+         $entry->timeCardInfo = $maintenaceEntry->createMaintenanceTimecard();
+         
+         $entry->userInfo = UserInfo::load($entry->timeCardInfo->employeeNumber);
+         
+         if ($entry->timeCardInfo)
+         {
+            $entry->jobInfo = JobInfo::load($entry->timeCardInfo->jobId);
+         }
+         
+         $entry->runTime = $entry->timeCardInfo->getApprovedRunTime();  // hours
+      }
+      
+      $entry->recalculate();
+      
+      return ($entry);
+   }
+   
    public function validate()
    {
       if (!$this->timeCardInfo->isPlaceHolder())
@@ -844,7 +873,7 @@ class DailySummaryReport
       $this->operatorSummaries = array();  // indexed by [employee number]
    }
    
-   public static function load($employeeNumber, $dateTime)
+   public static function load($employeeNumber, $dateTime, $useMaintenanceLogEntries)
    {
       $report = new DailySummaryReport();
       
@@ -854,7 +883,12 @@ class DailySummaryReport
       
       if ($database && $database->isConnected())
       {
-         $result = $database->getTimeCards($employeeNumber, Time::startOfDay($dateTime), Time::endOfDay($dateTime), true);  // Use mfg date.
+         $startDateTime = Time::startOfDay($dateTime);
+         $endDateTime = Time::endOfDay($dateTime);
+         
+         // Time Cards
+         
+         $result = $database->getTimeCards($employeeNumber, $startDateTime, $endDateTime, true);  // Use mfg date.
          
          while ($result && $row = $result->fetch_assoc())
          {
@@ -868,6 +902,27 @@ class DailySummaryReport
             }
             
             $report->reportEntries[$index][] = ReportEntry::load($timeCardId);
+         }
+
+         // Maintenance Log
+         
+         if ($useMaintenanceLogEntries)
+         {
+            $result = $database->getMaintenanceEntries($startDateTime, $endDateTime, $employeeNumber, JobInfo::UNKNOWN_WC_NUMBER, true);  // Use maintenance date.
+            
+            while ($result && $row = $result->fetch_assoc())
+            {
+               $maintenaceEntryId = intval($row["maintenanceEntryId"]);
+               
+               $index = intval($row["employeeNumber"]);
+               
+               if (!isset($report->reportEntries[$index]))
+               {
+                  $report->reportEntries[$index] = array();
+               }
+               
+               $report->reportEntries[$index][] = ReportEntry::loadMaintenanceEntry($maintenaceEntryId);
+            }
          }
          
          // Compile operator summaries.
@@ -991,6 +1046,9 @@ class DailySummaryReport
             $row->partCountByWasherLog = $reportEntry->partCountByWasherLog;
             $row->partCount =            $reportEntry->partCount;
             $row->scrapCount =           $reportEntry->timeCardInfo->scrapCount;
+            
+            $row->maintenanceLogEntry =  $reportEntry->timeCardInfo->maintenanceLogEntry;
+            $row->maintenanceEntryId =   $row->maintenanceLogEntry ? $reportEntry->timeCardInfo->maintenanceEntryId : MaintenanceEntry::UNKNOWN_ENTRY_ID; 
    
             // Data validation.
             $row->incompleteShiftTime =              $reportEntry->timeCardInfo->incompleteShiftTime();

@@ -192,6 +192,13 @@ if (!Authentication::isAuthenticated())
             {title:"Maint. Type", field:"typeLabel",                 hozAlign:"left", headerFilter:true},
             {title:"Category",    field:"categoryLabel",             hozAlign:"left", headerFilter:true},
             {title:"Subcategory", field:"subcategoryLabel",          hozAlign:"left", headerFilter:true},
+            {title:"Shift Time",  field:"shiftTime",                 hozAlign:"left",
+               formatter:function(cell, formatterParams, onRendered){
+                  var minutes = parseInt(cell.getValue());
+                  var cellValue = Math.floor(minutes / 60) + ":" + ("0" + (minutes % 60)).slice(-2);
+                  return (cellValue);
+               }
+            },
             {title:"Maint. Time", field:"maintenanceTime",           hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
                   var minutes = parseInt(cell.getValue());

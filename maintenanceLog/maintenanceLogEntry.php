@@ -6,6 +6,7 @@ require_once '../common/header.php';
 require_once '../common/maintenanceEntry.php';
 require_once '../common/menu.php';
 require_once '../common/params.php';
+require_once '../common/timeCardInfo.php';
 require_once '../common/userInfo.php';
 require_once '../common/version.php';
 
@@ -18,16 +19,17 @@ abstract class MaintenanceLogInputField
    const FIRST = 0;
    const ENTRY_DATE = MaintenanceLogInputField::FIRST;
    const MAINTENANCE_DATE = 1;
-   const MAINTENANCE_TIME = 2;
-   const MAINTENANCE_TYPE = 3;
-   const MAINTENANCE_CATEGORY = 4;
-   const MAINTENANCE_SUBCATEGORY = 5;
-   const EMPLOYEE_NUMBER = 6;
-   const JOB_NUMBER = 7;
-   const WC_NUMBER = 8;
-   const PART_NUMBER = 9;
-   const COMMENTS = 10;
-   const LAST = 11;
+   const SHIFT_TIME = 2;
+   const MAINTENANCE_TIME = 3;
+   const MAINTENANCE_TYPE = 4;
+   const MAINTENANCE_CATEGORY = 5;
+   const MAINTENANCE_SUBCATEGORY = 6;
+   const EMPLOYEE_NUMBER = 7;
+   const JOB_NUMBER = 8;
+   const WC_NUMBER = 9;
+   const PART_NUMBER = 10;
+   const COMMENTS = 11;
+   const LAST = 12;
    const COUNT = MaintenanceLogInputField::LAST - MaintenanceLogInputField::FIRST;
 }
 
@@ -95,6 +97,7 @@ function getMaintenanceEntry()
       else
       {
          $maintenanceEntry = new MaintenanceEntry();
+         $maintenanceEntry->shiftTime = TimeCardInfo::DEFAULT_SHIFT_TIME;
       }
    }
    
@@ -243,6 +246,7 @@ if (!Authentication::isAuthenticated())
    <form id="input-form" action="" method="POST">
       <!-- Hidden inputs make sure disabled fields below get posted. -->
       <input id="entry-id-input" type="hidden" name="entryId" value="<?php echo getEntryId(); ?>">
+      <input id="shift-time-input" type="hidden" name="shiftTime" value="<?php echo getMaintenanceEntry()->shiftTime; ?>">
       <input id="maintenance-time-input" type="hidden" name="maintenanceTime" value="<?php echo getMaintenanceEntry()->maintenanceTime; ?>">
    </form>
 
@@ -276,6 +280,17 @@ if (!Authentication::isAuthenticated())
                <input id="maintenance-date-input" type="date" name="maintenanceDate" form="input-form" oninput="" value="<?php echo getMaintenanceDate(); ?>" <?php echo getDisabled(MaintenanceLogInputField::MAINTENANCE_DATE); ?>>
                &nbsp<button id="today-button" class="small-button" <?php echo getDisabled(MaintenanceLogInputField::MAINTENANCE_DATE); ?>>Today</button>
                &nbsp<button id="yesterday-button"  class="small-button" <?php echo getDisabled(MaintenanceLogInputField::MAINTENANCE_DATE); ?>>Yesterday</button>
+            </div>
+         </div>
+         
+         <div class="form-item">
+            <div class="form-label-long">Shift Time</div>
+            <div class="form-col">
+               <div class="form-row flex-left">
+                  <input id="shift-time-hour-input" type="number" class="form-input-medium" form="input-form" name="shiftTimeHours" style="width:50px;" oninput="this.validator.validate(); onShiftTimeChange();" value="<?php echo getMaintenanceEntry()->getShiftTimeHours(); ?>" <?php echo getDisabled(MaintenanceLogInputField::SHIFT_TIME); ?> />
+                  <div style="padding: 5px;">:</div>
+                  <input id="shift-time-minute-input" type="number" class="form-input-medium" form="input-form" name="shiftTimeMinutes" style="width:50px;" oninput="this.validator.validate(); onShiftTimeChange();" value="<?php echo getMaintenanceEntry()->getShiftTimeMinutes(); ?>" step="15" <?php echo getDisabled(MaintenanceLogInputField::SHIFT_TIME); ?> />
+               </div>
             </div>
          </div>
          
@@ -413,6 +428,8 @@ if (!Authentication::isAuthenticated())
    
       preserveSession();
       
+      var shiftTimeHourValidator = new IntValidator("shift-time-hour-input", 2, 0, 16, true);
+      var shiftTimeMinuteValidator = new IntValidator("shift-time-minute-input", 2, 0, 59, true);
       var maintentanceTimeHourValidator = new IntValidator("maintenance-time-hour-input", 2, 0, 16, true);
       var maintenanceTimeMinuteValidator = new IntValidator("maintenance-time-minute-input", 2, 0, 59, true);  
       var employeeNumberValidator = new SelectValidator("employee-number-input");
@@ -423,6 +440,8 @@ if (!Authentication::isAuthenticated())
       var maintenanceSubcategoryValidator = new SelectValidator("maintenance-subcategory-input");
       var partNumberValidator = new SelectValidator("part-number-input");
 
+      shiftTimeHourValidator.init();
+      shiftTimeMinuteValidator.init();
       maintentanceTimeHourValidator.init();
       maintenanceTimeMinuteValidator.init();
       employeeNumberValidator.init();

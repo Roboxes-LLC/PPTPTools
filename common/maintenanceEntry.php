@@ -25,6 +25,7 @@ class MaintenanceEntry
    public $typeId;
    public $categoryId;
    public $subcategoryId;
+   public $shiftTime;        // minutes
    public $maintenanceTime;  // minutes
    public $partId;
    public $comments;
@@ -41,10 +42,26 @@ class MaintenanceEntry
       $this->typeId = MaintenanceEntry::UNKNOWN_TYPE_ID;
       $this->categoryId = MaintenanceEntry::UNKNOWN_CATEGORY_ID;
       $this->subcategoryId = MaintenanceEntry::UNKNOWN_SUBCATEGORY_ID;
+      $this->shiftTime = 0;        // minutes
       $this->maintenanceTime = 0;  // minutes
       $this->partId = MachinePartInfo::UNKNOWN_PART_ID;
       $this->comments = "";
    }
+   
+   public function formatShiftTime()
+   {
+      return($this->getShiftTimeHours() . ":" . sprintf("%02d", $this->getShiftTimeMinutes()));
+   }
+   
+   public function getShiftTimeHours()
+   {
+      return ((int)($this->shiftTime / 60));
+   }
+   
+   public function getShiftTimeMinutes()
+   {
+      return ($this->shiftTime % 60);
+   }   
    
    public function formatMaintenanceTime()
    {
@@ -82,6 +99,7 @@ class MaintenanceEntry
             $maintenanceEntry->jobNumber = $row['jobNumber'];
             $maintenanceEntry->wcNumber = intval($row['wcNumber']);
             $maintenanceEntry->equipmentId = intval($row['equipmentId']);
+            $maintenanceEntry->shiftTime = intval($row['shiftTime']);
             $maintenanceEntry->maintenanceTime = intval($row['maintenanceTime']);
             $maintenanceEntry->partId = intval($row['partId']);
             $maintenanceEntry->comments = $row['comments'];            
@@ -228,6 +246,23 @@ class MaintenanceEntry
       
       return ($parentId);
    }
+   
+   public function createMaintenanceTimecard()
+   {
+      $timeCard = new TimeCardInfo();
+      
+      $timeCard->maintenanceLogEntry = true;
+      $timeCard->maintenanceEntryId = $this->maintenanceEntryId;
+      $timeCard->dateTime = $this->dateTime;
+      $timeCard->manufactureDate = $this->maintenanceDateTime;
+      $timeCard->employeeNumber = $this->employeeNumber;
+      $timeCard->jobId = JobInfo::MAINTENANCE_JOB_ID;
+      $timeCard->shiftTime = ($this->shiftTime == 0) ? TimeCardInfo::DEFAULT_SHIFT_TIME : $this->shiftTime;
+      $timeCard->runTime = $this->maintenanceTime;
+      $timeCard->comments = $this->comments;
+      
+      return ($timeCard);
+   }
 }
 
 /*
@@ -249,6 +284,7 @@ if (isset($_GET["maintenanceEntryId"]))
       echo "wcNumber: " .            $maintenanceEntry->wcNumber .            "<br/>";
       echo "equipmentId: " .         $maintenanceEntry->equipmentId .         "<br/>";
       echo "categoryId: " .          $maintenanceEntry->categoryId .          "<br/>";
+      echo "shiftTime: " .           $shiftTime .                             "<br/>";
       echo "maintenanceTime: " .     $maintenanceTime .                       "<br/>";
       echo "comments: " .            $maintenanceEntry->comments .            "<br/>";
    }

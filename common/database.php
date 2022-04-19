@@ -941,6 +941,8 @@ class PPTPDatabase extends MySqlDatabase
    
    public function getJobNumbers($onlyActive)
    {
+      $maintenanceJobId = JobInfo::MAINTENANCE_JOB_ID;
+   
       $active = JobStatus::ACTIVE;
       $deleted = JobStatus::DELETED;
       
@@ -950,7 +952,7 @@ class PPTPDatabase extends MySqlDatabase
          $statusClause = "status = $active";
       }
       
-      $query = "SELECT DISTINCT jobNumber FROM job WHERE $statusClause ORDER BY jobNumber ASC;";
+      $query = "SELECT DISTINCT jobNumber FROM job WHERE $statusClause AND jobId != $maintenanceJobId ORDER BY jobNumber ASC;";
 
       $result = $this->query($query);
       
@@ -1907,6 +1909,7 @@ class PPTPDatabase extends MySqlDatabase
    public function getMaintenanceEntries(
       $startDate,
       $endDate,
+      $employeeNumber,
       $wcNumber,
       $useMaintenanceDate)
    {
@@ -1920,13 +1923,19 @@ class PPTPDatabase extends MySqlDatabase
          $dateTimeClause = "dateTime BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "'";
       }
       
+      $userClause = "";
+      if ($employeeNumber != UserInfo::UNKNOWN_EMPLOYEE_NUMBER)
+      {
+         $userClause = "AND employeeNumber = $employeeNumber";
+      }
+      
       $wcClause = "";
       if ($wcNumber != JobInfo::UNKNOWN_WC_NUMBER)
       {
          $wcClause = "AND wcNumber = \"$wcNumber\"";
       }
       
-      $query = "SELECT * FROM maintenance WHERE $dateTimeClause $wcClause ORDER BY maintenanceDateTime DESC;";
+      $query = "SELECT * FROM maintenance WHERE $dateTimeClause $userClause $wcClause ORDER BY maintenanceDateTime DESC;";
       
       $result = $this->query($query);
       
@@ -1941,9 +1950,9 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "INSERT INTO maintenance " .
-      "(dateTime, maintenanceDateTime, employeeNumber, typeId, categoryId, subcategoryId, jobNumber, wcNumber, equipmentId, maintenanceTime, partId, comments) " .
+      "(dateTime, maintenanceDateTime, employeeNumber, typeId, categoryId, subcategoryId, jobNumber, wcNumber, equipmentId, shiftTime, maintenanceTime, partId, comments) " .
       "VALUES " .
-      "('$dateTime', '$maintenanceDateTime', '$maintenanceEntry->employeeNumber', '$maintenanceEntry->typeId', '$maintenanceEntry->categoryId', '$maintenanceEntry->subcategoryId', '$maintenanceEntry->jobNumber', '$maintenanceEntry->wcNumber', '$maintenanceEntry->equipmentId', '$maintenanceEntry->maintenanceTime', '$maintenanceEntry->partId', '$maintenanceEntry->comments');";
+      "('$dateTime', '$maintenanceDateTime', '$maintenanceEntry->employeeNumber', '$maintenanceEntry->typeId', '$maintenanceEntry->categoryId', '$maintenanceEntry->subcategoryId', '$maintenanceEntry->jobNumber', '$maintenanceEntry->wcNumber', '$maintenanceEntry->equipmentId', '$maintenanceEntry->shiftTime', '$maintenanceEntry->maintenanceTime', '$maintenanceEntry->partId', '$maintenanceEntry->comments');";
 
       $result = $this->query($query);
       
@@ -1958,7 +1967,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "UPDATE maintenance " .
-      "SET dateTime = \"$dateTime\", maintenanceDateTime = \"$maintenanceDateTime\", employeeNumber = $maintenanceEntry->employeeNumber, typeId = $maintenanceEntry->typeId, categoryId = $maintenanceEntry->categoryId, subcategoryId = $maintenanceEntry->subcategoryId, jobNumber = '$maintenanceEntry->jobNumber', wcNumber = $maintenanceEntry->wcNumber, equipmentId = $maintenanceEntry->equipmentId, maintenanceTime = $maintenanceEntry->maintenanceTime, partId = $maintenanceEntry->partId, comments = \"$maintenanceEntry->comments\" " .
+      "SET dateTime = \"$dateTime\", maintenanceDateTime = \"$maintenanceDateTime\", employeeNumber = $maintenanceEntry->employeeNumber, typeId = $maintenanceEntry->typeId, categoryId = $maintenanceEntry->categoryId, subcategoryId = $maintenanceEntry->subcategoryId, jobNumber = '$maintenanceEntry->jobNumber', wcNumber = $maintenanceEntry->wcNumber, equipmentId = $maintenanceEntry->equipmentId, shiftTime = $maintenanceEntry->shiftTime, maintenanceTime = $maintenanceEntry->maintenanceTime, partId = $maintenanceEntry->partId, comments = \"$maintenanceEntry->comments\" " .
       "WHERE maintenanceEntryId = $maintenanceEntry->maintenanceEntryId;";
 
       $result = $this->query($query);

@@ -2714,10 +2714,16 @@ $router->add("dailySummaryReportData", function($params) {
    $result = array();
    
    $mfgDate = Time::startOfDay(Time::now("Y-m-d"));
+   $useMaintenanceLogEntries = false;
    
    if (isset($params["mfgDate"]))
    {
       $mfgDate = Time::startOfDay($params["mfgDate"]);
+   }
+   
+   if (isset($params["useMaintenanceLogEntries"]))
+   {
+      $useMaintenanceLogEntries = $params->getBool("useMaintenanceLogEntries");
    }
    
    $table = DailySummaryReportTable::DAILY_SUMMARY;
@@ -2730,7 +2736,7 @@ $router->add("dailySummaryReportData", function($params) {
    
    if ($database && $database->isConnected())
    {
-      $dailySummaryReport = DailySummaryReport::load(UserInfo::UNKNOWN_EMPLOYEE_NUMBER, $mfgDate);
+      $dailySummaryReport = DailySummaryReport::load(UserInfo::UNKNOWN_EMPLOYEE_NUMBER, $mfgDate, $useMaintenanceLogEntries);
       
       if ($dailySummaryReport)
       {
@@ -2745,10 +2751,16 @@ $router->add("weeklySummaryReportData", function($params) {
    $result = array();
    
    $mfgDate = Time::startOfDay(Time::now("Y-m-d"));
+   $useMaintenanceLogEntries = false;
 
    if (isset($params["mfgDate"]))
    {
       $mfgDate = Time::startOfDay($params["mfgDate"]);
+   }
+   
+   if (isset($params["useMaintenanceLogEntries"]))
+   {
+      $useMaintenanceLogEntries = $params->getBool("useMaintenanceLogEntries");
    }
    
    $table = WeeklySummaryReportTable::OPERATOR_SUMMARY;
@@ -2761,7 +2773,7 @@ $router->add("weeklySummaryReportData", function($params) {
    
    if ($database && $database->isConnected())
    {
-      $weeklySummaryReport = WeeklySummaryReport::load($mfgDate);
+      $weeklySummaryReport = WeeklySummaryReport::load($mfgDate, $useMaintenanceLogEntries);
       
       if ($weeklySummaryReport)
       {
@@ -2801,6 +2813,7 @@ $router->add("quarterlySummaryReportData", function($params) {
    
    $quarter = Quarter::QUARTER_1;
    $year = 2021;  // TODO
+   $useMaintenanceLogEntries = false;
    
    if (isset($params["quarter"]))
    {
@@ -2810,6 +2823,11 @@ $router->add("quarterlySummaryReportData", function($params) {
    if (isset($params["year"]))
    {
       $year = intval($params["year"]);
+   }
+   
+   if (isset($params["useMaintenanceLogEntries"]))
+   {
+      $useMaintenanceLogEntries = $params->getBool("useMaintenanceLogEntries");
    }
    
    $table = QuarterlySummaryReportTable::OPERATOR_SUMMARY;
@@ -2822,7 +2840,7 @@ $router->add("quarterlySummaryReportData", function($params) {
    
    if ($database && $database->isConnected())
    {
-      $quarterlySummaryReport = QuarterlySummaryReport::load($year, $quarter);
+      $quarterlySummaryReport = QuarterlySummaryReport::load($year, $quarter, $useMaintenanceLogEntries);
       
       if ($quarterlySummaryReport)
       {
@@ -2893,7 +2911,7 @@ $router->add("maintenanceLogData", function($params) {
    
    if ($database && $database->isConnected())
    {
-      $dbaseResult = $database->getMaintenanceEntries($startDate, $endDate, $wcNumber, true);  // Use maintenance date
+      $dbaseResult = $database->getMaintenanceEntries($startDate, $endDate, UserInfo::UNKNOWN_EMPLOYEE_NUMBER, $wcNumber, true);  // Use maintenance date
       
       foreach ($dbaseResult as $row)
       {
@@ -2981,6 +2999,7 @@ $router->add("saveMaintenanceEntry", function($params) {
           isset($params["employeeNumber"]) &&
           (isset($params["wcNumber"]) || isset($params["equipmentId"])) &&
           ((isset($params["typeId"]) || isset($params["categoryId"]) || isset($params["subcategoryId"]))) &&
+          isset($params["shiftTime"]) &&
           isset($params["maintenanceTime"]) &&
           isset($params["comments"]))
       {
@@ -2990,6 +3009,7 @@ $router->add("saveMaintenanceEntry", function($params) {
          $maintenancEntry->wcNumber = isset($params["wcNumber"]) ? intval($params["wcNumber"]) : JobInfo::UNKNOWN_WC_NUMBER;
          $maintenancEntry->equipmentId = isset($params["equipmentId"]) ? intval($params["equipmentId"]) : EquipmentInfo::UNKNOWN_EQUIPMENT_ID;
          $maintenancEntry->typeId = intval($params["typeId"]);
+         $maintenancEntry->shiftTime = intval($params["shiftTime"]);
          $maintenancEntry->maintenanceTime = intval($params["maintenanceTime"]);
          $maintenancEntry->comments = $params["comments"];
          

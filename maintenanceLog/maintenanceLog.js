@@ -84,6 +84,18 @@ function onDeleteMaintenanceEntry(maintenanceEntryId)
    }
 }
 
+function onShiftTimeChange()
+{
+   var hours = parseInt(document.getElementById("shift-time-hour-input").value);
+   var minutes = parseInt(document.getElementById("shift-time-minute-input").value);
+   
+   var shiftTime = ((hours * 60) + minutes);
+   
+   document.getElementById("shift-time-input").value = shiftTime;
+   
+   document.getElementById("shift-time-minute-input").value = formatToTwoDigits(minutes);
+}
+
 function onMaintenanceTimeChange()
 {
    var hours = parseInt(document.getElementById("maintenance-time-hour-input").value);
@@ -431,6 +443,11 @@ function validateMaintenanceEntry()
    if (isNaN(Date.parse(document.getElementById("maintenance-date-input").value)))
    {
       alert("Please enter a valid maintenance date.");    
+   }
+   else if ((document.getElementById("shift-time-hour-input").value == 0) &&
+            (document.getElementById("shift-time-minute-input").value == 0))
+   {
+      alert("Please enter some valid shift time.")  
    }
    else if ((document.getElementById("maintenance-time-hour-input").value == 0) &&
             (document.getElementById("maintenance-time-minute-input").value == 0))

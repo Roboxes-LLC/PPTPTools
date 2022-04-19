@@ -35,6 +35,18 @@ function getFilterMfgDate()
    return ($mfgDate);
 }
 
+function getUseMaintenanceLogEntries()
+{
+   $useMaintenanceLogEntries = false;
+   
+   if (isset($_SESSION["dailySummaryReport.filter.useMaintenanceLogEntries"]))
+   {
+      $useMaintenanceLogEntries = filter_var($_SESSION["dailySummaryReport.filter.useMaintenanceLogEntries"], FILTER_VALIDATE_BOOLEAN);
+   }
+   
+   return ($useMaintenanceLogEntries);   
+}
+
 function getReportFilename()
 {
    $mfgDate = getFilterMfgDate();
@@ -125,6 +137,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             <button id="today-button" class="small-button">Today</button>
             &nbsp;&nbsp;
             <button id="yesterday-button" class="small-button">Yesterday</button>
+            &nbsp;&nbsp;
+            <input id="maintenance-log-filter" type="checkbox" <?php echo getUseMaintenanceLogEntries() ? "checked" : "" ?>/>Include maintenace log
          </div>
          
          <br>
@@ -178,6 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       {
          var params = new Object();
          params.mfgDate =  document.getElementById("mfg-date-filter").value;
+         params.useMaintenanceLogEntries = document.getElementById("maintenance-log-filter").checked;
          params.table = table;
 
          return (params);
@@ -224,34 +239,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             
             {title:"",             field:"panTicketCode",   hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
-                  return ("<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().panTicketCode);
+                  let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
+                  let panTicketCode = cell.getRow().getData().panTicketCode;
+                
+                  let cellValue = "";
+                  if (maintenanceLogEntry)
+                  {
+                     cellValue = "MAINT";
+                  }
+                  else
+                  {
+                     cellValue = "<i class=\"material-icons icon-button\">receipt</i>&nbsp" + panTicketCode;
+                  }
+                  
+                  return (cellValue);
                },
                tooltip:function(cell) {
-                  return ("Pan ticket");                  
+                  let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
+                  return (maintenanceLogEntry ? "" : "Pan ticket");                  
                }
             },
             {title:"",       field:"timeCardLink", hozAlign:"left", print:false,
                formatter:function(cell, formatterParams, onRendered){
-                  return ("<i class=\"material-icons icon-button\">schedule</i>");
+                  let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
+                  let panTicketCode = cell.getRow().getData().panTicketCode;
+                  
+                  let cellValue = "";
+                  if (maintenanceLogEntry)
+                  {
+                     cellValue = "<i class=\"material-icons icon-button\">build</i>";
+                  }
+                  else
+                  {
+                     cellValue = "<i class=\"material-icons icon-button\">schedule</i>";
+                  }
+                  
+                  return (cellValue);
                },
                tooltip:function(cell) {
-                  return ("Time card");                  
+                  let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
+                  return (maintenanceLogEntry ? "Maintenance log" : "Time card");                  
                }
             },              
             {title:"",       field:"partWeightLogLink", hozAlign:"left", print:false,
                formatter:function(cell, formatterParams, onRendered){
-                  return ("<i class=\"material-icons icon-button\">fingerprint</i>");
+                  let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
+                  return (maintenanceLogEntry ? "" : "<i class=\"material-icons icon-button\">fingerprint</i>");
                },
                tooltip:function(cell) {
-                  return ("Part weight logs");                  
+                  let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
+                  return (maintenanceLogEntry ? "" : "Part weight logs");                  
                }
             },            
             {title:"",       field:"partWasherLogLink", hozAlign:"left", print:false,
                formatter:function(cell, formatterParams, onRendered){
-                  return ("<i class=\"material-icons icon-button\">opacity</i>");
+                  let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
+                  return (maintenanceLogEntry ? "" : "<i class=\"material-icons icon-button\">opacity</i>");
                },
                tooltip:function(cell) {
-                  return ("Part washer logs");                  
+                  let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
+                  return (maintenanceLogEntry ? "" : "Part washer logs");                  
                }
             },
             {title:"Job #",        field:"jobNumber",       hozAlign:"left", headerFilter:true, print:true},
@@ -427,9 +474,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             {title:"Machine Hours Made",      field:"machineHoursMade",     hozAlign:"left", print:true}                      
          ],
          cellClick:function(e, cell){
-            var timeCardId = cell.getRow().getData().timeCardId;
-
-            if (cell.getColumn().getField() == "panTicketCode")
+            let timeCardId = cell.getRow().getData().timeCardId;
+            let maintenanceEntryId = cell.getRow().getData().maintenanceEntryId;
+            let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
+            
+            if (maintenanceLogEntry)
+            {
+                if (cell.getColumn().getField() == "timeCardLink")
+                {
+                   document.location = "<?php echo $ROOT?>/maintenanceLog/maintenanceLogEntry.php?entryId=" + maintenanceEntryId;
+                }
+            }
+            else if (cell.getColumn().getField() == "panTicketCode")
             {
                document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
             }
@@ -529,7 +585,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          {
             var filterId = event.srcElement.id;
    
-            if (filterId == "mfg-date-filter")
+            if ((filterId == "mfg-date-filter") || 
+                (filterId == "maintenance-log-filter"))
             {
                tables[DAILY_SUMMARY_TABLE].setData(getTableQuery(), getTableQueryParams(DAILY_SUMMARY_TABLE))
                .then(function(){
@@ -558,6 +615,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                if (filterId == "mfg-date-filter")
                {
                   setSession("dailySummaryReport.filter.mfgDate", document.getElementById("mfg-date-filter").value);
+               }
+               
+               if (filterId == "maintenance-log-filter")
+               {
+                  setSession("dailySummaryReport.filter.useMaintenanceLogEntries", document.getElementById("maintenance-log-filter").checked);
                }
             }
          }
@@ -606,7 +668,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
       // Setup event handling on all DOM elements.
       window.addEventListener('resize', function() { tables[DAILY_SUMMARY_TABLE].redraw(); tables[OPERATOR_SUMMARY_TABLE].redraw(); tables[SHOP_SUMMARY_TABLE].redraw();});
-      document.getElementById("mfg-date-filter").addEventListener("change", updateFilter);      
+      document.getElementById("mfg-date-filter").addEventListener("change", updateFilter);
+      document.getElementById("maintenance-log-filter").addEventListener("change", updateFilter);      
       document.getElementById("today-button").onclick = filterToday;
       document.getElementById("yesterday-button").onclick = filterYesterday;
       document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};

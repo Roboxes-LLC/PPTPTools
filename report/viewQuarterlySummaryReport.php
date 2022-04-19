@@ -27,7 +27,7 @@ function getQuarter()
 
 function getYear()
 {
-   $year = 2021;  // TODO: Current year
+   $year = 2022;  // TODO: Current year
    
    if (isset($_SESSION["quarterlySummaryReport.filter.year"]))
    {
@@ -41,7 +41,7 @@ function getYearOptions($selectedYear)
 {
    $html = "<option style=\"display:none\">";
    
-   for ($year = 2020; $year <= 2021; $year++)  // TODO
+   for ($year = 2020; $year <= 2022; $year++)  // TODO
    {
       $selected = ($year == $selectedYear) ? "selected" : "";
       
@@ -49,6 +49,18 @@ function getYearOptions($selectedYear)
    }
    
    return ($html);
+}
+
+function getUseMaintenanceLogEntries()
+{
+   $useMaintenanceLogEntries = false;
+   
+   if (isset($_SESSION["quarterlySummaryReport.filter.useMaintenanceLogEntries"]))
+   {
+      $useMaintenanceLogEntries = filter_var($_SESSION["quarterlySummaryReport.filter.useMaintenanceLogEntries"], FILTER_VALIDATE_BOOLEAN);
+   }
+   
+   return ($useMaintenanceLogEntries);
 }
 
 function getReportFilename()
@@ -148,6 +160,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             <div style="white-space: nowrap">Year</div>
             &nbsp;
             <select id="year-filter"><?php echo getYearOptions(getYear()); ?></select>
+            &nbsp;&nbsp;
+            <input id="maintenance-log-filter" type="checkbox" <?php echo getUseMaintenanceLogEntries() ? "checked" : "" ?>/>Include maintenace log
          </div>
          
          <br>
@@ -197,6 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          var params = new Object();
          params.quarter = document.getElementById("quarter-filter").value;
          params.year = document.getElementById("year-filter").value;
+         params.useMaintenanceLogEntries = document.getElementById("maintenance-log-filter").checked;
          params.table = table;
 
          return (params);
@@ -470,7 +485,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             var filterId = event.srcElement.id;
    
             if ((filterId == "quarter-filter") ||
-                (filterId == "year-filter"))
+                (filterId == "year-filter") ||
+                (filterId == "maintenance-log-filter"))
             {
                tables[OPERATOR_SUMMARY_TABLE].setData(getTableQuery(), getTableQueryParams(OPERATOR_SUMMARY_TABLE))
                .then(function(){
@@ -508,6 +524,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                if (filterId == "year-filter")
                {
                   setSession("quarterlySummaryReport.filter.year", document.getElementById("year-filter").value);
+               }
+               
+               if (filterId == "maintenance-log-filter")
+               {
+                  setSession("quarterlySummaryReport.filter.useMaintenanceLogEntries", document.getElementById("maintenance-log-filter").checked);
                }
             }
          }
@@ -577,6 +598,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       window.addEventListener('resize', function() { tables[OPERATOR_SUMMARY_TABLE].redraw(); tables[SHOP_SUMMARY_TABLE].redraw(); /*tables[BONUS_TABLE].redraw();*/ });
       document.getElementById("quarter-filter").addEventListener("change", updateFilter);      
       document.getElementById("year-filter").addEventListener("change", updateFilter);
+      document.getElementById("maintenance-log-filter").addEventListener("change", updateFilter);
       document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};
       document.getElementById("print-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].print(false, true);};
 

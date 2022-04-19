@@ -36,6 +36,8 @@ class JobInfo
    
    const PLACEHOLDER_JOB_NUMBER = "M0001";
    
+   const MAINTENANCE_JOB_ID = "9999";
+   
    const UNKNOWN_WC_NUMBER = 0;
    
    const SECONDS_PER_MINUTE = 60;

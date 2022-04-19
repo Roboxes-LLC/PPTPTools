@@ -36,6 +36,18 @@ function getFilterMfgDate()
    return ($mfgDate);
 }
 
+function getUseMaintenanceLogEntries()
+{
+   $useMaintenanceLogEntries = false;
+   
+   if (isset($_SESSION["weeklySummaryReport.filter.useMaintenanceLogEntries"]))
+   {
+      $useMaintenanceLogEntries = filter_var($_SESSION["weeklySummaryReport.filter.useMaintenanceLogEntries"], FILTER_VALIDATE_BOOLEAN);
+   }
+   
+   return ($useMaintenanceLogEntries);
+}
+
 function getReportStartDate()
 {
    $dates = WorkDay::getDates(getMfgDate());
@@ -146,6 +158,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             <button id="today-button" class="small-button">Today</button>
             &nbsp;&nbsp;
             <button id="yesterday-button" class="small-button">Yesterday</button>
+            &nbsp;&nbsp;
+            <input id="maintenance-log-filter" type="checkbox" <?php echo getUseMaintenanceLogEntries() ? "checked" : "" ?>/>Include maintenace log
          </div>
          
          <br>
@@ -206,6 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          
          var params = new Object();
          params.mfgDate =  document.getElementById("mfg-date-filter").value;
+         params.useMaintenanceLogEntries = document.getElementById("maintenance-log-filter").checked;
          params.table = table;
 
          return (params);
@@ -471,7 +486,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          {
             var filterId = event.srcElement.id;
    
-            if (filterId == "mfg-date-filter")
+            if ((filterId == "mfg-date-filter") || 
+                (filterId == "maintenance-log-filter"))
             {
                tables[OPERATOR_SUMMARY_TABLE].setData(getTableQuery(), getTableQueryParams(OPERATOR_SUMMARY_TABLE))
                .then(function(){
@@ -502,6 +518,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                if (filterId == "mfg-date-filter")
                {
                   setSession("weeklySummaryReport.filter.mfgDate", document.getElementById("mfg-date-filter").value);
+               }
+               
+               if (filterId == "maintenance-log-filter")
+               {
+                  setSession("weeklySummaryReport.filter.useMaintenanceLogEntries", document.getElementById("maintenance-log-filter").checked);
                }
             }
          }
@@ -590,7 +611,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
       // Setup event handling on all DOM elements.
       window.addEventListener('resize', function() { tables[OPERATOR_SUMMARY_TABLE].redraw(); tables[BONUS_TABLE].redraw(); });
-      document.getElementById("mfg-date-filter").addEventListener("change", updateFilter);      
+      document.getElementById("mfg-date-filter").addEventListener("change", updateFilter);
+      document.getElementById("maintenance-log-filter").addEventListener("change", updateFilter);      
       document.getElementById("today-button").onclick = filterToday;
       document.getElementById("yesterday-button").onclick = filterYesterday;
       document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};

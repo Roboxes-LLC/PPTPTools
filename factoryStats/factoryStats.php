@@ -72,6 +72,8 @@ class FactoryStats
    
    public function getStationId($stationName)
    {
+      $stationId = 0;
+      
       $stations = $this->getStations();
       
       foreach ($stations as $station)

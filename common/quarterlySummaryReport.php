@@ -164,7 +164,7 @@ class QuarterlySummaryReport
       $this->operatorSummaries = array();
    }
    
-   public static function load($year, $quarter)
+   public static function load($year, $quarter, $useMaintenanceLogEntries)
    {
       $quarterlySummaryReport = new QuarterlySummaryReport();
       
@@ -175,7 +175,7 @@ class QuarterlySummaryReport
       
       foreach ($dates as $dateRange)
       {
-         $quarterlySummaryReport->weeklySummaryReports[] = WeeklySummaryReport::load($dateRange->start);
+         $quarterlySummaryReport->weeklySummaryReports[] = WeeklySummaryReport::load($dateRange->start, $useMaintenanceLogEntries);
       }
       
       // Compile operator summaries.

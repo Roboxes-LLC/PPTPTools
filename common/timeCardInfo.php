@@ -2,6 +2,7 @@
 require_once 'commentCodes.php';
 require_once 'database.php';
 require_once 'jobInfo.php';
+require_once 'materialHeatInfo.php';
 require_once 'time.php';
 require_once 'userInfo.php';
 
@@ -21,10 +22,10 @@ class TimeCardInfo
    
    const DEFAULT_RUN_TIME = (TimeCardInfo::DEFAULT_RUN_HOURS * TimeCardInfo::MINUTES_PER_HOUR);  // minutes
    
-   public $timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
+   public $timeCardId;
    public $dateTime;
    public $manufactureDate;
-   public $employeeNumber = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+   public $employeeNumber;
    public $jobId;
    public $materialNumber;
    public $shiftTime;   
@@ -35,10 +36,36 @@ class TimeCardInfo
    public $scrapCount;
    public $commentCodes;
    public $comments;
-   public $runTimeApprovedBy = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+   public $runTimeApprovedBy;
    public $runTimeApprovedDateTime;
-   public $setupTimeApprovedBy = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+   public $setupTimeApprovedBy;
    public $setupTimeApprovedDateTime;
+   
+   public $maintenanceLogEntry;
+   
+   public function __construct()
+   {
+      $this->timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
+      $this->dateTime = null;
+      $this->manufactureDate = null;
+      $this->employeeNumber = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->jobId = JobInfo::UNKNOWN_JOB_ID;
+      $this->materialNumber = MaterialHeatInfo::UNKNOWN_INTERNAL_HEAT_NUMBER;
+      $this->shiftTime = 0;
+      $this->setupTime = 0;
+      $this->runTime = 0;
+      $this->panCount = 0;
+      $this->partCount = 0;
+      $this->scrapCount = 0;
+      $this->commentCodes = 0;
+      $this->comments = null;
+      $this->runTimeApprovedBy = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->runTimeApprovedDateTime = null;
+      $this->setupTimeApprovedBy = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->setupTimeApprovedDateTime = null;
+      
+      $this->maintenanceLogEntry = false;
+   }
    
    public function isPlaceholder()
    {
@@ -273,12 +300,12 @@ class TimeCardInfo
    
    public function requiresSetupTimeApproval()
    {
-      return ($this->setupTime > 0);      
+      return (!$this->maintenanceLogEntry && ($this->setupTime > 0));      
    }
    
    public function requiresRunTimeApproval()
    {
-      return ($this->runTime < $this->shiftTime);      
+      return (!$this->maintenanceLogEntry && ($this->runTime < $this->shiftTime));      
    }
       
    public function requiresApproval()
