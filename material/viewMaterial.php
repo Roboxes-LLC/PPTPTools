@@ -581,7 +581,7 @@ if (!Authentication::isAuthenticated())
       var vendorValidator = new SelectValidator("vendor-id-input");
       var internalHeatValidator = new IntValidator("internal-heat-number-input", 5, 1, 99999, false);
       var materialValidator = new SelectValidator("material-id-input");
-      var tagNumberValidator = new RegExpressionValidator("tag-number-input", /^[0-9-]+$/, true, 16);
+      var tagNumberValidator = new RegExpressionValidator("tag-number-input", /^[a-zA-Z0-9-]+$/, true, 16);  // Only letters, numbers, and "-".
       var piecesValidator = new IntValidator("pieces-input", 4, 1, 1000, false);
       var jobNumberValidator = new SelectValidator("job-number-input");
       var wcValidator = new SelectValidator("wc-number-input");

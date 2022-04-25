@@ -855,7 +855,9 @@ if (!Authentication::isAuthenticated())
 
             },
             {title:"Technician",  field:"technicianName", hozAlign:"left"},
-            {title:"Maintenance", field:"maintenanceCategory.label",         hozAlign:"left"},
+            {title:"Job",         field:"jobNumber",      hozAlign:"left"},
+            {title:"Type",        field:"typeLabel",      hozAlign:"left"},
+            {title:"Category",    field:"categoryLabel",  hozAlign:"left"},
             {title:"Comments",    field:"comments",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
