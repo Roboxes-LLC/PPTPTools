@@ -2203,7 +2203,7 @@ class PPTPDatabase extends MySqlDatabase
       return ($result);
    }
    
-   public function getMaterialEntries($materialEntryStatus, $startDate, $endDate)
+   public function getMaterialEntries($materialEntryStatus, $startDate, $endDate, $useReceiveDate = false)
    {
       $statusClause = "";
       if ($materialEntryStatus == MaterialEntryStatus::RECEIVED)
@@ -2219,7 +2219,8 @@ class PPTPDatabase extends MySqlDatabase
          $statusClause = "AND acknowledgedDateTime IS NOT NULL";
       }
 
-      $dateTimeClause = "enteredDateTime BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "'";
+      $dateField = ($useReceiveDate ? "receivedDateTime" : "enteredDateTime");
+      $dateTimeClause = "$dateField BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "'";
             
       $query = "SELECT * FROM materiallog WHERE $dateTimeClause $statusClause ORDER BY receivedDateTime DESC;";
 

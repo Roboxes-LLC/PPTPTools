@@ -2,6 +2,7 @@
 
 require_once '../common/authentication.php';
 require_once '../common/database.php';
+require_once '../common/filterDateType.php';
 require_once '../common/header.php';
 require_once '../common/isoInfo.php';
 require_once '../common/jobInfo.php';
@@ -12,6 +13,18 @@ require_once '../common/roles.php';
 require_once '../common/timeCardInfo.php';
 require_once '../common/userInfo.php';
 require_once '../common/version.php';
+
+function getFilterDateType()
+{
+   $filterDateType = FilterDateType::ENTRY_DATE;
+   
+   if (isset($_SESSION["timeCard.filter.dateType"]))
+   {
+      $filterDateType = $_SESSION["timeCard.filter.dateType"];
+   }
+   
+   return ($filterDateType);
+}
 
 function getFilterStartDate()
 {
@@ -126,11 +139,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          <br>
          
          <div class="flex-horizontal flex-v-center flex-left">
-            <div style="white-space: nowrap">Start date</div>
+            <select id="date-type-filter"><?php echo FilterDateType::getOptions([FilterDateType::ENTRY_DATE, FilterDateType::MANUFACTURING_DATE], getFilterDateType()) ?></select>
+            &nbsp;&nbsp;
+            <div style="white-space: nowrap">Start</div>
             &nbsp;
             <input id="start-date-filter" type="date" value="<?php echo getFilterStartDate()?>">
             &nbsp;&nbsp;
-            <div style="white-space: nowrap">End date</div>
+            <div style="white-space: nowrap">End</div>
             &nbsp;
             <input id="end-date-filter" type="date" value="<?php echo getFilterEndDate()?>">
             &nbsp;&nbsp;
@@ -170,6 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       {
          
          var params = new Object();
+         params.dateType =  document.getElementById("date-type-filter").value;
          params.startDate =  document.getElementById("start-date-filter").value;
          params.endDate =  document.getElementById("end-date-filter").value;
 
@@ -467,6 +483,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             var filterId = event.srcElement.id;
    
             if ((filterId == "start-date-filter") ||
+                (filterId == "date-type-filter") ||
                 (filterId == "end-date-filter"))
             {
                var url = getTableQuery();
@@ -480,7 +497,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   // Handle error loading data
                });
 
-               if (filterId == "start-date-filter")
+               if (filterId == "date-type-filter")
+               {
+                  setSession("timeCard.filter.dateType", document.getElementById("date-type-filter").value);
+               }
+               else if (filterId == "start-date-filter")
                {
                   setSession("timeCard.filter.startDate", document.getElementById("start-date-filter").value);
                }
@@ -542,6 +563,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
       // Setup event handling on all DOM elements.
       window.addEventListener('resize', function() { table.redraw(); });
+      document.getElementById("date-type-filter").addEventListener("change", updateFilter);
       document.getElementById("start-date-filter").addEventListener("change", updateFilter);      
       document.getElementById("end-date-filter").addEventListener("change", updateFilter);
       document.getElementById("today-button").onclick = filterToday;

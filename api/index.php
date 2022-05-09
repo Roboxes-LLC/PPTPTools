@@ -3,6 +3,7 @@
 require_once 'rest.php';
 require_once '../common/authentication.php';
 require_once '../common/dailySummaryReport.php';
+require_once '../common/filterDateType.php';
 require_once '../common/inspection.php';
 require_once '../common/inspectionTemplate.php';
 require_once '../common/jobInfo.php';
@@ -90,6 +91,7 @@ $router->add("getSession", function($params) {
 $router->add("timeCardData", function($params) {
    $result = array();
    
+   $dateType = FilterDateType::ENTRY_DATE;
    $startDate = Time::startOfDay(Time::now("Y-m-d"));
    $endDate = Time::endOfDay(Time::now("Y-m-d"));
    
@@ -111,6 +113,11 @@ $router->add("timeCardData", function($params) {
       }
    }
    
+   if (isset($params["dateType"]))
+   {
+      $dateType = $params->getInt("dateType");
+   }
+   
    if (isset($params["startDate"]))
    {
       $startDate = Time::startOfDay($params["startDate"]);
@@ -130,7 +137,7 @@ $router->add("timeCardData", function($params) {
    
    if ($database && $database->isConnected())
    {
-      $timeCards = $database->getTimeCards($employeeNumberFilter, $startDate, $endDate);
+      $timeCards = $database->getTimeCards($employeeNumberFilter, $startDate, $endDate, ($dateType == FilterDateType::MANUFACTURING_DATE));
       
       // Populate data table.
       foreach ($timeCards as $timeCard)
@@ -1129,12 +1136,18 @@ $router->add("partWasherLogData", function($params) {
    $result = array();
    
    $timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
+   $dateType = FilterDateType::ENTRY_DATE;
    $startDate = Time::startOfDay(Time::now("Y-m-d"));
    $endDate = Time::endOfDay(Time::now("Y-m-d"));
    
    if (isset($params["timeCardId"]))
    {
       $timeCardId = $params->getInt("timeCardId");
+   }
+   
+   if (isset($params["dateType"]))
+   {
+      $dateType = $params->getInt("dateType");
    }
    
    if (isset($params["startDate"]))
@@ -1158,7 +1171,7 @@ $router->add("partWasherLogData", function($params) {
       }
       else
       {
-         $databaseResult = $database->getPartWasherEntries(JobInfo::UNKNOWN_JOB_ID, UserInfo::UNKNOWN_EMPLOYEE_NUMBER, $startDate, $endDate, false);  // Don't use mfg. time.
+         $databaseResult = $database->getPartWasherEntries(JobInfo::UNKNOWN_JOB_ID, UserInfo::UNKNOWN_EMPLOYEE_NUMBER, $startDate, $endDate, ($dateType == FilterDateType::MANUFACTURING_DATE));
       }
       
       // Populate data table.
@@ -1408,12 +1421,18 @@ $router->add("partWeightLogData", function($params) {
    $result = array();
    
    $timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
+   $dateType = FilterDateType::ENTRY_DATE;
    $startDate = Time::startOfDay(Time::now("Y-m-d"));
    $endDate = Time::endOfDay(Time::now("Y-m-d"));
    
    if (isset($params["timeCardId"]))
    {
       $timeCardId = $params->getInt("timeCardId");
+   }
+   
+   if (isset($params["dateType"]))
+   {
+      $dateType = $params->getInt("dateType");
    }
    
    if (isset($params["startDate"]))
@@ -1437,7 +1456,7 @@ $router->add("partWeightLogData", function($params) {
       }
       else 
       {
-         $databaseResult = $database->getPartWeightEntries(JobInfo::UNKNOWN_JOB_ID, UserInfo::UNKNOWN_EMPLOYEE_NUMBER, $startDate, $endDate, false);  // Don't use mfg. time.
+         $databaseResult = $database->getPartWeightEntries(JobInfo::UNKNOWN_JOB_ID, UserInfo::UNKNOWN_EMPLOYEE_NUMBER, $startDate, $endDate, ($dateType == FilterDateType::MANUFACTURING_DATE));
       }
       
       // Populate data table.
@@ -2888,8 +2907,14 @@ $router->add("quarterlySummaryReportDates", function($params) {
 $router->add("maintenanceLogData", function($params) {
    $result = array();
    
+   $dateType = FilterDateType::ENTRY_DATE;
    $startDate = Time::startOfDay(Time::now("Y-m-d"));
    $endDate = Time::endOfDay(Time::now("Y-m-d"));
+   
+   if (isset($params["dateType"]))
+   {
+      $dateType = $params->getInt("dateType");
+   }
    
    if (isset($params["startDate"]))
    {
@@ -2911,7 +2936,7 @@ $router->add("maintenanceLogData", function($params) {
    
    if ($database && $database->isConnected())
    {
-      $dbaseResult = $database->getMaintenanceEntries($startDate, $endDate, UserInfo::UNKNOWN_EMPLOYEE_NUMBER, $wcNumber, true);  // Use maintenance date
+      $dbaseResult = $database->getMaintenanceEntries($startDate, $endDate, UserInfo::UNKNOWN_EMPLOYEE_NUMBER, $wcNumber, ($dateType == FilterDateType::MAINTENANCE_DATE));
       
       foreach ($dbaseResult as $row)
       {
@@ -3262,6 +3287,7 @@ $router->add("materialData", function($params) {
    $result = array();
    
    $materialEntryStatus = MaterialEntryStatus::UNKNOWN;
+   $dateType = FilterDateType::ENTRY_DATE;
    $startDate = Time::startOfDay(Time::now("Y-m-d"));
    $endDate = Time::endOfDay(Time::now("Y-m-d"));
    
@@ -3270,6 +3296,11 @@ $router->add("materialData", function($params) {
       $materialEntryStatus = intval($params["status"]);
    }
       
+   if (isset($params["dateType"]))
+   {
+      $dateType = $params->getInt("dateType");
+   }
+   
    if (isset($params["startDate"]))
    {
       $startDate = Time::startOfDay($params["startDate"]);
@@ -3284,7 +3315,7 @@ $router->add("materialData", function($params) {
    
    if ($database && $database->isConnected())
    {
-      $dbaseResult = $database->getMaterialEntries($materialEntryStatus, $startDate, $endDate);
+      $dbaseResult = $database->getMaterialEntries($materialEntryStatus, $startDate, $endDate, ($dateType == FilterDateType::RECEIVE_DATE));
       
       $vendors = MaterialVendor::getMaterialVendors();
       
@@ -3754,6 +3785,7 @@ $router->add("printMaterialTicket", function($params) {
 $router->add("shippingCardData", function($params) {
    $result = array();
    
+   $dateType = FilterDateType::ENTRY_DATE;
    $startDate = Time::startOfDay(Time::now("Y-m-d"));
    $endDate = Time::endOfDay(Time::now("Y-m-d"));
    
@@ -3775,6 +3807,11 @@ $router->add("shippingCardData", function($params) {
       }
    }
    
+   if (isset($params["dateType"]))
+   {
+      $dateType = $params->getInt("dateType");
+   }
+   
    if (isset($params["startDate"]))
    {
       $startDate = Time::startOfDay($params["startDate"]);
@@ -3794,7 +3831,7 @@ $router->add("shippingCardData", function($params) {
    
    if ($database && $database->isConnected())
    {
-      $dbResult = $database->getShippingCards($employeeNumberFilter, $startDate, $endDate);
+      $dbResult = $database->getShippingCards($employeeNumberFilter, $startDate, $endDate, ($dateType == FilterDateType::MANUFACTURING_DATE));
       
       // Populate data table.
       foreach ($dbResult as $row)

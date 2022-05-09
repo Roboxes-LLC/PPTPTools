@@ -2,6 +2,7 @@
 
 require_once '../common/authentication.php';
 require_once '../common/database.php';
+require_once '../common/filterDateType.php';
 require_once '../common/header.php';
 require_once '../common/jobInfo.php';
 require_once '../common/menu.php';
@@ -10,6 +11,18 @@ require_once '../common/partWasherEntry.php';
 require_once '../common/permissions.php';
 require_once '../common/timeCardInfo.php';
 require_once '../common/version.php';
+
+function getFilterDateType()
+{
+   $filterDateType = FilterDateType::WASH_DATE;
+   
+   if (isset($_SESSION["partWasher.filter.dateType"]))
+   {
+      $filterDateType = $_SESSION["partWasher.filter.dateType"];
+   }
+   
+   return ($filterDateType);
+}
 
 function getFilterStartDate()
 {
@@ -165,11 +178,13 @@ if (!Authentication::isAuthenticated())
          
          <div class="flex-horizontal flex-v-center flex-left">
             <input type="hidden" id="time-card-id-filter" value="<?php echo getTimeCardId()?>">
-            <div style="white-space: nowrap">Start date</div>
+            <select id="date-type-filter"><?php echo FilterDateType::getOptions([FilterDateType::WASH_DATE, FilterDateType::MANUFACTURING_DATE], getFilterDateType()) ?></select>
+            &nbsp;&nbsp;            
+            <div style="white-space: nowrap">Start</div>
             &nbsp;
             <input id="start-date-filter" type="date" value="<?php echo getFilterStartDate()?>" <?php echo getDateSelectionDisabled();?>>
             &nbsp;&nbsp;
-            <div style="white-space: nowrap">End date</div>
+            <div style="white-space: nowrap">End</div>
             &nbsp;
             <input id="end-date-filter" type="date" value="<?php echo getFilterEndDate()?>" <?php echo getDateSelectionDisabled();?>>
             &nbsp;&nbsp;
@@ -209,6 +224,7 @@ if (!Authentication::isAuthenticated())
       {
          
          var params = new Object();
+         params.dateType =  document.getElementById("date-type-filter").value;
          params.startDate =  document.getElementById("start-date-filter").value;
          params.endDate =  document.getElementById("end-date-filter").value;
          params.timeCardId = document.getElementById("time-card-id-filter").value;
@@ -371,6 +387,7 @@ if (!Authentication::isAuthenticated())
             var filterId = event.srcElement.id;
    
             if ((filterId == "start-date-filter") ||
+                (filterId == "date-type-filter") ||
                 (filterId == "end-date-filter"))
             {
                var url = getTableQuery();
@@ -384,7 +401,11 @@ if (!Authentication::isAuthenticated())
                   // Handle error loading data
                });
 
-               if (filterId == "start-date-filter")
+               if (filterId == "date-type-filter")
+               {
+                  setSession("partWasher.filter.dateType", document.getElementById("date-type-filter").value);
+               }
+               else if (filterId == "start-date-filter")
                {
                   setSession("partWasher.filter.startDate", document.getElementById("start-date-filter").value);
                }
@@ -445,6 +466,7 @@ if (!Authentication::isAuthenticated())
       }
 
       // Setup event handling on all DOM elements.
+      document.getElementById("date-type-filter").addEventListener("change", updateFilter);
       document.getElementById("start-date-filter").addEventListener("change", updateFilter);      
       document.getElementById("end-date-filter").addEventListener("change", updateFilter);
       document.getElementById("today-button").onclick = filterToday;

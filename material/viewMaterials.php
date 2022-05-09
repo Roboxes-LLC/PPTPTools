@@ -2,6 +2,7 @@
 
 require_once '../common/authentication.php';
 require_once '../common/database.php';
+require_once '../common/filterDateType.php';
 require_once '../common/header.php';
 require_once '../common/materialEntry.php';
 require_once '../common/menu.php';
@@ -17,6 +18,18 @@ function getFilterStatus()
    }
    
    return ($materialEntryStatus);
+}
+
+function getFilterDateType()
+{
+   $filterDateType = FilterDateType::ENTRY_DATE;
+   
+   if (isset($_SESSION["material.filter.dateType"]))
+   {
+      $filterDateType = $_SESSION["material.filter.dateType"];
+   }
+   
+   return ($filterDateType);
 }
 
 function getFilterStartDate()
@@ -125,12 +138,14 @@ if (!Authentication::isAuthenticated())
             <div style="white-space: nowrap">Status</div>
             &nbsp;
             <select id="status-filter"><?php echo MaterialEntryStatus::getOptions(getFilterStatus(), true)?></select>
-            &nbsp;&nbsp;
-            <div style="white-space: nowrap">Start date</div>
+            &nbsp;&nbsp;                        
+            <select id="date-type-filter"><?php echo FilterDateType::getOptions([FilterDateType::ENTRY_DATE, FilterDateType::RECEIVE_DATE], getFilterDateType()) ?></select>
+            &nbsp;&nbsp;                        
+            <div style="white-space: nowrap">Start</div>
             &nbsp;
             <input id="start-date-filter" type="date" value="<?php echo getFilterStartDate()?>">
             &nbsp;&nbsp;
-            <div style="white-space: nowrap">End date</div>
+            <div style="white-space: nowrap">End</div>
             &nbsp;
             <input id="end-date-filter" type="date" value="<?php echo getFilterEndDate()?>">
             &nbsp;&nbsp;
@@ -172,6 +187,7 @@ if (!Authentication::isAuthenticated())
          
          var params = new Object();
          params.status =  document.getElementById("status-filter").value;
+         params.dateType =  document.getElementById("date-type-filter").value;
          params.startDate =  document.getElementById("start-date-filter").value;
          params.endDate =  document.getElementById("end-date-filter").value;
 
@@ -322,6 +338,7 @@ if (!Authentication::isAuthenticated())
             var filterId = event.srcElement.id;
    
             if ((filterId == "status-filter") ||
+                (filterId == "date-type-filter") ||
                 (filterId == "start-date-filter") ||
                 (filterId == "end-date-filter"))
             {
@@ -340,7 +357,11 @@ if (!Authentication::isAuthenticated())
                {
                   setSession("material.filter.status", document.getElementById("status-filter").value);
                }
-               if (filterId == "start-date-filter")
+               else if (filterId == "date-type-filter")
+               {
+                  setSession("material.filter.dateType", document.getElementById("date-type-filter").value);
+               }
+               else if (filterId == "start-date-filter")
                {
                   setSession("material.filter.startDate", document.getElementById("start-date-filter").value);
                }
@@ -402,6 +423,7 @@ if (!Authentication::isAuthenticated())
 
       // Setup event handling on all DOM elements.
       document.getElementById("status-filter").addEventListener("change", updateFilter);
+      document.getElementById("date-type-filter").addEventListener("change", updateFilter);  
       document.getElementById("start-date-filter").addEventListener("change", updateFilter);      
       document.getElementById("end-date-filter").addEventListener("change", updateFilter);
       document.getElementById("today-button").onclick = filterToday;
