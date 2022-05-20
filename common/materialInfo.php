@@ -9,14 +9,15 @@
     const ALUMINUM = 1;
     const BRASS = 2;
     const STEEL = 3;
-    const LAST = 4;
+    const STAINLESS_STEEL = 4;    
+    const LAST = 5;
     const COUNT = MaterialType::LAST - MaterialType::FIRST;
     
-    public static $VALUES = array(MaterialType::ALUMINUM, MaterialType::BRASS, MaterialType::STEEL);
+    public static $VALUES = array(MaterialType::ALUMINUM, MaterialType::BRASS, MaterialType::STEEL, MaterialType::STAINLESS_STEEL);
     
     public static function getLabel($materialType)
     {
-       $labels = array("---", "Aluminum", "Brass", "Steel");
+       $labels = array("---", "Aluminum", "Brass", "Steel", "Stainless Steel");
        
        return ($labels[$materialType]);
     }
