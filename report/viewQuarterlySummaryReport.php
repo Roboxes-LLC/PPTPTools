@@ -63,12 +63,15 @@ function getUseMaintenanceLogEntries()
    return ($useMaintenanceLogEntries);
 }
 
-function getReportFilename()
+function getReportFilename($tableId)
 {
    $quarter = getQuarter();
    $year = getYear();
    
-   $filename = "QuarterlySummaryReport_" . Quarter::getLabel($quarter) . "_" . $year . ".csv";
+   $tableLabel = ($tableId == QuarterlySummaryReportTable::OPERATOR_SUMMARY) ? "OperatorSummary" : "ShopSummary";
+   $quarterLabel = Quarter::getLabel($quarter);
+   
+   $filename = "QuarterlySummaryReport_{$tableLabel}_{$quarterLabel}_$year.csv";
    
    return ($filename);
 }
@@ -169,11 +172,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          <div id="report-table-header" class="table-header">Operator Summary</div>
          
          <br>
-
+         
          <div id="week-number-div" class="date-range-header"></div>
        
          <div id="operator-summary-table"></div>
          
+         <br>
+         
+         <div id="download-operator-summary-link" class="download-link">Download CSV file</div>
+         
+         <div id="print-operator-summary-link" class="download-link">Print</div>         
+                  
          <br>
          
          <div id="report-table-header" class="table-header">Shop Summary</div>
@@ -186,9 +195,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          
          <br>
         
-         <div id="download-link" class="download-link">Download CSV file</div>
+         <div id="download-shop-summary-link" class="download-link">Download CSV file</div>
          
-         <div id="print-link" class="download-link">Print</div>         
+         <div id="print-shop-summary-link" class="download-link">Print</div>         
          
       </div> <!-- content -->
       
@@ -599,8 +608,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       document.getElementById("quarter-filter").addEventListener("change", updateFilter);      
       document.getElementById("year-filter").addEventListener("change", updateFilter);
       document.getElementById("maintenance-log-filter").addEventListener("change", updateFilter);
-      document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};
-      document.getElementById("print-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].print(false, true);};
+      document.getElementById("download-operator-summary-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].download("csv", "<?php echo getReportFilename(QuarterlySummaryReportTable::OPERATOR_SUMMARY) ?>", {delimiter:","})};
+      document.getElementById("print-operator-summary-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].print(false, true);};
+      document.getElementById("download-shop-summary-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].download("csv", "<?php echo getReportFilename(QuarterlySummaryReportTable::SHOP_SUMMARY) ?>", {delimiter:","})};
+      document.getElementById("print-shop-summary-link").onclick = function(){tables[SHOP_SUMMARY_TABLE].print(false, true);};
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
