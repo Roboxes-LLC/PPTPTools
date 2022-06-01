@@ -47,11 +47,38 @@ function getUseMaintenanceLogEntries()
    return ($useMaintenanceLogEntries);   
 }
 
-function getReportFilename()
+function getReportFilename($tableId)
 {
    $mfgDate = getFilterMfgDate();
    
-   $filename = "DailySummaryReport_" . $mfgDate . ".csv";
+   $tableLabel = "";
+   switch ($tableId)
+   {
+      case DailySummaryReportTable::DAILY_SUMMARY:
+      {
+         $tableLabel = "DailySummary";
+         break;
+      }
+      
+      case DailySummaryReportTable::OPERATOR_SUMMARY:
+      {
+         $tableLabel = "OperatorSummary";
+         break;
+      }
+      
+      case DailySummaryReportTable::SHOP_SUMMARY:
+      {
+         $tableLabel = "ShopSummary";
+         break;
+      }
+      
+      default:
+      {
+         break;
+      }
+   }
+   
+   $filename = "DailySummaryReport_{$tableLabel}_{$mfgDate}.csv";
    
    return ($filename);
 }
@@ -151,11 +178,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          
          <br>
          
+         <div id="download-daily-summary-link" class="download-link">Download CSV file</div>
+         
+         <div id="print-daily-summary-link" class="download-link">Print</div>         
+         
+         <br>
+         
          <div class="table-header">Operator Summary</div>
          
          <br>
         
          <div id="operator-summary-table"></div>
+         
+         <br>
+         
+         <div id="download-operator-summary-link" class="download-link">Download CSV file</div>
+         
+         <div id="print-operator-summary-link" class="download-link">Print</div>         
          
          <br>
          
@@ -167,9 +206,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          
          <br>
         
-         <div id="download-link" class="download-link">Download CSV file</div>
+         <div id="download-shop-summary-link" class="download-link">Download CSV file</div>
          
-         <div id="print-link" class="download-link">Print</div>         
+         <div id="print-shop-summary-link" class="download-link">Print</div>         
          
       </div> <!-- content -->
       
@@ -210,7 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          cellVertAlign:"middle",
          printAsHtml:true,          //enable HTML table printing
          printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Daily Summary Report<h1>",
+         printHeader:"<h2>Daily Summary Report - Daily Summary<h2>",
          printFooter:"<h2>TODO: Date range<h2>",
          groupBy:"operator",
          ajaxURL:url,
@@ -520,7 +559,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          cellVertAlign:"middle",
          printAsHtml:true,          //enable HTML table printing
          printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Totals<h1>",
+         printHeader:"<h2>Daily Summary Report - Operator Summary<h2>",
          ajaxURL:url,
          ajaxParams:params,
          //Define Table Columns
@@ -562,7 +601,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
          cellVertAlign:"middle",
          printAsHtml:true,          //enable HTML table printing
          printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Totals<h1>",
+         printHeader:"<h2>Daily Summary Report - Shop Summary<h2>",
          ajaxURL:url,
          ajaxParams:params,
          //Define Table Columns
@@ -672,8 +711,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       document.getElementById("maintenance-log-filter").addEventListener("change", updateFilter);      
       document.getElementById("today-button").onclick = filterToday;
       document.getElementById("yesterday-button").onclick = filterYesterday;
-      document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};
-      document.getElementById("print-link").onclick = function(){tables[DAILY_SUMMARY_TABLE].print(false, true);};
+      
+      document.getElementById("download-daily-summary-link").onclick = function(){tables[DAILY_SUMMARY_TABLE].download("csv", "<?php echo getReportFilename(DailySummaryReportTable::DAILY_SUMMARY) ?>", {delimiter:","})};
+      document.getElementById("print-daily-summary-link").onclick = function(){tables[DAILY_SUMMARY_TABLE].print(false, true);};
+      document.getElementById("download-operator-summary-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].download("csv", "<?php echo getReportFilename(DailySummaryReportTable::OPERATOR_SUMMARY) ?>", {delimiter:","})};
+      document.getElementById("print-operator-summary-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].print(false, true);};
+      document.getElementById("download-shop-summary-link").onclick = function(){tables[SHOP_SUMMARY_TABLE].download("csv", "<?php echo getReportFilename(DailySummaryReportTable::SHOP_SUMMARY) ?>", {delimiter:","})};
+      document.getElementById("print-shop-summary-link").onclick = function(){tables[SHOP_SUMMARY_TABLE].print(false, true);};
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
