@@ -341,7 +341,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                }
             },
             {title:"Job #",        field:"jobNumber",       hozAlign:"left", headerFilter:true, print:true},
-            {title:"WC #",         field:"wcNumber",        hozAlign:"left", headerFilter:true, print:true},
+            {title:"WC #",         field:"wcLabel",         hozAlign:"left", headerFilter:true, print:true},
             {title:"Shift Time",   field:"shiftTime",       hozAlign:"left",                    print:true,
                formatter:function(cell, formatterParams, onRendered){
 

@@ -259,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             },
             {title:"Operator",     field:"operator",        hozAlign:"left", responsive:0, headerFilter:true, print:true},
             {title:"Job #",        field:"jobNumber",       hozAlign:"left", responsive:0, headerFilter:true, print:true},
-            {title:"WC #",         field:"wcNumber",        hozAlign:"left", responsive:0, headerFilter:true, print:true},
+            {title:"WC #",         field:"wcLabel",         hozAlign:"left", responsive:0, headerFilter:true, print:true},
             {title:"Heat #",       field:"materialNumber",  hozAlign:"left", responsive:6, print:true},
             {title:"Shift Time",   field:"shiftTime",       hozAlign:"left", responsive:1, print:true,
                formatter:function(cell, formatterParams, onRendered){

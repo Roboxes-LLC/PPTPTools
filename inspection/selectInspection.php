@@ -70,13 +70,6 @@ function getJobNumberOptions()
    return ($options);
 }
 
-function getWcNumberOptions()
-{
-   $options = "<option style=\"display:none\">";
-   
-   return ($options);
-}
-
 function getTemplateOptions()
 {
    $options = "<option style=\"display:none\">";
@@ -183,7 +176,7 @@ if (!Authentication::isAuthenticated())
                   <div id="wc-number-input-container" class="form-item">
                      <div class="form-label">WC Number</div>
                      <select id="wc-number-input" class="form-input-medium" name="wcNumber" form="input-form" oninput="updateTemplateId();" <?php echo !isEditable(InspectionInputField::WC_NUMBER) ? "disabled" : ""; ?>>
-                        <?php echo getWcNumberOptions(); ?>
+                        <option style=\"display:none\">
                      </select>
                   </div>
                   

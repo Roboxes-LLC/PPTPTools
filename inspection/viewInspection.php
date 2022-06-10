@@ -595,34 +595,6 @@ function getJobNumberOptions()
    return ($options);
 }
 
-function getWcNumberOptions()
-{
-   $options = "<option style=\"display:none\">";
-   
-   $jobNumber = getJobNumber();
-   
-   $workCenters = null;
-   if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
-   {
-      $workCenters = PPTPDatabase::getInstance()->getWorkCentersForJob($jobNumber);
-   }
-   else
-   {
-      $workCenters = PPTPDatabase::getInstance()->getWorkCenters();
-   }
-   
-   $selectedWcNumber = getWcNumber();
-   
-   foreach ($workCenters as $workCenter)
-   {
-      $selected = ($workCenter["wcNumber"] == $selectedWcNumber) ? "selected" : "";
-      
-      $options .= "<option value=\"{$workCenter["wcNumber"]}\" $selected>{$workCenter["wcNumber"]}</option>";
-   }
-   
-   return ($options);
-}
-
 function getInspectorOptions()
 {
    $options = "<option style=\"display:none\">";
@@ -1050,7 +1022,7 @@ if (!Authentication::isAuthenticated())
                   <div class="form-item optional-property-container <?php echo showOptionalProperty(OptionalInspectionProperties::WC_NUMBER) ? "" : "hidden";?>">
                      <div class="form-label">WC Number</div>
                      <select id="wc-number-input" class="form-input-medium" name="wcNumber" form="input-form" <?php echo !isEditable(InspectionInputField::WC_NUMBER) ? "disabled" : ""; ?>>
-                        <?php echo getWcNumberOptions(); ?>
+                        <?php echo JobInfo::getWcNumberOptions(getJobNumber(), getWcNumber()); ?>
                      </select>
                   </div>
                   

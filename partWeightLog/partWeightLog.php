@@ -269,7 +269,7 @@ if (!Authentication::isAuthenticated())
               }               
             },
             {title:"Job #",             field:"jobNumber",         hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"WC #",              field:"wcNumber",          hozAlign:"left", responsive:0, headerFilter:true},
+            {title:"WC #",              field:"wcLabel",           hozAlign:"left", responsive:0, headerFilter:true},
             {title:"Operator",          field:"operatorName",      hozAlign:"left", responsive:0, headerFilter:true},
             {title:"Mfg. Date",         field:"manufactureDate",   hozAlign:"left", responsive:0, headerFilter:true,
                formatter:"datetime",  // Requires moment.js 

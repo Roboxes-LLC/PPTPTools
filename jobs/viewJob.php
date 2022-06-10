@@ -261,34 +261,6 @@ function getCreationDate()
    return(date_format(new DateTime(getJobInfo()->dateTime), "Y-m-d"));
 }
 
-function getWcNumberOptions()
-{
-   $options = "<option style=\"display:none\">";
-   
-   $database = PPTPDatabase::getInstance();
-   
-   if ($database && $database->isConnected())
-   {
-      $result = $database->getWorkCenters();
-      
-      if ($result)
-      {
-         $selectedWcNumber = getJobInfo()->wcNumber;
-         
-         while ($row = $result->fetch_assoc())
-         {
-            $wcNumber = $row["wcNumber"];
-            
-            $selected = ($wcNumber == $selectedWcNumber) ? "selected" : "";
-            
-            $options .= "<option value=\"$wcNumber\" $selected>$wcNumber</option>";
-         }
-      }
-   }
-   
-   return ($options);
-}
-
 function getStatusOptions()
 {
    $options = "";
@@ -402,7 +374,7 @@ if (!Authentication::isAuthenticated())
    </form>
 
    <?php Header::render("PPTP Tools"); ?>
-   
+
    <div class="main flex-horizontal flex-top flex-left">
    
       <?php Menu::render(ACTIVITY); ?>
@@ -451,7 +423,7 @@ if (!Authentication::isAuthenticated())
          
                <div class="form-item">
                   <div class="form-label-long">Work center #</div>
-                  <div><select id="work-center-input" name="wcNumber" form="input-form" <?php echo getDisabled(JobInputField::WC_NUMBER); ?>><?php echo getWcNumberOptions() ?></select></div>
+                  <div><select id="work-center-input" name="wcNumber" form="input-form" <?php echo getDisabled(JobInputField::WC_NUMBER); ?>><?php echo JobInfo::getWcNumberOptions(JobInfo::UNKNOWN_JOB_NUMBER, getJobInfo()->wcNumber) ?></select></div>
                </div>
       
                <div class="form-item">
