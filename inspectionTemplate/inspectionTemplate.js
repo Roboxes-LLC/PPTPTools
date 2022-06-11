@@ -293,8 +293,8 @@ function updateWcOptions(wcNumbers)
    for (var wcNumber of wcNumbers)
    {
       var option = document.createElement('option');
-      option.innerHTML = wcNumber;
-      option.value = wcNumber;
+      option.innerHTML = wcNumber.label;
+      option.value = wcNumber.wcNumber;
       element.appendChild(option);
    }
    

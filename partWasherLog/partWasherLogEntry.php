@@ -234,34 +234,6 @@ function getJobNumberOptions()
    return ($options);
 }
 
-function getWcNumberOptions()
-{
-   $options = "<option style=\"display:none\">";
-   
-   $jobNumber = getJobNumber();
-   
-   $workCenters = null;
-   if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
-   {
-      $workCenters = PPTPDatabase::getInstance()->getWorkCentersForJob($jobNumber);
-   }
-   else
-   {
-      $workCenters = PPTPDatabase::getInstance()->getWorkCenters();
-   }
-   
-   $selectedWcNumber = getWcNumber();
-   
-   foreach ($workCenters as $workCenter)
-   {
-      $selected = ($workCenter["wcNumber"] == $selectedWcNumber) ? "selected" : "";
-      
-      $options .= "<option value=\"{$workCenter["wcNumber"]}\" $selected>{$workCenter["wcNumber"]}</option>";
-   }
-   
-   return ($options);
-}
-
 function getManufactureDate()
 {
    $manufactureDate = null;
@@ -631,7 +603,7 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label">Work Center</div>
                   <select id="wc-number-input" name="wcNumber" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(PartWasherLogInputField::WC_NUMBER); ?>>
-                     <?php echo getWcNumberOptions(); ?>
+                     <?php echo JobInfo::getWcNumberOptions(getJobNumber(), getWcNumber()); ?>
                   </select>
                </div>
                

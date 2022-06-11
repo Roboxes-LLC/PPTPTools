@@ -160,6 +160,7 @@ $router->add("timeCardData", function($params) {
          {
             $timeCard["jobNumber"] = $jobInfo->jobNumber;
             $timeCard["wcNumber"] = $jobInfo->wcNumber;
+            $timeCard["wcLabel"] = JobInfo::getWcLabel($jobInfo->wcNumber);            
          }
          
          $timeCard["isNew"] = Time::isNew($timeCardInfo->dateTime, Time::NEW_THRESHOLD);
@@ -245,6 +246,7 @@ $router->add("timeCardInfo", function($params) {
             {
                $result->jobNumber = $jobInfo->jobNumber;
                $result->wcNumber = $jobInfo->wcNumber;
+               $result->wcLabel = JobInfo::getWcLabel($jobInfo->wcNumber);
                $result->sampleWeight = $jobInfo->sampleWeight;
                $result->isActiveJob = ($jobInfo->status == JobStatus::ACTIVE);
             }
@@ -352,6 +354,7 @@ $router->add("jobData", function($params) {
          
          if ($jobInfo)
          {
+            $jobInfo->wcLabel = JobInfo::getWcLabel($jobInfo->wcNumber);
             $jobInfo->statusLabel = JobStatus::getName($jobInfo->status);
             $jobInfo->cycleTime = $jobInfo->getCycleTime();
             $jobInfo->netPercentage = $jobInfo->getNetPercentage();
@@ -549,7 +552,9 @@ $router->add("wcNumbers", function($params) {
       
       while ($row = $dbaseResult->fetch_assoc())
       {
-         $result->wcNumbers[] = $row["wcNumber"];
+         $wcNumber = intval($row["wcNumber"]);
+         $label = JobInfo::getWcLabel($wcNumber);
+         $result->wcNumbers[] = (object)array("wcNumber" => $wcNumber, "label" => $label);
       }
    }
    else
@@ -1218,6 +1223,7 @@ $router->add("partWasherLogData", function($params) {
          {
             $partWasherEntry->jobNumber = $jobInfo->jobNumber;
             $partWasherEntry->wcNumber = $jobInfo->wcNumber;
+            $partWasherEntry->wcLabel = JobInfo::getWcLabel($jobInfo->wcNumber);
          }
          
          $userInfo = UserInfo::load($operator);
@@ -1501,6 +1507,7 @@ $router->add("partWeightLogData", function($params) {
          {
             $partWeightEntry->jobNumber = $jobInfo->jobNumber;
             $partWeightEntry->wcNumber = $jobInfo->wcNumber;
+            $partWeightEntry->wcLabel = JobInfo::getWcLabel($jobInfo->wcNumber);
          }
          
          $userInfo = UserInfo::load($operator);
@@ -1819,6 +1826,8 @@ $router->add("inspectionData", function($params) {
          {
             $row["operatorName"] = $userInfo->getFullName();
          }
+         
+         $row["wcLabel"] = JobInfo::getWcLabel($inspection->wcNumber);
          
          $row["count"] = $inspection->getCount(true);
          $row["naCount"] = $inspection->getCountByStatus(InspectionStatus::NON_APPLICABLE);
@@ -2953,7 +2962,7 @@ $router->add("maintenanceLogData", function($params) {
             $maintenanceEntry->equipmentName = "";
             if ($maintenanceEntry->wcNumber != JobInfo::UNKNOWN_WC_NUMBER)
             {
-               $maintenanceEntry->equipmentName = $maintenanceEntry->wcNumber;
+               $maintenanceEntry->equipmentName = JobInfo::getWcLabel($maintenanceEntry->wcNumber);
             }
             else if ($maintenanceEntry->equipmentId != EquipmentInfo::UNKNOWN_EQUIPMENT_ID)
             {

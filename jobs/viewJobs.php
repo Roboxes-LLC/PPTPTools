@@ -197,7 +197,7 @@ if (!Authentication::isAuthenticated())
                }
             },
             {title:"Part #",         field:"partNumber",    hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Work Center",    field:"wcNumber",      hozAlign:"left", responsive:2, headerFilter:true},
+            {title:"Work Center",    field:"wcLabel",       hozAlign:"left", responsive:2, headerFilter:true},
             // Temporary
             {title:"Cycle Time",     field:"cycleTime",  hozAlign:"left", responsive:2 },
             {title:"Sample Weight",  field:"sampleWeight",  hozAlign:"left", responsive:2,

@@ -1032,6 +1032,7 @@ class DailySummaryReport
             $row->employeeNumber =       $reportEntry->userInfo->employeeNumber;
             $row->jobNumber =            $reportEntry->jobInfo->jobNumber;
             $row->wcNumber =             $reportEntry->jobInfo->wcNumber;
+            $row->wcLabel =              JobInfo::getWcLabel($reportEntry->jobInfo->wcNumber);
             $row->materialNumber =       $reportEntry->timeCardInfo->materialNumber;
             $row->shiftTime =            $reportEntry->timeCardInfo->shiftTime;
             $row->runTime =              $reportEntry->timeCardInfo->runTime;

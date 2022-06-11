@@ -232,7 +232,7 @@ if (!Authentication::isAuthenticated())
             {title:"Inspector",       field:"inspectorName",       hozAlign:"left",   responsive:0, headerFilter:true},
             {title:"Operator",        field:"operatorName",        hozAlign:"left",   responsive:0, headerFilter:true},
             {title:"Job",             field:"jobNumber",           hozAlign:"left",   responsive:0, headerFilter:true},
-            {title:"Work Center",     field:"wcNumber",            hozAlign:"left",   responsive:0, headerFilter:true},
+            {title:"Work Center",     field:"wcLabel",             hozAlign:"left",   responsive:0, headerFilter:true},
             {title:"Success Rate",    field:"successRate",         hozAlign:"left",   responsive:3,
                formatter:function(cell, formatterParams, onRendered){
                   var count = cell.getRow().getData().samples;

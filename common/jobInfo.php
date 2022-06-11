@@ -40,6 +40,10 @@ class JobInfo
    
    const UNKNOWN_WC_NUMBER = 0;
    
+   const OUTSIDE_WC_NUMBER = 999;
+   
+   const OUTSIDE_WC_LABEL = "OUT";
+   
    const SECONDS_PER_MINUTE = 60;
    
    const SECONDS_PER_HOUR = 3600;
@@ -227,6 +231,11 @@ class JobInfo
       return ($html);
    }
    
+   public static function getWcLabel($wcNumber)
+   {
+      return (($wcNumber == JobInfo::OUTSIDE_WC_NUMBER) ? JobInfo::OUTSIDE_WC_LABEL : $wcNumber);
+   }
+   
    public static function getWcNumberOptions($jobNumber, $selectedWcNumber)
    {
       $html = "<option style=\"display:none\">";
@@ -244,9 +253,10 @@ class JobInfo
       foreach ($workCenters as $workCenter)
       {
          $wcNumber = intval($workCenter["wcNumber"]);
+         $label = JobInfo::getWcLabel($wcNumber);
          $selected = ($wcNumber == $selectedWcNumber) ? "selected" : "";
          
-         $html .= "<option value=\"$wcNumber\" $selected>$wcNumber</option>";
+         $html .= "<option value=\"$wcNumber\" $selected>$label</option>";
       }
       
       return ($html);

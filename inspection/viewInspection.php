@@ -6,6 +6,7 @@ require_once '../common/inspection.php';
 require_once '../common/isoInfo.php';
 require_once '../common/menu.php';
 require_once '../common/params.php';
+require_once '../common/version.php';
 
 const ACTIVITY = Activity::INSPECTION;
 $activity = Activity::getActivity(ACTIVITY);
@@ -595,34 +596,6 @@ function getJobNumberOptions()
    return ($options);
 }
 
-function getWcNumberOptions()
-{
-   $options = "<option style=\"display:none\">";
-   
-   $jobNumber = getJobNumber();
-   
-   $workCenters = null;
-   if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
-   {
-      $workCenters = PPTPDatabase::getInstance()->getWorkCentersForJob($jobNumber);
-   }
-   else
-   {
-      $workCenters = PPTPDatabase::getInstance()->getWorkCenters();
-   }
-   
-   $selectedWcNumber = getWcNumber();
-   
-   foreach ($workCenters as $workCenter)
-   {
-      $selected = ($workCenter["wcNumber"] == $selectedWcNumber) ? "selected" : "";
-      
-      $options .= "<option value=\"{$workCenter["wcNumber"]}\" $selected>{$workCenter["wcNumber"]}</option>";
-   }
-   
-   return ($options);
-}
-
 function getInspectorOptions()
 {
    $options = "<option style=\"display:none\">";
@@ -972,13 +945,13 @@ if (!Authentication::isAuthenticated())
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
    
-   <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
-   <link rel="stylesheet" type="text/css" href="../common/common.css"/>
-   <link rel="stylesheet" type="text/css" href="inspection.css"/>
+   <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="inspection.css<?php echo versionQuery();?>"/>
    
-   <script src="../common/common.js"></script>
-   <script src="../common/validate.js"></script>
-   <script src="inspection.js"></script>
+   <script src="../common/common.js<?php echo versionQuery();?>"></script>
+   <script src="../common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="inspection.js<?php echo versionQuery();?>"></script>
 
 </head>
 
@@ -1050,7 +1023,7 @@ if (!Authentication::isAuthenticated())
                   <div class="form-item optional-property-container <?php echo showOptionalProperty(OptionalInspectionProperties::WC_NUMBER) ? "" : "hidden";?>">
                      <div class="form-label">WC Number</div>
                      <select id="wc-number-input" class="form-input-medium" name="wcNumber" form="input-form" <?php echo !isEditable(InspectionInputField::WC_NUMBER) ? "disabled" : ""; ?>>
-                        <?php echo getWcNumberOptions(); ?>
+                        <?php echo JobInfo::getWcNumberOptions(getJobNumber(), getWcNumber()); ?>
                      </select>
                   </div>
                   
