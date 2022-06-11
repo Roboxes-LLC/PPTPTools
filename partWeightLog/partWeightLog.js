@@ -180,7 +180,7 @@ function onPanTicketCodeChange()
             {
                sampleWeight = json.sampleWeight;  // global variable
                
-               updateTimeCardInfo(json.timeCardInfo, json.jobNumber, json.wcNumber, json.operatorName, json.sampleWeight);
+               updateTimeCardInfo(json.timeCardInfo, json.jobNumber, json.wcNumber, json.wcLabel, json.operatorName, json.sampleWeight);
             }
             else
             {
@@ -409,8 +409,8 @@ function updateWcOptions(wcNumbers)
    for (var wcNumber of wcNumbers)
    {
       var option = document.createElement('option');
-      option.innerHTML = wcNumber;
-      option.value = wcNumber;
+      option.innerHTML = wcNumber.label;
+      option.value = wcNumber.wcNumber;
       element.appendChild(option);
    }
    
@@ -442,7 +442,7 @@ function twoDigitNumber(value)
    return (("0" + value).slice(-2));
 }
 
-function updateTimeCardInfo(timeCardInfo, jobNumber, wcNumber, operatorName)
+function updateTimeCardInfo(timeCardInfo, jobNumber, wcNumber, wcLabel, operatorName)
 {
    var operator = timeCardInfo.employeeNumber;
    var date = new Date(timeCardInfo.dateTime);
@@ -450,7 +450,7 @@ function updateTimeCardInfo(timeCardInfo, jobNumber, wcNumber, operatorName)
    var panCount = timeCardInfo.panCount;
    
    updateJobOptions(new Array(jobNumber));
-   updateWcOptions(new Array(wcNumber));
+   updateWcOptions(new Array({wcNumber: wcNumber, label:wcLabel}));
    updateOperatorOptions(new Array({employeeNumber: operator, name:operatorName}));
    
    set("job-number-input", jobNumber);

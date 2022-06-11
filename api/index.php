@@ -246,6 +246,7 @@ $router->add("timeCardInfo", function($params) {
             {
                $result->jobNumber = $jobInfo->jobNumber;
                $result->wcNumber = $jobInfo->wcNumber;
+               $result->wcLabel = JobInfo::getWcLabel($jobInfo->wcNumber);
                $result->sampleWeight = $jobInfo->sampleWeight;
                $result->isActiveJob = ($jobInfo->status == JobStatus::ACTIVE);
             }
@@ -551,7 +552,9 @@ $router->add("wcNumbers", function($params) {
       
       while ($row = $dbaseResult->fetch_assoc())
       {
-         $result->wcNumbers[] = $row["wcNumber"];
+         $wcNumber = intval($row["wcNumber"]);
+         $label = JobInfo::getWcLabel($wcNumber);
+         $result->wcNumbers[] = (object)array("wcNumber" => $wcNumber, "label" => $label);
       }
    }
    else

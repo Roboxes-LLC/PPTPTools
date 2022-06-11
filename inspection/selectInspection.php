@@ -10,6 +10,7 @@ require_once '../common/menu.php';
 require_once '../common/params.php';
 require_once '../common/root.php';
 require_once '../common/userInfo.php';
+require_once '../common/version.php';
 
 const ACTIVITY = Activity::INSPECTION;
 $activity = Activity::getActivity(ACTIVITY);
@@ -119,13 +120,13 @@ if (!Authentication::isAuthenticated())
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
    
-   <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
-   <link rel="stylesheet" type="text/css" href="../common/common.css"/>
-   <link rel="stylesheet" type="text/css" href="inspection.css"/>
+   <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="inspection.css<?php echo versionQuery();?>"/>
    
-   <script src="../common/common.js"></script>
-   <script src="../common/validate.js"></script>
-   <script src="inspection.js"></script>
+   <script src="../common/common.js<?php echo versionQuery();?>"></script>
+   <script src="../common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="inspection.js<?php echo versionQuery();?>"></script>
 
 </head>
 

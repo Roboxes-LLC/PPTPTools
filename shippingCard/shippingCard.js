@@ -355,8 +355,8 @@ function updateWcOptions(wcNumbers)
    for (var wcNumber of wcNumbers)
    {
       var option = document.createElement('option');
-      option.innerHTML = wcNumber;
-      option.value = wcNumber;
+      option.innerHTML = wcNumber.label;
+      option.value = wcNumber.wcNumber;
       element.appendChild(option);
    }
    
@@ -395,7 +395,7 @@ function updateTimeCardInfo(timeCardInfo, jobNumber, wcNumber, operatorName)
    var manufactureDate = formattedDate(date);
    
    updateJobOptions(new Array(jobNumber));
-   updateWcOptions(new Array(wcNumber));
+   updateWcOptions(new Array({wcNumber: wcNumber, label:wcNumber}));
    updateOperatorOptions(new Array({employeeNumber: operator, name:operatorName}));
    
    set("job-number-input", jobNumber);
