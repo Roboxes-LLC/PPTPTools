@@ -2237,9 +2237,9 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
          "INSERT INTO materiallog " .
-         "(vendorHeatNumber, tagNumber, pieces, enteredUserId, enteredDateTime, receivedDateTime) " .
+         "(vendorHeatNumber, tagNumber, location, pieces, enteredUserId, enteredDateTime, receivedDateTime) " .
          "VALUES " .
-         "('$materialEntry->vendorHeatNumber', '$materialEntry->tagNumber', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime', '$receivedDateTime');";
+         "('$materialEntry->vendorHeatNumber', '$materialEntry->tagNumber', '$materialEntry->location', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime', '$receivedDateTime');";
 
       $result = $this->query($query);
       
@@ -2254,7 +2254,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
          "UPDATE materiallog " .
-         "SET vendorHeatNumber = '$materialEntry->vendorHeatNumber', tagNumber = '$materialEntry->tagNumber', pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', receivedDateTime = '$receivedDateTime' " .
+         "SET vendorHeatNumber = '$materialEntry->vendorHeatNumber', tagNumber = '$materialEntry->tagNumber', location = $materialEntry->location, pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', receivedDateTime = '$receivedDateTime' " .
          "WHERE materialEntryId = $materialEntry->materialEntryId;";
 
       $result = $this->query($query);

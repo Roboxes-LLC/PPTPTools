@@ -3334,6 +3334,8 @@ $router->add("materialData", function($params) {
          
          if ($materialEntry)
          {
+            $materialEntry->locationLabel = MaterialLocation::getLabel($materialEntry->location);
+            
             if ($materialEntry->materialInfo)
             {
                $materialEntry->materialPartNumber = $materialEntry->materialInfo->partNumber;
@@ -3412,12 +3414,14 @@ $router->add("saveMaterialEntry", function($params) {
       // Required fields.
       if (isset($params["vendorHeatNumber"]) &&
           isset($params["tagNumber"]) &&
+          isset($params["location"]) &&
           isset($params["pieces"]) &&
           isset($params["enteredUserId"]) &&
           isset($params["receivedDate"]))
       {
          $materialEntry->vendorHeatNumber = $params->get("vendorHeatNumber");
          $materialEntry->tagNumber = $params->get("tagNumber");
+         $materialEntry->location = $params->getInt("location");
          $materialEntry->pieces = $params->getInt("pieces");
          $materialEntry->enteredUserId = $params->getInt("enteredUserId");
          $materialEntry->receivedDateTime = Time::startOfDay($params->get("receivedDate"));

@@ -233,6 +233,7 @@ if (!Authentication::isAuthenticated())
             {title:"Vendor Heat", field:"vendorHeatNumber",                    hozAlign:"left", headerFilter:true, visible:true},            
             {title:"PPTP Heat",   field:"materialHeatInfo.internalHeatNumber", hozAlign:"left", headerFilter:true, visible:true},
             {title:"Tag",         field:"tagNumber",                           hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Location",    field:"locationLabel",                       hozAlign:"left", headerFilter:true, visible:true},
             {title:"Type",        field:"materialTypeLabel",                   hozAlign:"left", headerFilter:true, visible:true},
             {title:"Size",        field:"size",                                hozAlign:"left", headerFilter:true, visible:true},
             {title:"Length",      field:"length",                              hozAlign:"left", headerFilter:true, visible:true},

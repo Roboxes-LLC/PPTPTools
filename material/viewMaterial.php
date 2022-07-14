@@ -20,20 +20,21 @@ abstract class MaterialInputField
    const ENTRY_DATE = MaterialInputField::FIRST;
    const ENTRY_USER = 1;
    const TAG = 2;
-   const MATERIAL = 2;
-   const VENDOR = 3;
-   const VENDOR_HEAT = 4;
-   const INTERNAL_HEAT = 6;
-   const QUANTITY = 7;
-   const PIECES = 8;
-   const ISSUED_USER = 9;
-   const ISSUED_DATE = 10;
-   const RECEIVED_DATE = 11;
-   const WC_NUMBER = 12;
-   const JOB_NUMBER = 13;
-   const ACKNOWLEDGED_USER = 13;
-   const ACKNOWLEDGED_DATE = 15;
-   const LAST = 16;
+   const LOCATION = 3;
+   const MATERIAL = 4;
+   const VENDOR = 5;
+   const VENDOR_HEAT = 6;
+   const INTERNAL_HEAT = 7;
+   const QUANTITY = 8;
+   const PIECES = 9;
+   const ISSUED_USER = 10;
+   const ISSUED_DATE = 11;
+   const RECEIVED_DATE = 12;
+   const WC_NUMBER = 13;
+   const JOB_NUMBER = 14;
+   const ACKNOWLEDGED_USER = 15;
+   const ACKNOWLEDGED_DATE = 16;
+   const LAST = 17;
    const COUNT = MaterialInputField::LAST - MaterialInputField::FIRST;
 }
 
@@ -123,6 +124,7 @@ function getMaterialEntry()
       {
          $materialEntry = new MaterialEntry();
          
+         $materialEntry->location = MaterialLocation::ON_SITE;
          $materialEntry->enteredDateTime = Time::now("Y-m-d H:i:s");
          $materialEntry->enteredUserId = Authentication::getAuthenticatedUser()->employeeNumber;
       }
@@ -155,6 +157,7 @@ function isEditable($field)
       case MaterialInputField::MATERIAL:
       case MaterialInputField::VENDOR:
       case MaterialInputField::TAG:
+      case MaterialInputField::LOCATION:
       case MaterialInputField::VENDOR_HEAT:
       case MaterialInputField::PIECES:
       case MaterialInputField::RECEIVED_DATE:
@@ -494,7 +497,14 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label">Tag #</div>
                   <input id="tag-number-input" type="text" name="tagNumber" form="input-form" oninput="this.validator.validate();" value="<?php echo getMaterialEntry()->tagNumber; ?>" <?php echo getDisabled(MaterialInputField::TAG); ?> />
-               </div>         
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label">Location</div>
+                  <select id="location-input" name="location" form="input-form" <?php echo getDisabled(MaterialInputField::LOCATION); ?>>
+                     <?php echo MaterialLocation::getOptions(getMaterialEntry()->location); ?>
+                  </select>
+               </div>            
                
                <div class="form-item">
                   <div class="form-label">Pieces</div>
@@ -582,6 +592,7 @@ if (!Authentication::isAuthenticated())
       var internalHeatValidator = new IntValidator("internal-heat-number-input", 5, 1, 99999, false);
       var materialValidator = new SelectValidator("material-id-input");
       var tagNumberValidator = new RegExpressionValidator("tag-number-input", /^[a-zA-Z0-9-]+$/, true, 16);  // Only letters, numbers, and "-".
+      var locationValidator = new SelectValidator("location-input");
       var piecesValidator = new IntValidator("pieces-input", 4, 1, 1000, false);
       var jobNumberValidator = new SelectValidator("job-number-input");
       var wcValidator = new SelectValidator("wc-number-input");
@@ -591,6 +602,7 @@ if (!Authentication::isAuthenticated())
       internalHeatValidator.init();
       materialValidator.init();
       tagNumberValidator.init();
+      locationValidator.init();
       piecesValidator.init();
       jobNumberValidator.init();
       wcValidator.init();

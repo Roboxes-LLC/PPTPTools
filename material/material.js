@@ -419,6 +419,10 @@ function validateMaterialEntry()
    {
       alert("Please enter a valid tag number.");    
    }
+   else if (!(document.getElementById("location-input").validator.validate()))
+   {
+      alert("Please enter a valid location.");    
+   }
    else if (!(document.getElementById("pieces-input").validator.validate()))
    {
       alert("Please enter a valid pieces count.");    

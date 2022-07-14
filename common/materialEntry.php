@@ -48,6 +48,40 @@ abstract class MaterialEntryStatus
    }
 }
 
+abstract class MaterialLocation
+{
+   const FIRST = 0;
+   const UNKNOWN = MaterialLocation::FIRST;
+   const ON_SITE = 1;
+   const OUTSIDE_VENDOR = 2;
+   const LAST = 3;
+   const COUNT = MaterialLocation::LAST - MaterialLocation::FIRST;
+   
+   public static $VALUES = array(MaterialLocation::ON_SITE, MaterialLocation::OUTSIDE_VENDOR);
+   
+   public static function getLabel($materialLocation)
+   {
+      $labels = array("", "On Site", "Outside Vendor");
+      
+      return ($labels[$materialLocation]);
+   }
+   
+   public static function getOptions($selectedLocation)
+   {
+      $html = "<option style=\"display:none\">";
+      
+      foreach (MaterialLocation::$VALUES as $materialLocation)
+      {
+         $selected = ($materialLocation == $selectedLocation) ? "selected" : "";
+         $label = MaterialLocation::getLabel($materialLocation);
+         
+         $html .= "<option value=\"$materialLocation\" $selected>$label</option>";
+      }
+      
+      return ($html);
+   }
+}
+
 class MaterialEntry
 {
    const UNKNOWN_ENTRY_ID = 0;
@@ -57,6 +91,7 @@ class MaterialEntry
    public $materialEntryId;
    public $vendorHeatNumber;
    public $tagNumber;
+   public $location;
    public $pieces;
    public $enteredUserId;
    public $enteredDateTime;
@@ -75,6 +110,7 @@ class MaterialEntry
       $this->materialEntryId = MaterialEntry::UNKNOWN_ENTRY_ID;
       $this->vendorHeatNumber = null;
       $this->tagNumber = null;
+      $this->location = MaterialLocation::UNKNOWN;
       $this->pieces = 0;
       $this->enteredUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->enteredDateTime = null;
@@ -188,6 +224,7 @@ class MaterialEntry
       $this->materialEntryId = intval($row['materialEntryId']);
       $this->vendorHeatNumber = $row['vendorHeatNumber'];
       $this->tagNumber = $row['tagNumber'];
+      $this->location = intval($row['location']);
       $this->pieces = intval($row['pieces']);
       $this->enteredUserId = intval($row['enteredUserId']);
       $this->enteredDateTime = $row['enteredDateTime'] ? Time::fromMySqlDate($row['enteredDateTime'], "Y-m-d H:i:s") : null;
