@@ -44,6 +44,10 @@ class JobInfo
    
    const OUTSIDE_WC_LABEL = "OUT";
    
+   const SORTING_MACHINE_WC_NUMBER = 998;
+   
+   const SORTING_MACHINE_WC_LABEL = "SORT";
+   
    const SECONDS_PER_MINUTE = 60;
    
    const SECONDS_PER_HOUR = 3600;
@@ -233,7 +237,29 @@ class JobInfo
    
    public static function getWcLabel($wcNumber)
    {
-      return (($wcNumber == JobInfo::OUTSIDE_WC_NUMBER) ? JobInfo::OUTSIDE_WC_LABEL : $wcNumber);
+      $label = "";
+      
+      switch ($wcNumber)
+      {
+         case JobInfo::OUTSIDE_WC_NUMBER:
+         {
+            $label = JobInfo::OUTSIDE_WC_LABEL;
+            break;
+         }
+         
+         case JobInfo::SORTING_MACHINE_WC_NUMBER:
+         {
+            $label = JobInfo::SORTING_MACHINE_WC_LABEL;
+            break;
+         }
+         
+         default:
+         {
+            $label = $wcNumber;
+         }
+      }
+      
+      return ($label);
    }
    
    public static function getWcNumberOptions($jobNumber, $selectedWcNumber)
