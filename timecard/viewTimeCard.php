@@ -626,7 +626,7 @@ if (!Authentication::isAuthenticated())
                
                <div class="form-item">
                   <div class="form-label">Operator</div>
-                  <select id="operator-input" class="form-input-medium" name="operator" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(TimeCardInputField::OPERATOR); ?>>
+                  <select id="operator-input" class="form-input-medium" name="operator" form="input-form" oninput="this.validator.validate(); onOperatorChange();" <?php echo getDisabled(TimeCardInputField::OPERATOR); ?>>
                      <?php echo getOperatorOptions(); ?>
                   </select>
                </div>

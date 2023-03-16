@@ -17,6 +17,7 @@ class UserInfo
    public $permissions;
    public $email;
    public $authToken;
+   public $defaultShiftHours;
    
    public function __construct()
    {
@@ -28,6 +29,7 @@ class UserInfo
       $this->permissions = Permission::NO_PERMISSIONS;
       $this->email = null;
       $this->authToken = null;
+      $this->defaultShiftHours = 0;
    }
    
    public static function load($employeeNumber)
@@ -171,6 +173,7 @@ class UserInfo
       $this->lastName = $row['lastName'];
       $this->email = $row['email'];
       $this->authToken = $row['authToken'];
+      $this->defaultShiftHours = intval($row['defaultShiftHours']);
    }
 }
 
@@ -199,6 +202,7 @@ if ($userInfo)
    echo "lastName: " .       $userInfo->lastName .       "<br/>";
    echo "email: " .          $userInfo->email .          "<br/>";
    echo "authToken: " .      $userInfo->authToken .      "<br/>";
+   echo "defaultShiftHours: " . $userInfo->defaultShiftHours . "<br/>";
    
    echo "fullName: " . $userInfo->getFullName() . "<br/>";
 }

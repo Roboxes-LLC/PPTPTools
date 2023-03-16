@@ -600,6 +600,36 @@ $router->add("jobNumbers", function($params) {
    echo json_encode($result);
 });
 
+$router->add("user", function($params) {
+   $result = new stdClass();
+      
+   if (isset($params["employeeNumber"]))
+   {
+      $userInfo = UserInfo::load(intval($params["employeeNumber"]));
+      
+      if ($userInfo)
+      {
+         $result->success = true;
+         $result->user = $userInfo;
+         
+         // Augment data.
+         $result->user->fullName = $userInfo->getFullName();
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "No user found.";
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }
+   
+   echo json_encode($result);
+});
+
 $router->add("users", function($params) {
    $result = new stdClass();
    
@@ -682,7 +712,8 @@ $router->add("saveUser", function($params) {
        isset($params["email"]) &&
        isset($params["roles"]) &&
        isset($params["username"]) &&
-       isset($params["password"]))
+       isset($params["password"]) &&
+       isset($params["defaultShiftHours"]))
    {
       $employeeNumber = intval($params["employeeNumber"]);
          
@@ -703,6 +734,7 @@ $router->add("saveUser", function($params) {
       $userInfo->username = $params["username"];
       $userInfo->password = $params["password"];
       $userInfo->authToken = $params["authToken"];
+      $userInfo->defaultShiftHours = $params["defaultShiftHours"];
       
       foreach (Permission::getPermissions() as $permission)
       {

@@ -18,7 +18,7 @@ class TimeCardInfo
       
    const DEFAULT_SHIFT_TIME = (TimeCardInfo::DEFAULT_SHIFT_HOURS * TimeCardInfo::MINUTES_PER_HOUR);  // minutes
    
-   const DEFAULT_RUN_HOURS = 8;  // hours   
+   const DEFAULT_RUN_HOURS = 8;  // hours
    
    const DEFAULT_RUN_TIME = (TimeCardInfo::DEFAULT_RUN_HOURS * TimeCardInfo::MINUTES_PER_HOUR);  // minutes
    

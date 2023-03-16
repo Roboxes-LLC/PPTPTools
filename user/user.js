@@ -119,6 +119,10 @@ function validateUser()
    {
       alert("Please enter a valid employee number.");      
    }
+   else if (!(document.getElementById("default-shift-hours-input").validator.validate()))
+   {
+      alert("Valid default shift hours range: 1 - 12.");      
+   }
    /*
    else if (!(document.getElementById("username-input").validator.validate()))
    {

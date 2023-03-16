@@ -6,6 +6,7 @@ require_once '../common/header.php';
 require_once '../common/userInfo.php';
 require_once '../common/menu.php';
 require_once '../common/params.php';
+require_once '../common/timeCardInfo.php';
 
 const ACTIVITY = Activity::USER;
 $activity = Activity::getActivity(ACTIVITY);
@@ -21,8 +22,9 @@ abstract class UserInputField
    const USERNAME = 5;
    const PASSWORD = 6;
    const AUTHENTICATION_TOKEN = 7;
-   const PERMISSIONS = 8;
-   const LAST = 9;
+   const DEFAULT_SHIFT_HOURS = 8;
+   const PERMISSIONS = 9;
+   const LAST = 10;
    const COUNT = UserInputField::LAST - UserInputField::FIRST;
 }
 
@@ -116,6 +118,7 @@ function getUserInfo()
       else
       {
          $userInfo = new UserInfo();
+         $userInfo->defaultShiftHours = TimeCardInfo::DEFAULT_SHIFT_HOURS;
       }
    }
    
@@ -286,7 +289,7 @@ if (!Authentication::isAuthenticated())
       
                <div class="form-item">
                   <div class="form-label">Employee #</div>
-                  <input id="employee-number-input" type="text" name="employeeNumber" form="input-form" maxlength="5" style="width:150px;" value="<?php echo getUserInfo()->employeeNumber; ?>" oninput="this.validator.validate()" <?php echo !isEditable(UserInputField::EMPLOYEE_NUMBER) ? "disabled" : ""; ?>/>
+                  <input id="employee-number-input" type="text" name="employeeNumber" form="input-form" maxlength="5" style="width:150px;" value="<?php echo getUserInfo()->employeeNumber ? getUserInfo()->employeeNumber : null; ?>" oninput="this.validator.validate()" <?php echo !isEditable(UserInputField::EMPLOYEE_NUMBER) ? "disabled" : ""; ?>/>
                </div>
       
                <div class="form-item">
@@ -331,6 +334,13 @@ if (!Authentication::isAuthenticated())
                      <button class="small-button" onclick="copyToClipboard('auth-token-input')">Copy</button>
                   </div>
                </div>
+               
+               <div class="form-section-header">Time Card</div>
+               
+               <div class="form-item">
+                  <div class="form-label">Default Shift Hours</div>
+                  <input id="default-shift-hours-input" type="number" name="defaultShiftHours" form="input-form" value="<?php echo getUserInfo()->defaultShiftHours; ?>" <?php echo !isEditable(UserInputField::DEFAULT_SHIFT_HOURS) ? "disabled" : ""; ?> />
+               </div>
       
             </div>
             
@@ -355,7 +365,10 @@ if (!Authentication::isAuthenticated())
       preserveSession();
       
       var employeeNumberValidator = new IntValidator("employee-number-input", 4, 1, 9999, false);
+      var defaultShiftHoursValidator = new IntValidator("default-shift-hours-input", 2, 1, 12, false);
+      
       employeeNumberValidator.init();
+      defaultShiftHoursValidator.init();
 
       // Setup event handling on all DOM elements.
       document.getElementById("cancel-button").onclick = function(){onCancel();};

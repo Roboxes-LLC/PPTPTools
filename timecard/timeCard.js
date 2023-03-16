@@ -36,6 +36,43 @@ function formatToTwoDigits(value)
    return (("0" + value).slice(-2));
 }
 
+function onOperatorChange()
+{
+   let employeeNumber = parseInt(document.getElementById("operator-input").value);
+   
+   // AJAX call to fetch user info.
+   requestUrl = "../api/user/?employeeNumber=" + employeeNumber;
+
+   var xhttp = new XMLHttpRequest();
+   xhttp.onreadystatechange = function()
+   {
+      if (this.readyState == 4 && this.status == 200)
+      {
+         try
+         {            
+            var json = JSON.parse(this.responseText);
+            
+            if (json.success == true)
+            {
+               updateShiftTime(json.user.defaultShiftHours);
+               updateRunTime(json.user.defaultShiftHours);               
+            }
+            else
+            {
+               console.log("API call to retrieve user info failed.");
+            }
+         }
+         catch (expection)
+         {
+            console.log("JSON syntax error");
+            console.log(this.responseText);
+         }               
+      }
+   };
+   xhttp.open("GET", requestUrl, true);
+   xhttp.send();  
+}
+
 function onJobNumberChange()
 {
    jobNumber = document.getElementById("job-number-input").value;
@@ -165,6 +202,18 @@ function onSetupTimeChange()
 function onPartCountChange()
 {
    updateEfficiency();
+}
+
+function updateShiftTime(shiftHours)
+{
+   document.getElementById("shift-time-hour-input").value = shiftHours;
+   document.getElementById("shift-time-minute-input").value = 0;
+}
+
+function updateRunTime(runHours)
+{
+   document.getElementById("run-time-hour-input").value = runHours;
+   document.getElementById("run-time-minute-input").value = 0;
 }
 
 function updateGrossPartsPerHour()
