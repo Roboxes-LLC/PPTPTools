@@ -208,12 +208,16 @@ function updateShiftTime(shiftHours)
 {
    document.getElementById("shift-time-hour-input").value = shiftHours;
    document.getElementById("shift-time-minute-input").value = 0;
+   
+   onShiftTimeChange();
 }
 
 function updateRunTime(runHours)
 {
    document.getElementById("run-time-hour-input").value = runHours;
    document.getElementById("run-time-minute-input").value = 0;
+   
+   onRunTimeChange();
 }
 
 function updateGrossPartsPerHour()
