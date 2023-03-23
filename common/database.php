@@ -745,6 +745,15 @@ class PPTPDatabase extends MySqlDatabase
       return ($result);
    }
    
+   public function getPartWasherEntriesBySkid($skidId)
+   {
+      $query = "SELECT * FROM partwasher WHERE skidId = $skidId ORDER BY dateTime ASC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
    public function newPartWasherEntry(
       $partWasherEntry)
    {
@@ -757,10 +766,10 @@ class PPTPDatabase extends MySqlDatabase
       }
       
       $query =
-      "INSERT INTO partwasher " .
-      "(dateTime, employeeNumber, timeCardId, panCount, partCount, jobId, operator, manufactureDate) " .
-      "VALUES " .
-      "('$dateTime', '$partWasherEntry->employeeNumber', '$partWasherEntry->timeCardId', '$partWasherEntry->panCount', '$partWasherEntry->partCount', '$partWasherEntry->jobId', '$partWasherEntry->operator', $manufactureDate);";
+         "INSERT INTO partwasher " .
+         "(dateTime, employeeNumber, timeCardId, panCount, partCount, skidId, jobId, operator, manufactureDate) " .
+         "VALUES " .
+         "('$dateTime', '$partWasherEntry->employeeNumber', '$partWasherEntry->timeCardId', '$partWasherEntry->panCount', '$partWasherEntry->partCount', '$partWasherEntry->skidId', '$partWasherEntry->jobId', '$partWasherEntry->operator', $manufactureDate);";
 
       $result = $this->query($query);
       
@@ -779,9 +788,9 @@ class PPTPDatabase extends MySqlDatabase
       }
       
       $query =
-      "UPDATE partwasher " .
-      "SET dateTime = \"$dateTime\", employeeNumber = $partWasherEntry->employeeNumber, timeCardId = $partWasherEntry->timeCardId, panCount = $partWasherEntry->panCount, partCount = $partWasherEntry->partCount, jobId = $partWasherEntry->jobId, operator = $partWasherEntry->operator, manufactureDate = $manufactureDate " .
-      "WHERE partWasherEntryId = $partWasherEntry->partWasherEntryId;";
+         "UPDATE partwasher " .
+         "SET dateTime = \"$dateTime\", employeeNumber = $partWasherEntry->employeeNumber, timeCardId = $partWasherEntry->timeCardId, panCount = $partWasherEntry->panCount, partCount = $partWasherEntry->partCount, skidId = $partWasherEntry->skidId, jobId = $partWasherEntry->jobId, operator = $partWasherEntry->operator, manufactureDate = $manufactureDate " .
+         "WHERE partWasherEntryId = $partWasherEntry->partWasherEntryId;";
 
       $result = $this->query($query);
       
@@ -2315,6 +2324,156 @@ class PPTPDatabase extends MySqlDatabase
       $query = "DELETE FROM materiallog WHERE materialEntryId = $materialEntryId;";
       
       $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                  Skid
+   // **************************************************************************
+   
+   public function getSkid($skidId)
+   {
+      $query = "SELECT * FROM skid WHERE skidId = $skidId";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getSkids($startDate, $endDate)
+   {
+      $dateTimeClause = "dateTime BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "'";
+      
+      $query = "SELECT * FROM skid WHERE $dateTimeClause ORDER BY skidId ASC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getSkidsByState($skidStates)
+   {
+      $result = null;
+
+      if (sizeof($skidStates) > 0)
+      {
+         $skidStatesClause = "skidState in (";
+         
+         $count = 0;
+         foreach ($skidStates as $skidState)
+         {
+            $skidStatesClause .= "'$skidState'";
+            
+            $count++;
+            
+            if ($count < sizeof($skidStates))
+            {
+               $skidStatesClause .= ", ";
+            }
+         }
+         
+         $skidStatesClause .= ")";
+      
+         $query = "SELECT * FROM skid WHERE $skidStatesClause ORDER BY skidId ASC;";
+      
+         $result = $this->query($query);
+      }
+      
+      return ($result);
+   }
+   
+   public function newSkid($skid)
+   {
+      $query =
+         "INSERT INTO skid (jobId, skidState) VALUES ($skid->jobId, $skid->skidState);";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function updateSkid($skid)
+   {
+      $query =
+         "UPDATE skid SET jobId = $skid->jobId, skidState = $skid->skidState WHERE skidId = $skid->skidId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteSkid($skidId)
+   {
+      $query = "DELETE FROM skid WHERE skidId = $skidId;";
+      
+      $result = $this->query($query);
+      
+      $query = "DELETE FROM skidaction WHERE skidId = $skidId;";
+      
+      $result &= $this->query($query);
+      
+      return ($result);
+   }   
+   
+   // **************************************************************************
+   //                                Skid Action
+   // **************************************************************************
+   
+   public function getSkidAction($skidActionId)
+   {
+      $query = "SELECT * FROM skidaction WHERE skidActionId  = $skidActionId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getSkidActions($skidId)
+   {
+      $query = "SELECT * FROM skidaction WHERE $skidId  = $skidId ORDER BY dateTime ASC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function newSkidAction($skidAction)
+   {
+      $dateTime = ($skidAction->dateTime) ?
+         Time::toMySqlDate($skidAction->dateTime) :
+         null;
+      
+      $query =
+         "INSERT INTO skidaction (skidId, skidState, dateTime, author, notes) " . 
+         "VALUES ($skidAction->skidId, $skidAction->skidState, '$dateTime', $skidAction->author, '$skidAction->notes');";
+      
+      $result = $this->query($query);
+         
+      return ($result);
+   }
+   
+   public function updateSkidAction($skidAction)
+   {
+      $dateTime = ($skidAction->dateTime) ?
+         Time::toMySqlDate($skidAction->dateTime) :
+         null;
+      
+      $query = 
+         "UPDATE skidAction " .
+         "SET skidState = $skidAction->skidState, dateTime = '$dateTime', author = $skidAction->author, notes = '$skidAction->notes' " .
+         "WHERE skidId = ?;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteSkidAction($skidActionId)
+   {
+      $query = "DELETE FROM skidaction WHERE skidActionId = $skidActionId;";
+      
+      $result = $statement->execute([$poActionId]);
       
       return ($result);
    }

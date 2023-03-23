@@ -15,6 +15,7 @@ class PartWasherEntry
    public $timeCardId = PartWasherEntry::UNKNOWN_TIME_CARD_ID;
    public $panCount;
    public $partCount;
+   public $skidId;
    
    // These attributes were added for manual entry when no time card is available.
    public $jobId = PartWasherEntry::UNKNOWN_JOB_ID;
@@ -80,6 +81,7 @@ class PartWasherEntry
       $this->timeCardId = intval($row['timeCardId']);
       $this->panCount = intval($row['panCount']);
       $this->partCount = intval($row['partCount']);
+      $this->skidId = intval($row['skidId']);
       
       // These attributes were added for manual entry when no time card is available.
       $this->jobId = intval($row['jobId']);
