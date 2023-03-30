@@ -7,6 +7,10 @@ class Time
    // Date format required for initializing time inputs.
    static public $javascriptTimeFormat = "H:i";
    
+   public const DEFAULT_TIME_ZONE = "America/New_York";
+   
+   public const STANDARD_FORMAT = "Y-m-d H:i:s";
+   
    static public function init()
    {
       date_default_timezone_set('America/New_York');
@@ -14,7 +18,7 @@ class Time
    
    static public function dateTimeObject($dateTimeString)
    {
-      return (new DateTime($dateTimeString, new DateTimeZone('America/New_York')));
+      return (new DateTime($dateTimeString, new DateTimeZone(DEFAULT_TIME_ZONE)));
    }
    
    static public function now($format)
@@ -23,6 +27,11 @@ class Time
       $dateTime->setTimezone(new DateTimeZone('America/New_York'));
       
       return ($dateTime->format($format));
+   }
+   
+   public static function getDateTime($dateTimeString)
+   {
+      return  (new DateTime($dateTimeString, new DateTimeZone('America/New_York')));
    }
    
    static public function toMySqlDate($dateString)

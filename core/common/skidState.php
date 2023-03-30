@@ -28,6 +28,18 @@ abstract class SkidState
          SkidState::COMPLETE,
          SkidState::DELIVERED
       );
+      
+   public static $activeStates =
+      array(
+         SkidState::CREATED,
+         SkidState::ASSEMBLING,
+         SkidState::PENDING_INSPECTION,
+         SkidState::PASSED,
+         SkidState::FAILED,
+         SkidState::OUT_FOR_PLATING,
+         SkidState::REJECTED,
+         SkidState::COMPLETE,
+      );
    
    public static function getLabel($skidState)
    {

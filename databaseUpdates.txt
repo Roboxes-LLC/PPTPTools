@@ -1,0 +1,14 @@
+Starting 3/22/2023
+
+partwasher
+   - Add skidId (int, NULL) after partCount
+   - Add index skidId (INDEX)
+   
+skid
+   - New table: skidId (int, AI), jobId (int), skidState (int)
+   - Add index jobId (INDEX)
+   - Add index skidState (INDEX)
+   
+skidaction
+   - New table: skidActionId (int, AI), skidId (int), skidState (int), dateTime (DATETIME), author (int), notes (TINYTEXT)
+   - Add index skidId (INDEX)

@@ -82,6 +82,11 @@ class Skid
    
    // **************************************************************************
    
+   public function getSkidCode()
+   {
+      return (sprintf('%04X', $this->skidId));
+   }
+   
    public function create($dateTime, $employeeNumber, $notes)
    {
       return ($this->addSkidAction(SkidState::CREATED, $dateTime, $employeeNumber, $notes));

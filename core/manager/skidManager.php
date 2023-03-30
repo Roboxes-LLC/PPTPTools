@@ -8,11 +8,11 @@ class SkidManager
 {
    public static function getSkids($startDate, $endDate)
    {
-      $purchaseOrders = array();
+      $skids = array();
       
       $result = PPTPDatabase::getInstance()->getSkids($startDate, $endDate);
       
-      foreach ($result as $row)
+      while ($result && ($row = $result->fetch_assoc()))
       {
          $skid = new Skid();
          $skid->initialize($row);
@@ -31,7 +31,7 @@ class SkidManager
       
       $result = PPTPDatabase::getInstance()->getSkidsByState($siteId, $skidStates);
       
-      foreach ($result as $row)
+      while ($result && ($row = $result->fetch_assoc()))
       {
          $skid = new Skid();
          $skid->initialize($row);

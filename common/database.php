@@ -2343,9 +2343,15 @@ class PPTPDatabase extends MySqlDatabase
    
    public function getSkids($startDate, $endDate)
    {
-      $dateTimeClause = "dateTime BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "'";
+      $createdState = SkidState::CREATED;
       
-      $query = "SELECT * FROM skid WHERE $dateTimeClause ORDER BY skidId ASC;";
+      $startDateTime = Time::toMySqlDate($startDate);
+      $endDateTime = Time::toMySqlDate($endDate);
+      
+      $query = "SELECT skid.* FROM skid " .
+               "INNER JOIN skidaction ON skid.skidId = skidaction.skidId AND skidaction.skidState = $createdState " .
+               "WHERE (skidaction.dateTime BETWEEN '$startDateTime' AND '$endDateTime') " .
+               "ORDER BY skidaction.dateTime ASC;";
       
       $result = $this->query($query);
       
