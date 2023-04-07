@@ -21,8 +21,7 @@ abstract class SkidInputField
    const CREATION_DATE = 1;
    const AUTHOR = 2;
    const JOB_NUMBER = 3;
-   const WC_NUMBER = 4;
-   const LAST = 3;
+   const LAST = 4;
    const COUNT = SkidInputField::LAST - SkidInputField::FIRST;
 }
 
@@ -112,9 +111,8 @@ function isEditable($field)
       }
          
       case SkidInputField::JOB_NUMBER:
-      case SkidInputField::WC_NUMBER:
       {
-         // Job and WC numbers are only editable on new skids.
+         // Job numbers are only editable on new skids.
          $isEditable = ($view == View::NEW_SKID);
          break;
       }
@@ -283,50 +281,18 @@ function getCreationDate()
    return ($creationDate);
 }
 
-function getJobId()
+function getJobNumber()
 {
-   $jobId = JobInfo::UNKNOWN_JOB_ID;
+   $jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
    
    $skid = getSkid();
    
    if ($skid)
    {
-      $jobId = $skid->jobId;
-   }
-   
-   return ($jobId);
-}
-
-function getJobNumber()
-{
-   $jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
-   
-   $jobId = getJobId();
-   
-   $jobInfo = JobInfo::load($jobId);
-   
-   if ($jobInfo)
-   {
-      $jobNumber = $jobInfo->jobNumber;
+      $jobNumber = $skid->jobNumber;
    }
    
    return ($jobNumber);
-}
-
-function getWcNumber()
-{
-   $wcNumber = JobInfo::UNKNOWN_WC_NUMBER;
-   
-   $jobId = getJobId();
-   
-   $jobInfo = JobInfo::load($jobId);
-   
-   if ($jobInfo)
-   {
-      $wcNumber = $jobInfo->wcNumber;
-   }
-   
-   return ($wcNumber);
 }
 
 // ********************************** BEGIN ************************************
@@ -412,13 +378,6 @@ if (!Authentication::isAuthenticated())
                   <div class="form-label">Job Number</div>
                   <select id="job-number-input" name="jobNumber" form="input-form" <?php echo getDisabled(SkidInputField::JOB_NUMBER); ?>>
                      <?php echo getJobNumberOptions(); ?>
-                  </select>
-               </div>
-               
-               <div class="form-item">
-                  <div class="form-label">Work Center</div>
-                  <select id="wc-number-input" name="wcNumber" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(SkidInputField::WC_NUMBER); ?>>
-                     <?php echo JobInfo::getWcNumberOptions(getJobNumber(), getWcNumber()); ?>
                   </select>
                </div>
                               

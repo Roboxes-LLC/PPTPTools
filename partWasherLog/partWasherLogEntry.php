@@ -657,7 +657,7 @@ if (!Authentication::isAuthenticated())
                
                <div class="form-item">
                   <div class="form-label">Work Center</div>
-                  <select id="wc-number-input" name="wcNumber" form="input-form" oninput="this.validator.validate(); onWcNumberChange();" <?php echo getDisabled(PartWasherLogInputField::WC_NUMBER); ?>>
+                  <select id="wc-number-input" name="wcNumber" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(PartWasherLogInputField::WC_NUMBER); ?>>
                      <?php echo JobInfo::getWcNumberOptions(getJobNumber(), getWcNumber()); ?>
                   </select>
                </div>

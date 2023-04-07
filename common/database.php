@@ -2341,9 +2341,9 @@ class PPTPDatabase extends MySqlDatabase
       return ($result);
    }
    
-   public function getSkidsByJob($jobId)
+   public function getSkidsByJob($jobNumber)
    {
-      $query = "SELECT * FROM skid WHERE jobId = $jobId";
+      $query = "SELECT * FROM skid WHERE jobNumber = '$jobNumber'";
       
       $result = $this->query($query);
       
@@ -2401,7 +2401,7 @@ class PPTPDatabase extends MySqlDatabase
    public function newSkid($skid)
    {
       $query =
-         "INSERT INTO skid (jobId, skidState) VALUES ($skid->jobId, $skid->skidState);";
+         "INSERT INTO skid (jobNumber, skidState) VALUES ('$skid->jobNumber', $skid->skidState);";
       
       $result = $this->query($query);
       
@@ -2411,7 +2411,7 @@ class PPTPDatabase extends MySqlDatabase
    public function updateSkid($skid)
    {
       $query =
-         "UPDATE skid SET jobId = $skid->jobId, skidState = $skid->skidState WHERE skidId = $skid->skidId;";
+         "UPDATE skid SET jobNumber = '$skid->jobNumber', skidState = $skid->skidState WHERE skidId = $skid->skidId;";
       
       $result = $this->query($query);
       

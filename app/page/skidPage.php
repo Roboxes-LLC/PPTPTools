@@ -16,12 +16,12 @@ class SkidPage extends Page
           {
              case "generate_skid":
              {
-                $jobId = JobInfo::UNKNOWN_JOB_ID;
+                $jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
                 
-                // Generate skid from job id.
-                if ($params->keyExists("jobId"))
+                // Generate skid from job number.
+                if ($params->keyExists("jobNumber"))
                 {
-                   $jobId = $params->getInt("jobId");
+                   $jobNumber = $params->get("jobNumber");
                 }
                 // Generate skid from pan ticket code.
                 else if ($params->keyExists("panTicketCode"))
@@ -34,28 +34,25 @@ class SkidPage extends Page
                       if ($timeCardInfo)
                       {
                          $jobId = $timeCardInfo->jobId;
+                         
+                         $job = JobInfo::load($jobId);
+                         if ($job)
+                         {
+                            $jobNumber = $job->jobNumber;
+                         }
                       }
                    }
-                }
-                // Generate skid from job number and WC number pair.
-                else if ($params->keyExists("jobNumber") &&
-                         $params->keyExists("wcNumber"))
-                {
-                   $jobNumber = $params->get("jobNumber");
-                   $wcNumber = $params->get("wcNumber");
-                   
-                   $jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
                 }
                 else
                 {
                    $this->error("Missing parameters.");
                 }
                 
-                if ($jobId != JobInfo::UNKNOWN_JOB_ID)
+                if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
                 {
                    $skid = new Skid();
                    
-                   $skid->jobId = $jobId;
+                   $skid->jobNumber = $jobNumber;
                    $skid->skidState = SkidState::CREATED;
                    $skid->dateTime = Time::now(Time::STANDARD_FORMAT);
                    $skid->author = Authentication::getAuthenticatedUser()->employeeNumber;
@@ -124,7 +121,7 @@ class SkidPage extends Page
                       $this->error("Invalid skid id [$skidId]");
                    }
                 }
-                // Fetch all components by pan ticket code.
+                // Fetch all components by skid ticket code.
                 else if ($params->keyExists("skidTicketCode"))
                 {
                    $skidTicketCode = $params->get("skidTicketCode");
@@ -145,17 +142,13 @@ class SkidPage extends Page
                    }
                 }
                 // Fetch all components by job.
-                else if (isset($params["jobNumber"]) &&
-                         isset($params["wcNumber"]))
+                else if (isset($params["jobNumber"]))
                 {
                    $jobNumber = $params->get("jobNumber");
-                   $wcNumber = $params->getInt("wcNumber");
                    
-                   $jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
-                   
-                   if ($jobId != JobInfo::UNKNOWN_JOB_ID)
+                   if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
                    {
-                      $this->result->skids = SkidManager::getSkidsByJob($jobId);
+                      $this->result->skids = SkidManager::getSkidsByJob($jobNumber);
                       $this->result->success = true;
                       
                       // Augment data.
@@ -166,7 +159,7 @@ class SkidPage extends Page
                    }
                    else
                    {
-                      $this->error("Invalid job/WC number [$jobNumber/$wcNumber]");
+                      $this->error("Invalid job number [$jobNumber]");
                    }
                 }
                 // Fetch all components.
@@ -220,7 +213,7 @@ class SkidPage extends Page
     
     private static function getSkidParams(&$skid, $params)
     {
-       $skid->jobId = $params->getInt("jobId");
+       $skid->jobNumber = $params->getInt("jobNumber");
        
        if ($params->keyExists("notes"))
        {
@@ -240,10 +233,6 @@ class SkidPage extends Page
           $authorName = $userInfo->employeeNumber . " - " . $userInfo->getFullName();
        }
        $skid->authorName = $authorName;
-       
-       
-       $jobInfo = JobInfo::load($skid->jobId);
-       $skid->jobNumber = $jobInfo ? $jobInfo->jobNumber : "";
        
        $skid->skidTicketCode = $skid->getSkidTicketCode();
        $skid->skidStateLabel = SkidState::getLabel($skid->skidState);

@@ -3,10 +3,7 @@ class Skid
    // HTML elements
    static PageElements = {
       "INPUT_FORM":               "input-form",
-      "PAN_TICKET_CODE_INPUT":    "pan-ticket-code-input",
       "JOB_NUMBER_INPUT":         "job-number-input",
-      "WC_NUMBER_INPUT":          "wc-number-input",
-      "SKID_INPUT":               "skid-input",
       // Filter
       "DATE_TYPE_INPUT":          "date-type-input",
       "START_DATE_INPUT":         "start-date-input",
@@ -57,13 +54,6 @@ class Skid
       {
          document.getElementById(Skid.PageElements.ACTIVE_SKIDS_INPUT).addEventListener('change', function() {
             this.onActiveSkidsChanged();
-         }.bind(this));
-      }
-      
-      if (document.getElementById(Skid.PageElements.JOB_NUMBER_INPUT))
-      {
-         document.getElementById(Skid.PageElements.JOB_NUMBER_INPUT).addEventListener('change', function() {
-            this.onJobNumberChanged();
          }.bind(this));
       }
       
@@ -330,61 +320,6 @@ class Skid
       }
    }
    
-   onJobNumberChanged()
-   {
-      let jobNumber = document.getElementById(Skid.PageElements.JOB_NUMBER_INPUT).value;
-      
-      if (jobNumber == null)
-      {
-         disable(Skid.PageElements.WC_NUMBER_INPUT);
-      }
-      else
-      {
-         enable(Skid.PageElements.WC_NUMBER_INPUT);
-         
-         // Populate WC numbers based on selected job number.
-         
-         // AJAX call to populate WC numbers based on selected job number.
-         let requestUrl = "/api/wcNumbers/?jobNumber=" + jobNumber;
-         
-         var xhttp = new XMLHttpRequest();
-         xhttp.updateWcOptions = this.updateWcOptions;
-         xhttp.onreadystatechange = function()
-         {
-            if (this.readyState == 4 && this.status == 200)
-            {
-               try
-               {
-                  let json = JSON.parse(this.responseText);
-                  
-                  if (json.success == true)
-                  {
-                     this.updateWcOptions(json.wcNumbers);               
-                  }
-                  else
-                  {
-                     console.log("API call to retrieve WC numbers failed.");
-                  }
-               }
-               catch (exception)
-               {
-                  if (exception.name == "SyntaxError")
-                  {
-                     console.log("JSON syntax error");
-                     console.log(this.responseText);
-                  }
-                  else
-                  {
-                     throw(exception);
-                  }
-               }
-            }
-         }
-         xhttp.open("GET", requestUrl, true);
-         xhttp.send();  
-      }
-   }
-   
    onBarcode(barcode)
    {
       // AJAX call to retrieve skid from skid ticket code.
@@ -473,26 +408,6 @@ class Skid
             // Handle error loading data
          });
       }
-   }
-   
-   updateWcOptions(wcNumbers)
-   {
-      let element = document.getElementById(Skid.PageElements.WC_NUMBER_INPUT);
-      
-      while (element.firstChild)
-      {
-         element.removeChild(element.firstChild);
-      }
-   
-      for (var wcNumber of wcNumbers)
-      {
-         var option = document.createElement('option');
-         option.innerHTML = wcNumber.label;
-         option.value = wcNumber.wcNumber;
-         element.appendChild(option);
-      }
-      
-      element.value = null;
    }
    
    formattedDate(date)

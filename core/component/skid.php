@@ -12,7 +12,7 @@ class Skid
    const UNKNOWN_SKID_ID = 0;
    
    public $skidId;
-   public $jobId;
+   public $jobNumber;
    public $skidState;
    
    public $contents;
@@ -22,7 +22,7 @@ class Skid
    public function __construct()
    {
       $this->skidId = Skid::UNKNOWN_SKID_ID;
-      $this->jobId = JobInfo::UNKNOWN_JOB_ID;
+      $this->jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
       $this->skidState = SkidState::UNKNOWN;
       
       $this->contents = array();
@@ -35,7 +35,7 @@ class Skid
    public function initialize($row)
    {
       $this->skidId = intval($row['skidId']);
-      $this->jobId = intval($row['jobId']);
+      $this->jobNumber = $row['jobNumber'];
       $this->skidState =  intval($row['skidState']);
    }
    

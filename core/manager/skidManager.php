@@ -49,11 +49,11 @@ class SkidManager
       return ($skids);
    }
    
-   public static function getSkidsByJob($jobId)
+   public static function getSkidsByJob($jobNumber)
    {
       $skids = array();
       
-      $result = PPTPDatabase::getInstance()->getSkidsByJob($jobId);
+      $result = PPTPDatabase::getInstance()->getSkidsByJob($jobNumber);
       
       while ($result && ($row = $result->fetch_assoc()))
       {
@@ -68,8 +68,8 @@ class SkidManager
       return ($skids);
    }
    
-   public static function skidExistsForJob($jobId)
+   public static function skidExistsForJob($jobNumber)
    {
-      return (count(SkidManager::getSkidsByJob($jobId)) > 0);
+      return (count(SkidManager::getSkidsByJob($jobNumber)) > 0);
    }
 }

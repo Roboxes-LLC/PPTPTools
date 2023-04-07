@@ -239,12 +239,6 @@ function onJobNumberChange()
    onSkidDependencyChange();
 }
 
-function onWcNumberChange()
-{
-   console.log("onWcNumberChange");
-   onSkidDependencyChange();
-}
-
 function onSkidDependencyChange()
 {
    // Clear skid options.
@@ -253,19 +247,18 @@ function onSkidDependencyChange()
    // Retrieve skid dependency values.
    let panTicketCode = document.getElementById("pan-ticket-code-input").value;
    let jobNumber = document.getElementById("job-number-input").value;
-   let wcNumber = document.getElementById("wc-number-input").value;
    
    let requestUrl = "";
    
    if (panTicketCode != "")
    {
       // Populate skids based on pan ticket code.
-      requestUrl = "/app/page/skid/?panTicketCode=" + panTicketCode;
+      requestUrl = `/app/page/skid/?panTicketCode=${panTicketCode}`;
    }
-   else if ((jobNumber != "") && (wcNumber != ""))
+   else if (jobNumber != "")
    {
       // Populate skids based on job/WC numbers.
-      requestUrl = "/app/page/skid/?jobNumber=" + jobNumber + "&wcNumber=" + wcNumber;
+      requestUrl = `/app/page/skid/?jobNumber=${jobNumber}`;
    }
    else
    {
@@ -317,21 +310,19 @@ function onNewSkidButton()
 {
    let panTicketCode = document.querySelector('#pan-ticket-code-input').value;
    let jobNumber = document.querySelector('#job-number-input').value;
-   let wcNumber = document.querySelector('#wc-number-input').value;
       
-   if ((panTicketCode != "") ||
-       ((jobNumber != "") && (wcNumber != "")))
+   if ((panTicketCode != "") || (jobNumber != ""))
    {
       // AJAX call to generate a new skid.
       requestUrl = "/app/page/skid/?request=generate_skid";
       
       if (panTicketCode != "")
       {
-         requestUrl += "&panTicketCode=" + panTicketCode;
+         requestUrl += `&panTicketCode=${panTicketCode}`;
       }
       else
       {
-         requestUrl += "&jobNumber=" + jobNumber + "&wcNumber=" + wcNumber;
+         requestUrl += `&jobNumber=${jobNumber}`;
       }
       
       var xhttp = new XMLHttpRequest();
@@ -372,7 +363,7 @@ function onNewSkidButton()
    }
    else
    {
-      alert("Please enter a pan ticket or job info first.");
+      alert("Please enter a pan ticket or job number first.");
    }
 }
 
