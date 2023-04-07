@@ -6,6 +6,11 @@ require_once ROOT.'/core/component/skid.php';
 
 class SkidManager
 {
+   public static function getSkidBySkidTicketCode($skidTicketCode)
+   {
+      return (Skid::load(Skid::skidTicketCodeToSkidId($skidTicketCode)));
+   }
+   
    public static function getSkids($startDate, $endDate)
    {
       $skids = array();
@@ -25,11 +30,11 @@ class SkidManager
       return ($skids);
    }
    
-   public static function getSkidsByState($siteId, $skidStates)
+   public static function getSkidsByState($skidStates)
    {
       $skids = array();
       
-      $result = PPTPDatabase::getInstance()->getSkidsByState($siteId, $skidStates);
+      $result = PPTPDatabase::getInstance()->getSkidsByState($skidStates);
       
       while ($result && ($row = $result->fetch_assoc()))
       {
@@ -42,5 +47,29 @@ class SkidManager
       }
       
       return ($skids);
+   }
+   
+   public static function getSkidsByJob($jobId)
+   {
+      $skids = array();
+      
+      $result = PPTPDatabase::getInstance()->getSkidsByJob($jobId);
+      
+      while ($result && ($row = $result->fetch_assoc()))
+      {
+         $skid = new Skid();
+         $skid->initialize($row);         
+         $skid->contents = Skid::getContents($skid->skidId);
+         $skid->actions = Skid::getActions($skid->skidId);
+         
+         $skids[] = $skid;
+      }
+      
+      return ($skids);
+   }
+   
+   public static function skidExistsForJob($jobId)
+   {
+      return (count(SkidManager::getSkidsByJob($jobId)) > 0);
    }
 }

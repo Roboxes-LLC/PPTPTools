@@ -1258,6 +1258,12 @@ $router->add("partWasherLogData", function($params) {
             $partWasherEntry->wcLabel = JobInfo::getWcLabel($jobInfo->wcNumber);
          }
          
+         $skid = Skid::load($partWasherEntry->skidId);
+         if ($skid)
+         {
+            $partWasherEntry->skidTicketCode = $skid->getSkidTicketCode();
+         }
+         
          $userInfo = UserInfo::load($operator);
          if ($userInfo)
          {
@@ -1377,6 +1383,12 @@ $router->add("savePartWasherEntry", function($params) {
             $partWasherEntry->employeeNumber = intval($params["washer"]);
             $partWasherEntry->panCount = intval($params["panCount"]);
             $partWasherEntry->partCount = intval($params["partCount"]);
+            
+            // For now, skidId is an optional parameter.
+            if (isset($params["skidId"]))
+            {
+               $partWasherEntry->skidId = intval($params["skidId"]);
+            }
             
             if ($partWasherEntry->validatePartCount() == false)
             {

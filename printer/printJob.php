@@ -1,6 +1,7 @@
 <?php
 
-require_once '../common/database.php';
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/common/database.php';
 require_once 'printDefs.php';
 
 class PrintJob

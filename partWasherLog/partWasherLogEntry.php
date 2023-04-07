@@ -1,5 +1,6 @@
 <?php
 
+if (!defined('ROOT')) require_once '../root.php';
 require_once '../common/activity.php';
 require_once '../common/database.php';
 require_once '../common/header.php';
@@ -12,6 +13,7 @@ require_once '../common/partWasherEntry.php';
 require_once '../common/timeCardInfo.php';
 require_once '../common/userInfo.php';
 require_once '../common/version.php';
+require_once ROOT.'/core/manager/skidManager.php';
 
 const ACTIVITY = Activity::PART_WASH;
 
@@ -29,7 +31,9 @@ abstract class PartWasherLogInputField
    const WASHER = 6;
    const PAN_COUNT = 7;
    const PART_COUNT = 8;
-   const LAST = 9;
+   const SKID = 9;
+   const GENERATE_SKID = 10;
+   const LAST = 11;
    const COUNT = PartWasherLogInputField::LAST - PartWasherLogInputField::FIRST;
 }
 
@@ -122,13 +126,13 @@ function isEditable($field)
       {
          // Edit status determined by both time card ID and job number selection.
          $isEditable &= ((getTimeCardId() == TimeCardInfo::UNKNOWN_TIME_CARD_ID) &&
-            (getJobNumber() != JobInfo::UNKNOWN_JOB_NUMBER));
+                         (getJobNumber() != JobInfo::UNKNOWN_JOB_NUMBER));
          break;
       }
          
       case PartWasherLogInputField::WASH_DATE:
       {
-         // Wash date is restricted to current date/time.
+         // Certain parameters are never editable.
          $isEditable = false;
          break;
       }
@@ -140,8 +144,20 @@ function isEditable($field)
          if ($userInfo)
          {
             $isEditable &= (($userInfo->roles == Role::SUPER_USER) ||
-               ($userInfo->roles == Role::ADMIN));
+                            ($userInfo->roles == Role::ADMIN));
          }
+         break;
+      }
+      
+      case PartWasherLogInputField::SKID:
+      {
+         $isEditable = (getJobId() != JobInfo::UNKNOWN_JOB_ID);
+         break;
+      }
+      
+      case PartWasherLogInputField::GENERATE_SKID:
+      {
+         $isEditable = true;
          break;
       }
          
@@ -274,6 +290,20 @@ function getWashDate()
    return ($washDate);
 }
 
+function getSkidId()
+{
+   $skidId = Skid::UNKNOWN_SKID_ID;
+   
+   $partWasherEntry = getPartWasherEntry();
+   
+   if ($partWasherEntry)
+   {
+      $skidId = $partWasherEntry->skidId;
+   }
+   
+   return ($skidId);
+}
+
 function getOperatorOptions()
 {
    $options = "<option style=\"display:none\">";
@@ -348,6 +378,31 @@ function getWasherOptions()
          $name = $employeeNumber . " - " . $userInfo->getFullName();
          
          $options .= "<option value=\"$employeeNumber\" $selected>$name</option>";
+      }
+   }
+   
+   return ($options);
+}
+
+function getSkidOptions()
+{
+   $options = "<option style=\"display:none\">";
+   
+   $jobId = getJobId();
+   
+   if ($jobId != JobInfo::UNKNOWN_JOB_ID)
+   {
+      $selectedSkidId = getSkidId();
+      
+      $skids = SkidManager::getSkidsByJob($jobId);
+      
+      foreach ($skids as $skid)
+      {
+         $value = $skid->skidId;
+         $label = $skid->getSkidTicketCode();
+         $selected = ($value == $selectedSkidId) ? "selected" : "";
+         
+         $options .= "<option value=\"$value\" $selected>$label</option>";         
       }
    }
    
@@ -602,7 +657,7 @@ if (!Authentication::isAuthenticated())
                
                <div class="form-item">
                   <div class="form-label">Work Center</div>
-                  <select id="wc-number-input" name="wcNumber" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(PartWasherLogInputField::WC_NUMBER); ?>>
+                  <select id="wc-number-input" name="wcNumber" form="input-form" oninput="this.validator.validate(); onWcNumberChange();" <?php echo getDisabled(PartWasherLogInputField::WC_NUMBER); ?>>
                      <?php echo JobInfo::getWcNumberOptions(getJobNumber(), getWcNumber()); ?>
                   </select>
                </div>
@@ -612,8 +667,8 @@ if (!Authentication::isAuthenticated())
                      <div class="form-label">Manufacture Date</div>
                      <div class="flex-horizontal">
                         <input id="manufacture-date-input" type="date" name="manufactureDate" form="input-form" oninput="" value="<?php echo getManufactureDate(); ?>" <?php echo getDisabled(PartWasherLogInputField::MANUFACTURE_DATE); ?>>
-                        &nbsp<button id="today-button" class="small-button" <?php echo getDisabled(PartWasherLogInputField::MANUFACTURE_DATE); ?>>Today</button>
-                        &nbsp<button id="yesterday-button"  class="small-button" <?php echo getDisabled(PartWasherLogInputField::MANUFACTURE_DATE); ?>>Yesterday</button>
+                        &nbsp;&nbsp;<button id="today-button" class="small-button" <?php echo getDisabled(PartWasherLogInputField::MANUFACTURE_DATE); ?>>Today</button>
+                        &nbsp;&nbsp;<button id="yesterday-button"  class="small-button" <?php echo getDisabled(PartWasherLogInputField::MANUFACTURE_DATE); ?>>Yesterday</button>
                      </div>
                   </div>
                </div>
@@ -623,6 +678,18 @@ if (!Authentication::isAuthenticated())
                   <select id="operator-input" name="operator" form="input-form" oninput="this.validator.validate();" <?php echo getDisabled(PartWasherLogInputField::OPERATOR); ?>>
                      <?php echo getOperatorOptions(); ?>
                   </select>
+               </div>
+               
+               <div class="form-section-header">Product Tracking</div>
+               <div class="form-item">
+                  <div class="flex-horizontal">
+                     <div class="form-label">Skid</div>
+                     <select id="skid-id-input" name="skidId" form="input-form" <?php echo getDisabled(PartWasherLogInputField::SKID); ?>>
+                        <?php echo getSkidOptions(); ?>
+                     </select>
+                  </div>
+                  &nbsp;&nbsp;
+                  <button id="new-skid-button" class="small-button" <?php echo getDisabled(PartWasherLogInputField::GENERATE_SKID); ?>>New Skid</button>
                </div>
                
             </div> <!-- column -->
@@ -678,6 +745,7 @@ if (!Authentication::isAuthenticated())
       var partWasherValidator = new SelectValidator("part-washer-input");
       var panCountValidator = new IntValidator("pan-count-input", 2, 1, 40, false);
       var partCountValidator = new IntValidator("part-count-input", 6, 1, 100000, false);
+      var skidValidator = new SelectValidator("skid-id-input");
 
       panTicketCodeValidator.init();
       jobNumberValidator.init();
@@ -686,6 +754,7 @@ if (!Authentication::isAuthenticated())
       partWasherValidator.init();
       panCountValidator.init();
       partCountValidator.init();
+      skidValidator.init();
 
       // Setup event handling on all DOM elements.
       document.getElementById("today-button").onclick = onTodayButton;
@@ -694,6 +763,7 @@ if (!Authentication::isAuthenticated())
       document.getElementById("save-button").onclick = function(){onSavePartWasherEntry();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
+      document.getElementById("new-skid-button").onclick = onNewSkidButton;
 
       // Store the initial state of the form, for change detection.
       setInitialFormState("input-form");

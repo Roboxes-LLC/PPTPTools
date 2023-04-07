@@ -5,6 +5,7 @@ require_once ROOT.'/core/common/skidState.php';
 require_once ROOT.'/core/component/skidAction.php';
 require_once ROOT.'/common/database.php';
 require_once ROOT.'/common/jobInfo.php';
+require_once ROOT.'/common/partWasherEntry.php';
 
 class Skid
 {
@@ -82,9 +83,19 @@ class Skid
    
    // **************************************************************************
    
-   public function getSkidCode()
+   public static function skidIdToSkidTicketCode($skidId)
    {
-      return (sprintf('%04X', $this->skidId));
+      return (sprintf('%04X', $skidId));
+   }
+   
+   public static function skidTicketCodeToSkidId($skidTicketCode)
+   {
+      return (hexdec($skidTicketCode));   
+   }
+   
+   public function getSkidTicketCode()
+   {
+      return (Skid::skidIdToSkidTicketcode($this->skidId));
    }
    
    public function create($dateTime, $employeeNumber, $notes)
@@ -115,7 +126,7 @@ class Skid
          while ($row = $result->fetch_assoc())
          {
             $partWasherEntry = new PartWasherEntry();
-            $partWasherEntry->initialize($row);
+            $partWasherEntry->initializeFromDatabaseRow($row);
             $actions[] = $partWasherEntry;
          }
       }

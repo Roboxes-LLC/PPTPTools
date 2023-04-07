@@ -10,7 +10,7 @@ require_once ROOT.'/core/common/router.php';
 session_start();
 
 $router = new Router();
-$router->setLogging(false);
+$router->setLogging(true);
 
 $router->add("skid", function($params) {
    (new SkidPage())->handleRequest($params);

@@ -103,8 +103,9 @@ function onPanTicketCodeChange()
       enable("yesterday-button");
       enable("operator-input");
       
-      // Disable WC number, as it's dependent on the job number.
+      // Disable WC number, as it is dependent on the job number.
       disable("wc-number-input");
+      disable("skid-id-input");
       
       // AJAX call to retrieve active jobs.
       requestUrl = "../api/jobs/?onlyActive=true";
@@ -161,6 +162,7 @@ function onPanTicketCodeChange()
       disable("today-button");
       disable("yesterday-button");
       disable("operator-input");
+      disable("skid-id-input");
       
       // AJAX call to populate input fields based on pan ticket selection.
       requestUrl = "../api/timeCardInfo/?panTicketCode=" + panTicketCode + "&expandedProperties=true";
@@ -192,7 +194,7 @@ function onPanTicketCodeChange()
          }
       };
       xhttp.open("GET", requestUrl, true);
-      xhttp.send();      
+      xhttp.send();   
    }
 }
 
@@ -200,7 +202,7 @@ function onJobNumberChange()
 {
    jobNumber = document.getElementById("job-number-input").value;
    
-   if (jobNumber == null)
+   if (jobNumber == "")
    {
       disable("wc-number-input");
    }
@@ -231,7 +233,68 @@ function onJobNumberChange()
          }
       };
       xhttp.open("GET", requestUrl, true);
-      xhttp.send();  
+      xhttp.send();
+   }
+   
+   onSkidDependencyChange();
+}
+
+function onWcNumberChange()
+{
+   console.log("onWcNumberChange");
+   onSkidDependencyChange();
+}
+
+function onSkidDependencyChange()
+{
+   // Clear skid options.
+   updateSkidOptions([]);
+   
+   // Retrieve skid dependency values.
+   let panTicketCode = document.getElementById("pan-ticket-code-input").value;
+   let jobNumber = document.getElementById("job-number-input").value;
+   let wcNumber = document.getElementById("wc-number-input").value;
+   
+   let requestUrl = "";
+   
+   if (panTicketCode != "")
+   {
+      // Populate skids based on pan ticket code.
+      requestUrl = "/app/page/skid/?panTicketCode=" + panTicketCode;
+   }
+   else if ((jobNumber != "") && (wcNumber != ""))
+   {
+      // Populate skids based on job/WC numbers.
+      requestUrl = "/app/page/skid/?jobNumber=" + jobNumber + "&wcNumber=" + wcNumber;
+   }
+   else
+   {
+      disable("skid-id-input");
+   }
+   
+   if (requestUrl != "")
+   {
+      enable("skid-id-input");
+      
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function()
+      {
+         if (this.readyState == 4 && this.status == 200)
+         {
+            var json = JSON.parse(this.responseText);
+            
+            if (json.success == true)
+            {
+               updateSkidOptions(json.skids);               
+            }
+            else
+            {
+               console.log(json.error);
+            }
+         }
+      };
+      xhttp.open("GET", requestUrl, true);
+      xhttp.send();
    }
 }
 
@@ -248,6 +311,69 @@ function onYesterdayButton()
    yesterday.setDate(yesterday.getDate() - 1);
    
    document.querySelector('#manufacture-date-input').value = formattedDate(yesterday); 
+}
+
+function onNewSkidButton()
+{
+   let panTicketCode = document.querySelector('#pan-ticket-code-input').value;
+   let jobNumber = document.querySelector('#job-number-input').value;
+   let wcNumber = document.querySelector('#wc-number-input').value;
+      
+   if ((panTicketCode != "") ||
+       ((jobNumber != "") && (wcNumber != "")))
+   {
+      // AJAX call to generate a new skid.
+      requestUrl = "/app/page/skid/?request=generate_skid";
+      
+      if (panTicketCode != "")
+      {
+         requestUrl += "&panTicketCode=" + panTicketCode;
+      }
+      else
+      {
+         requestUrl += "&jobNumber=" + jobNumber + "&wcNumber=" + wcNumber;
+      }
+      
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function()
+      {
+         if (this.readyState == 4 && this.status == 200)
+         {
+            try
+            {
+               var json = JSON.parse(this.responseText);
+               
+               if (json.success == true)
+               {
+                  onSkidDependencyChange();
+               }
+               else
+               {
+                  alert(json.error);
+               }
+            }
+            catch (exception)
+            {
+               if (exception.name == "SyntaxError")
+               {
+                  console.log("JSON syntax error");
+                  console.log(this.responseText);
+               }
+               else
+               {
+                  throw(exception);
+               }
+            }
+         }
+      };
+      xhttp.open("GET", requestUrl, true);
+      xhttp.send();
+      
+   }
+   else
+   {
+      alert("Please enter a pan ticket or job info first.");
+   }
 }
 
 function onLinkButton()
@@ -394,6 +520,26 @@ function updateOperatorOptions(operators)
    element.value = null;
 }
 
+function updateSkidOptions(skids)
+{
+   element = document.getElementById("skid-id-input");
+   
+   while (element.firstChild)
+   {
+      element.removeChild(element.firstChild);
+   }
+
+   for (var skid of skids)
+   {
+      var option = document.createElement('option');
+      option.innerHTML = skid.skidTicketCode;
+      option.value = skid.skidId;
+      element.appendChild(option);
+   }
+   
+   element.value = null;
+}
+
 function twoDigitNumber(value)
 {
    return (("0" + value).slice(-2));
@@ -413,6 +559,8 @@ function updateTimeCardInfo(timeCardInfo, jobNumber, wcNumber, wcLabel, operator
    set("wc-number-input", wcNumber);
    set("operator-input", operator);
    set("manufacture-date-input", manufactureDate);
+   
+   onSkidDependencyChange();
 }
 
 function formattedDate(date)
@@ -458,6 +606,13 @@ function validatePartWasherEntry()
    {
       alert("Please select a part washer.");    
    }
+   // Do not require skid id for now.
+   /*
+   else if (!(document.getElementById("skid-id-input").validator.validate()))
+   {
+      alert("Please generate a new skid.");    
+   }
+   */
    else if (!(document.getElementById("pan-count-input").validator.validate()))
    {
       alert("Please enter a valid basket count.");

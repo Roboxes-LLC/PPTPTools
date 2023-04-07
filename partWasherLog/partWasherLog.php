@@ -266,6 +266,23 @@ if (!Authentication::isAuthenticated())
                formatterPrint:function(cell, formatterParams, onRendered){
                   return (cell.getValue());
               }                 
+            },
+            {title:"Skid",         field:"skidTicketCode",     hozAlign:"left", responsive:0, headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = "";
+                  
+                  var skidId = cell.getRow().getData().skidId;
+                  
+                  if (skidId != 0)
+                  {
+                     cellValue = "<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().skidTicketCode;
+                  }
+                  
+                  return (cellValue);
+               },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  return (cell.getValue());
+              }                 
             },  
             {title:"Job #",        field:"jobNumber",         hozAlign:"left", responsive:0, headerFilter:true},
             {title:"WC #",         field:"wcLabel",           hozAlign:"left", responsive:0, headerFilter:true},
@@ -358,12 +375,17 @@ if (!Authentication::isAuthenticated())
          cellClick:function(e, cell){
             var entryId = parseInt(cell.getRow().getData().partWasherEntryId);
             
-            var timeCardId = cell.getRow().getData().timeCardId;
-            
             if ((cell.getColumn().getField() == "panTicketCode") &&
                 (cell.getRow().getData().timeCardId != 0))
+            {                        
+               let timeCardId = cell.getRow().getData().timeCardId;            
+               document.location = `/panTicket/viewPanTicket.php?panTicketId=${timeCardId}`;
+            }  
+            else if ((cell.getColumn().getField() == "skidTicketCode") &&
+                     (cell.getRow().getData().skidId != 0))
             {               
-               document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
+               let skidId = cell.getRow().getData().skidId;
+               document.location = `/skid/skid.php?skidId=${skidId}`;
             }  
             else if (cell.getColumn().getField() == "delete")
             {

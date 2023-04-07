@@ -3,16 +3,17 @@ class Skid
    // HTML elements
    static PageElements = {
       "INPUT_FORM":               "input-form",
-      "DEFECT_ID_INPUT":          "defect-id-input",
+      "PAN_TICKET_CODE_INPUT":    "pan-ticket-code-input",
+      "JOB_NUMBER_INPUT":         "job-number-input",
+      "WC_NUMBER_INPUT":          "wc-number-input",
+      "SKID_INPUT":               "skid-input",
+      // Filter
+      "DATE_TYPE_INPUT":          "date-type-input",
       "START_DATE_INPUT":         "start-date-input",
       "END_DATE_INPUT":           "end-date-input",
-      "UNRESOLVED_DEFECTS_INPUT": "unresolved-defects-input",
-      "CLOSE_BUTTON":             "close-button",
-      "SAVE_BUTTON" :             "save-button",
-      "DELETE_BUTTON" :           "delete-button",
-      "CONFIRM_DELETE_MODAL":     "confirm-delete-modal",
-      "CANCEL_DELETE_BUTTON":     "cancel-delete_button",
-      "CONFIRM_DELETE_BUTTON":    "confirm-delete-button"
+      "TODAY_BUTTON":             "today-button",
+      "YESTERDAY_BUTTON":         "yesterday-button",
+      "ACTIVE_SKIDS_INPUT":       "active-skids-input",
    };
 
    constructor()
@@ -36,6 +37,42 @@ class Skid
          document.getElementById(Skid.PageElements.END_DATE_INPUT).addEventListener('change', function() {
             this.onEndDateChanged();
          }.bind(this));
+      }
+      
+      if (document.getElementById(Skid.PageElements.TODAY_BUTTON))
+      {
+         document.getElementById(Skid.PageElements.TODAY_BUTTON).addEventListener('click', function() {
+            this.onTodayButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Skid.PageElements.YESTERDAY_BUTTON))
+      {
+         document.getElementById(Skid.PageElements.YESTERDAY_BUTTON).addEventListener('click', function() {
+            this.onYesterdayButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Skid.PageElements.ACTIVE_SKIDS_INPUT))
+      {
+         document.getElementById(Skid.PageElements.ACTIVE_SKIDS_INPUT).addEventListener('change', function() {
+            this.onActiveSkidsChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Skid.PageElements.JOB_NUMBER_INPUT))
+      {
+         document.getElementById(Skid.PageElements.JOB_NUMBER_INPUT).addEventListener('change', function() {
+            this.onJobNumberChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Skid.PageElements.ACTIVE_SKIDS_INPUT) &&
+          document.getElementById(Skid.PageElements.ACTIVE_SKIDS_INPUT).checked)
+      {
+         disable(Skid.PageElements.DATE_TYPE_INPUT);
+         disable(Skid.PageElements.START_DATE_INPUT);
+         disable(Skid.PageElements.END_DATE_INPUT);
       }
    }      
    
@@ -63,22 +100,47 @@ class Skid
          //Define Table Columns
          columns:[
             {                     field:"skidId",            visible:false},
-            {title:"Skid Ticket", field:"skidCode",          headerFilter:true},
+            {title:"Ticket",      field:"skidTicketCode",    headerFilter:true, 
+               formatter:function(cell, formatterParams, onRendered){
+                  return ("<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().skidTicketCode);
+               },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  return (cell.getValue());
+               }  },
             {title:"Created",     field:"formattedDateTime", headerFilter:true},
+            {title:"Author",      field:"authorName",        headerFilter:true},
             {title:"Job",         field:"jobNumber",         headerFilter:true},
             {title:"State",       field:"skidStateLabel",    headerFilter:true},
+            {title:"", field:"delete", responsive:0, width:75, print:false,
+               formatter:function(cell, formatterParams, onRendered){
+                  return ("<i class=\"material-icons icon-button\">delete</i>");
+               }
+            }
          ],
          initialSort:[
             {column:"formattedDateTime", dir:"asc"}
          ],
-         rowClick:function(e, row){
-            var skidId = row.getData().skidId;
-            document.location = "/skid.php?skidId=" + skidId;               
+         cellClick:function(e, cell){
+            var skidId = parseInt(cell.getRow().getData().skidId);
+
+            if (cell.getColumn().getField() == "skidTicketCode")
+            {
+               document.location = `/skid/printSkidTicket.php?skidId=${skidId}`;
+            }
+            else if (cell.getColumn().getField() == "delete")
+            {
+               this.onDeleteButton(skidId);
+            }
+            else // Any other column
+            {
+               // Open time card for viewing/editing.
+               document.location = "/skid/skid.php?skidId=" + skidId;             
+            }                         
          }.bind(this),
       });
    }
    
-   onStartDateChanged()
+   onStartDateChanged(updateTable = true)
    {
       if (!this.validateFilterDates())
       {
@@ -86,12 +148,15 @@ class Skid
             document.getElementById(Skid.PageElements.START_DATE_INPUT).value
       }
       
-      this.onFilterUpdate();
+      if (updateTable)
+      {
+         this.onFilterUpdate();
+      }
       
-      setSession("defect.startDate", document.getElementById(Skid.PageElements.START_DATE_INPUT).value);
+      setSession("skid.startDate", document.getElementById(Skid.PageElements.START_DATE_INPUT).value);
    }
    
-   onEndDateChanged()
+   onEndDateChanged(updateTable = true)
    {
       if (!this.validateFilterDates())
       {
@@ -99,15 +164,60 @@ class Skid
             document.getElementById(Skid.PageElements.END_DATE_INPUT).value
       }
 
-      this.onFilterUpdate();
+      if (updateTable)
+      {
+         this.onFilterUpdate();
+      }
       
-      setSession("defect.endDate", document.getElementById(Skid.PageElements.END_DATE_INPUT).value);
+      setSession("skid.endDate", document.getElementById(Skid.PageElements.END_DATE_INPUT).value);
    }
    
-   /*
-   onCloseButton()
+   onActiveSkidsChanged(updateTable = true)
    {
-      document.location = "/defects.php";   
+      var activeSkids = document.getElementById(Skid.PageElements.ACTIVE_SKIDS_INPUT).checked;
+      
+      if (activeSkids)
+      {
+         disable(Skid.PageElements.DATE_TYPE_INPUT);
+         disable(Skid.PageElements.START_DATE_INPUT);
+         disable(Skid.PageElements.END_DATE_INPUT);
+      }
+      else
+      {
+         enable(Skid.PageElements.DATE_TYPE_INPUT);
+         enable(Skid.PageElements.START_DATE_INPUT);
+         enable(Skid.PageElements.END_DATE_INPUT);
+      }
+      
+      if (updateTable)
+      {
+         this.onFilterUpdate();
+      }
+      
+      setSession("skid.activeSkids", (activeSkids ? "true" : "false"));
+   }
+   
+   onTodayButton()
+   {
+      var today = new Date();
+         
+      document.getElementById(Skid.PageElements.START_DATE_INPUT).value = this.formattedDate(today); 
+      document.getElementById(Skid.PageElements.END_DATE_INPUT).value = this.formattedDate(today);
+      
+      this.onStartDateChanged(false);
+      this.onEndDateChanged();
+   }
+
+   onYesterdayButton()
+   {
+      var yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      document.getElementById(Skid.PageElements.START_DATE_INPUT).value = this.formattedDate(yesterday); 
+      document.getElementById(Skid.PageElements.END_DATE_INPUT).value = this.formattedDate(yesterday);
+      
+      this.onStartDateChanged(false);
+      this.onEndDateChanged();
    }
    
    onSaveButton()
@@ -127,7 +237,7 @@ class Skid
    
             if (json.success == true)
             {
-               document.location = "/defects.php";  
+               document.location = "/skid/skids.php";  
             }
             else
             {
@@ -154,57 +264,149 @@ class Skid
       });
    
       // Set up our request
-      var requestUrl = "/app/page/defect/";
+      var requestUrl = "/app/page/skid/";
       console.log(requestUrl);
       xhttp.open("POST", requestUrl, true);
    
       // The data sent is what the user provided in the form
       xhttp.send(formData);
    }
-   */
    
    onNewButton()
    {
       document.location = "/skid/skid.php?skidId=" + UNKNOWN_SKID_ID;
    }
    
-   /*
-   onDeleteButton()
+   onDeleteButton(skidId)
    {
-      showModal(Skid.PageElements.CONFIRM_DELETE_MODAL, "block");
+      if (confirm("Are you sure you want to delete this skid?"))
+      {
+         // AJAX call to delete skid.
+         let requestUrl = "/app/page/skid/?request=delete_skid&skidId=" + skidId;
+         
+         var xhttp = new XMLHttpRequest();
+         xhttp.onreadystatechange = function()
+         {
+            if (this.readyState == 4 && this.status == 200)
+            {
+               try
+               {
+                  var json = JSON.parse(this.responseText);
+                  
+                  if (json.success == true)
+                  {
+                     location.href = "/skid/skids.php";
+                  }
+                  else
+                  {
+                     alert(json.error);
+                  }
+               }
+               catch (exception)
+               {
+                  if (exception.name == "SyntaxError")
+                  {
+                     console.log("JSON syntax error");
+                     console.log(this.responseText);
+                  }
+                  else
+                  {
+                     throw(exception);
+                  }
+               }
+            }
+         };
+         xhttp.open("GET", requestUrl, true);
+         xhttp.send(); 
+      }
    }
    
-   onCancelDeleteButton()
+   onCancelButton()
    {
-      hideModal(Skid.PageElements.CONFIRM_DELETE_MODAL);
+      if (!isFormChanged("input-form") ||
+          confirm("Are you sure?  All data will be lost."))
+      {
+         window.history.back();
+      }
    }
    
-   onConfirmDeleteButton()
+   onJobNumberChanged()
    {
-      hideModal(Skid.PageElements.CONFIRM_DELETE_MODAL);
+      let jobNumber = document.getElementById(Skid.PageElements.JOB_NUMBER_INPUT).value;
       
-      var defectId = this.getSkidId();
-      
-      // AJAX call to delete the componen.
-      var requestUrl = "/app/page/defect/?request=delete_defect&defectId=" + defectId;
+      if (jobNumber == null)
+      {
+         disable(Skid.PageElements.WC_NUMBER_INPUT);
+      }
+      else
+      {
+         enable(Skid.PageElements.WC_NUMBER_INPUT);
+         
+         // Populate WC numbers based on selected job number.
+         
+         // AJAX call to populate WC numbers based on selected job number.
+         let requestUrl = "/api/wcNumbers/?jobNumber=" + jobNumber;
+         
+         var xhttp = new XMLHttpRequest();
+         xhttp.updateWcOptions = this.updateWcOptions;
+         xhttp.onreadystatechange = function()
+         {
+            if (this.readyState == 4 && this.status == 200)
+            {
+               try
+               {
+                  let json = JSON.parse(this.responseText);
+                  
+                  if (json.success == true)
+                  {
+                     this.updateWcOptions(json.wcNumbers);               
+                  }
+                  else
+                  {
+                     console.log("API call to retrieve WC numbers failed.");
+                  }
+               }
+               catch (exception)
+               {
+                  if (exception.name == "SyntaxError")
+                  {
+                     console.log("JSON syntax error");
+                     console.log(this.responseText);
+                  }
+                  else
+                  {
+                     throw(exception);
+                  }
+               }
+            }
+         }
+         xhttp.open("GET", requestUrl, true);
+         xhttp.send();  
+      }
+   }
+   
+   onBarcode(barcode)
+   {
+      // AJAX call to retrieve skid from skid ticket code.
+      let requestUrl = `/app/page/skid/?skidTicketCode=${barcode}`;
       
       var xhttp = new XMLHttpRequest();
+      xhttp.updateWcOptions = this.updateWcOptions;
       xhttp.onreadystatechange = function()
       {
          if (this.readyState == 4 && this.status == 200)
-         {         
+         {
             try
             {
-               var json = JSON.parse(this.responseText);
+               let json = JSON.parse(this.responseText);
                
                if (json.success == true)
                {
-                  location.href = "defects.php";
+                  document.location = `/skid/skid.php?skidId=${json.skid.skidId}`;            
                }
                else
                {
-                  console.log("Call to delete item failed.");
-                  alert(json.error);
+                  alert(`Failed to find skid for code \"${barcode}\"`);
                }
             }
             catch (exception)
@@ -220,11 +422,10 @@ class Skid
                }
             }
          }
-      };
+      }
       xhttp.open("GET", requestUrl, true);
-      xhttp.send(); 
+      xhttp.send();  
    }
-   */
    
    // **************************************************************************
    
@@ -242,8 +443,9 @@ class Skid
    {      
       let params = new Object();
       params.request = "fetch";
-      //params.startDate =  document.getElementById(Skid.PageElements.START_DATE_INPUT).value;
-      //params.endDate =  document.getElementById(Skid.PageElements.END_DATE_INPUT).value;
+      params.startDate =  document.getElementById(Skid.PageElements.START_DATE_INPUT).value;
+      params.endDate =  document.getElementById(Skid.PageElements.END_DATE_INPUT).value;
+      params.activeSkids =  document.getElementById(Skid.PageElements.ACTIVE_SKIDS_INPUT).checked;
 
       return (params);
    }
@@ -271,5 +473,37 @@ class Skid
             // Handle error loading data
          });
       }
+   }
+   
+   updateWcOptions(wcNumbers)
+   {
+      let element = document.getElementById(Skid.PageElements.WC_NUMBER_INPUT);
+      
+      while (element.firstChild)
+      {
+         element.removeChild(element.firstChild);
+      }
+   
+      for (var wcNumber of wcNumbers)
+      {
+         var option = document.createElement('option');
+         option.innerHTML = wcNumber.label;
+         option.value = wcNumber.wcNumber;
+         element.appendChild(option);
+      }
+      
+      element.value = null;
+   }
+   
+   formattedDate(date)
+   {
+      // Convert to Y-M-D format, per HTML5 Date control.
+      // https://stackoverflow.com/questions/12346381/set-date-in-input-type-date
+      var day = ("0" + date.getDate()).slice(-2);
+      var month = ("0" + (date.getMonth() + 1)).slice(-2);
+      
+      var formattedDate = date.getFullYear() + "-" + (month) + "-" + (day);
+   
+      return (formattedDate);
    }
 }

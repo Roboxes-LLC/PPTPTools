@@ -1,6 +1,8 @@
 <?php
+
+if (!defined('ROOT')) require_once '../root.php';
 require_once 'params.php';
-require_once '../thirdParty/phpqrcode/phpqrcode.php';
+require_once ROOT.'/thirdParty/phpqrcode/phpqrcode.php';
 
 $params = Params::parse();
 

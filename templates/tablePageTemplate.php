@@ -1,13 +1,14 @@
 <!--
 Required PHP variables:
-$versionQuery
-$javascriptFile
-$javascriptClass
-$activity
-$heading
-$description
-$newButtonLabel
-$filterTemplate
+   $root
+   $versionQuery
+   $javascriptFile
+   $javascriptClass
+   $activity
+   $heading
+   $description
+   $newButtonLabel
+   $filterTemplate
 -->
 
 <html>
@@ -25,7 +26,9 @@ $filterTemplate
    <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
    <script src="../thirdParty/moment/moment.min.js"></script>
    
+   <script src="../common/barcodeScanner.js<?php echo versionQuery();?>"></script>
    <script src="../common/common.js"></script>
+   <script src="../script/common/commonDefs.php<?php echo versionQuery();?>"></script>
    <script src="../script/pages/<?php echo $javascriptFile ?><?php echo $versionQuery ?>"></script>
       
 </head>
@@ -49,9 +52,7 @@ $filterTemplate
 
          <br>
          
-         <div class="flex-horizontal">         
-            <?php echo $filterTemplate ?>
-         </div>
+         <?php if (isset($filterTemplate)) include $root."/templates/filter/$filterTemplate" ?>
          
          <br>
         
@@ -88,6 +89,13 @@ $filterTemplate
       document.getElementById("menu-button").addEventListener('click', function() {
          document.getElementById("menu").classList.toggle('shown');
       });
+      
+      <?php 
+      if (isset($customScript))
+      {
+         echo $customScript;
+      }
+      ?>
       
    </script>
    

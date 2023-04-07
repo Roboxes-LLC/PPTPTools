@@ -2341,6 +2341,15 @@ class PPTPDatabase extends MySqlDatabase
       return ($result);
    }
    
+   public function getSkidsByJob($jobId)
+   {
+      $query = "SELECT * FROM skid WHERE jobId = $jobId";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
    public function getSkids($startDate, $endDate)
    {
       $createdState = SkidState::CREATED;
@@ -2437,7 +2446,7 @@ class PPTPDatabase extends MySqlDatabase
    
    public function getSkidActions($skidId)
    {
-      $query = "SELECT * FROM skidaction WHERE $skidId  = $skidId ORDER BY dateTime ASC;";
+      $query = "SELECT * FROM skidaction WHERE skidId  = $skidId ORDER BY dateTime ASC;";
       
       $result = $this->query($query);
       

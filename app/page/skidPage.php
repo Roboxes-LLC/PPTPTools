@@ -2,6 +2,8 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/app/page/page.php';
+require_once ROOT.'/common/panTicket.php';
+require_once ROOT.'/common/userInfo.php';
 require_once ROOT.'/core/manager/skidManager.php';
 
 class SkidPage extends Page
@@ -12,89 +14,93 @@ class SkidPage extends Page
        {
           switch ($this->getRequest($params))
           {
-             /*
-             case "save_defect":
+             case "generate_skid":
              {
-                if (Page::requireParams($params, ["category", "severity", "appPage", "title", "description"]))
+                $jobId = JobInfo::UNKNOWN_JOB_ID;
+                
+                // Generate skid from job id.
+                if ($params->keyExists("jobId"))
                 {
-                   $defectId = $params->getInt("defectId");
-                   $newDefect = ($defectId == Defect::UNKNOWN_DEFECT_ID);
+                   $jobId = $params->getInt("jobId");
+                }
+                // Generate skid from pan ticket code.
+                else if ($params->keyExists("panTicketCode"))
+                {
+                   $timeCardId = PanTicket::getPanTicketId($params->get("panTicketCode"));
                    
-                   $defect = null;
-                   if ($newDefect)
+                   if ($timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
                    {
-                      $defect = new Defect();
+                      $timeCardInfo = TimeCardInfo::load($timeCardId);
+                      if ($timeCardInfo)
+                      {
+                         $jobId = $timeCardInfo->jobId;
+                      }
+                   }
+                }
+                // Generate skid from job number and WC number pair.
+                else if ($params->keyExists("jobNumber") &&
+                         $params->keyExists("wcNumber"))
+                {
+                   $jobNumber = $params->get("jobNumber");
+                   $wcNumber = $params->get("wcNumber");
+                   
+                   $jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
+                }
+                else
+                {
+                   $this->error("Missing parameters.");
+                }
+                
+                if ($jobId != JobInfo::UNKNOWN_JOB_ID)
+                {
+                   $skid = new Skid();
+                   
+                   $skid->jobId = $jobId;
+                   $skid->skidState = SkidState::CREATED;
+                   $skid->dateTime = Time::now(Time::STANDARD_FORMAT);
+                   $skid->author = Authentication::getAuthenticatedUser()->employeeNumber;
+                   
+                   if (Skid::save($skid))
+                   {
+                      // CREATED skid action.
+                      $skid->create(Time::now(Time::STANDARD_FORMAT), Authentication::getAuthenticatedUser()->employeeNumber, null);
                       
-                      $defect->dateTime = Time::now();
-                      $defect->author = Authentication::getAuthenticatedUser()->userId;
-                      $defect->siteId = Authentication::getSite();
-                      $defect->status = DefectStatus::NEW;
+                      SkidPage::augmentSkidData($skid);
+                      
+                      $this->result->skidId = $skid->skidId;
+                      $this->result->skid = $skid;
+                      $this->result->success = true;
                    }
                    else
                    {
-                      $defect = Defect::load($defectId);
-                      
-                      if (!$defect)
-                      {
-                         $defect = null;
-                         $this->error("Invalid defect id [$defectId]");
-                      }
-                   }
-                   
-                   if ($defect)
-                   {
-                      SkidPage::getDefectParams($defect, $params);
-                      
-                      if (Defect::save($defect))
-                      {
-                         $this->result->defectId = $defect->defectId;
-                         $this->result->defect = $defect;
-                         $this->result->success = true;
-                         
-                         ActivityLog::logComponentActivity(
-                            Authentication::getSite(),
-                            Authentication::getAuthenticatedUser()->userId,
-                            ($newDefect ? ActivityType::ADD_DEFECT : ActivityType::EDIT_DEFECT),
-                            $defect->defectId);
-                      }
-                      else
-                      {
-                         $this->error("Database error");
-                      }
+                      $this->error("Database error");
                    }
                 }
                 break;
              }
              
-             case "delete_defect":
+             case "delete_skid":
              {
-                if (Page::requireParams($params, ["defectId"]))
+                if (Page::requireParams($params, ["skidId"]))
                 {
-                   $defectId = $params->getInt("defectId");
+                   $skidId = $params->getInt("skidId");
                    
-                   $defect = Defect::load($defectId);
+                   $skid = Skid::load($skidId);
                    
-                   if ($defect)
+                   if ($skid)
                    {
-                      Defect::delete($defectId);
+                      Skid::delete($skidId);
                       
-                      $this->result->defectId = $defectId;
+                      $this->result->skidId = $skidId;
                       $this->result->success = true;
-                      
-                      ActivityLog::logComponentActivity(
-                         Authentication::getSite(),
-                         Authentication::getAuthenticatedUser()->userId,
-                         ActivityType::DELETE_DEFECT,
-                         $defectId);
                    }
                    else
                    {
-                      $this->error("Invalid defect id [$defectId]");
+                      $this->error("Invalid skid id [$skidId]");
                    }
                 }
                 break;
              }
-             */
              
              case "fetch":
              default:
@@ -108,12 +114,59 @@ class SkidPage extends Page
                    
                    if ($skid)
                    {
+                      SkidPage::augmentSkidData($skid);
+                      
                       $this->result->skid = $skid;
                       $this->result->success = true;
                    }
                    else
                    {
                       $this->error("Invalid skid id [$skidId]");
+                   }
+                }
+                // Fetch all components by pan ticket code.
+                else if ($params->keyExists("skidTicketCode"))
+                {
+                   $skidTicketCode = $params->get("skidTicketCode");
+                   
+                   $skid = SkidManager::getSkidBySkidTicketCode($skidTicketCode);
+
+                   if ($skid)
+                   {
+                      SkidPage::augmentSkidData($skid);
+                      
+                      $this->result->skid = $skid;
+                      $this->result->success = true;
+                      
+                   }
+                   else
+                   {
+                      $this->error("Invalid skid ticket [$skidTicketCode]");
+                   }
+                }
+                // Fetch all components by job.
+                else if (isset($params["jobNumber"]) &&
+                         isset($params["wcNumber"]))
+                {
+                   $jobNumber = $params->get("jobNumber");
+                   $wcNumber = $params->getInt("wcNumber");
+                   
+                   $jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
+                   
+                   if ($jobId != JobInfo::UNKNOWN_JOB_ID)
+                   {
+                      $this->result->skids = SkidManager::getSkidsByJob($jobId);
+                      $this->result->success = true;
+                      
+                      // Augment data.
+                      foreach ($this->result->skids as $skid)
+                      {
+                         SkidPage::augmentSkidData($skid);
+                      }
+                   }
+                   else
+                   {
+                      $this->error("Invalid job/WC number [$jobNumber/$wcNumber]");
                    }
                 }
                 // Fetch all components.
@@ -154,14 +207,7 @@ class SkidPage extends Page
                    // Augment data.
                    foreach ($this->result->skids as $skid)
                    {
-                      $dateTime = Time::getDateTime($skid->getCreatedAction()->dateTime);
-                      $skid->formattedDateTime = $dateTime->format("n/j/Y g:i A");
-                      
-                      $jobInfo = JobInfo::load($skid->jobId);
-                      $skid->jobNumber = $jobInfo ? $jobInfo->jobNumber : "";
-                      
-                      $skid->skidCode = $skid->getSkidCode();
-                      $skid->skidStateLabel = SkidState::getLabel($skid->skidState);
+                      SkidPage::augmentSkidData($skid);
                    }
                 }
                 break;
@@ -172,21 +218,36 @@ class SkidPage extends Page
        echo json_encode($this->result);
     }
     
-    /*
-    private function getDefectParams(&$defect, $params)
+    private static function getSkidParams(&$skid, $params)
     {
-       $defect->category = $params->getInt("category");
-       $defect->severity = $params->getInt("severity");
-       $defect->appPage = $params->getInt("appPage");
-       $defect->title = $params->get("title");
-       $defect->description = $params->get("description");
+       $skid->jobId = $params->getInt("jobId");
        
-       if ($params->keyExists("status"))
+       if ($params->keyExists("notes"))
        {
-          $defect->status = $params->getInt("status");
+          $skid->notes = $params->get("notes");
        }
     }
-    */
+    
+    private static function augmentSkidData(&$skid)
+    {
+       $dateTime = Time::getDateTime($skid->getCreatedAction()->dateTime);
+       $skid->formattedDateTime = $dateTime->format("n/j/Y g:i A");
+       
+       $authorName = null;
+       $userInfo = UserInfo::load($skid->getCreatedAction()->author);
+       if ($userInfo)
+       {
+          $authorName = $userInfo->employeeNumber . " - " . $userInfo->getFullName();
+       }
+       $skid->authorName = $authorName;
+       
+       
+       $jobInfo = JobInfo::load($skid->jobId);
+       $skid->jobNumber = $jobInfo ? $jobInfo->jobNumber : "";
+       
+       $skid->skidTicketCode = $skid->getSkidTicketCode();
+       $skid->skidStateLabel = SkidState::getLabel($skid->skidState);
+    }
 }
  
  ?>

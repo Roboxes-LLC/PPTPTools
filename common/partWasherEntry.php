@@ -1,6 +1,10 @@
 <?php
+
+if (!defined('ROOT')) require_once '../root.php';
 require_once 'database.php';
 require_once 'time.php';
+require_once 'time.php';
+require_once ROOT.'/core/component/skid.php';
 
 class PartWasherEntry
 {
@@ -15,7 +19,7 @@ class PartWasherEntry
    public $timeCardId = PartWasherEntry::UNKNOWN_TIME_CARD_ID;
    public $panCount;
    public $partCount;
-   public $skidId;
+   public $skidId = Skid::UNKNOWN_SKID_ID;
    
    // These attributes were added for manual entry when no time card is available.
    public $jobId = PartWasherEntry::UNKNOWN_JOB_ID;
