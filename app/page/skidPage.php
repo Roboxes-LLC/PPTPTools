@@ -99,6 +99,82 @@ class SkidPage extends Page
                 break;
              }
              
+             case "begin_assembly":
+             {
+                if (Page::requireParams($params, ["skidId"]))
+                {
+                   $skidId = $params->getInt("skidId");
+                   
+                   $notes = null;
+                   if ($params->keyExists("notes"))
+                   {
+                      $notes = $params->get("notes");
+                   }
+                   
+                   $skid = Skid::load($skidId);
+                   
+                   if ($skid)
+                   {
+                      if ($skid->assemble(
+                             Time::now(Time::STANDARD_FORMAT), 
+                             Authentication::getAuthenticatedUser()->employeeNumber, 
+                             $notes))
+                      {
+                         $this->result->skidId = $skidId;
+                         $this->result->skidState = $skid->skidState;
+                         $this->result->success = true;                         
+                      }
+                      else
+                      {
+                         $this->error("Invalid state transition");
+                      }
+                   }
+                   else
+                   {
+                      $this->error("Invalid skid id [$skidId]");
+                   }
+                }
+                break;
+             }
+             
+             case "complete_assembly":
+             {
+                if (Page::requireParams($params, ["skidId"]))
+                {
+                   $skidId = $params->getInt("skidId");
+                   
+                   $notes = null;
+                   if ($params->keyExists("notes"))
+                   {
+                      $notes = $params->get("notes");
+                   }
+                   
+                   $skid = Skid::load($skidId);
+                   
+                   if ($skid)
+                   {
+                      if ($skid->complete(
+                            Time::now(Time::STANDARD_FORMAT),
+                            Authentication::getAuthenticatedUser()->employeeNumber,
+                            $notes))
+                      {
+                         $this->result->skidId = $skidId;
+                         $this->result->skidState = $skid->skidState;
+                         $this->result->success = true;
+                      }
+                      else
+                      {
+                         $this->error("Invalid state transition");
+                      }
+                   }
+                   else
+                   {
+                      $this->error("Invalid skid id [$skidId]");
+                   }
+                }
+                break;
+             }
+             
              case "fetch":
              default:
              {
@@ -223,8 +299,10 @@ class SkidPage extends Page
     
     private static function augmentSkidData(&$skid)
     {
-       $dateTime = Time::getDateTime($skid->getCreatedAction()->dateTime);
+       $createdTime = $skid->getCreatedAction()->dateTime;
+       $dateTime = Time::getDateTime($createdTime);
        $skid->formattedDateTime = $dateTime->format("n/j/Y g:i A");
+       $skid->isNew = Time::isNew($createdTime, Time::NEW_THRESHOLD);
        
        $authorName = null;
        $userInfo = UserInfo::load($skid->getCreatedAction()->author);
@@ -236,6 +314,38 @@ class SkidPage extends Page
        
        $skid->skidTicketCode = $skid->getSkidTicketCode();
        $skid->skidStateLabel = SkidState::getLabel($skid->skidState);
+       
+       foreach ($skid->contents as $partWasherEntry)
+       {
+          $jobId = $partWasherEntry->jobId;
+          $operator = $partWasherEntry->operator;
+          
+          if ($partWasherEntry->timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+          {
+             $partWasherEntry->panTicketCode = PanTicket::getPanTicketCode($partWasherEntry->timeCardId);
+             
+             $timeCardInfo = TimeCardInfo::load($partWasherEntry->timeCardId);
+             if ($timeCardInfo)
+             {
+                $jobId = $timeCardInfo->jobId;
+                $operator = $timeCardInfo->employeeNumber;
+                $partWasherEntry->manufactureDate = $timeCardInfo->manufactureDate;
+             }
+          }
+          
+          $jobInfo = JobInfo::load($jobId);
+          if ($jobInfo)
+          {
+             $partWasherEntry->wcNumber = $jobInfo->wcNumber;
+             $partWasherEntry->wcLabel = JobInfo::getWcLabel($jobInfo->wcNumber);
+          }
+          
+          $userInfo = UserInfo::load($operator);
+          if ($userInfo)
+          {
+             $partWasherEntry->operatorName = $operator . " - " . $userInfo->getFullName();
+          }
+       }
     }
 }
  

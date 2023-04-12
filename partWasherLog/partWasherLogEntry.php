@@ -388,13 +388,13 @@ function getSkidOptions()
 {
    $options = "<option style=\"display:none\">";
    
-   $jobId = getJobId();
+   $jobNumber = getJobNumber();
    
-   if ($jobId != JobInfo::UNKNOWN_JOB_ID)
+   if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
    {
       $selectedSkidId = getSkidId();
       
-      $skids = SkidManager::getSkidsByJob($jobId);
+      $skids = SkidManager::getSkidsByJob($jobNumber);
       
       foreach ($skids as $skid)
       {
@@ -603,6 +603,7 @@ if (!Authentication::isAuthenticated())
    
    <script src="../common/common.js<?php echo versionQuery();?>"></script>
    <script src="../common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="../script/common/commonDefs.php<?php echo versionQuery();?>"></script>
    <script src="partWasherLog.js<?php echo versionQuery();?>"></script>
 
 </head>

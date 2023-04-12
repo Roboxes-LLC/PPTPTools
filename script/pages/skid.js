@@ -3,6 +3,7 @@ class Skid
    // HTML elements
    static PageElements = {
       "INPUT_FORM":               "input-form",
+      "SKID_ID_INPUT":            "skid-id-input",
       "JOB_NUMBER_INPUT":         "job-number-input",
       // Filter
       "DATE_TYPE_INPUT":          "date-type-input",
@@ -96,8 +97,19 @@ class Skid
                },
                formatterPrint:function(cell, formatterParams, onRendered){
                   return (cell.getValue());
-               }  },
-            {title:"Created",     field:"formattedDateTime", headerFilter:true},
+               }  
+            },
+            {title:"Created",     field:"formattedDateTime", headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  let cellValue = cell.getValue();
+                  
+                  if (cell.getRow().getData().isNew)
+                  {
+                     cellValue += "&nbsp<span class=\"new-indicator\">new</div>";
+                  }
+                  return (cellValue);
+               }
+            },
             {title:"Author",      field:"authorName",        headerFilter:true},
             {title:"Job",         field:"jobNumber",         headerFilter:true},
             {title:"State",       field:"skidStateLabel",    headerFilter:true},
@@ -108,7 +120,7 @@ class Skid
             }
          ],
          initialSort:[
-            {column:"formattedDateTime", dir:"asc"}
+            {column:"skidId", dir:"desc"}
          ],
          cellClick:function(e, cell){
             var skidId = parseInt(cell.getRow().getData().skidId);
@@ -125,6 +137,109 @@ class Skid
             {
                // Open time card for viewing/editing.
                document.location = "/skid/skid.php?skidId=" + skidId;             
+            }                         
+         }.bind(this),
+      });
+   }
+   
+   createContentsTable(tableElementId)
+   {
+      let url = this.getContentsTableQuery();
+      let params = this.getContentsTableQueryParams();
+      
+      let tableElementQuery = "#" + tableElementId;
+   
+      // Create Tabulator table
+      this.table = new Tabulator(tableElementQuery, {
+         layout:"fitData",
+         cellVertAlign:"middle",
+         ajaxURL:url,
+         ajaxParams:params,
+         ajaxResponse:function(url, params, response) {
+            let tableData = [];
+            if (response.success)
+            {
+               tableData = response.skid.contents;
+            }
+            return (tableData);
+         },
+         //Define Table Columns
+         columns:[
+            {title:"Id",                field:"partWasherEntryId", hozAlign:"left", visible:false},
+            {title:"Pan Ticket",        field:"panTicketCode",     hozAlign:"left", headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = "";
+                  
+                  var timeCardId = cell.getRow().getData().timeCardId;
+                  
+                  if (timeCardId != 0)
+                  {
+                     cellValue = "<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().panTicketCode;
+                  }
+                  
+                  return (cellValue);
+               },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  return (cell.getValue());
+              }                 
+            },
+            {title:"WC #",         field:"wcLabel",           hozAlign:"left", headerFilter:true},
+            {title:"Operator",     field:"operatorName",      hozAlign:"left", headerFilter:true},
+            {title:"Mfg. Date",    field:"manufactureDate",   hozAlign:"left", headerFilter:true,
+               formatter:"datetime",  // Requires moment.js 
+               formatterParams:{
+                  outputFormat:"MM/DD/YYYY",
+                  invalidPlaceholder:"---"
+               }
+            },
+            {title:"Pack Date",    field:"dateTime",          hozAlign:"left",
+               formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = "---";
+                  
+                  var date = new Date(cell.getValue());
+
+                  if (date.getTime() === date.getTime())  // check for valid date
+                  {
+                     var cellValue = formatDate(date);
+                     
+                     if (cell.getRow().getData().isNew)
+                     {
+                        cellValue += "&nbsp<span class=\"new-indicator\">new</div>";
+                     }
+                  }
+
+                  return (cellValue);
+              },
+              formatterPrint:function(cell, formatterParams, onRendered){
+                 var cellValue = "---";
+                  
+                 var date = new Date(cell.getValue());
+
+                 if (date.getTime() === date.getTime())  // check for valid date
+                 {
+                    var cellValue = formatDate(date);
+                 }
+
+                 return (cellValue);
+              },
+            },
+            {title:"Part Count",   field:"partCount",         hozAlign:"left"},
+         ],
+         initialSort:[
+            {column:"partWasherEntryId", dir:"asc"}
+         ],
+         cellClick:function(e, cell){
+            var skidId = parseInt(cell.getRow().getData().skidId);
+
+            if ((cell.getColumn().getField() == "panTicketCode") &&
+                (cell.getRow().getData().timeCardId != 0))
+            {                        
+               let timeCardId = cell.getRow().getData().timeCardId;            
+               document.location = `/panTicket/viewPanTicket.php?panTicketId=${timeCardId}`;
+            }  
+            else // Any other column
+            {
+               // No action.
             }                         
          }.bind(this),
       });
@@ -320,6 +435,92 @@ class Skid
       }
    }
    
+   onBeginAssemblyButton()
+   {
+      let skidId = this.getSkidId();
+      
+      // AJAX call to begin assembly.
+      let requestUrl = `/app/page/skid/?request=begin_assembly&skidId=${skidId}`;
+      
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function()
+      {
+         if (this.readyState == 4 && this.status == 200)
+         {
+            try
+            {
+               var json = JSON.parse(this.responseText);
+               
+               if (json.success == true)
+               {
+                  location.reload();
+               }
+               else
+               {
+                  alert(json.error);
+               }
+            }
+            catch (exception)
+            {
+               if (exception.name == "SyntaxError")
+               {
+                  console.log("JSON syntax error");
+                  console.log(this.responseText);
+               }
+               else
+               {
+                  throw(exception);
+               }
+            }
+         }
+      };
+      xhttp.open("GET", requestUrl, true);
+      xhttp.send(); 
+   }
+   
+   onCompleteAssemblyButton()
+   {
+      let skidId = this.getSkidId();
+      
+      // AJAX call to begin assembly.
+      let requestUrl = `/app/page/skid/?request=complete_assembly&skidId=${skidId}`;
+      
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function()
+      {
+         if (this.readyState == 4 && this.status == 200)
+         {
+            try
+            {
+               var json = JSON.parse(this.responseText);
+               
+               if (json.success == true)
+               {
+                  location.reload();
+               }
+               else
+               {
+                  alert(json.error);
+               }
+            }
+            catch (exception)
+            {
+               if (exception.name == "SyntaxError")
+               {
+                  console.log("JSON syntax error");
+                  console.log(this.responseText);
+               }
+               else
+               {
+                  throw(exception);
+               }
+            }
+         }
+      };
+      xhttp.open("GET", requestUrl, true);
+      xhttp.send(); 
+   }
+   
    onBarcode(barcode)
    {
       // AJAX call to retrieve skid from skid ticket code.
@@ -381,6 +582,20 @@ class Skid
       params.startDate =  document.getElementById(Skid.PageElements.START_DATE_INPUT).value;
       params.endDate =  document.getElementById(Skid.PageElements.END_DATE_INPUT).value;
       params.activeSkids =  document.getElementById(Skid.PageElements.ACTIVE_SKIDS_INPUT).checked;
+
+      return (params);
+   }
+   
+   getContentsTableQuery()
+   {
+      return (`../app/page/skid/`);
+   }
+
+   getContentsTableQueryParams()
+   {      
+      let params = new Object();
+      params.request = "fetch";
+      params.skidId = this.getSkidId();
 
       return (params);
    }

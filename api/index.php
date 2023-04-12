@@ -1406,7 +1406,22 @@ $router->add("savePartWasherEntry", function($params) {
                   $dbaseResult = $database->updatePartWasherEntry($partWasherEntry);
                }
                
-               if (!$dbaseResult)
+               if ($dbaseResult)
+               {
+                  // Adding a part washer entry to a skid can cause the skid to move to the ASSEMBLING state.
+                  if ($partWasherEntry->skidId != Skid::UNKNOWN_SKID_ID)
+                  {
+                     $skid = Skid::load($partWasherEntry->skidId);
+                     if ($skid)
+                     {
+                        $skid->assemble(
+                              Time::now(Time::STANDARD_FORMAT),
+                              Authentication::getAuthenticatedUser()->employeeNumber,
+                              null);
+                     }
+                  }
+               }
+               else
                {
                   $result->success = false;
                   $result->error = "Database query failed.";

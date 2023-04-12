@@ -250,7 +250,7 @@ if (!Authentication::isAuthenticated())
          //Define Table Columns
          columns:[
             {title:"Id",           field:"partWasherEntryId", hozAlign:"left", visible:false},
-            {title:"Ticket",            field:"panTicketCode",     hozAlign:"left", responsive:0, headerFilter:true,
+            {title:"Pan Ticket",   field:"panTicketCode",     hozAlign:"left", responsive:0, headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "";
                   

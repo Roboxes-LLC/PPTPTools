@@ -239,10 +239,10 @@ function onJobNumberChange()
    onSkidDependencyChange();
 }
 
-function onSkidDependencyChange()
+function onSkidDependencyChange(selectedSkidId)
 {
    // Clear skid options.
-   updateSkidOptions([]);
+   updateSkidOptions([], UNKNOWN_SKID_ID);
    
    // Retrieve skid dependency values.
    let panTicketCode = document.getElementById("pan-ticket-code-input").value;
@@ -270,6 +270,7 @@ function onSkidDependencyChange()
       enable("skid-id-input");
       
       var xhttp = new XMLHttpRequest();
+      xhttp.selectedSkidId = selectedSkidId;
       xhttp.onreadystatechange = function()
       {
          if (this.readyState == 4 && this.status == 200)
@@ -278,7 +279,7 @@ function onSkidDependencyChange()
             
             if (json.success == true)
             {
-               updateSkidOptions(json.skids);               
+               updateSkidOptions(json.skids, this.selectedSkidId);
             }
             else
             {
@@ -336,7 +337,7 @@ function onNewSkidButton()
                
                if (json.success == true)
                {
-                  onSkidDependencyChange();
+                  onSkidDependencyChange(json.skidId);
                }
                else
                {
@@ -511,7 +512,7 @@ function updateOperatorOptions(operators)
    element.value = null;
 }
 
-function updateSkidOptions(skids)
+function updateSkidOptions(skids, selectedSkidId)
 {
    element = document.getElementById("skid-id-input");
    
@@ -520,15 +521,30 @@ function updateSkidOptions(skids)
       element.removeChild(element.firstChild);
    }
 
+   let foundSelected = false;
+   
    for (var skid of skids)
    {
       var option = document.createElement('option');
       option.innerHTML = skid.skidTicketCode;
       option.value = skid.skidId;
       element.appendChild(option);
+      
+      if (skid.skidId == selectedSkidId)
+      {
+         foundSelected = true;
+      }   
    }
    
-   element.value = null;
+   // Set the selected skid.
+   if (foundSelected)
+   {
+      element.value = selectedSkidId;
+   }
+   else
+   {
+      element.value = null;
+   }
 }
 
 function twoDigitNumber(value)

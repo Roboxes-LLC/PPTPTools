@@ -21,7 +21,10 @@ abstract class SkidInputField
    const CREATION_DATE = 1;
    const AUTHOR = 2;
    const JOB_NUMBER = 3;
-   const LAST = 4;
+   const SAVE_BUTTON = 4;
+   const BEGIN_ASSEMBLY_BUTTON = 5;
+   const COMPLETE_ASSEMBLY_BUTTON = 6;
+   const LAST = 7;
    const COUNT = SkidInputField::LAST - SkidInputField::FIRST;
 }
 
@@ -91,6 +94,20 @@ function getSkidId()
    return ($skidId);
 }
 
+function getSkidState()
+{
+   $skidState = SkidState::UNKNOWN;
+   
+   $skid = getSkid();   
+   
+   if ($skid)
+   {
+      $skidState = $skid->skidState;
+   }
+   
+   return ($skidState);
+}
+
 function isEditable($field)
 {
    $view = getView();
@@ -127,9 +144,47 @@ function isEditable($field)
    return ($isEditable);
 }
 
+function isHidden($field)
+{
+   $isHidden = false;
+   
+   switch ($field)
+   {
+      case SkidInputField::SAVE_BUTTON:
+      {
+         $isHidden = (getView() != View::NEW_SKID);
+         break;   
+      }
+      
+      case SkidInputField::BEGIN_ASSEMBLY_BUTTON:
+      {
+         $isHidden = (getSkidState() != SkidState::CREATED);
+         break;
+      }         
+         
+      case SkidInputField::COMPLETE_ASSEMBLY_BUTTON:
+      {
+         $isHidden = (getSkidState() != SkidState::ASSEMBLING);
+         break;
+      }
+         
+      default:
+      {
+         break;
+      }
+   }
+   
+   return ($isHidden);
+}
+
 function getDisabled($field)
 {
    return (isEditable($field) ? "" : "disabled");
+}
+
+function getHidden($field)
+{
+   return (isHidden($field) ? "hidden" : "");
 }
 
 function getHeading()
@@ -317,9 +372,13 @@ if (!Authentication::isAuthenticated())
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css"/>
    
    <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
+   
+   <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
+   <script src="../thirdParty/moment/moment.min.js"></script>
    
    <script src="../common/common.js<?php echo versionQuery();?>"></script>
    <script src="../common/validate.js<?php echo versionQuery();?>"></script>
@@ -384,6 +443,9 @@ if (!Authentication::isAuthenticated())
             </div> <!-- column -->
             
             <div class="flex-vertical">
+            
+               <div class="form-section-header">Contents</div>   
+               <div id="contents-table" style="width:100%"></div>
                
             </div> <!-- column -->
          
@@ -393,7 +455,9 @@ if (!Authentication::isAuthenticated())
          
          <div class="flex-horizontal flex-h-center">
             <button id="cancel-button">Cancel</button>&nbsp;&nbsp;&nbsp;
-            <button id="save-button" class="accent-button" <?php echo (getView() == View::NEW_SKID) ? "" : "hidden" ?>>Save</button>            
+            <button id="save-button" class="accent-button" <?php echo getHidden(SkidInputField::SAVE_BUTTON) ?>>Save</button>
+            <button id="begin-assembly-button" class="accent-button" <?php echo getHidden(SkidInputField::BEGIN_ASSEMBLY_BUTTON) ?>>Begin Assembly</button>
+            <button id="complete-assembly-button" class="accent-button" <?php echo getHidden(SkidInputField::COMPLETE_ASSEMBLY_BUTTON) ?>>Complete Assembly</button>
          </div>
       
       </div> <!-- content -->
@@ -405,6 +469,7 @@ if (!Authentication::isAuthenticated())
       preserveSession();
       
       var PAGE = new Skid();
+      PAGE.createContentsTable("contents-table");
       
       var jobNumberValidator = new SelectValidator("job-number-input");
       var wcNumberValidator = new SelectValidator("wc-number-input");
@@ -413,10 +478,12 @@ if (!Authentication::isAuthenticated())
       wcNumberValidator.init();
 
       // Setup event handling on all DOM elements.
-      document.getElementById("cancel-button").onclick = function(){PAGE.onCancelButton();};
-      document.getElementById("save-button").onclick = function(){PAGE.onSaveButton();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
+      document.getElementById("cancel-button").onclick = function(){PAGE.onCancelButton();};
+      document.getElementById("save-button").onclick = function(){PAGE.onSaveButton();};
+      document.getElementById("begin-assembly-button").onclick = function(){PAGE.onBeginAssemblyButton();};
+      document.getElementById("complete-assembly-button").onclick = function(){PAGE.onCompleteAssemblyButton();};
 
       // Store the initial state of the form, for change detection.
       setInitialFormState("input-form");

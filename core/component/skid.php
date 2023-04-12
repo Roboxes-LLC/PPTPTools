@@ -98,10 +98,76 @@ class Skid
       return (Skid::skidIdToSkidTicketcode($this->skidId));
    }
    
+   // **************************************************************************
+   // State transitions
+   
    public function create($dateTime, $employeeNumber, $notes)
    {
       return ($this->addSkidAction(SkidState::CREATED, $dateTime, $employeeNumber, $notes));
    }
+      
+   public function assemble($dateTime, $employeeNumber, $notes)
+   {
+      $success = false;
+      
+      if ($this->skidState == SkidState::CREATED)
+      {
+         $success = $this->addSkidAction(SkidState::ASSEMBLING, $dateTime, $employeeNumber, $notes);
+      }
+      
+      return ($success);
+   }
+   
+   public function complete($dateTime, $employeeNumber, $notes)
+   {
+      $success = false;
+      
+      if ($this->skidState == SkidState::ASSEMBLING)
+      {
+         $success = $this->addSkidAction(SkidState::PENDING_INSPECTION, $dateTime, $employeeNumber, $notes);
+      }
+      
+      return ($success);
+   }
+   
+   public function pass($dateTime, $employeeNumber, $notes)
+   {
+      $success = false;
+      
+      if ($this->skidState == SkidState::PENDING_INSPECTION)
+      {
+         $success = $this->addSkidAction(SkidState::PASSED, $dateTime, $employeeNumber, $notes);
+      }
+      
+      return ($success);
+   }
+   
+   public function fail($dateTime, $employeeNumber, $notes)
+   {
+      $success = false;
+      
+      if ($this->skidState == SkidState::PENDING_INSPECTION)
+      {
+         $success = $this->addSkidAction(SkidState::FAIELD, $dateTime, $employeeNumber, $notes);
+      }
+      
+      return ($success);
+   }
+   
+   public function ship($dateTime, $employeeNumber, $notes)
+   {
+      $success = false;
+      
+      if ($this->skidState == SkidState::PASSED)
+      {
+         $success = $this->addSkidAction(SkidState::FAIELD, $dateTime, $employeeNumber, $notes);
+      }
+      
+      return ($success);
+   }
+   
+   // **************************************************************************
+   // State queries
    
    public function isCreated()
    {
@@ -114,6 +180,8 @@ class Skid
       
       return ((count($skidActions) > 0) ? $skidActions[0] : null);
    }
+   
+   // **************************************************************************
    
    public static function getContents($skidId)
    {
@@ -212,9 +280,9 @@ class Skid
       {
          $this->actions[] = $skidAction;
          
-         //$this->recalculateState();
+         $this->recalculateState();
          
-         //$success &= PPTPDatabase::getInstance()->updateSkid($this);
+         $success &= PPTPDatabase::getInstance()->updateSkid($this);
       }
       
       return ($success);
@@ -228,12 +296,27 @@ class Skid
       {
          $this->actions = Skid::getActions($this->skidId);
          
-         //$this->recalculateState();
+         $this->recalculateState();
          
-         //$success &= PPTPDatabase::getInstance()->updateSkid($this);
+         $success &= PPTPDatabase::getInstance()->updateSkid($this);
       }
       
       return ($success);
+   }
+   
+   private function recalculateState()
+   {
+      if (count($this->actions) > 0)
+      {
+         // The status is determined by the last PO action.
+         $this->skidState = end($this->actions)->skidState;
+      }
+      else
+      {
+         $this->skidState = SkidState::UNKNOWN;
+      }
+      
+      return ($this->skidState);
    }
 }
 
