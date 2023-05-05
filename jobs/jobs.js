@@ -97,6 +97,33 @@ function onCopyJob(jobId)
    location.href = "viewJob.php?copyFromJobId=" + jobId;
 }
 
+function onPartNumberChanged()
+{
+   let partNumber = document.getElementById('part-number-input').value;
+   
+   // AJAX call to fetch part.
+   requestUrl = `../api/part/?partNumber=${partNumber}`;
+   
+   ajaxRequest(requestUrl, function(json) {
+      if (json.success)
+      {
+         // Sest part info.
+         updatePartInfo(json.part);
+      }
+      else
+      {
+         // Clear part info.
+         updatePartInfo(null);
+      }
+   })
+}
+
+function onEditPartButton()
+{
+   enable('customer-input');
+   enable('customer-number-input');     
+}
+
 function validateJob()
 {
    valid = false;
@@ -105,6 +132,18 @@ function validateJob()
          (document.getElementById("job-number-suffix-input").validator.validate())))
    {
       alert("Please enter a valid job number.  (Format: Mxxxx-xxx)");      
+   }
+   else if (!(document.getElementById("customer-input").validator.validate()))
+   {
+      alert("Please select a customer for this job.");
+   }
+   else if (!(document.getElementById("customer-number-input").validator.validate()))
+   {
+      alert("Please provide a valid customer part number.");
+   }
+   else if (!(document.getElementById("work-center-input").validator.validate()))
+   {
+      alert("Please select the work center where this job will run.");
    }
    else if (!(document.getElementById("sample-weight-input").validator.validate()))
    {
@@ -136,6 +175,8 @@ function autoFillPartNumber()
    {
       partNumberInput.value = jobNumberPrefixInput.value;
       partNumberDisplayInput.value = jobNumberPrefixInput.value;
+      
+      onPartNumberChanged();
    }
    
    autoFillJobNumber();
@@ -197,6 +238,28 @@ function autoFillPartStats()
    {
       cycleTimeInput.value = "";
       netPercentageInput.value = "";
+   }
+}
+
+function updatePartInfo(part)
+{
+   if (part != null)
+   {
+      document.getElementById('customer-input').value = part.customerId;
+      document.getElementById('customer-number-input').value = part.customerNumber;
+   
+      disable('customer-input');
+      disable('customer-number-input');
+      show('edit-part-button', 'block');
+   }
+   else
+   {
+      document.getElementById('customer-input').value = null;
+      document.getElementById('customer-number-input').value = null; 
+      
+      enable('customer-input');
+      enable('customer-number-input');     
+      hide('edit-part-button');
    }
 }
 

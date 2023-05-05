@@ -1,3 +1,71 @@
+function StringValidator(inputId, minLength, maxLength, allowNull)
+{
+   this.inputId = inputId;
+   this.minLength = minLength;
+   this.maxLength = maxLength;
+   this.allowNull = allowNull;
+   
+   StringValidator.prototype.init = function()
+   {
+      var element = document.getElementById(this.inputId);
+      
+      if (element)
+      {
+         element.validator = this;
+      }
+   }
+   
+   StringValidator.prototype.isValid = function()
+   {
+      var valid = false;
+   
+      var element = document.getElementById(this.inputId);
+      
+      if (element)
+      {
+         var value = element.value;
+         
+         if ((value == null) || (value == "")) 
+         {
+            valid = this.allowNull;
+         }
+         else
+         {
+            valid = ((value.length >= minLength) && 
+                     (value.length <= maxLength));
+         }
+      }
+      
+      return (valid);
+   }
+   
+   StringValidator.prototype.color = function(color)
+   {
+      var element = document.getElementById(this.inputId);
+      
+      if (element)
+      {
+         element.style.color = color;
+      }
+   }
+   
+   StringValidator.prototype.validate = function()
+   {
+      var valid = this.isValid();
+      
+      if (valid)
+      {
+         this.color("#000000");
+      }
+      else
+      {
+         this.color("#FF0000");
+      }
+
+      return (valid);
+   }
+}
+
 function IntValidator(inputId, maxLength, minValue, maxValue, allowNull)
 {
    this.inputId = inputId;

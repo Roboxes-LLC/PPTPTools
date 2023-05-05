@@ -196,8 +196,10 @@ if (!Authentication::isAuthenticated())
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Part #",         field:"partNumber",    hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Work Center",    field:"wcLabel",       hozAlign:"left", responsive:2, headerFilter:true},
+            {title:"Part #",         field:"partNumber",     hozAlign:"left", responsive:0, headerFilter:true},
+            {title:"Customer",       field:"customerName",   hozAlign:"left", responsive:1, headerFilter:true},
+            {title:"Customer #",     field:"customerNumber", hozAlign:"left", responsive:1, headerFilter:true},
+            {title:"Work Center",    field:"wcLabel",        hozAlign:"left", responsive:2, headerFilter:true},
             // Temporary
             {title:"Cycle Time",     field:"cycleTime",  hozAlign:"left", responsive:2 },
             {title:"Sample Weight",  field:"sampleWeight",  hozAlign:"left", responsive:2,
@@ -230,6 +232,9 @@ if (!Authentication::isAuthenticated())
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
+         ],
+         initialSort:[
+            {column:"dateTime", dir:"desc"}
          ],
          cellClick:function(e, cell){
             var jobId = parseInt(cell.getRow().getData().jobId);

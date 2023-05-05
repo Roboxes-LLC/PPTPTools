@@ -1,10 +1,13 @@
 <?php
 
-require_once '../common/activity.php';
-require_once '../common/header.php';
-require_once '../common/jobInfo.php';
-require_once '../common/menu.php';
-require_once '../common/params.php';
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/common/activity.php';
+require_once ROOT.'/common/header.php';
+require_once ROOT.'/common/jobInfo.php';
+require_once ROOT.'/common/menu.php';
+require_once ROOT.'/common/params.php';
+require_once ROOT.'/core/component/customer.php';
+require_once ROOT.'/core/component/part.php';
 
 const ACTIVITY = Activity::JOBS;
 
@@ -26,7 +29,9 @@ abstract class JobInputField
    const LINE_TEMPLATE = 12;
    const QCP_TEMPLATE = 13;
    const CUSTOMER_PRINT = 14;
-   const LAST = 15;
+   const CUSTOMER = 15;
+   const CUSTOMER_NUMBER = 16;
+   const LAST = 17;
    const COUNT = JobInputField::LAST - JobInputField::FIRST;
 }
 
@@ -77,6 +82,7 @@ function isEditable($field)
    {
       case JobInputField::CREATOR:
       case JobInputField::DATE:
+      case JobInputField::PART_NUMBER:
       case JobInputField::CYCLE_TIME:
       case JobInputField::NET_PERCENTAGE:
       {
@@ -183,6 +189,45 @@ function getJobInfo()
    return ($jobInfo);
 }
 
+function getCustomerId()
+{
+   $customerId = Customer::UNKNOWN_CUSTOMER_ID;
+   
+   $jobInfo = getJobInfo();
+   if ($jobInfo)
+   {
+      if ($jobInfo->partNumber != Part::UNKNOWN_PART_NUMBER)
+      {
+         $part = Part::load($jobInfo->partNumber);
+         if ($part)
+         {
+            $customerId = $part->customerId;
+         }
+      }
+   }
+   
+   return ($customerId);
+}
+
+function getCustomerNumber()
+{
+   $customerNumber = Part::UNKNOWN_CUSTOMER_NUMBER;
+   
+   $jobInfo = getJobInfo();
+   if ($jobInfo)
+   {
+      if ($jobInfo->partNumber != Part::UNKNOWN_PART_NUMBER)
+      {
+         $part = Part::load($jobInfo->partNumber);
+         if ($part)
+         {
+            $customerNumber = $part->customerNumber;
+         }
+      }
+   }
+   
+   return ($customerNumber);
+}
 
 function getHeading()
 {
@@ -395,6 +440,15 @@ if (!Authentication::isAuthenticated())
             <div class="flex-vertical flex-left" style="margin-right: 50px;">
             
                <div class="form-item">
+                  <div class="form-label">Job #</div>
+                  <div class="flex-horizontal flex-v-center flex-left">
+                     <input id="job-number-prefix-input" type="text" name="jobNumberPrefix" form="input-form" style="width:150px;" value="<?php echo JobInfo::getJobPrefix(getJobInfo()->jobNumber); ?>" oninput="{this.validator.validate(); autoFillPartNumber();}" autocomplete="off" <?php echo getDisabled(JobInputField::JOB_NUMBER); ?> />
+                     <div>&nbsp-&nbsp</div>
+                     <input id="job-number-suffix-input" type="text" name="jobNumberSuffix" form="input-form" style="width:150px;" value="<?php echo JobInfo::getJobSuffix(getJobInfo()->jobNumber); ?>" oninput="{this.validator.validate(); autoFillJobNumber();}" autocomplete="off" <?php echo getDisabled(JobInputField::JOB_NUMBER); ?> />
+                  </div>
+               </div>
+            
+               <div class="form-item">
                   <div class="form-label">Creator</div>
                   <input type="text" style="width:180px;" value="<?php echo getCreator(); ?>" <?php echo getDisabled(JobInputField::CREATOR); ?> />
                </div>
@@ -403,23 +457,39 @@ if (!Authentication::isAuthenticated())
                   <input type="date" name="date" style="width:180px;" value="<?php echo getCreationDate() ?>" <?php echo getDisabled(JobInputField::DATE); ?> />
                </div>
                
+               <div class="form-item">
+                  <div class="form-label">Job status</div>
+                  <div><select id="status-input" name="status" form="input-form" <?php echo getDisabled(JobInputField::STATUS); ?>><?php echo getStatusOptions(); ?></select></div>
+               </div>               
+               
+               <div class="form-section-header">Part Info</div>
+         
+               <div class="flex-horizontal">
+                  <div class="form-item">
+                     <div class="form-label">Part #</div>
+                     <input id="part-number-display-input" type="text" style="width:150px;" value="<?php echo getJobInfo()->partNumber; ?>" <?php echo getDisabled(JobInputField::PART_NUMBER); ?> />
+                  </div>
+                  &nbsp;&nbsp;
+                  <button id="edit-part-button" class="small-button" style="height:30px; width:50px;" onclick="onEditPartButton()">Edit</button>
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label">Customer</div>
+                  <select id="customer-input" name="customerId" form="input-form" <?php echo getDisabled(JobInputField::CUSTOMER) ?>>
+                     <?php echo Customer::getOptions(getCustomerId()) ?>
+                  </select>
+               </div>
+
+               <div class="form-item">
+                  <div class="form-label">Customer #</div>
+                  <input id="customer-number-input" name="customerNumber" form="input-form" type="text" style="width:150px;" value="<?php echo getCustomerNumber() ?>" oninput="this.validator.validate()" <?php echo getDisabled(JobInputField::CUSTOMER_NUMBER); ?> />
+               </div>               
+               
             </div>
             
             <div class="flex-vertical flex-left">
-
-               <div class="form-item">
-                  <div class="form-label-long">Job #</div>
-                  <div class="flex-horizontal flex-v-center flex-left">
-                     <input id="job-number-prefix-input" type="text" name="jobNumberPrefix" form="input-form" style="width:150px;" value="<?php echo JobInfo::getJobPrefix(getJobInfo()->jobNumber); ?>" oninput="{this.validator.validate(); autoFillPartNumber();}" autocomplete="off" <?php echo getDisabled(JobInputField::JOB_NUMBER); ?> />
-                     <div>&nbsp-&nbsp</div>
-                     <input id="job-number-suffix-input" type="text" name="jobNumberSuffix" form="input-form" style="width:150px;" value="<?php echo JobInfo::getJobSuffix(getJobInfo()->jobNumber); ?>" oninput="{this.validator.validate(); autoFillJobNumber();}" autocomplete="off" <?php echo getDisabled(JobInputField::JOB_NUMBER); ?> />
-                  </div>
-               </div>
-         
-               <div class="form-item">
-                  <div class="form-label-long">Part #</div>
-                  <input id="part-number-display-input" type="text" style="width:150px;" value="<?php echo getJobInfo()->partNumber; ?>" <?php echo getDisabled(JobInputField::PART_NUMBER); ?> />
-               </div>
+                              
+               <div class="form-section-header">Production Details</div>
          
                <div class="form-item">
                   <div class="form-label-long">Work center #</div>
@@ -451,11 +521,12 @@ if (!Authentication::isAuthenticated())
                   <input id="net-percentage-input" type="number" name="netPercentage" style="width:150px;" <?php echo getDisabled(JobInputField::NET_PERCENTAGE); ?> />
                   <div class="form-label">&nbsp%</div>
                </div>
-         
-               <div class="form-item">
-                  <div class="form-label-long">Job status</div>
-                  <div><select id="status-input" name="status" form="input-form" <?php echo getDisabled(JobInputField::STATUS); ?>><?php echo getStatusOptions(); ?></select></div>
-               </div>
+               
+            </div>
+            
+            <div class="flex-vertical flex-left" style="margin-right: 50px;">
+                        
+               <div class="form-section-header">Quality Control</div>
       
                <div class="form-item">
                   <div class="form-label-long">In Process Template</div>
@@ -498,6 +569,9 @@ if (!Authentication::isAuthenticated())
       
       var jobNumberPrefixValidator = new PartNumberPrefixValidator("job-number-prefix-input", 5, 1, 9999, false);
       var jobNumberSuffixValidator = new PartNumberSuffixValidator("job-number-suffix-input", 3, 1, 99, false);
+      var customerValidator = new SelectValidator("customer-input");
+      var customerNumberValidator = new StringValidator("customer-number-input", 1, 16, false);
+      var wcValidator = new SelectValidator("work-center-input");
       var sampleWeightValidator = new DecimalValidator("sample-weight-input", 6, 0.001, 10, 5, false);         
       var grossPartsValidator = new IntValidator("gross-parts-per-hour-input", 4, 1, 9999, false);
       var netPartsValidator = new IntValidator("net-parts-per-hour-input", 4, 1, 9999, false);
@@ -534,6 +608,9 @@ if (!Authentication::isAuthenticated())
       }
 
       jobNumberPrefixValidator.init();
+      customerValidator.init();
+      customerNumberValidator.init();
+      wcValidator.init();
       sampleWeightValidator.init();
       jobNumberSuffixValidator.init();
       grossPartsValidator.init();

@@ -2437,7 +2437,7 @@ class PPTPDatabase extends MySqlDatabase
    
    public function getSkidAction($skidActionId)
    {
-      $query = "SELECT * FROM skidaction WHERE skidActionId  = $skidActionId;";
+      $query = "SELECT * FROM skidaction WHERE skidActionId = $skidActionId;";
       
       $result = $this->query($query);
       
@@ -2446,7 +2446,7 @@ class PPTPDatabase extends MySqlDatabase
    
    public function getSkidActions($skidId)
    {
-      $query = "SELECT * FROM skidaction WHERE skidId  = $skidId ORDER BY dateTime ASC;";
+      $query = "SELECT * FROM skidaction WHERE skidId = $skidId ORDER BY dateTime ASC;";
       
       $result = $this->query($query);
       
@@ -2477,7 +2477,7 @@ class PPTPDatabase extends MySqlDatabase
       $query = 
          "UPDATE skidAction " .
          "SET skidState = $skidAction->skidState, dateTime = '$dateTime', author = $skidAction->author, notes = '$skidAction->notes' " .
-         "WHERE skidId = ?;";
+         "WHERE skidId = $skidAction->skidActionId;";
       
       $result = $this->query($query);
       
@@ -2488,7 +2488,121 @@ class PPTPDatabase extends MySqlDatabase
    {
       $query = "DELETE FROM skidaction WHERE skidActionId = $skidActionId;";
       
-      $result = $statement->execute([$poActionId]);
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                 Customer
+   // **************************************************************************
+   
+   public function getCustomer($customerId)
+   {
+      $query = "SELECT * FROM customer WHERE customerId = $customerId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getCustomers()
+   {
+      $query = "SELECT * FROM customer ORDER BY name ASC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function newCustomer($customer)
+   {
+      $query =
+         "INSERT INTO customer (name) " .
+         "VALUES ('$customer->name');";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function updateCustomer($customer)
+   {
+      $query =
+         "UPDATE customer " .
+         "SET name = '$customer->name' " .
+         "WHERE customerId = $customer->customerId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteCustomer($customerId)
+   {
+      $query = "DELETE FROM customer WHERE customerId = $customerId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                 Part
+   // **************************************************************************
+   
+   public function getPart($partNumber)
+   {
+      $query = "SELECT * FROM part WHERE partNumber = '$partNumber';";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getParts()
+   {
+      $query = "SELECT * FROM part ORDER BY name ASC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function partExists($partNumber)
+   {
+      $result = $this->getPart($partNumber);
+      return ($result && (MySqlDatabase::countResults($result) > 0));
+   }
+   
+   public function newPart($part)
+   {
+      $query =
+         "INSERT INTO part (partNumber, customerId, customerNumber) " .
+         "VALUES ('$part->partNumber', $part->customerId, '$part->customerNumber');";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function updatePart($part)
+   {
+      $query =
+         "UPDATE part " .
+         "SET customerId = '$part->customerId', customerNumber = '$part->customerNumber' " .
+         "WHERE partNumber = '$part->partNumber';";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deletePart($partNumber)
+   {
+      $query = "DELETE FROM part WHERE partNumber = '$partNumber';";
+      
+      $result = $this->query($query);
       
       return ($result);
    }

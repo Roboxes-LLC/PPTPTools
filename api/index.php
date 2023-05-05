@@ -23,6 +23,8 @@ require_once '../common/timeCardInfo.php';
 require_once '../common/upload.php';
 require_once '../common/userInfo.php';
 require_once '../common/weeklySummaryReport.php';
+require_once '../core/component/customer.php';
+require_once '../core/component/part.php';
 require_once '../printer/printJob.php';
 require_once '../printer/printQueue.php';
 
@@ -354,6 +356,13 @@ $router->add("jobData", function($params) {
          
          if ($jobInfo)
          {
+            $part = Part::load($jobInfo->partNumber);
+            if ($part)
+            {
+               $jobInfo->customerName = Part::getCustomerName($part->partNumber);
+               $jobInfo->customerNumber = $part->customerNumber;
+            }
+            
             $jobInfo->wcLabel = JobInfo::getWcLabel($jobInfo->wcNumber);
             $jobInfo->statusLabel = JobStatus::getName($jobInfo->status);
             $jobInfo->cycleTime = $jobInfo->getCycleTime();
@@ -441,18 +450,41 @@ $router->add("saveJob", function($params) {
                {
                   $result->jobId = $database->lastInsertId();
                }
+               else
+               {
+                  $result->success = false;
+                  $result->error = "Database query failed.";
+               }
             }
          }
          else
          {
             $dbaseResult = $database->updateJob($jobInfo);
-            $result->jobId = $jobInfo->jobId;
             
-            if (!$dbaseResult)
+            if ($dbaseResult)
+            {
+               $result->jobId = $jobInfo->jobId;
+            }
+            else
             {
                $result->success = false;
                $result->error = "Database query failed.";
             }
+         }
+         
+         //
+         // Process new/updated part.
+         //
+         
+         if ($params->keyExists("customerId") &&
+             $params->keyExists("customerNumber"))
+         {
+            $part = new Part();
+            $part->partNumber = $jobInfo->partNumber;
+            $part->customerId = $params->getInt("customerId");
+            $part->customerNumber = $params->get("customerNumber");
+            
+            Part::save($part);
          }
          
          //
@@ -529,6 +561,36 @@ $router->add("deleteJob", function($params) {
    
    echo json_encode($result);
 });
+
+$router->add("part", function($params) {
+   $result = new stdClass();
+   $result->success = false;
+   
+   if (isset($params["partNumber"]))
+   {
+      $partNumber = $params->get("partNumber");
+      
+      $part = Part::load($partNumber);
+      if ($part)
+      {
+         $result->success = true;
+         $result->part = $part;
+      }
+      else
+      {
+         $result->partNumber = $partNumber;
+         $result->error = "Invalid part number";
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters";
+   }
+   
+   echo json_encode($result);
+});
+      
 
 $router->add("wcNumbers", function($params) {
    $result = new stdClass();
