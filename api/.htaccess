@@ -1,3 +1,3 @@
 RewriteEngine on
-RewriteCond %{REQUEST_URI} !^/pptp/api/index.php$
-RewriteRule . /pptp/api/index.php [QSA,L]
+RewriteCond %{REQUEST_URI} !^/api/index.php$
+RewriteRule . /api/index.php [QSA,L]

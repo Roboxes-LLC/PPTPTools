@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('ROOT')) require_once '../root.php';
+
 require_once 'rest.php';
 require_once '../common/authentication.php';
 require_once '../common/dailySummaryReport.php';
@@ -23,6 +25,7 @@ require_once '../common/timeCardInfo.php';
 require_once '../common/upload.php';
 require_once '../common/userInfo.php';
 require_once '../common/weeklySummaryReport.php';
+require_once '../core/job/jobManager.php';
 require_once '../printer/printJob.php';
 require_once '../printer/printQueue.php';
 
@@ -4123,6 +4126,16 @@ $router->add("deleteShippingCard", function($params) {
       $result->success = false;
       $result->error = "Missing parameters.";
    }
+   
+   echo json_encode($result);
+});
+
+
+$router->add("runCronJobs", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+
+   JobManager::update();
    
    echo json_encode($result);
 });
