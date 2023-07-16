@@ -2,7 +2,7 @@
 
 if (!defined('ROOT')) require_once 'root.php';
 require_once ROOT.'/core/manager/emailKey.php';
-require_once ROOT.'/thirdparty/mailin-api-php/src/Sendinblue/Mailin.php';
+require_once ROOT.'/thirdParty/mailin-api-php/src/Sendinblue/Mailin.php';
 
 use Sendinblue\Mailin;
 

@@ -104,7 +104,10 @@ class PrinterMonitorJob extends Job
          $printer = new PrinterInfo();
          $printer->initialize($row);
          
-         $printers[] = $printer;
+         if ($printer->isCurrent())
+         {
+            $printers[] = $printer;
+         }
       }
       
       return ($printers);
