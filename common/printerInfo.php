@@ -28,14 +28,19 @@ class PrinterInfo
          {
             $printerInfo = new PrinterInfo();
             
-            $printerInfo->printerName = $row['printerName'];
-            $printerInfo->model = $row['model'];
-            $printerInfo->isConnected = boolval($row['isConnected']);
-            $printerInfo->lastContact = Time::fromMySqlDate($row['lastContact'], "Y-m-d H:i:s");
+            $printerInfo->initialize($row);
          }
       }
       
       return ($printerInfo);
+   }
+   
+   public function initialize($row)
+   {
+      $this->printerName = $row['printerName'];
+      $this->model = $row['model'];
+      $this->isConnected = boolval($row['isConnected']);
+      $this->lastContact = Time::fromMySqlDate($row['lastContact'], "Y-m-d H:i:s");
    }
    
    public function isCurrent()

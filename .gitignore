@@ -57,3 +57,6 @@ uploads/
 
 #thirdParty
 thirdParty/
+
+#sensitive files
+core/manager/emailKey.php

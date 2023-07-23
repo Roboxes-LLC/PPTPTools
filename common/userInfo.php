@@ -18,6 +18,7 @@ class UserInfo
    public $email;
    public $authToken;
    public $defaultShiftHours;
+   public $notifications;
    
    public function __construct()
    {
@@ -30,6 +31,7 @@ class UserInfo
       $this->email = null;
       $this->authToken = null;
       $this->defaultShiftHours = 0;
+      $this->notifications = 0;  // Notification::NO_NOTIFICATIONS;
    }
    
    public static function load($employeeNumber)
@@ -51,6 +53,21 @@ class UserInfo
       }
       
       return ($userInfo);
+   }
+   
+   public function initialize($row)
+   {
+      $this->employeeNumber = intval($row['employeeNumber']);
+      $this->username = $row['username'];
+      $this->password = $row['password'];
+      $this->roles = intval($row['roles']);
+      $this->permissions = intval($row['permissions']);
+      $this->firstName = $row['firstName'];
+      $this->lastName = $row['lastName'];
+      $this->email = $row['email'];
+      $this->authToken = $row['authToken'];
+      $this->defaultShiftHours = intval($row['defaultShiftHours']);
+      $this->notifications = intval($row['notifications']);
    }
    
    static public function loadByName($username)
@@ -160,20 +177,6 @@ class UserInfo
       }
       
       return ($html);
-   }
-   
-   private function initialize($row)
-   {
-      $this->employeeNumber = intval($row['employeeNumber']);
-      $this->username = $row['username'];
-      $this->password = $row['password'];
-      $this->roles = intval($row['roles']);
-      $this->permissions = intval($row['permissions']);
-      $this->firstName = $row['firstName'];
-      $this->lastName = $row['lastName'];
-      $this->email = $row['email'];
-      $this->authToken = $row['authToken'];
-      $this->defaultShiftHours = intval($row['defaultShiftHours']);
    }
 }
 

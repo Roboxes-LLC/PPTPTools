@@ -508,9 +508,9 @@ class PPTPDatabase extends MySqlDatabase
    {
       $query =
       "INSERT INTO user " .
-      "(employeeNumber, username, password, roles, permissions, firstName, lastName, email, authToken, defaultShiftHours) " .
+      "(employeeNumber, username, password, roles, permissions, firstName, lastName, email, authToken, defaultShiftHours, notifications) " .
       "VALUES " .
-      "('$userInfo->employeeNumber', '$userInfo->username', '$userInfo->password', '$userInfo->roles', '$userInfo->permissions', '$userInfo->firstName', '$userInfo->lastName', '$userInfo->email', '$userInfo->authToken', '$userInfo->defaultShiftHours');";
+      "('$userInfo->employeeNumber', '$userInfo->username', '$userInfo->password', '$userInfo->roles', '$userInfo->permissions', '$userInfo->firstName', '$userInfo->lastName', '$userInfo->email', '$userInfo->authToken', '$userInfo->defaultShiftHours', $userInfo->notifications);";
  
       $result = $this->query($query);
       
@@ -521,7 +521,7 @@ class PPTPDatabase extends MySqlDatabase
    {
       $query =
       "UPDATE user " .
-      "SET username = '$userInfo->username', password = '$userInfo->password', roles = '$userInfo->roles', permissions = '$userInfo->permissions', firstName = '$userInfo->firstName', lastName = '$userInfo->lastName', email = '$userInfo->email', authToken = '$userInfo->authToken', defaultShiftHours = '$userInfo->defaultShiftHours' " .
+      "SET username = '$userInfo->username', password = '$userInfo->password', roles = '$userInfo->roles', permissions = '$userInfo->permissions', firstName = '$userInfo->firstName', lastName = '$userInfo->lastName', email = '$userInfo->email', authToken = '$userInfo->authToken', defaultShiftHours = '$userInfo->defaultShiftHours', notifications = $userInfo->notifications " .
       "WHERE employeeNumber = '$userInfo->employeeNumber';";
       
       $result = $this->query($query);
@@ -2313,6 +2313,75 @@ class PPTPDatabase extends MySqlDatabase
    public function deleteMaterialEntry($materialEntryId)
    {
       $query = "DELETE FROM materiallog WHERE materialEntryId = $materialEntryId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                Cron Job
+   // **************************************************************************
+   
+   public function getCronJob($jobId)
+   {
+      $query = "SELECT * FROM cronjob WHERE jobId = $jobId;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getCronJobs()
+   {
+      $query = "SELECT * FROM cronjob ORDER BY jobId ASC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function addCronJob($job)
+   {
+      $lastRun = $job->lastRun ? Time::toMySqlDate($job->lastRun) : null;
+      
+      $isEnabled = $job->isEnabled ? 1 : 0;
+      
+      $config = mysqli::real_escape_string(json_encode($job->config));
+      $status = mysqli::real_escape_string(json_encode($job->status));
+      
+      $query = 
+         "INSERT INTO cronjob " .
+         "(jobName, jobClass, description, isEnabled, lastRun, jobPeriod, hour, day, month, config, status) " .
+         "VALUES ('$job->jobName', '$job->jobClass', '$job->description', $isEnabled, '$lastRun', $job->jobPeriod, $job->hour, $job->day, $job->month, '$config', '$status')";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function updateCronJob($job)
+   {
+      $lastRun = $job->lastRun ? Time::toMySqlDate($job->lastRun) : null;
+      
+      $isEnabled = $job->isEnabled ? 1 : 0;
+      
+      $config = mysqli_real_escape_string($this->getConnection(), json_encode($job->config));
+      $status = mysqli_real_escape_string($this->getConnection(), json_encode($job->status));
+                  
+      $query = 
+         "UPDATE cronjob " .
+         "SET jobName = '$job->jobName', jobClass = '$job->jobClass', description = '$job->description', isEnabled = $isEnabled, lastRun = '$lastRun', jobPeriod = $job->jobPeriod, hour = $job->hour, day = $job->day, month = $job->month, config = '$config', status = '$status' " .
+         "WHERE jobId = $job->jobId";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function deleteCronJob($jobId)
+   {
+      $query = $this->pdo->prepare("DELETE FROM job WHERE jobId = $job->jobId");
       
       $result = $this->query($query);
       
