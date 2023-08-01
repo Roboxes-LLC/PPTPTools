@@ -1,8 +1,10 @@
 <?php
 
-require_once './common/authentication.php';
-require_once './common/header.php';
-require_once './common/params.php';
+if (!defined('ROOT')) require_once 'root.php';
+require_once ROOT.'/app/common/appPage.php';
+require_once ROOT.'/common/authentication.php';
+require_once ROOT.'/common/header.php';
+require_once ROOT.'/common/params.php';
 
 function getParams()
 {
@@ -92,11 +94,11 @@ if (Authentication::isAuthenticated())
       
       if ($role)
       {
-         $activity = Activity::getActivity($role->defaultActivity);
+         $appPage = AppPage::getAppPage($role->defaultAppPage);
          
-         if ($activity)
+         if ($appPage)
          {
-            redirect($activity->url);
+            redirect($appPage->URL);
          }
       }
    }

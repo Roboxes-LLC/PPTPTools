@@ -195,35 +195,14 @@ form {
 	cursor: pointer;
 }
 
-/* ***** Menu ***** */
+/* ********************************** Menu ********************************** */
 
 .menu {
-   background: var(--background-color);
-   display: flex;
-   flex-direction: column;    
-   position: -webkit-sticky; /* Safari */
-   position: sticky;
-   top: calc(var(--header-height) + 0px);
-   left: 0;
-   z-index: 99;
+   min-width: 250px;
 }
 
-.menu-label {
-   display: none;
-   width: 200px;
-}
-
-/*
-.menu:hover .menu-label, .menu.shown .menu-label {
-   display: flex;
-}
-*/
-
-.menu.shown .menu-label {
-   display: flex;
-}
-
-.menu-item {
+/* Menu item */
+.menu .menu-item {
    text-decoration: none;
    font-size: 18px;
    padding-top: 5px;
@@ -237,21 +216,65 @@ form {
    cursor: pointer;
 }
 
-.menu-item:hover, .menu-item:hover .menu-icon  {
-   background: var(--gray-dark);
-   color: var(--text-color-light);
-}
-
-.menu-item.selected, .menu-item.selected .menu-icon {
+/* Menu item selected */
+.menu .menu-item.selected, 
+.menu .menu-item.selected .material-icons,
+.menu .menu-item.selected .menu-label {
    background: var(--main-color);
    color: var(--text-color-light);
 }
 
-.menu-icon {
-   font-size: 30px;
+/* Menu item hover */
+.menu .menu-item:hover, 
+.menu .menu-item:hover, 
+.menu .menu-item:hover .material-icons,
+.menu .menu-item:hover .menu-label {
+   background: var(--gray-dark);
+   color: var(--text-color-light);
+}
+
+.menu .menu-item .menu-icon {
+   margin-right: 20px;
    color: var(--text-color-dark);
-   text-decoration: none;
-   margin-right: 30px;
+}
+
+.menu .menu-gutter {
+   width: 25px;
+}
+
+.menu .indent-1 {
+   padding-left: 30px;
+}
+
+.menu .indent-2 {
+   padding-left: 60px;
+}
+
+.menu .submenu-item + .submenu {
+   display: none;
+}
+
+.menu .submenu-item.expanded + .submenu {
+   display: flex;
+}
+
+.menu .submenu-item.expanded .menu-unexpanded-icon,
+.menu .submenu-item .menu-expanded-icon {
+   display: none;
+}
+
+.menu .submenu-item.expanded .menu-expanded-icon,
+.menu .submenu-item .menu-unexpanded-icon {
+   display: flex;
+}
+
+.menu .menu-item.secret {
+   opacity: 0;
+}
+
+.menu .menu-item.secret:hover,
+.menu .menu-item.secret.selected  {
+   opacity: 100;
 }
 
 /* ***** Form ***** */
