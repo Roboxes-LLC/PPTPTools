@@ -1,17 +1,15 @@
 <?php
 
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/app/common/menu.php';
 require_once '../common/authentication.php';
 require_once '../common/header.php';
 require_once '../common/inspection.php';
 require_once '../common/inspectionTemplate.php';
 require_once '../common/jobInfo.php';
-require_once '../common/menu.php';
 require_once '../common/params.php';
 require_once '../common/root.php';
 require_once '../common/userInfo.php';
-
-const ACTIVITY = Activity::INSPECTION_TEMPLATE;
-$activity = Activity::getActivity(ACTIVITY);
 
 const ONLY_ACTIVE = true;
 
@@ -471,8 +469,9 @@ if (!Authentication::isAuthenticated())
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
    <link rel="stylesheet" type="text/css" href="inspectionTemplate.css"/>
    
-   <script src="../common/common.js"></script>
-   <script src="../common/validate.js"></script>
+   <script src="/common/common.js"></script>
+   <script src="/common/validate.js"></script>
+   <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
    <script src="inspectionTemplate.js"></script>
 
 </head>
@@ -488,7 +487,7 @@ if (!Authentication::isAuthenticated())
    
    <div class="main flex-horizontal flex-top flex-left">
    
-      <?php Menu::render(ACTIVITY); ?>
+      <?php Menu::render(); ?>
       
       <div class="content flex-vertical flex-top flex-left">
       
@@ -567,7 +566,9 @@ if (!Authentication::isAuthenticated())
    </div> <!-- main -->   
          
    <script>
-   
+      var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
+      menu.setMenuItemSelected(<?php echo AppPage::INSPECTION_TEMPLATE ?>);  
+      
       preserveSession();
       
       const OASIS = <?php echo InspectionType::OASIS; ?>;
@@ -596,7 +597,6 @@ if (!Authentication::isAuthenticated())
       document.getElementById("cancel-button").onclick = function(){onCancel();};
       document.getElementById("save-button").onclick = function(){onSaveInspectionTemplate();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-      document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
 
       // Store the initial state of the form, for change detection.
       setInitialFormState("input-form");

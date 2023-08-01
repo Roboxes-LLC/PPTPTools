@@ -11,7 +11,7 @@ require_once ROOT.'/app/page/quotePage.php';
 session_start();
 
 $router = new Router();
-$router->setLogging(true);
+$router->setLogging(false);
 
 $router->add("customer", function($params) {
    (new CustomerPage())->handleRequest($params);

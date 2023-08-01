@@ -133,8 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
    <script src="../thirdParty/moment/moment.min.js"></script>
    
-   <script src="../common/common.js"></script>
-   <script src="../common/validate.js"></script>
+   <script src="/common/common.js"></script>
+   <script src="/common/validate.js"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
       
 </head>

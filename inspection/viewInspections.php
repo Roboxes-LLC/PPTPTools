@@ -1,11 +1,12 @@
 <?php
 
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/app/common/menu.php';
 require_once '../common/activity.php';
 require_once '../common/database.php';
 require_once '../common/header.php';
 require_once '../common/inspection.php';
 require_once '../common/inspectionTemplate.php';
-require_once '../common/menu.php';
 require_once '../common/newIndicator.php';
 require_once '../common/permissions.php';
 
@@ -118,7 +119,8 @@ if (!Authentication::isAuthenticated())
    <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
    <script src="../thirdParty/moment/moment.min.js"></script>
    
-   <script src="../common/common.js"></script>
+   <script src="/common/common.js"></script>
+   <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>   
    <script src="inspection.js"></script>
       
 </head>
@@ -129,7 +131,7 @@ if (!Authentication::isAuthenticated())
    
    <div class="main flex-horizontal flex-top flex-left">
    
-      <?php Menu::render(Activity::INSPECTION); ?>
+      <?php Menu::render(); ?>
       
       <div class="content flex-vertical flex-top flex-left">
       
@@ -181,7 +183,9 @@ if (!Authentication::isAuthenticated())
    </div> <!-- main -->
    
    <script>
-   
+      var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
+      menu.setMenuItemSelected(<?php echo AppPage::INSPECTION ?>); 
+      
       preserveSession();
 
       function getTableQuery()
@@ -374,7 +378,6 @@ if (!Authentication::isAuthenticated())
       document.getElementById("new-inspection-button").onclick = function(){location.href = 'selectInspection.php';};
       document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-      document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
    </script>
    
 </body>

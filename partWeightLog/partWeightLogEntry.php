@@ -1,19 +1,17 @@
 <?php
 
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/app/common/menu.php';
 require_once '../common/activity.php';
 require_once '../common/database.php';
 require_once '../common/header.php';
 require_once '../common/jobInfo.php';
-require_once '../common/menu.php';
 require_once '../common/panTicket.php';
 require_once '../common/params.php';
 require_once '../common/partWeightEntry.php';
 require_once '../common/timeCardInfo.php';
 require_once '../common/userInfo.php';
 require_once '../common/version.php';
-
-const ACTIVITY = Activity::PART_WEIGHT;
-$activity = Activity::getActivity(ACTIVITY);
 
 const ONLY_ACTIVE = true;
 
@@ -614,8 +612,9 @@ if (!Authentication::isAuthenticated())
    <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
    
-   <script src="../common/common.js<?php echo versionQuery();?>"></script>
-   <script src="../common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/common/common.js<?php echo versionQuery();?>"></script>
+   <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>  
    <script src="partWeightLog.js<?php echo versionQuery();?>"></script>
 
 </head>
@@ -633,7 +632,7 @@ if (!Authentication::isAuthenticated())
    
    <div class="main flex-horizontal flex-top flex-left">
    
-      <?php Menu::render(ACTIVITY); ?>
+      <?php Menu::render(); ?>
       
       <div class="content flex-vertical flex-top flex-left">
       
@@ -751,7 +750,9 @@ if (!Authentication::isAuthenticated())
    </div> <!-- main -->   
          
    <script>
-   
+      var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
+      menu.setMenuItemSelected(<?php echo AppPage::PART_WEIGHT ?>); 
+      
       preserveSession();
       
       var panTicketCodeValidator = new HexValidator("pan-ticket-code-input", 4, 1, 65536, true);
@@ -778,7 +779,6 @@ if (!Authentication::isAuthenticated())
       document.getElementById("cancel-button").onclick = function(){onCancel();};
       document.getElementById("save-button").onclick = function(){onSavePartWeightEntry();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-      document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
 
       // Store the initial state of the form, for change detection.
       setInitialFormState("input-form");

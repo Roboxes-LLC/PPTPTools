@@ -1,13 +1,12 @@
 <?php
 
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/app/common/menu.php';
 require_once '../common/database.php';
 require_once '../common/header.php';
 require_once '../common/maintenanceEntry.php';
-require_once '../common/menu.php';
 require_once '../common/params.php';
 require_once '../common/version.php';
-
-const ACTIVITY = Activity::MAINTENANCE_LOG;
 
 abstract class InputField
 {
@@ -78,8 +77,9 @@ if (!Authentication::isAuthenticated())
    <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
    
-   <script src="../common/common.js<?php echo versionQuery();?>"></script>
-   <script src="../common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/common/common.js<?php echo versionQuery();?>"></script>
+   <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
    <script src="maintenanceLog.js<?php echo versionQuery();?>"></script>
 
 </head>
@@ -94,7 +94,7 @@ if (!Authentication::isAuthenticated())
    
    <div class="main flex-horizontal flex-top flex-left">
    
-      <?php Menu::render(ACTIVITY); ?>
+      <?php Menu::render(); ?>
       
       <div class="content flex-vertical flex-top flex-left">
       
@@ -112,7 +112,7 @@ if (!Authentication::isAuthenticated())
             <!--  Maintenance type -->
             <div class="flex-vertical" style="margin-right: 50px;">
                <div>Maintenance Type</div>
-               <select id="maintenance-type-input" size="10" style="height: revert; margin-bottom: 10px;"><?php echo MaintenanceType::getOptions(MaintenanceType::UNKNOWN) ?></select>
+               <select id="maintenance-type-input" size="10" style="height: revert; margin-bottom: 10px;"><?php echo MaintenanceEntry::getTypeOptions(MaintenanceEntry::UNKNOWN_TYPE_ID) ?></select>
                <div class="flex-horizontal">
                   <button id="add-maintenance-type-button" style="min-width: revert; padding:revert; width:40px; margin-right:10px;"><i class="menu-icon material-icons">add</i></button>
                   <button id="edit-maintenance-type-button" style="min-width: revert; padding:revert; width:40px; margin-right:10px;"><i class="menu-icon material-icons">edit</i></button>
@@ -149,7 +149,9 @@ if (!Authentication::isAuthenticated())
    </div> <!-- main -->   
          
    <script>
-   
+      var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
+      menu.setMenuItemSelected(<?php echo AppPage::MAINTENANCE_LOG ?>);  
+      
       preserveSession();
       
       // Setup event handling on all DOM elements.
