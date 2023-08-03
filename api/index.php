@@ -755,6 +755,20 @@ $router->add("saveUser", function($params) {
          }
       }
       
+      foreach (Notification::getNotifications() as $notification)
+      {
+         if (isset($params[$notification->getInputName()]))
+         {
+            // Set bit.
+            $userInfo->notifications |= $notification->bits;
+         }
+         else if ($notification->isSetIn($userInfo->notifications))
+         {
+            // Clear bit.
+            $userInfo->notifications &= ~($notification->bits);
+         }
+      }
+      
       if ($newUser)
       {
          $dbaseResult = $database->newUser($userInfo);

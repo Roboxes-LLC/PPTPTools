@@ -4,8 +4,8 @@ Required PHP variables:
    $javascriptFile
    $javascriptClass
    $appPageId
-   $newButtonLabel
-   $reportFileName
+   $formId
+   $form
  -->
 
 <html>
@@ -15,7 +15,6 @@ Required PHP variables:
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css"/>
    
    <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
@@ -47,22 +46,17 @@ Required PHP variables:
          </div>
          
          <div id="description" class="description"><?php echo $description ?></div>
-
+        
+         <br>
+        
+         <?php echo $form ?>
+         
          <br>
          
-         <?php if (isset($filterTemplate)) include $root."/templates/filter/$filterTemplate" ?>
-        
-         <br>
-        
-         <button id="add-button" class="accent-button"><?php echo $newButtonLabel ?></button>
-
-         <br>
-        
-         <div id="data-table"></div>
-
-         <br> 
-        
-         <div id="download-link" class="download-link">Download CSV file</div>
+         <div class="flex-horizontal flex-h-center">
+            <button id="cancel-button">Cancel</button>&nbsp;&nbsp;&nbsp;
+            <button id="save-button" class="accent-button">Save</button>            
+         </div>
          
       </div> <!-- content -->
       
@@ -75,11 +69,12 @@ Required PHP variables:
       menu.setMenuItemSelected(<?php echo $appPageId ?>);  
          
       var PAGE = new <?php echo $javascriptClass ?>();
-      PAGE.createTable("data-table");
 
       // Setup event handling on all DOM elements.
-      document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo $reportFileName ?>", {delimiter:"."})};
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
+
+      // Store the initial state of the form, for change detection.
+      setInitialFormState("<?php echo $formId ?>");
    </script>
    
 </body>

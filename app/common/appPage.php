@@ -24,8 +24,9 @@ class AppPage
    const MATERIAL = 15;
    const SHIPPING_CARD = 16;
    const CUSTOMER = 17;
-   const QUOTE = 18;
-   const LAST = 19;
+   const CONTACT = 18;
+   const QUOTE = 19;
+   const LAST = 20;
    
    public $pageId;
    public $label;
@@ -60,6 +61,7 @@ class AppPage
       AppPage::MAINTENANCE_LOG,
       AppPage::SHIPPING_CARD,
       AppPage::CUSTOMER,
+      AppPage::CONTACT,
       AppPage::QUOTE
    );
    
@@ -87,6 +89,7 @@ class AppPage
             AppPage::MAINTENANCE_LOG =>     new AppPage(AppPage::MAINTENANCE_LOG,     "Maintenance Log",      "build",                Permission::VIEW_MAINTENANCE_LOG,     "/maintenanceLog/maintenanceLog.php"),
             AppPage::SHIPPING_CARD =>       new AppPage(AppPage::SHIPPING_CARD,       "Shipping Cards",       "local_shipping",       Permission::VIEW_SHIPPING_CARD,       "/shippingCard/viewShippingCards.php"),
             AppPage::CUSTOMER =>            new AppPage(AppPage::CUSTOMER,            "Customers",            null,                   Permission::VIEW_CUSTOMER,            "/customer/customers.php"),
+            AppPage::CONTACT =>             new AppPage(AppPage::CONTACT,             "Contacts",             null,                   Permission::VIEW_CUSTOMER,            "/customer/contacts.php"),
             AppPage::QUOTE =>               new AppPage(AppPage::QUOTE,               "Quotes",               null,                   Permission::VIEW_QUOTE,               "/quote/quotes.php")
          );
       }

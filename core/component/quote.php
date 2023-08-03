@@ -6,6 +6,7 @@ require_once ROOT.'/core/common/pptpdatabase.php';
 require_once ROOT.'/core/common/quoteStatus.php';
 require_once ROOT.'/core/component/contact.php';
 require_once ROOT.'/core/component/customer.php';
+require_once ROOT.'/core/component/quoteAction.php';
 
 class Quote
 {
@@ -31,6 +32,7 @@ class Quote
    public $leadTime;   
    
    public $actions;
+   public $attachments;
    
    public function __construct()
    {
@@ -49,6 +51,7 @@ class Quote
       $this->leadTime = 0;
       
       $this->actions = array();
+      $this->attachments = array();
    }
    
    // **************************************************************************
@@ -65,6 +68,8 @@ class Quote
          $quote = new Quote();
          
          $quote->initialize($row);
+         
+         $quote->actions = Quote::getActions($quote->quoteId);
       }
       
       return ($quote);
@@ -114,7 +119,7 @@ class Quote
    
    public function getQuoteNumber()
    {
-      $dt = DateTime::createFromFormat("Y-m-d", Time::now("Y-m-d"));  // TODO: Creation date
+      $dt = DateTime::createFromFormat("Y-m-d", Time::now("Y-m-d"));  // TODO: Requested date
       
       $quoteNumber = 
          Quote::QUOTE_NUMBER_PREFIX .
@@ -138,5 +143,152 @@ class Quote
       }
       
       return ($html);
+   }
+   
+   public static function getActions($quoteId)
+   {
+      $actions = array();
+      
+      if ($quoteId != Quote::UNKNOWN_QUOTE_ID)
+      {
+         $result = PPTPDatabaseAlt::getInstance()->getQuoteActions($quoteId);
+         
+         foreach ($result as $row)
+         {
+            $quoteAction = new QuoteAction();
+            $quoteAction->initialize($row);
+            $actions[] = $quoteAction;
+         }
+      }
+      
+      return ($actions);
+   }
+   
+   public function findActions($quoteStatus)
+   {
+      $foundActions = array();
+      
+      foreach ($this->actions as $poAction)
+      {
+         if ($poAction->quoteStatus == $quoteStatus)
+         {
+            $foundActions[] = $poAction;
+         }
+      }
+      
+      return ($foundActions);
+   }
+   
+  // **************************************************************************
+   
+   public function request($dateTime, $userId, $notes)
+   {
+      return ($this->addQuoteAction(QuoteStatus::REQUESTED, $dateTime, $userId, $notes));
+   }
+   
+   public function isRequested()
+   {
+      return (count($this->findActions(QuoteStatus::REQUESTED)) > 0);
+   }
+   
+   public function getRequestedAction()
+   {
+      $quoteActions = $this->findActions(QuoteStatus::REQUESTED);
+      
+      return ((count($quoteActions) > 0) ? $quoteActions[0] : null);
+   }
+   
+   public function quote($dateTime, $userId, $notes)
+   {
+      return ($this->addPoAction(QuoteStatus::QUOTED, $dateTime, $userId, $notes));
+   }
+   
+   public function approve($dateTime, $userId, $notes)
+   {
+      return ($this->addPoAction(QuoteStatus::APPROVED, $dateTime, $userId, $notes));
+   }
+   
+   public function unapprove($dateTime, $userId, $notes)
+   {
+      return ($this->addPoAction(QuoteStatus::UNPPROVED, $dateTime, $userId, $notes));
+   }
+   
+   public function revise($dateTime, $userId, $notes)
+   {
+      return ($this->addPoAction(QuoteStatus::REVISED, $dateTime, $userId, $notes));
+   }
+   
+   public function send($dateTime, $userId, $notes)
+   {
+      return ($this->addPoAction(QuoteStatus::SENT, $dateTime, $userId, $notes));
+   }
+   
+   public function accept($dateTime, $userId, $notes)
+   {
+      return ($this->addPoAction(QuoteStatus::ACCEPTED, $dateTime, $userId, $notes));
+   }
+   
+   public function reject($dateTime, $userId, $notes)
+   {
+      return ($this->addPoAction(QuoteStatus::REJECTED, $dateTime, $userId, $notes));
+   }
+   
+   public function requote($dateTime, $userId, $notes)
+   {
+      return ($this->addPoAction(QuoteStatus::REQUOTED, $dateTime, $userId, $notes));
+   }
+   
+   private function addQuoteAction($quoteStatus, $dateTime, $userId, $notes, $attachment = null)
+   {
+      $quoteAction = new QuoteAction();
+      $quoteAction->quoteId = $this->quoteId;
+      $quoteAction->quoteStatus = $quoteStatus;
+      $quoteAction->dateTime = $dateTime;
+      $quoteAction->userId = $userId;
+      $quoteAction->notes = $notes;
+      
+      $success = QuoteAction::save($quoteAction);
+      
+      if ($success)
+      {
+         $this->actions[] = $quoteAction;
+         
+         $this->recalculateStatus();
+         
+         $success &= PPTPDatabaseAlt::getInstance()->updateQuoteStatus($this->quoteId, $this->quoteStatus);
+      }
+      
+      return ($success);
+   }
+   
+   private function removeQuoteAction($quoteActionId)
+   {
+      $success = QuoteAction::delete($quoteActionId);
+      
+      if ($success)
+      {
+         $this->actions = Quote::getActions($this->quoteId);
+         
+         $this->recalculateStatus();
+         
+         $success &= PPTPDatabaseAlt::getInstance()->updateQuoteStatus($this->quoteId, $this->quoteStatus);
+      }
+      
+      return ($success);
+   }
+   
+   private function recalculateStatus()
+   {
+      if (count($this->actions) > 0)
+      {
+         // The status is determined by the last quote action.
+         $this->quoteStatus = end($this->actions)->quoteStatus;
+      }
+      else
+      {
+         $this->quoteStatus = QuoteStatus::UNKNOWN;
+      }
+      
+      return ($this->quoteStatus);
    }
 }

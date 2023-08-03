@@ -22,4 +22,21 @@ class CustomerManager
       
       return ($customers);
    }
+   
+   public static function getContacts()
+   {
+      $contacts = array();
+      
+      $result = PPTPDatabaseAlt::getInstance()->getContacts();
+      
+      foreach ($result as $row)
+      {
+         $contact = new Contact();
+         $contact->initialize($row);
+         
+         $contacts[] = $contact;
+      }
+      
+      return ($contacts);
+   }
 }

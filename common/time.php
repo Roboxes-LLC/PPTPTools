@@ -21,7 +21,7 @@ class Time
       return (new DateTime($dateTimeString, new DateTimeZone(Time::DEFAULT_TIME_ZONE)));
    }
    
-   static public function now($format)
+   static public function now($format = Time::STANDARD_FORMAT)
    {
       $dateTime = new DateTime();
       $dateTime->setTimezone(new DateTimeZone(Time::DEFAULT_TIME_ZONE));
@@ -37,7 +37,7 @@ class Time
       return ($dateTime->format("Y-m-d H:i:s"));
    }
    
-   static public function fromMySqlDate($dateString, $format)
+   static public function fromMySqlDate($dateString, $format = Time::STANDARD_FORMAT)
    {
       $dateTime= new DateTime($dateString, new DateTimeZone('UTC'));
       $dateTime->setTimezone(new DateTimeZone(Time::DEFAULT_TIME_ZONE));

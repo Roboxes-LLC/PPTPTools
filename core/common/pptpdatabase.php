@@ -124,7 +124,7 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare(
          "INSERT INTO activity " .
          "(dateTime, author, activityType, object_0, object_1, object_2) " .
-         "VALUES (?, ?, ?, ?, ?)");
+         "VALUES (?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -194,16 +194,9 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $result = null;
       
-      if ($customerId == Customer::UNKNOWN_CUSTOMER_ID)
-      {
-         $result = $this->getContacts();
-      }
-      else
-      {
-         $statement = $this->pdo->prepare("SELECT * FROM customer WHERE customerId = ? ORDER BY lastName ASC;");
-         
-         $result = $statement->execute() ? $statement->fetchAll() : null;
-      }
+      $statement = $this->pdo->prepare("SELECT * FROM contact WHERE customerId = ? ORDER BY lastName ASC;");
+      
+      $result = $statement->execute([$customerId]) ? $statement->fetchAll() : null;
       
       return ($result);
    }
@@ -215,7 +208,6 @@ class PPTPDatabaseAlt extends PDODatabase
          "(firstName, lastName, customerId, phone, email) " .
          "VALUES (?, ?, ?, ?, ?)");
       
-      echo $statement->queryString;
       $result = $statement->execute(
          [
             $contact->firstName,
@@ -242,6 +234,17 @@ class PPTPDatabaseAlt extends PDODatabase
             $contact->customerId,
             $contact->phone,
             $contact->email,
+            $contact->contactId
+         ]);
+      
+      $statement = $this->pdo->prepare(
+         "UPDATE customer " .
+         "SET primaryContactId = ? " .
+         "WHERE primaryContactId = ?");
+      
+      $result &= $statement->execute(
+         [
+            Contact::UNKNOWN_CONTACT_ID,
             $contact->contactId
          ]);
       
@@ -342,12 +345,33 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
-   public function getQuotes($startDate, $endDate, $quoteStatuses)
+   public function getQuotes($startDate, $endDate)
    {
       // TODO: Date and status clauses.
       $statement = $this->pdo->prepare("SELECT * FROM quote ORDER BY quoteId ASC;");
       
       $result = $statement->execute() ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getQuotesByStatus($quoteStatuses)
+   {
+      $questionMarks = array();
+      for ($i = 0; $i < count($quoteStatuses); $i++)
+      {
+         $questionMarks[] = "?";
+      }
+      $statusList = "(" . implode(", ", $questionMarks) . ")";
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM quote " .
+         "WHERE quoteStatus IN $statusList " .
+         "ORDER BY quoteId ASC;");
+      
+      $params = $quoteStatuses;
+      
+      $result = $statement->execute($params) ? $statement->fetchAll() : null;
       
       return ($result);
    }
@@ -405,16 +429,107 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
+   public function updateQuoteStatus($quoteId, $quoteStatus)
+   {
+      $statement = $this->pdo->prepare(
+         "UPDATE quote SET quoteStatus = ? WHERE quoteId = ?");
+      
+      $result = $statement->execute([$quoteStatus, $quoteId]);
+      
+      return ($result);
+   }
+   
    public function deleteQuote($quoteId)
    {
       $statement = $this->pdo->prepare("DELETE FROM quote WHERE quoteId = ?");
       
       $result = $statement->execute([$quoteId]);
       
-      // TODO: Delete actions
+      $statement = $this->pdo->prepare("DELETE FROM quoteaction WHERE quoteId = ?");
+      
+      $result &= $statement->execute([$quoteId]);
       
       return ($result);
    }
+   
+   // **************************************************************************
+   //                             Quote Action
+   
+   public function getQuoteAction($quoteActionId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM quoteaction WHERE quoteActionId = ?;");
+      
+      $result = $statement->execute([$quoteActionId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getQuoteActions($quoteId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM quoteaction WHERE quoteId = ? ORDER BY dateTime ASC;");
+      
+      $result = $statement->execute([$quoteId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addQuoteAction($quoteAction)
+   {
+      $dateTime = ($quoteAction->dateTime) ?
+         Time::toMySqlDate($quoteAction->dateTime) :
+         null;
+      
+      $statement = $this->pdo->prepare(
+         "INSERT INTO quoteaction " .
+         "(quoteId, quoteStatus, dateTime, userId, notes) " .
+         "VALUES (?, ?, ?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $quoteAction->quoteId,
+            $quoteAction->quoteStatus,
+            $dateTime,
+            $quoteAction->userId,
+            $quoteAction->notes,
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateQuoteAction($quoteAction)
+   {
+      $dateTime = ($quoteAction->dateTime) ?
+         Time::toMySqlDate($quoteAction->dateTime) :
+         null;
+      
+      $statement = $this->pdo->prepare(
+         "UPDATE quoteaction " .
+         "SET quoteId = ?, quoteStatus= ?, dateTime = ?, userId = ?, notes = ? " .
+         "WHERE quoteActionId = ?");
+      
+      $result = $statement->execute(
+         [
+            $quoteAction->quoteId,
+            $quoteAction->quoteStatus,
+            $dateTime,
+            $quoteAction->userId,
+            $quoteAction->notes,
+            $quoteAction->quoteActionId
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteQuoteAction($quoteActionId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM quoteaction WHERE quoteActionId = ?");
+      
+      $result = $statement->execute([$quoteActionId]);
+      
+      return ($result);
+   }   
       
    // **************************************************************************
    

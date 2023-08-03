@@ -31,6 +31,17 @@ abstract class QuoteStatus
          QuoteStatus::PASSED,
       ];
    
+   public static $activeStatuses = 
+      [
+         QuoteStatus::REQUESTED,
+         QuoteStatus::QUOTED,
+         QuoteStatus::APPROVED,
+         QuoteStatus::UNAPPROVED,
+         QuoteStatus::REVISED,
+         QuoteStatus::SENT,
+         QuoteStatus::REQUOTED,
+      ];
+      
    public static function getLabel($quoteStatus)
    {
       $labels = array("", "Requested", "Quoted", "Approved", "Unapproved", "Revised", "Sent", "Accepted", "Rejected", "Requoted", "Passed");

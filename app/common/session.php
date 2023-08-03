@@ -9,6 +9,9 @@ class Session
    const AUTHENTICATED_USER_ID = "authenticatedUserId";
    const AUTHENTICATED_PERMISSIONS = "permissions";
    const MENU = "menu";
+   const QUOTE_ACTIVE_QUOTES = "quote.activeQuotes";
+   const QUOTE_START_DATE = "quote.startDate";
+   const QUOTE_END_DATE = "quote.endDate";   
    
    public static function isset($key)
    {

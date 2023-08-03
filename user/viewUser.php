@@ -2,7 +2,7 @@
 
 if (!defined('ROOT')) require_once '../root.php';
 require_once ROOT.'/app/common/menu.php';
-require_once '../common/activity.php';
+require_once ROOT.'/core/common/notification.php';
 require_once '../common/commentCodes.php';
 require_once '../common/header.php';
 require_once '../common/userInfo.php';
@@ -22,7 +22,8 @@ abstract class UserInputField
    const AUTHENTICATION_TOKEN = 7;
    const DEFAULT_SHIFT_HOURS = 8;
    const PERMISSIONS = 9;
-   const LAST = 10;
+   const NOTIFICATIONS = 10;
+   const LAST = 11;
    const COUNT = UserInputField::LAST - UserInputField::FIRST;
 }
 
@@ -224,6 +225,33 @@ HEREDOC;
    return ($html);
 }
 
+function getNotificationInputs()
+{
+   $html = "";
+   
+   $userInfo = getUserInfo();
+   
+   $disabled = isEditable(UserInputField::NOTIFICATIONS) ? "" : "disabled";
+   
+   foreach (Notification::getNotifications() as $notification)
+   {
+      $id = "notification-" . $notification->notificationId . "-input";
+      $name = $notification->getInputName();
+      $description = $notification->notificationName;
+      $checked = $notification->isSetIn($userInfo->notifications) ? "checked" : "";
+      
+      $html .=
+<<<HEREDOC
+      <div class="flex-horizontal flex-v-center">
+         <input id="$id" type="checkbox" class="permission-checkbox" form="input-form" name="$name" $checked $disabled/>
+         <label for="$id" class="form-input-medium">$description</label>
+      </div>
+HEREDOC;
+   }
+   
+   return ($html);
+}
+
 // ********************************** BEGIN ************************************
 
 Time::init();
@@ -346,6 +374,11 @@ if (!Authentication::isAuthenticated())
             <div class="flex-vertical flex-top">
                <div class="form-section-header">Permissions</div>
                <?php echo getPermissionInputs(); ?>
+            </div>
+            
+            <div class="flex-vertical flex-top">
+               <div class="form-section-header">Notifications</div>
+               <?php echo getNotificationInputs(); ?>
             </div>
             
          </div>

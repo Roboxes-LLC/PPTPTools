@@ -2,7 +2,6 @@
 
 if (!defined('ROOT')) require_once '../root.php';
 require_once ROOT.'/app/common/menu.php';
-require_once '../common/activity.php';
 require_once '../common/database.php';
 require_once '../common/header.php';
 require_once '../common/jobInfo.php';

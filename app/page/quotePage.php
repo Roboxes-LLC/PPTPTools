@@ -118,8 +118,37 @@ class QuotePage extends Page
                 // Fetch all components.
                 else 
                 {
+                   $dateTime = Time::dateTimeObject(null);
+                   
+                   $endDate = Time::endOfDay($dateTime->format(Time::STANDARD_FORMAT));
+                   $startDate = Time::startofDay($dateTime->modify("-1 month")->format(Time::STANDARD_FORMAT));
+                   $activeQuotes = false;
+                   
+                   if (isset($params["startDate"]))
+                   {
+                      $startDate = Time::startOfDay($params["startDate"]);
+                   }
+                   
+                   if (isset($params["endDate"]))
+                   {
+                      $endDate = Time::endOfDay($params["endDate"]);
+                   }
+                   
+                   if (isset($params["activeQuotes"]))
+                   {
+                      $activeOrders = $params->getBool("activeQuotes");
+                   }                   
+                   
                    $this->result->success = true;
-                   $this->result->quotes = QuoteManager::getQuotes();  // TODO: Date and status clause
+                   
+                   if ($activeQuotes)
+                   {
+                      $this->result->quotes = QuoteManager::getQuotesByStatus(QuoteStatus::$activeStatuses);
+                   }
+                   else
+                   {
+                      $this->result->quotes = QuoteManager::getQuotes($startDate, $endDate);
+                   }
                    
                    // Augment data.
                    foreach ($this->result->quotes as $quote)

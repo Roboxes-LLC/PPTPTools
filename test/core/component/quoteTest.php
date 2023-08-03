@@ -5,6 +5,8 @@ require_once ROOT.'/core/component/quote.php';
 
 class QuoteTest
 {
+   private const AUTHOR_ID = 1975;
+   
    private const QUOTE_STATUS = QuoteStatus::REQUESTED;
    private const CUSTOMER_ID = 1;
    private const CONTACT_ID = 1;
@@ -47,7 +49,7 @@ class QuoteTest
          
          $test->testGetLink();         
          
-         //$test->testDelete();
+         $test->testDelete();
       }
    }
    
@@ -84,6 +86,8 @@ class QuoteTest
       QuoteTest::$newQuoteId = $quote->quoteId;
       
       $quote = Quote::load(QuoteTest::$newQuoteId);
+      
+      $quote->request(Time::now(), QuoteTest::AUTHOR_ID, "Requested");
       
       var_dump($quote);
    }

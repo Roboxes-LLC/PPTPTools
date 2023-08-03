@@ -1,4 +1,4 @@
-class Customer
+class Contact
 {
    // HTML elements
    static PageElements = {
@@ -17,26 +17,26 @@ class Customer
    
    setup()
    {
-      if (document.getElementById(Customer.PageElements.ADD_BUTTON) != null)
+      if (document.getElementById(Contact.PageElements.ADD_BUTTON) != null)
       {
-         document.getElementById(Customer.PageElements.ADD_BUTTON).addEventListener('click', function() {
+         document.getElementById(Contact.PageElements.ADD_BUTTON).addEventListener('click', function() {
             this.onAddButton();
          }.bind(this));
       }
       
-      if (document.getElementById(Customer.PageElements.SAVE_BUTTON) != null)
+      if (document.getElementById(Contact.PageElements.SAVE_BUTTON) != null)
       {
-         document.getElementById(Customer.PageElements.SAVE_BUTTON).addEventListener('click', function() {
+         document.getElementById(Contact.PageElements.SAVE_BUTTON).addEventListener('click', function() {
             this.onSaveButton();
          }.bind(this));
       }
       
-      if (document.getElementById(Customer.PageElements.CANCEL_BUTTON) != null)
+      if (document.getElementById(Contact.PageElements.CANCEL_BUTTON) != null)
       {
-         document.getElementById(Customer.PageElements.CANCEL_BUTTON).addEventListener('click', function() {
+         document.getElementById(Contact.PageElements.CANCEL_BUTTON).addEventListener('click', function() {
             this.onCancelButton();
          }.bind(this));
-      }      
+      }
    }      
    
    createTable(tableElementId)
@@ -56,19 +56,18 @@ class Customer
             let tableData = [];
             if (response.success)
             {
-               tableData = response.customers;
+               tableData = response.contacts;
             }
             return (tableData);
          },
          //Define Table Columns
          columns:[
-            {                         field:"contactId",               visible:false},
-            {title:"Customer Name",   field:"customerName",            headerFilter:true},
-            {title:"City",            field:"address.city",            headerFilter:true},                   
-            {title:"State",           field:"address.stateLabel",      headerFilter:true},
-            {title:"Primary Contact", field:"primaryContact.fullName", headerFilter:true},
-            {title:"Phone",           field:"primaryContact.phone",    headerFilter:true},
-            {title:"Email",           field:"primaryContact.email",    headerFilter:true},
+            {                         field:"contactId",    visible:false},
+            {title:"First Name",      field:"firstName",    headerFilter:true},
+            {title:"Last Name",       field:"lastName",     headerFilter:true},                   
+            {title:"Organization",    field:"customerName", headerFilter:true},
+            {title:"Phone",           field:"phone",        headerFilter:true},
+            {title:"Email",           field:"email",        headerFilter:true},
             {title:"",                field:"delete",
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
@@ -76,35 +75,38 @@ class Customer
             }
          ],
          initialSort:[
-            {column:"customerName", dir:"asc"}
+            {column:"firstName", dir:"asc"}
          ],
          cellClick:function(e, cell){
-            let customerId = parseInt(cell.getRow().getData().customerId);
+            let contactId = parseInt(cell.getRow().getData().contactId);
             
             if (cell.getColumn().getField() == "delete")
             {
-               this.onDeleteButton(customerId);
+               this.onDeleteButton(contactId);
+                        
                e.stopPropagation();
             }
          }.bind(this),
          rowClick:function(e, row){
-            var customerId = row.getData().customerId;
-            document.location = `/customer/customer.php?customerId=${customerId}`;
+            var contactId = row.getData().contactId;
+            document.location = `/customer/contact.php?contactId=${contactId}`;
          }.bind(this),
       });
    }
    
+   // **************************************************************************
+   
    onAddButton()
    {
-      document.location = `/customer/customer.php?customerId=${UNKNOWN_CUSTOMER_ID}`;
+      document.location = `/customer/contact.php?contactId=${UNKNOWN_CONTACT_ID}`;
    }
    
-   onDeleteButton(customerId)
+   onDeleteButton(contactId)
    {
-      if (confirm("Are you sure you want to delete this customer?"))
+      if (confirm("Are you sure you want to delete this contact?"))
       {
          // AJAX call to delete the component.
-         let requestUrl = `/app/page/customer/?request=delete_customer&customerId=${customerId}`;
+         let requestUrl = `/app/page/customer/?request=delete_contact&contactId=${contactId}`;
          
          ajaxRequest(requestUrl, function(response) {
             if (response.success == true)
@@ -113,7 +115,7 @@ class Customer
             }
             else
             {
-               console.log("Call to delete the customer failed.");
+               console.log("Call to delete the contact failed.");
                alert(response.error);
             }
          });
@@ -124,7 +126,7 @@ class Customer
    {
       if (this.validateForm())
       {
-         submitForm(Customer.PageElements.INPUT_FORM, "/app/page/customer", function (response) {
+         submitForm(Contact.PageElements.INPUT_FORM, "/app/page/customer", function (response) {
             if (response.success == true)
             {
                location.href = "/customer/customers.php";
@@ -153,7 +155,7 @@ class Customer
    {
       
       let params = new Object();
-      params.request = "fetch";
+      params.request = "fetch_contact";
 
       return (params);
    }

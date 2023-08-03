@@ -2,6 +2,9 @@ class Quote
 {
    // HTML elements
    static PageElements = {
+      "START_DATE_INPUT":    "start-date-input",
+      "END_DATE_INPUT":      "end-date-input",
+      "ACTIVE_QUOTES_INPUT": "active-quotes-input"
    };
 
    constructor()
@@ -13,6 +16,37 @@ class Quote
    
    setup()
    {
+      if (document.getElementById(Quote.PageElements.START_DATE_INPUT) != null)
+      {
+         document.getElementById(Quote.PageElements.START_DATE_INPUT).addEventListener('change', function() {
+            this.onStartDateChanged();
+         }.bind(this));
+      }
+
+      if (document.getElementById(Quote.PageElements.END_DATE_INPUT) != null)
+      {
+         document.getElementById(Quote.PageElements.END_DATE_INPUT).addEventListener('change', function() {
+            this.onEndDateChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.ACTIVE_QUOTES_INPUT) != null)
+      {
+         document.getElementById(Quote.PageElements.ACTIVE_QUOTES_INPUT).addEventListener('change', function() {
+            this.onActiveQuotesChanged();
+         }.bind(this));
+         
+         if (document.getElementById(Quote.PageElements.ACTIVE_QUOTES_INPUT).checked)
+         {
+            disable(Quote.PageElements.START_DATE_INPUT);
+            disable(Quote.PageElements.END_DATE_INPUT);
+         }
+         else
+         {
+            enable(Quote.PageElements.START_DATE_INPUT);
+            enable(Quote.PageElements.END_DATE_INPUT);
+         }
+      }
    }      
    
    createTable(tableElementId)
@@ -79,8 +113,89 @@ class Quote
    {
       
       let params = new Object();
+      
       params.request = "fetch";
+      
+      params.startDate =  document.getElementById(Quote.PageElements.START_DATE_INPUT).value;
+      
+      params.endDate =  document.getElementById(Quote.PageElements.END_DATE_INPUT).value;
+      
+      if (document.getElementById(Quote.PageElements.ACTIVE_QUOTES_INPUT).checked)
+      {
+         params.activeQuotes = true;
+      }
 
       return (params);
+   }
+   
+   onStartDateChanged()
+   {
+      if (!this.validateFilterDates())
+      {
+         document.getElementById(Quote.PageElements.END_DATE_INPUT).value = 
+            document.getElementById(Quote.PageElements.START_DATE_INPUT).value
+      }
+      
+      this.onFilterUpdate();
+      
+      setSession("quote.startDate", document.getElementById(Quote.PageElements.START_DATE_INPUT).value);
+   }
+   
+   onEndDateChanged()
+   {
+      if (!this.validateFilterDates())
+      {
+         document.getElementById(Quote.PageElements.START_DATE_INPUT).value = 
+            document.getElementById(Quote.PageElements.END_DATE_INPUT).value
+      }
+
+      this.onFilterUpdate();
+      
+      setSession("quote.endDate", document.getElementById(Quote.PageElements.END_DATE_INPUT).value);
+   }
+   
+   onActiveQuotesChanged()
+   {
+      var activeQuotes = document.getElementById(Quote.PageElements.ACTIVE_QUOTES_INPUT).checked;
+      
+      if (activeQuotes)
+      {
+         disable(Quote.PageElements.START_DATE_INPUT);
+         disable(Quote.PageElements.END_DATE_INPUT);
+      }
+      else
+      {
+         enable(Quote.PageElements.START_DATE_INPUT);
+         enable(Quote.PageElements.END_DATE_INPUT);
+      }
+      
+      this.onFilterUpdate();
+      
+      setSession("quote.activeQuotes", (activeQuotes ? "true" : "false"));
+   }
+   
+   validateFilterDates()
+   {
+      let startDate = document.getElementById(Quote.PageElements.START_DATE_INPUT).value;
+      let endDate = document.getElementById(Quote.PageElements.END_DATE_INPUT).value;
+      
+      return (new Date(endDate) >= new Date(startDate))
+   }
+   
+   onFilterUpdate()
+   {
+      if (document.readyState === "complete")
+      {
+         let url = this.getTableQuery();
+         let params = this.getTableQueryParams();
+
+         this.table.setData(url, params)
+         .then(function(){
+            // Run code after table has been successfuly updated
+         })
+         .catch(function(error){
+            // Handle error loading data
+         });
+      }
    }
 }

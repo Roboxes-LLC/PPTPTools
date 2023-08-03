@@ -5,7 +5,9 @@ class Notification
    const UNKNOWN = 0;
    const FIRST = 1;
    const PRINTER_ALERT = Notification::FIRST;
-   const LAST = 9;
+   const QUOTE_REQUESTED = 2;
+   const QUOTE_SENT = 3;
+   const LAST = 4;
    
    const NO_NOTIFICATIONS = 0x00000000;
    const ALL_NOTIFICATIONS = 0xFFFFFFFF;
@@ -22,7 +24,9 @@ class Notification
       {
          Notification::$notifications =
             array(
-               new Notification(Notification::PRINTER_ALERT, "Printer Alert"),
+               new Notification(Notification::PRINTER_ALERT,   "Printer Alert"),
+               new Notification(Notification::QUOTE_REQUESTED, "Quote Requested"),
+               new Notification(Notification::QUOTE_SENT,      "Quote Sent")
             );
       }
       

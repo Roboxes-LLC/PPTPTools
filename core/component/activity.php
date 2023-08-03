@@ -25,7 +25,7 @@ class Activity
    {
       $this->activityId = Activity::UNKNOWN_ACTIVITY_ID;
       $this->dateTime = null;
-      $this->author = UserInfo::UNKNOWN_USER_ID;
+      $this->author = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->activityType = ActivityType::UNKNOWN;
       $this->objects = array();
       for ($index = 0; $index < Activity::MAX_OBJECTS; $index++)
@@ -57,7 +57,7 @@ class Activity
    {
       $success = false;
       
-      if ($activity->activityId == Site::UNKNOWN_SITE_ID)
+      if ($activity->activityId == Activity::UNKNOWN_ACTIVITY_ID)
       {
          $success = PPTPDatabaseAlt::getInstance()->addActivity($activity);
          
