@@ -191,13 +191,35 @@ class CustomerPage extends Page
                 // Fetch all components.
                 else
                 {
-                   $this->result->success = true;
-                   $this->result->contacts = CustomerManager::getContacts();
+                   if ($params->keyExists("customerId"))
+                   {
+                      $customerId = $params->getInt("customerId");
+                      
+                      $customer = Customer::load($customerId);
+                      
+                      if ($customer)
+                      {
+                         $this->result->contacts = CustomerManager::getContactsForCustomer($customerId);
+                         $this->result->success = true;
+                      }
+                      else
+                      {
+                         $this->error("Invalid customer id [$customerId]");
+                      }
+                   }
+                   else
+                   {
+                      $this->result->contacts = CustomerManager::getContacts();
+                      $this->result->success = true;
+                   }
                    
                    // Augment data.
-                   foreach ($this->result->contacts as $contact)
+                   if (isset($this->result->contacts))
                    {
-                      CustomerPage::augmentContact($contact);
+                      foreach ($this->result->contacts as $contact)
+                      {
+                         CustomerPage::augmentContact($contact);
+                      }
                    }
                 }
              }

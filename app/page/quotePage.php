@@ -10,88 +10,64 @@ class QuotePage extends Page
     {
        switch ($this->getRequest($params))
        {
-          /*
-          case "save_quote":
+          case "new_quote":
           {
-             if (Page::requireParams($params, ["vendorId", "vendorName", "contactName", "addressLine1", "addressLine2", "city", "state", "zipcode", "phone", "email"]))
+             if (Page::requireParams($params, ["customerId", "contactId", "customerPartNumber", "pptpPartNumber", "quantity"]))
              {
-                $customerId = $params->getInt("vendorId");
-                $newCustomer = ($customerId == Customer::UNKNOWN_VENDOR_ID);
+                $quote = new Quote();
+
+                QuotePage::getQuoteParams($quote, $params);
                 
-                $customer = null;
-                if ($newCustomer)
+                if (Quote::save($quote))
                 {
-                   $customer = new Customer();
+                   $this->result->quoteId = $quote->quoteId;
+                   $this->result->quote = $quote;
+                   $this->result->success = true;
+
+                   $quote->request(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                   
+                   ActivityLog::logComponentActivity(
+                      Authentication::getAuthenticatedUser()->employeeNumber,
+                      ActivityType::ADD_QUOTE,
+                      $quote->quoteId,
+                      $quote->getQuoteNumber());
                 }
                 else
                 {
-                   $customer = Customer::load($customerId);
-                   
-                   if (!$customer)
-                   {
-                      $customer = null;
-                      $this->error("Invalid vendor id [$customerId]");
-                   }
-                }
-                
-                if ($customer)
-                {
-                   CustomerPage::getCustomerParams($customer, $params);
-                   
-                   if (Customer::save($customer))
-                   {
-                      $this->result->vendorId = $customer->vendorId;
-                      $this->result->vendor = $customer;
-                      $this->result->success = true;
-                      
-                      $this->updateCustomerSites($customer, $params);
-                      
-                      ActivityLog::logComponentActivity(
-                         Authentication::getSite(),
-                         Authentication::getAuthenticatedUser()->userId,
-                         ($newCustomer ? ActivityType::ADD_VENDOR : ActivityType::EDIT_VENDOR),
-                         $customer->vendorId,
-                         $customer->vendorName);
-                   }
-                   else
-                   {
-                      $this->error("Database error");
-                   }
+                   $this->error("Database error");
                 }
              }
              break;
           }
           
-          case "delete_vendor":
+          case "delete_quote":
           {
-             if (Page::requireParams($params, ["vendorId"]))
+             if (Page::requireParams($params, ["quoteId"]))
              {
-                $customerId = $params->getInt("vendorId");
+                $quoteId = $params->getInt("quoteId");
                 
-                $customer = Customer::load($customerId);
+                $quote = Quote::load($quoteId);
                 
-                if ($customer)
+                if ($quote)
                 {
-                   Customer::delete($customerId);
+                   Quote::delete($quoteId);
                    
-                   $this->result->vendorId = $customerId;
+                   $this->result->quoteId = $quote->quoteId;
                    $this->result->success = true;
                    
                    ActivityLog::logComponentActivity(
-                      Authentication::getSite(),
-                      Authentication::getAuthenticatedUser()->userId,
-                      ActivityType::DELETE_VENDOR,
-                      $customerId,
-                      $customer->vendorName);
+                      Authentication::getAuthenticatedUser()->employeeNumber,
+                      ActivityType::DELETE_QUOTE,
+                      $quote->quoteId,
+                      $quote->getQuoteNumber());
                 }
                 else
                 {
-                   $this->error("Invalid vendor id [$customerId]");
+                   $this->error("Invalid quote id [$quoteId]");
                 }
              }
              break;
           }
-          */
           
           case "fetch":
           default:
@@ -179,6 +155,15 @@ class QuotePage extends Page
        $customer->supportAltPricing = $params->getBool("supportAltPricing");
     }
     */
+    
+    private static function getQuoteParams($quote, $params)
+    {
+       $quote->customerId = $params->getInt("customerId");
+       $quote->contactId = $params->getInt("contactId");
+       $quote->customerPartNumber = $params->get("customerPartNumber");
+       $quote->pptpPartNumber = $params->get("pptpPartNumber");
+       $quote->quantity = $params->getInt("quantity");
+    }
     
     private static function augmentQuote(&$quote)
     {

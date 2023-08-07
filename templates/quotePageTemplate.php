@@ -3,11 +3,8 @@ Required PHP variables:
    $versionQuery
    $javascriptFile
    $javascriptClass
-   $heading
-   $description
-   $formId
-   $form
    $appPageId
+   $requestPanel
  -->
 
 <html>
@@ -48,18 +45,11 @@ Required PHP variables:
          </div>
          
          <div id="description" class="description"><?php echo $description ?></div>
+         
+         <?php echo $requestPanel ?>
         
          <br>
-        
-         <?php echo $form ?>
-         
-         <br>
-         
-         <div class="flex-horizontal flex-h-center">
-            <button id="cancel-button">Cancel</button>&nbsp;&nbsp;&nbsp;
-            <button id="save-button" class="accent-button">Save</button>            
-         </div>
-         
+                  
       </div> <!-- content -->
       
    </div> <!-- main -->
@@ -76,7 +66,7 @@ Required PHP variables:
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
 
       // Store the initial state of the form, for change detection.
-      setInitialFormState("<?php echo $formId ?>");
+      //setInitialFormState(TODO);
    </script>
    
 </body>

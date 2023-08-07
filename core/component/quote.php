@@ -19,11 +19,13 @@ class Quote
    
    public $quoteId;
    public $quoteStatus;
+   // Request info
    public $customerId;
    public $contactId;
    public $customerPartNumber;
    public $pptpPartNumber;
    public $quantity;
+   // Estimate info
    public $unitPrice;
    public $costPerHour;
    public $additionalCharge;

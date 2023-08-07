@@ -2,9 +2,15 @@ class Quote
 {
    // HTML elements
    static PageElements = {
+      "INPUT_FORM":          "input-form",
       "START_DATE_INPUT":    "start-date-input",
       "END_DATE_INPUT":      "end-date-input",
-      "ACTIVE_QUOTES_INPUT": "active-quotes-input"
+      "ACTIVE_QUOTES_INPUT": "active-quotes-input",
+      "ADD_BUTTON":          "add-button",
+      "SAVE_BUTTON":         "save-button",
+      "CANCEL_BUTTON":       "cancel-button",
+      "CUSTOMER_ID_INPUT":   "customer-id-input",
+      "CONTACT_ID_INPUT":    "contact-id-input"
    };
 
    constructor()
@@ -47,6 +53,34 @@ class Quote
             enable(Quote.PageElements.END_DATE_INPUT);
          }
       }
+      
+      if (document.getElementById(Quote.PageElements.ADD_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.ADD_BUTTON).addEventListener('click', function() {
+            this.onAddButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.SAVE_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.SAVE_BUTTON).addEventListener('click', function() {
+            this.onSaveButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.CANCEL_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.CANCEL_BUTTON).addEventListener('click', function() {
+            this.onCancelButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.CUSTOMER_ID_INPUT) != null)
+      {
+         document.getElementById(Quote.PageElements.CUSTOMER_ID_INPUT).addEventListener('change', function() {
+            this.onCustomerChanged();
+         }.bind(this));
+      }      
    }      
    
    createTable(tableElementId)
@@ -86,48 +120,33 @@ class Quote
                }
             },
             {title:"Status",          field:"quoteStatusLabel",        headerFilter:true},
+            {title:"",                field:"delete",
+               formatter:function(cell, formatterParams, onRendered){
+                  return ("<i class=\"material-icons icon-button\">delete</i>");
+               }
+            }
          ],
          initialSort:[
             {column:"quoteNumber", dir:"asc"}
          ],
+         cellClick:function(e, cell){
+            let quoteId = parseInt(cell.getRow().getData().quoteId);
+            
+            if (cell.getColumn().getField() == "delete")
+            {
+               this.onDeleteButton(quoteId);
+               e.stopPropagation();
+            }
+         }.bind(this),
          rowClick:function(e, row){
             var quoteId = row.getData().quoteId;
-            document.location = `/quote/quote.php?quoteId=${defectId}`;
+            document.location = `/quote/quote.php?quoteId=${quoteId}`;
          }.bind(this),
       });
    }
    
-   onNewButton()
-   {
-      document.location = `/quote/quote.php?quoteId=${UNKNOWN_QUOTE_ID}`;
-   }
-   
    // **************************************************************************
-      
-   getTableQuery()
-   {
-      return ("/app/page/quote/");
-   }
-
-   getTableQueryParams()
-   {
-      
-      let params = new Object();
-      
-      params.request = "fetch";
-      
-      params.startDate =  document.getElementById(Quote.PageElements.START_DATE_INPUT).value;
-      
-      params.endDate =  document.getElementById(Quote.PageElements.END_DATE_INPUT).value;
-      
-      if (document.getElementById(Quote.PageElements.ACTIVE_QUOTES_INPUT).checked)
-      {
-         params.activeQuotes = true;
-      }
-
-      return (params);
-   }
-   
+         
    onStartDateChanged()
    {
       if (!this.validateFilterDates())
@@ -174,6 +193,100 @@ class Quote
       setSession("quote.activeQuotes", (activeQuotes ? "true" : "false"));
    }
    
+   onAddButton()
+   {
+      document.location = `/quote/newQuote.php`;
+   }
+   
+   onDeleteButton(quoteId)
+   {
+      if (confirm("Are you sure you want to delete this quote?"))
+      {
+         // AJAX call to delete the component.
+         let requestUrl = `/app/page/quote/?request=delete_quote&quoteId=${quoteId}`;
+         
+         ajaxRequest(requestUrl, function(response) {
+            if (response.success == true)
+            {
+               location.href = "/quote/quotes.php";
+            }
+            else
+            {
+               console.log("Call to delete the quote failed.");
+               alert(response.error);
+            }
+         });
+      }
+   }
+
+   onSaveButton()
+   {
+      if (this.validateForm())
+      {
+         submitForm(Quote.PageElements.INPUT_FORM, "/app/page/quote", function (response) {
+            if (response.success == true)
+            {
+               location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+            }
+            else
+            {
+               alert(response.error);
+            }
+         })
+      }      
+   }
+   
+   onCancelButton()
+   {
+      document.location = `/quote/quotes.php`;
+   }
+   
+   onCustomerChanged()
+   {
+      let customerId = document.getElementById(Quote.PageElements.CUSTOMER_ID_INPUT).value;
+      
+      // AJAX call to delete the component.
+      let requestUrl = `/app/page/customer/?request=fetch_contact&customerId=${customerId}`;
+      
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            console.log(response);
+            this.updateContactOptions(response.contacts);
+         }
+         else
+         {
+            console.log("Call to fetch contacts failed.");
+         }
+      }.bind(this));      
+   }
+   
+   // **************************************************************************
+      
+   getTableQuery()
+   {
+      return ("/app/page/quote/");
+   }
+
+   getTableQueryParams()
+   {
+      
+      let params = new Object();
+      
+      params.request = "fetch";
+      
+      params.startDate =  document.getElementById(Quote.PageElements.START_DATE_INPUT).value;
+      
+      params.endDate =  document.getElementById(Quote.PageElements.END_DATE_INPUT).value;
+      
+      if (document.getElementById(Quote.PageElements.ACTIVE_QUOTES_INPUT).checked)
+      {
+         params.activeQuotes = true;
+      }
+
+      return (params);
+   }
+   
    validateFilterDates()
    {
       let startDate = document.getElementById(Quote.PageElements.START_DATE_INPUT).value;
@@ -197,5 +310,30 @@ class Quote
             // Handle error loading data
          });
       }
+   }
+   
+   updateContactOptions(contacts)
+   {
+      let element = document.getElementById(Quote.PageElements.CONTACT_ID_INPUT);
+      
+      while (element.firstChild)
+      {
+         element.removeChild(element.firstChild);
+      }
+
+      for (let contact of contacts)
+      {
+         let option = document.createElement('option');
+         option.innerHTML = contact.firstName + " " + contact.lastName;
+         option.value = contact.contactId;
+         element.appendChild(option);
+      }
+   
+      element.value = null;
+   }
+   
+   validateForm()
+   {
+      return (true);
    }
 }
