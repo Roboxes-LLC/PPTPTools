@@ -10,31 +10,54 @@ class QuotePage extends Page
     {
        switch ($this->getRequest($params))
        {
-          case "new_quote":
+          case "save_quote":
           {
-             if (Page::requireParams($params, ["customerId", "contactId", "customerPartNumber", "pptpPartNumber", "quantity"]))
+             if (Page::requireParams($params, ["quoteId", "customerId", "contactId", "customerPartNumber", "pptpPartNumber", "quantity"]))
              {
-                $quote = new Quote();
-
-                QuotePage::getQuoteParams($quote, $params);
+                $quoteId = $params->getInt("quoteId");
+                $newQuote = ($quoteId == Quote::UNKNOWN_QUOTE_ID);
                 
-                if (Quote::save($quote))
+                $quote = null;
+                if ($newQuote)
                 {
-                   $this->result->quoteId = $quote->quoteId;
-                   $this->result->quote = $quote;
-                   $this->result->success = true;
-
-                   $quote->request(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
-                   
-                   ActivityLog::logComponentActivity(
-                      Authentication::getAuthenticatedUser()->employeeNumber,
-                      ActivityType::ADD_QUOTE,
-                      $quote->quoteId,
-                      $quote->getQuoteNumber());
+                   $quote = new Quote();
                 }
                 else
                 {
-                   $this->error("Database error");
+                   $quote = Quote::load($quoteId);
+                   
+                   if (!$quote)
+                   {
+                      $quote = null;
+                      $this->error("Invalid quote id [$quoteId]");
+                   }
+                }
+                
+                if ($quote)
+                {
+                   QuotePage::getQuoteParams($quote, $params);
+                   
+                   if (Quote::save($quote))
+                   {
+                      $this->result->quoteId = $quote->quoteId;
+                      $this->result->quote = $quote;
+                      $this->result->success = true;
+                      
+                      if ($newQuote)
+                      {
+                         $quote->request(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                      }
+                      
+                      ActivityLog::logComponentActivity(
+                         Authentication::getAuthenticatedUser()->employeeNumber,
+                         ($newQuote ? ActivityType::ADD_QUOTE : ActivityType::EDIT_QUOTE),
+                         $quote->quoteId,
+                         $quote->getQuoteNumber());
+                   }
+                   else
+                   {
+                      $this->error("Database error");
+                   }
                 }
              }
              break;
@@ -69,6 +92,288 @@ class QuotePage extends Page
              break;
           }
           
+          case "estimate_quote":
+          {
+             if (Page::requireParams($params, ["quoteId", "unitPrice", "costPerHour", "additionalCharge", "chargeCode", "totalCost", "leadTime"]))
+             {
+                $quoteId = $params->getInt("quoteId");
+                $quote = Quote::load($quoteId);
+                
+                if ($quote)
+                {
+                   QuotePage::getEstimateParams($quote, $params);
+                   
+                   if (Quote::save($quote))
+                   {
+                      $this->result->quoteId = $quote->quoteId;
+                      $this->result->quote = $quote;
+                      $this->result->success = true;
+                      
+                      $isQuoted = $quote->isQuoted();
+                      
+                      if (!$isQuoted)
+                      {
+                         $quote->quote(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                      }
+                      else if (($quote->quoteStatus == QuoteStatus::UNAPPROVED) ||
+                               ($quote->quoteStatus == QuoteStatus::REJECTED))
+                      {
+                         $quote->revise(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                      }
+                      
+                      ActivityLog::logComponentActivity(
+                         Authentication::getAuthenticatedUser()->employeeNumber,
+                         ($isQuoted ? ActivityType::REVISE_QUOTE : ActivityType::ESTIMATE_QUOTE),
+                         $quote->quoteId,
+                         $quote->getQuoteNumber());
+                   }
+                   else
+                   {
+                      $this->error("Database error");
+                   }
+                }
+                else
+                {
+                   $this->error("Invalid quote id [$quoteId]");
+                }
+             }
+             break;
+          }
+          
+          case "approve_quote":
+          {
+             if (Page::requireParams($params, ["quoteId", "approveNotes", "isApproved"]))
+             {
+                $quoteId = $params->getInt("quoteId");
+                
+                $quote = Quote::load($quoteId);
+                
+                if ($quote)
+                {
+                   $isApproved = $params->getBool("isApproved");
+                   
+                   $notes = $params->get("approveNotes");
+                   // Don't store empty notes.
+                   if (empty($notes))
+                   {
+                      $notes = null;
+                   }
+                   
+                   if ($isApproved)
+                   {
+                      if ($quote->approve(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
+                      {
+                         $this->result->quoteId = $quote->quoteId;
+                         $this->result->quote = $quote;
+                         $this->result->success = true;
+                  
+                         ActivityLog::logApproveQuote(
+                            Authentication::getAuthenticatedUser()->employeeNumber,
+                            $quote->quoteId,
+                            $quote->getQuoteNumber(),
+                            $notes);
+                      }
+                      else
+                      {
+                         $this->error("Database error");
+                      }
+                   }
+                   else
+                   {
+                      if ($quote->unapprove(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
+                      {
+                         $this->result->quoteId = $quote->quoteId;
+                         $this->result->quote = $quote;
+                         $this->result->success = true;
+                         
+                         ActivityLog::logUnapproveQuote(
+                               Authentication::getAuthenticatedUser()->employeeNumber,
+                               $quote->quoteId,
+                               $quote->getQuoteNumber(),
+                               $notes);
+                      }
+                      else 
+                      {
+                         $this->error("Database error");
+                      }
+                   }
+                }
+                else 
+                {
+                   $this->error("Invalid quote id [$quoteId]");
+                }
+             }
+             break;
+          }
+          
+          case "send_quote":
+          {
+             if (Page::requireParams($params, ["toEmail", "ccEmail", "fromEmail", "emailBody"]))
+             {
+                $quoteId = $params->getInt("quoteId");
+                $quote = Quote::load($quoteId);
+                
+                if ($quote)
+                {
+                   $toEmail = explode(";", $params->get("toEmail"));
+                   $ccEmail = explode(";", $params->get("ccEmail"));
+                   $fromEmail = $params->get("fromEmail");
+                   $emailbody = $params->get("emailBody");
+                   
+                   // TODO: Actually send.
+                   
+                   if ($quote->send(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null))
+                   {
+                      $this->result->quoteId = $quote->quoteId;
+                      $this->result->quote = $quote;
+                      $this->result->success = true;
+                      
+                      ActivityLog::logComponentActivity(
+                         Authentication::getAuthenticatedUser()->employeeNumber,
+                         ActivityType::SEND_QUOTE,
+                         $quote->quoteId,
+                         $quote->getQuoteNumber());
+                   }
+                   else
+                   {
+                      $this->error("Database error");
+                   }
+                }
+                else
+                {
+                   $this->error("Invalid quote id [$quoteId]");
+                }
+             }
+             break;
+          }
+          
+          case "accept_quote":
+          {
+             if (Page::requireParams($params, ["quoteId", "acceptNotes", "isAccepted"]))
+             {
+                $quoteId = $params->getInt("quoteId");
+                $quote = Quote::load($quoteId);
+                
+                if ($quote)
+                {
+                   $isAccepted = $params->getBool("isAccepted");
+                   
+                   $notes = $params->get("acceptNotes");
+                   // Don't store empty notes.
+                   if (empty($notes))
+                   {
+                      $notes = null;
+                   }
+                   
+                   if ($isAccepted)
+                   {
+                      if ($quote->accept(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
+                      {
+                         $this->result->quoteId = $quote->quoteId;
+                         $this->result->quote = $quote;
+                         $this->result->success = true;
+                         
+                         ActivityLog::logAcceptQuote(
+                            Authentication::getAuthenticatedUser()->employeeNumber,
+                            $quote->quoteId,
+                            $quote->getQuoteNumber(),
+                            $notes);
+                      }
+                      else
+                      {
+                         $this->error("Database error");
+                      }
+                   }
+                   else
+                   {
+                      if ($quote->reject(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
+                      {
+                         $this->result->quoteId = $quote->quoteId;
+                         $this->result->quote = $quote;
+                         $this->result->success = true;
+                         
+                         ActivityLog::logRejectQuote(
+                            Authentication::getAuthenticatedUser()->employeeNumber,
+                            $quote->quoteId,
+                            $quote->getQuoteNumber(),
+                            $notes);
+                      }
+                      else
+                      {
+                         $this->error("Database error");
+                      }
+                   }
+                }
+                else
+                {
+                   $this->error("Invalid quote id [$quoteId]");
+                }
+             }
+             break;
+          }
+          
+          case "add_comment":
+          {
+             if (Page::requireParams($params, ["quoteId", "comments"]))
+             {
+                $quoteId = $params->getInt("quoteId");
+                $comments = $params->get("comments");
+                
+                $quote = Quote::load($quoteId);
+                
+                if ($quote)
+                {
+                   ActivityLog::logComponentActivity(
+                      Authentication::getAuthenticatedUser()->employeeNumber,
+                      ActivityType::ANNOTATE_QUOTE,
+                      $quote->quoteId,
+                      $comments);
+                   
+                   $this->result->quoteId = $quote->quoteId;
+                   $this->result->success = true;
+                }
+                else 
+                {
+                   $this->error("Invalid quote id [$quoteId]");
+                }
+             }
+             break;
+          }
+          
+          case "delete_comment":
+          {  
+             if (Page::requireParams($params, ["activityId"]))
+             {
+                $activityId = $params->getInt("activityId");
+                
+                $activity = Activity::load($activityId);
+                
+                if ($activity)
+                {
+                   if ($activity->author == Authentication::getAuthenticatedUser()->employeeNumber)
+                   {
+                      if (ActivityLog::deleteActivity($activityId))
+                      {
+                         $this->result->success = true;
+                      }
+                      else 
+                      {
+                         $this->error("Database error");
+                      }
+                   }
+                   else
+                   {
+                      $this->error("Authentication error");
+                   }
+                }
+                else
+                {
+                   $this->error("Invalid activity id [$activityId]");
+                }
+             }
+             break;
+          }
+          
           case "fetch":
           default:
           {
@@ -79,7 +384,7 @@ class QuotePage extends Page
                 {
                    $quoteId = $params->getInt("quoteId");
                    
-                   $quote = Customer::load($quoteId);
+                   $quote = Quote::load($quoteId);
                    
                    if ($quote)
                    {
@@ -156,13 +461,23 @@ class QuotePage extends Page
     }
     */
     
-    private static function getQuoteParams($quote, $params)
+    private static function getQuoteParams(&$quote, $params)
     {
        $quote->customerId = $params->getInt("customerId");
        $quote->contactId = $params->getInt("contactId");
        $quote->customerPartNumber = $params->get("customerPartNumber");
        $quote->pptpPartNumber = $params->get("pptpPartNumber");
        $quote->quantity = $params->getInt("quantity");
+    }
+    
+    private static function getEstimateParams(&$quote, $params)
+    {
+       $quote->unitPrice = $params->getFloat("unitPrice");
+       $quote->costPerHour = $params->getFloat("costPerHour");
+       $quote->additionalCharge = $params->getFloat("additionalCharge");
+       $quote->chargeCode = $params->getInt("chargeCode");
+       $quote->totalCost = $params->getFloat("totalCost");
+       $quote->leadTime = $params->getInt("leadTime");
     }
     
     private static function augmentQuote(&$quote)

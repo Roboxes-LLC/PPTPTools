@@ -36,13 +36,15 @@ function getDescription()
 
 function getForm()
 {   
+   $unknownQuoteId = Quote::UNKNOWN_QUOTE_ID;
    $customerOptions = Customer::getOptions();
    $contactOptions = Contact::getOptions();
    
    $html = 
 <<< HEREDOC
    <form id="input-form" style="display: block">
-      <input type="hidden" name="request" value="new_quote"/>
+      <input type="hidden" name="request" value="save_quote"/>
+      <input type="hidden" name="quoteId" value="$unknownQuoteId"/>
 
       <div class="form-item">
          <div class="form-label-long">Customer</div>

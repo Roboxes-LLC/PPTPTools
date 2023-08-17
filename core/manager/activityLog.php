@@ -39,11 +39,11 @@ class ActivityLog
       return ($activities);
    }
    
-   public static function getActivitiesForQuote($startDateTime, $endDateTime, $quoteId)
+   public static function getActivitiesForQuote($quoteId)
    {
       $activities = array();
       
-      $result = PPTPDatabaseAlt::getInstance()->getActivitiesForPurchaseOrder($startDateTime, $endDateTime, $quoteId);
+      $result = PPTPDatabaseAlt::getInstance()->getActivitiesForQuote($quoteId);
       
       foreach ($result as $row)
       {
@@ -68,7 +68,32 @@ class ActivityLog
    
    public static function logLogOut($author)
    {
-      return (ActivityLog::createLogEntry($siteId, $author, ActivityType::LOG_OUT, array()));
+      return (ActivityLog::createLogEntry($author, ActivityType::LOG_OUT, array()));
+   }
+   
+   public static function logApproveQuote($author, $componentId, $componentLabel, $notes)
+   {
+      return (ActivityLog::createLogEntry($author, ActivityType::APPROVE_QUOTE, array($componentId, $componentLabel, $notes)));
+   }
+   
+   public static function logUnapproveQuote($author, $componentId, $componentLabel, $notes)
+   {
+      return (ActivityLog::createLogEntry($author, ActivityType::UNAPPROVE_QUOTE, array($componentId, $componentLabel, $notes)));
+   }
+   
+   public static function logAcceptQuote($author, $componentId, $componentLabel, $notes)
+   {
+      return (ActivityLog::createLogEntry($author, ActivityType::ACCEPT_QUOTE, array($componentId, $componentLabel, $notes)));
+   }
+   
+   public static function logRejectQuote($author, $componentId, $componentLabel, $notes)
+   {
+      return (ActivityLog::createLogEntry($author, ActivityType::REJECT_QUOTE, array($componentId, $componentLabel, $notes)));
+   }
+   
+   public static function deleteActivity($activityId)
+   {
+      return (PPTPDatabaseAlt::getInstance()->deleteActivity($activityId));
    }
       
    private static function createLogEntry($author, $activityType, $objects)

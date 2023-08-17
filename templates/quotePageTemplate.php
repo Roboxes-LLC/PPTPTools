@@ -4,7 +4,14 @@ Required PHP variables:
    $javascriptFile
    $javascriptClass
    $appPageId
+   $timeline
+   $historyPanel
    $requestPanel
+   $quotePanel
+   $approvePanel
+   $sendPanel
+   $acceptPanel
+   $quoteStatus
  -->
 
 <html>
@@ -13,7 +20,7 @@ Required PHP variables:
 
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined"/>
    
    <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
@@ -45,10 +52,28 @@ Required PHP variables:
          </div>
          
          <div id="description" class="description"><?php echo $description ?></div>
+            
+         <div><?php echo $timeline ?></div>
          
-         <?php echo $requestPanel ?>
-        
-         <br>
+         <div class="flex-horizontal">
+            
+            <div class="flex-vertical">
+               <?php echo $requestPanel ?>
+               
+               <?php echo $quotePanel ?>
+               
+               <?php echo $approvePanel ?>
+               
+               <?php echo $sendPanel ?>
+               
+               <?php echo $acceptPanel ?>
+            </div>
+            
+            <div class="flex-vertical flex-top flex-left">
+               <?php echo $historyPanel ?>
+            </div>
+
+         </div>
                   
       </div> <!-- content -->
       
@@ -61,6 +86,7 @@ Required PHP variables:
       menu.setMenuItemSelected(<?php echo $appPageId ?>);  
          
       var PAGE = new <?php echo $javascriptClass ?>();
+      PAGE.setQuoteStatus(<?php echo $quoteStatus ?>);
 
       // Setup event handling on all DOM elements.
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};

@@ -105,7 +105,7 @@ class Customer
       {
          $label = $customer->customerName;
          
-         $html = "<a href=\"customer.php?customerId=$customerId\">$label</a>";
+         $html = "<a href=\"/customer/customer.php?customerId=$customerId\">$label</a>";
       }
       
       return ($html);

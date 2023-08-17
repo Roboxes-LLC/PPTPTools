@@ -93,28 +93,16 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
-   public function getActivitiesForQuote($startDateTime, $endDateTime, $quoteId, $orderAscending = true)
+   public function getActivitiesForQuote($quoteId, $orderAscending = true)
    {
-      $startDate = Time::toMySqlDate(Time::startOfDay($startDateTime));
-      $endDate = Time::toMySqlDate(Time::endOfDay($endDateTime));
-      
-      $quoteIdClause = ($quoteId != Quote::UNKNOWN_QUOTE_ID) ? "object_0 = ?" : "TRUE";
-            
       $order = $orderAscending ? "ASC" : "DESC";
       
       $statement = $this->pdo->prepare(
          "SELECT * FROM activity " .
-         "WHERE (dateTime BETWEEN ? AND ?) AND " .
-         "$quoteIdClause " .
+         "WHERE object_0 = ? " .
          "ORDER BY dateTime $order;");
             
-      $params = [$startDate, $endDate];
-      if ($quoteId != Quote::UNKNOWN_QUOTE_ID)
-      {
-         $params[] = $quoteId;
-      }
-      
-      $result = $statement->execute($params) ? $statement->fetchAll() : null;
+      $result = $statement->execute([$quoteId]) ? $statement->fetchAll() : null;
       
       return ($result);
    }
@@ -527,6 +515,73 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare("DELETE FROM quoteaction WHERE quoteActionId = ?");
       
       $result = $statement->execute([$quoteActionId]);
+      
+      return ($result);
+   }   
+   
+   // **************************************************************************
+   //                             Quote Attachment
+   
+   public function getQuoteAttachment($attachmentId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM quoteattachment WHERE attachmentId = ?;");
+      
+      $result = $statement->execute([$attachmentId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getQuoteAttachments($quoteId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM quoteattachment WHERE quoteId = ? ORDER BY attachmentId ASC;");
+      
+      $result = $statement->execute([$quoteId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addQuoteAttachment($quoteAction)
+   {      
+      $statement = $this->pdo->prepare(
+         "INSERT INTO quoteattachment " .
+         "(quoteId, filename, storedFilename) " .
+         "VALUES (?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $quoteAttachment->quoteId,
+            $quoteAttachment->filename,
+            $quoteAttachment->storedFilename
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateQuoteAttachment($quoteAttachment)
+   {
+      $statement = $this->pdo->prepare(
+         "UPDATE quoteattachment " .
+         "SET quoteId = ?, filename = ?, storedFilename = ? " .
+         "WHERE attachmentId = ?");
+      
+      $result = $statement->execute(
+         [
+            $quoteAttachment->quoteId,
+            $quoteAttachment->filename,
+            $quoteAttachment->storedFilename,
+            $quoteAttachment->attachmentId
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteQuoteAttachment($attachmentId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM quoteattachment WHERE attachmentId = ?");
+      
+      $result = $statement->execute([$attachmentId]);
       
       return ($result);
    }   

@@ -14,3 +14,5 @@ UNKNOWN_CUSTOMER_ID = <?php echo Customer::UNKNOWN_CUSTOMER_ID ?>;
 UNKNOWN_CONTACT_ID = <?php echo Contact::UNKNOWN_CONTACT_ID ?>;
 
 UNKNOWN_QUOTE_ID = <?php echo Quote::UNKNOWN_QUOTE_ID ?>;
+
+<?php echo QuoteStatus::getJavascript("QuoteStatus") . "\n" ?>

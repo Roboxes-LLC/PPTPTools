@@ -31,8 +31,9 @@ abstract class ActivityType
    const REJECT_QUOTE = 23;
    const REVISE_QUOTE = 24;
    const PASS_QUOTE = 25;
+   const ANNOTATE_QUOTE = 26;
    //
-   const LAST = 26;
+   const LAST = 27;
    const COUNT = ActivityType::LAST - ActivityType::FIRST;
    
    public static $quoteActivites = 
@@ -48,6 +49,7 @@ abstract class ActivityType
          ActivityType::REJECT_QUOTE,
          ActivityType::REVISE_QUOTE,
          ActivityType::PASS_QUOTE,
+         ActivityType::ANNOTATE_QUOTE,
       );
       
    public static function getLabel($activityType)
@@ -89,7 +91,6 @@ abstract class ActivityType
       switch ($activityType)
       {
          case ActivityType::LOG_IN:
-         case ActivityType::SWITCH_SITE:
          {
             $icon = "login";
             break;
@@ -108,14 +109,51 @@ abstract class ActivityType
          }
          
          case ActivityType::EDIT_QUOTE:
+         case ActivityType::REVISE_QUOTE:
          {
             $icon = "edit";
+            break;
+         }
+         
+         case ActivityType::ESTIMATE_QUOTE:
+         {
+            $icon = "calculate";
             break;
          }
          
          case ActivityType::APPROVE_QUOTE:
          {
             $icon = "thumb_up_alt";
+            break;
+         }
+         
+         case ActivityType::UNAPPROVE_QUOTE:
+         {
+            $icon = "thumb_down_alt";
+            break;
+         }
+         
+         case ActivityType::SEND_QUOTE:
+         {
+            $icon = "mail";
+            break;
+         }
+         
+         case ActivityType::ACCEPT_QUOTE:
+         {
+            $icon = "done";
+            break;
+         }
+         
+         case ActivityType::REJECT_QUOTE:
+         {
+            $icon = "cancel";
+            break;
+         }
+         
+         case ActivityType::ANNOTATE_QUOTE:
+         {
+            $icon = "chat";
             break;
          }
       

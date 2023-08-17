@@ -4,6 +4,7 @@ if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/common/userInfo.php';
 require_once ROOT.'/core/common/activityType.php';
 require_once ROOT.'/core/common/pptpDatabase.php';
+require_once ROOT.'/core/common/stringUtils.php';
 
 class Activity
 {
@@ -13,7 +14,7 @@ class Activity
    
    const MAX_OBJECTS = 3;
    
-   const MAX_OBJECT_LENGTH = 32;
+   const MAX_OBJECT_LENGTH = 256;
    
    public $activityId;
    public $dateTime;
@@ -178,6 +179,139 @@ class Activity
             $description = "User $authorUsername deleted category $customerName";
             break;
          }
+         
+         case ActivityType::ADD_QUOTE:
+         {
+            $quoteId = intval($this->objects[0]);
+            $quote = Quote::load($quoteId);
+            
+            $quoteNumber = Quote::getLink($quoteId);
+            
+            $customerName = "";
+            if ($quote)
+            {
+               $customerName = Customer::getLink($quote->customerId);
+            }
+            
+            $description = "User $authorUsername create quote $quoteNumber for $customerName";
+            break;
+         }
+         
+         case ActivityType::EDIT_QUOTE:
+         {
+            $quoteNumber = Quote::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername edited quote $quoteNumber";
+            break;
+         }
+         
+         case ActivityType::DELETE_QUOTE:
+         {
+            $quoteNumber = $this->objects[1];
+            
+            $description = "User $authorUsername deleted quote $quoteNumber";
+            break;
+         }
+         
+         case ActivityType::ESTIMATE_QUOTE:
+         {
+            $quoteNumber = Quote::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername created an estimate for quote $quoteNumber";
+            break;
+         }
+         
+         case ActivityType::APPROVE_QUOTE:
+         {
+            $quoteNumber = Quote::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername approved quote $quoteNumber";
+            break;
+         }
+         
+         case ActivityType::UNAPPROVE_QUOTE:
+         {
+            $quoteNumber = Quote::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername marked $quoteNumber as unapproved";
+            break;
+         }
+         
+         case ActivityType::SEND_QUOTE:
+         {
+            $quoteId = intval($this->objects[0]);
+            $quote = Quote::load($quoteId);
+            
+            $quoteNumber = Quote::getLink($quoteId);
+            
+            $customerName = "";
+            if ($quote)
+            {
+               $customerName = Customer::getLink($quote->customerId);
+            }
+            
+            $description = "User $authorUsername sent quote $quoteNumber to $customerName";
+            break;
+         }
+         
+         case ActivityType::ACCEPT_QUOTE:
+         {
+            $quoteId = intval($this->objects[0]);
+            $quote = Quote::load($quoteId);
+            
+            $quoteNumber = Quote::getLink($quoteId);
+            
+            $customerName = "";
+            if ($quote)
+            {
+               $customerName = Customer::getLink($quote->customerId);
+            }
+            
+            $description = "User $authorUsername marked quote $quoteNumber as accepted by $customerName";
+            break;
+         }
+         
+         case ActivityType::REJECT_QUOTE:
+         {
+            $quoteId = intval($this->objects[0]);
+            $quote = Quote::load($quoteId);
+            
+            $quoteNumber = Quote::getLink($quoteId);
+            
+            $customerName = "";
+            if ($quote)
+            {
+               $customerName = Customer::getLink($quote->customerId);
+            }
+            
+            $description = "User $authorUsername marked quote $quoteNumber as rejected by $customerName";
+            break;
+         }
+         
+         case ActivityType::REVISE_QUOTE:
+         {
+            $quoteNumber = Quote::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername revised the estimate for quote $quoteNumber";
+            break;
+         }
+         
+         case ActivityType::PASS_QUOTE:
+         {
+            $quoteNumber = Quote::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername passed on quote $quoteNumber";
+            break;
+         }
+         
+         case ActivityType::ANNOTATE_QUOTE:
+         {
+            $quoteNumber = Quote::getLink(intval($this->objects[0]));
+            $comments = $this->objects[1];
+            
+            $description = "$authorUsername: \"$comments\"";
+            break;
+         }
             
          default:
          {
@@ -195,7 +329,6 @@ class Activity
    public function initialize($row)
    {
       $this->activityId = intval($row['activityId']);
-      $this->siteId = intval($row['siteId']);
       $this->dateTime =  Time::fromMySqlDate($row['dateTime']);
       $this->author = intval($row['author']);
       $this->activityType = intval($row['activityType']);

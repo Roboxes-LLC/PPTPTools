@@ -2,20 +2,51 @@ class Quote
 {
    // HTML elements
    static PageElements = {
+      // Forms
       "INPUT_FORM":          "input-form",
+      "REQUEST_FORM":        "request-form",
+      "QUOTE_FORM":          "quote-form",
+      "APPROVE_FORM":        "approve-form",
+      "ACCEPT_FORM":         "accept-form",
+      "SEND_FORM":           "send-form",
+      "HISTORY_FORM":        "history-form",
+      // Filters
       "START_DATE_INPUT":    "start-date-input",
       "END_DATE_INPUT":      "end-date-input",
       "ACTIVE_QUOTES_INPUT": "active-quotes-input",
+      // Buttons
       "ADD_BUTTON":          "add-button",
       "SAVE_BUTTON":         "save-button",
       "CANCEL_BUTTON":       "cancel-button",
+      "UPDATE_BUTTON":       "update-button",
+      "QUOTE_BUTTON":        "quote-button",
+      "REVISE_BUTTON":       "revise-button",
+      "APPROVE_BUTTON":      "approve-button",
+      "UNAPPROVE_BUTTON":    "unapprove-button",
+      "SEND_BUTTON":         "send-button",
+      "RESEND_BUTTON":       "resend-button",
+      "ACCEPT_BUTTON":       "accept-button",
+      "REJECT_BUTTON":       "reject-button",
+      "COMMENT_BUTTON":      "comment-button",
+      // Input fields
       "CUSTOMER_ID_INPUT":   "customer-id-input",
-      "CONTACT_ID_INPUT":    "contact-id-input"
+      "CONTACT_ID_INPUT":    "contact-id-input",
+      "IS_APPROVED_INPUT":   "is-approved-input",
+      "IS_ACCEPTED_INPUT":   "is-accepted-input",
+      // Panels
+      "REQUEST_PANEL":       "request-panel",
+      "QUOTE_PANEL":         "quote-panel",
+      "ESTIMATE_PANEL":      "estimate-panel",
+      "APPROVE_PANEL":       "approve-panel",
+      "SEND_PANEL":          "send-panel",
+      "ACCEPT_PANEL":        "accept-panel",
+      "HISTORY_PANEL":       "history-panel"
    };
 
    constructor()
    {      
       this.table = null;
+      this.quoteStatus = QuoteStatus.UNKNOWN;
       
       this.setup();
    }
@@ -75,10 +106,100 @@ class Quote
          }.bind(this));
       }
       
+      if (document.getElementById(Quote.PageElements.UPDATE_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.UPDATE_BUTTON).addEventListener('click', function() {
+            this.onUpdateButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.QUOTE_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.QUOTE_BUTTON).addEventListener('click', function() {
+            this.onQuoteButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.REVISE_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.REVISE_BUTTON).addEventListener('click', function() {
+            this.onQuoteButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.APPROVE_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.APPROVE_BUTTON).addEventListener('click', function() {
+            this.onApproveButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.UNAPPROVE_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.UNAPPROVE_BUTTON).addEventListener('click', function() {
+            this.onUnapproveButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.SEND_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.SEND_BUTTON).addEventListener('click', function() {
+            this.onSendButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.RESEND_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.RESEND_BUTTON).addEventListener('click', function() {
+            this.onSendButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.ACCEPT_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.ACCEPT_BUTTON).addEventListener('click', function() {
+            this.onAcceptButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.REJECT_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.REJECT_BUTTON).addEventListener('click', function() {
+            this.onRejectButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.COMMENT_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.COMMENT_BUTTON).addEventListener('click', function() {
+            this.onCommentButton();
+         }.bind(this));
+      }
+      
+      let deleteCommentIcons = document.getElementsByClassName("delete-comment-icon");
+      for (let icon of deleteCommentIcons)
+      {
+         let activityId = icon.dataset.activityId;
+         
+         icon.addEventListener('click', function() {
+            this.onDeleteCommentButton(activityId);
+         }.bind(this));
+      }
+      
       if (document.getElementById(Quote.PageElements.CUSTOMER_ID_INPUT) != null)
       {
          document.getElementById(Quote.PageElements.CUSTOMER_ID_INPUT).addEventListener('change', function() {
             this.onCustomerChanged();
+         }.bind(this));
+      }
+      
+      // Collapsible panels.
+      let headers = document.querySelectorAll(".collapsible-panel-header");
+      for (let header of headers)
+      {
+         header.addEventListener('click', function(event) {
+            let panelId = event.target.closest(".collapsible-panel").id;
+            this.togglePanel(panelId);
          }.bind(this));
       }      
    }      
@@ -143,6 +264,13 @@ class Quote
             document.location = `/quote/quote.php?quoteId=${quoteId}`;
          }.bind(this),
       });
+   }
+   
+   setQuoteStatus(quoteStatus)
+   {
+      this.quoteStatus = quoteStatus;
+      
+      this.updateControls();
    }
    
    // **************************************************************************
@@ -241,6 +369,150 @@ class Quote
       document.location = `/quote/quotes.php`;
    }
    
+   onUpdateButton()
+   {
+      if (this.validateRequestForm())
+      {
+         submitForm(Quote.PageElements.REQUEST_FORM, "/app/page/quote", function (response) {
+            if (response.success == true)
+            {
+               location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+            }
+            else
+            {
+               alert(response.error);
+            }
+         })
+      }      
+   }
+   
+   onQuoteButton()
+   {
+      if (this.validateQuoteForm())
+      {
+         submitForm(Quote.PageElements.QUOTE_FORM, "/app/page/quote", function (response) {
+            if (response.success == true)
+            {
+               location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+            }
+            else
+            {
+               alert(response.error);
+            }
+         })
+      }      
+   }
+   
+   onApproveButton()
+   {
+      document.getElementById(Quote.PageElements.IS_APPROVED_INPUT).value = "true";
+      
+      submitForm(Quote.PageElements.APPROVE_FORM, "/app/page/quote", function (response) {
+         if (response.success == true)
+         {
+            location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+         }
+         else
+         {
+            alert(response.error);
+         }
+      })
+   }
+   
+   onUnapproveButton()
+   {
+      document.getElementById(Quote.PageElements.IS_APPROVED_INPUT).value = "false";
+            
+      submitForm(Quote.PageElements.APPROVE_FORM, "/app/page/quote", function (response) {
+         if (response.success == true)
+         {
+            location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+         }
+         else
+         {
+            alert(response.error);
+         }
+      })
+   }
+   
+   onSendButton()
+   {
+      submitForm(Quote.PageElements.SEND_FORM, "/app/page/quote", function (response) {
+         if (response.success == true)
+         {
+            location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+         }
+         else
+         {
+            alert(response.error);
+         }
+      })
+   }
+   
+   onAcceptButton()
+   {
+      document.getElementById(Quote.PageElements.IS_ACCEPTED_INPUT).value = "true";
+      
+      submitForm(Quote.PageElements.ACCEPT_FORM, "/app/page/quote", function (response) {
+         if (response.success == true)
+         {
+            location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+         }
+         else
+         {
+            alert(response.error);
+         }
+      })
+   }
+   
+   onRejectButton()
+   {
+      document.getElementById(Quote.PageElements.IS_ACCEPTED_INPUT).value = "false";
+            
+      submitForm(Quote.PageElements.ACCEPT_FORM, "/app/page/quote", function (response) {
+         if (response.success == true)
+         {
+            location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+         }
+         else
+         {
+            alert(response.error);
+         }
+      })
+   }
+   
+   onCommentButton()
+   {
+      submitForm(Quote.PageElements.HISTORY_FORM, "/app/page/quote", function (response) {
+         if (response.success == true)
+         {
+            location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+         }
+         else
+         {
+            alert(response.error);
+         }
+      })
+   }
+   
+   onDeleteCommentButton(activityId)
+   {
+      // AJAX call to delete the component.
+      let requestUrl = `/app/page/quote/?request=delete_comment&activityId=${activityId}`;
+      
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            location.reload();
+         }
+         else
+         {
+            console.log("Call to delete the comment failed.");
+            alert(response.error);
+         }
+         });
+   }
+   
    onCustomerChanged()
    {
       let customerId = document.getElementById(Quote.PageElements.CUSTOMER_ID_INPUT).value;
@@ -335,5 +607,131 @@ class Quote
    validateForm()
    {
       return (true);
+   }
+   
+   validateRequestForm()
+   {
+      return (true);
+   }
+   
+   validateQuoteForm()
+   {
+      return (true);
+   }
+   
+   // **************************************************************************
+   
+   updateControls()
+   {
+      switch (this.quoteStatus)
+      {
+         case QuoteStatus.REQUESTED:
+         {
+            this.hidePanel(Quote.PageElements.APPROVE_PANEL);
+            this.hidePanel(Quote.PageElements.SEND_PANEL);
+            this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
+            
+            this.hidePanel(Quote.PageElements.REVISE_BUTTON);
+            break;
+         }
+         
+         case QuoteStatus.QUOTED:
+         case QuoteStatus.REVISED:
+         {
+            this.hidePanel(Quote.PageElements.SEND_PANEL);
+            this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
+            
+            this.collapsePanel(Quote.PageElements.QUOTE_PANEL);
+            
+            this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
+            break;
+         }
+         
+         case QuoteStatus.UNAPPROVED:
+         case QuoteStatus.REJECTED:
+         {
+            this.hidePanel(Quote.PageElements.APPROVE_PANEL);
+            this.hidePanel(Quote.PageElements.SEND_PANEL);
+            this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
+            
+            this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
+            break;
+         }
+         
+         case QuoteStatus.APPROVED:
+         {
+            this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
+            
+            this.collapsePanel(Quote.PageElements.QUOTE_PANEL);
+            this.collapsePanel(Quote.PageElements.APPROVE_PANEL);
+
+            this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
+            this.hidePanel(Quote.PageElements.APPROVE_BUTTON);
+            this.hidePanel(Quote.PageElements.RESEND_BUTTON);
+            break;
+         }
+         
+         case QuoteStatus.SENT:
+         {
+            this.hidePanel(Quote.PageElements.APPROVE_PANEL);
+            
+            this.collapsePanel(Quote.PageElements.QUOTE_PANEL);
+            this.collapsePanel(Quote.PageElements.APPROVE_PANEL);
+            this.collapsePanel(Quote.PageElements.SEND_PANEL);
+                        
+            this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
+            this.hidePanel(Quote.PageElements.APPROVE_BUTTON);
+            this.hidePanel(Quote.PageElements.SEND_BUTTON);
+            break;
+         }
+         
+         case QuoteStatus.ACCEPTED:
+         {
+            this.collapsePanel(Quote.PageElements.QUOTE_PANEL);
+            this.collapsePanel(Quote.PageElements.APPROVE_PANEL);
+            this.collapsePanel(Quote.PageElements.SEND_PANEL);
+            this.collapsePanel(Quote.PageElements.ACCEPT_PANEL);
+            
+            this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
+            this.hidePanel(Quote.PageElements.APPROVE_BUTTON);
+            this.hidePanel(Quote.PageElements.SEND_BUTTON);
+            this.hidePanel(Quote.PageElements.ACCEPT_BUTTON);
+            break;
+         }
+         
+         default:
+         {
+            break;
+         }
+      }
+   }
+   
+   hidePanel(panelId)
+   {
+      document.getElementById(panelId).classList.add("hidden");
+   }
+   
+   togglePanel(panelId)
+   {
+      let panel = document.getElementById(panelId);
+      
+      if (panel.classList.contains("collapsed"))
+      {
+         this.expandPanel(panelId);   
+      }
+      else
+      {
+         this.collapsePanel(panelId);
+      }
+   }
+   
+   collapsePanel(panelId)
+   {
+      document.getElementById(panelId).classList.add("collapsed");
+   }
+   
+   expandPanel(panelId)
+   {
+      document.getElementById(panelId).classList.remove("collapsed");
    }
 }

@@ -39,6 +39,7 @@ HEREDOC;
       <script>
          document.getElementById("menu-button").addEventListener('click', function() {
             var menu = document.getElementById("menu");
+            /*
             if (isVisible("menu"))
             {
                hide("menu");
@@ -47,6 +48,8 @@ HEREDOC;
             {
                show("menu", "flex");
             }
+            */
+            document.getElementById("menu").classList.toggle("condensed");
          });
       </script>
 HEREDOC;

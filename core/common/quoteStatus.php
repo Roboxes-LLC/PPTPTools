@@ -63,5 +63,25 @@ abstract class QuoteStatus
       }
       
       return ($html);
-   }   
+   }
+   
+   public static function getJavascript($enumName)
+   {
+      // Note: Keep synced with enum.
+      $varNames = array("UNKNOWN", "REQUESTED", "QUOTED", "APPROVED", "UNAPPROVED", "REVISED", "SENT", "ACCEPTED", "REJECTED", "REQUOTED", "PASSED");
+      
+      $html = "$enumName = {";
+      
+      $html .= "{$varNames[QuoteStatus::UNKNOWN]}: " . QuoteStatus::UNKNOWN . ", ";
+      
+      foreach (QuoteStatus::$values as $quoteStatus)
+      {
+         $html .= "{$varNames[$quoteStatus]}: $quoteStatus";
+         $html .= ($quoteStatus < (QuoteStatus::LAST - 1) ? ", " : "");
+      }
+      
+      $html .= "};";
+      
+      return ($html);
+   } 
 }
