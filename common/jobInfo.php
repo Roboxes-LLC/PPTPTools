@@ -48,6 +48,10 @@ class JobInfo
    
    const SORTING_MACHINE_WC_LABEL = "SORT";
    
+   const ROTARY_WC_NUMBER = 997;
+   
+   const ROTARY_WC_LABEL = "ROTARY";
+   
    const SECONDS_PER_MINUTE = 60;
    
    const SECONDS_PER_HOUR = 3600;
@@ -250,6 +254,12 @@ class JobInfo
          case JobInfo::SORTING_MACHINE_WC_NUMBER:
          {
             $label = JobInfo::SORTING_MACHINE_WC_LABEL;
+            break;
+         }
+         
+         case JobInfo::ROTARY_WC_NUMBER:
+         {
+            $label = JobInfo::ROTARY_WC_LABEL;
             break;
          }
          
