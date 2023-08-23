@@ -35,8 +35,7 @@ class Quote
       "IS_ACCEPTED_INPUT":   "is-accepted-input",
       // Panels
       "REQUEST_PANEL":       "request-panel",
-      "QUOTE_PANEL":         "quote-panel",
-      "ESTIMATE_PANEL":      "estimate-panel",
+      "ESTIMATES_PANEL":     "estimates-panel",
       "APPROVE_PANEL":       "approve-panel",
       "SEND_PANEL":          "send-panel",
       "ACCEPT_PANEL":        "accept-panel",
@@ -234,12 +233,7 @@ class Quote
             {title:"Customer Part #", field:"customerPartNumber",      headerFilter:true},
             {title:"PPTP Part #",     field:"pptpPartNumber",          headerFilter:true},
             {title:"Quantity",        field:"quantity",                headerFilter:false},
-            {title:"Total Cost",      field:"totalCost",               headerFilter:false, formatter:currencyFormatter},
-            {title:"Lead Time",       field:"leadTime",                headerFilter:false,
-               formatter:function(cell, formatterParams, onRendered) {
-                  return (cell.getValue() + " weeks");
-               }
-            },
+            {title:"Estimates",       field:"estimateCount",           headerFilter:false},
             {title:"Status",          field:"quoteStatusLabel",        headerFilter:true},
             {title:"",                field:"delete",
                formatter:function(cell, formatterParams, onRendered){
@@ -635,13 +629,13 @@ class Quote
             break;
          }
          
-         case QuoteStatus.QUOTED:
+         case QuoteStatus.ESTIMATED:
          case QuoteStatus.REVISED:
          {
             this.hidePanel(Quote.PageElements.SEND_PANEL);
             this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
             
-            this.collapsePanel(Quote.PageElements.QUOTE_PANEL);
+            this.collapsePanel(Quote.PageElements.ESTIMATES_PANEL);
             
             this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
             break;
@@ -662,7 +656,7 @@ class Quote
          {
             this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
             
-            this.collapsePanel(Quote.PageElements.QUOTE_PANEL);
+            this.collapsePanel(Quote.PageElements.ESTIMATES_PANEL);
             this.collapsePanel(Quote.PageElements.APPROVE_PANEL);
 
             this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
@@ -675,7 +669,7 @@ class Quote
          {
             this.hidePanel(Quote.PageElements.APPROVE_PANEL);
             
-            this.collapsePanel(Quote.PageElements.QUOTE_PANEL);
+            this.collapsePanel(Quote.PageElements.ESTIMATES_PANEL);
             this.collapsePanel(Quote.PageElements.APPROVE_PANEL);
             this.collapsePanel(Quote.PageElements.SEND_PANEL);
                         
@@ -687,7 +681,7 @@ class Quote
          
          case QuoteStatus.ACCEPTED:
          {
-            this.collapsePanel(Quote.PageElements.QUOTE_PANEL);
+            this.collapsePanel(Quote.PageElements.ESTIMATES_PANEL);
             this.collapsePanel(Quote.PageElements.APPROVE_PANEL);
             this.collapsePanel(Quote.PageElements.SEND_PANEL);
             this.collapsePanel(Quote.PageElements.ACCEPT_PANEL);

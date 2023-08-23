@@ -109,11 +109,11 @@ class QuotePage extends Page
                       $this->result->quote = $quote;
                       $this->result->success = true;
                       
-                      $isQuoted = $quote->isQuoted();
+                      $isEstimated = $quote->isEstimated();
                       
-                      if (!$isQuoted)
+                      if (!$isEstimated)
                       {
-                         $quote->quote(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                         $quote->estimate(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
                       }
                       else if (($quote->quoteStatus == QuoteStatus::UNAPPROVED) ||
                                ($quote->quoteStatus == QuoteStatus::REJECTED))
@@ -123,7 +123,7 @@ class QuotePage extends Page
                       
                       ActivityLog::logComponentActivity(
                          Authentication::getAuthenticatedUser()->employeeNumber,
-                         ($isQuoted ? ActivityType::REVISE_QUOTE : ActivityType::ESTIMATE_QUOTE),
+                         ($isEstimated ? ActivityType::REVISE_QUOTE : ActivityType::ESTIMATE_QUOTE),
                          $quote->quoteId,
                          $quote->getQuoteNumber());
                    }
@@ -445,22 +445,6 @@ class QuotePage extends Page
        echo json_encode($this->result);
     }
     
-    /*
-    private function getCustomerParams($customer, $params)
-    {
-       $customer->vendorName = $params->get("vendorName");
-       $customer->contactName = $params->get("contactName");
-       $customer->address->addressLine1 = $params->get("addressLine1");
-       $customer->address->addressLine2 = $params->get("addressLine2");
-       $customer->address->city = $params->get("city");
-       $customer->address->state = $params->getInt("state");
-       $customer->address->zipcode = $params->get("zipcode");
-       $customer->phone = $params->get("phone");
-       $customer->email = $params->get("email");
-       $customer->supportAltPricing = $params->getBool("supportAltPricing");
-    }
-    */
-    
     private static function getQuoteParams(&$quote, $params)
     {
        $quote->customerId = $params->getInt("customerId");
@@ -472,12 +456,17 @@ class QuotePage extends Page
     
     private static function getEstimateParams(&$quote, $params)
     {
-       $quote->unitPrice = $params->getFloat("unitPrice");
-       $quote->costPerHour = $params->getFloat("costPerHour");
-       $quote->additionalCharge = $params->getFloat("additionalCharge");
-       $quote->chargeCode = $params->getInt("chargeCode");
-       $quote->totalCost = $params->getFloat("totalCost");
-       $quote->leadTime = $params->getInt("leadTime");
+       $estimate = new Estimate();
+       
+       $estimate->unitPrice = $params->getFloat("unitPrice");
+       $estimate->costPerHour = $params->getFloat("costPerHour");
+       $estimate->additionalCharge = $params->getFloat("additionalCharge");
+       $estimate->chargeCode = $params->getInt("chargeCode");
+       $estimate->totalCost = $params->getFloat("totalCost");
+       $estimate->leadTime = $params->getInt("leadTime");
+
+       // TODO: Multiple estimates.       
+       $quote->setEstimate($estimate, 0);
     }
     
     private static function augmentQuote(&$quote)
@@ -497,6 +486,16 @@ class QuotePage extends Page
        if ($contact)
        {
           $quote->contactName = $contact->getFullName();
+       }       
+       
+       // estimateCount
+       $quote->estimateCount = 0;
+       for ($estimateIndex = 0; $estimateIndex < Quote::MAX_ESTIMATES; $estimateIndex++)
+       {
+          if ($quote->hasEstimate($estimateIndex))
+          {
+             $quote->estimateCount++;
+          }
        }       
        
        // quoteStatusLabel

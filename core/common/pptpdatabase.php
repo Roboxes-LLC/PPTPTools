@@ -368,8 +368,8 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "INSERT INTO quote " .
-         "(quoteStatus, customerId, contactId, customerPartNumber, pptpPartNumber, quantity, unitPrice, costPerHour, additionalCharge, chargeCode, totalCost, leadTime) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(quoteStatus, customerId, contactId, customerPartNumber, pptpPartNumber, quantity, selectedEstimate) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -379,12 +379,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $quote->customerPartNumber,
             $quote->pptpPartNumber,
             $quote->quantity,
-            $quote->unitPrice,
-            $quote->costPerHour,
-            $quote->additionalCharge,
-            $quote->chargeCode,
-            $quote->totalCost,
-            $quote->leadTime
+            $quote->selectedEstimate
          ]);
       
       return ($result);
@@ -394,7 +389,7 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "UPDATE quote " .
-         "SET quoteStatus = ?, customerId = ?, contactId = ?, customerPartNumber = ?, pptpPartNumber = ?, quantity = ?, unitPrice = ?, costPerHour = ?, additionalCharge = ?, chargeCode = ?, totalCost = ?, leadTime = ? " .
+         "SET quoteStatus = ?, customerId = ?, contactId = ?, customerPartNumber = ?, pptpPartNumber = ?, quantity = ?, selectedEstimate = ? " .
          "WHERE quoteId = ?");
       
       $result = $statement->execute(
@@ -405,13 +400,8 @@ class PPTPDatabaseAlt extends PDODatabase
             $quote->customerPartNumber,
             $quote->pptpPartNumber,
             $quote->quantity,
-            $quote->unitPrice,
-            $quote->costPerHour,
-            $quote->additionalCharge,
-            $quote->chargeCode,
-            $quote->totalCost,
-            $quote->leadTime,
-            $quote->quoteId
+            $quote->selectedEstimate,
+            $quote->quoteId,
          ]);
       
       return ($result);
@@ -432,6 +422,10 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare("DELETE FROM quote WHERE quoteId = ?");
       
       $result = $statement->execute([$quoteId]);
+      
+      $statement = $this->pdo->prepare("DELETE FROM estimate WHERE quoteId = ?");
+      
+      $result &= $statement->execute([$quoteId]);
       
       $statement = $this->pdo->prepare("DELETE FROM quoteaction WHERE quoteId = ?");
       
@@ -585,6 +579,76 @@ class PPTPDatabaseAlt extends PDODatabase
       
       return ($result);
    }   
+   
+   // **************************************************************************
+   //                                 Estimate
+
+   public function estimateExists($quoteId, $estimateIndex)
+   {
+      return ($this->getEstimate($quoteId, $estimateIndex) != null);
+   }
+   
+   public function getEstimate($quoteId, $estimateIndex)
+   {
+      $statement = $this->pdo->prepare("SELECT * FROM estimate WHERE quoteId = ? AND estimateIndex = ?;");
+      
+      $result = $statement->execute([$quoteId, $estimateIndex]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addEstimate($estimate)
+   {
+      $statement = $this->pdo->prepare(
+         "INSERT INTO estimate " .
+         "(quoteId, estimateIndex, unitPrice, costPerHour, additionalCharge, chargeCode, totalCost, leadTime) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $estimate->quoteId,
+            $estimate->estimateIndex,
+            $estimate->unitPrice,
+            $estimate->costPerHour,
+            $estimate->additionalCharge,
+            $estimate->chargeCode,
+            $estimate->totalCost,
+            $estimate->leadTime
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateEstimate($estimate)
+   {
+      $statement = $this->pdo->prepare(
+         "UPDATE estimate " .
+         "SET unitPrice = ?, costPerHour = ?, additionalCharge = ?, chargeCode = ?, totalCost = ?, leadTime = ? " .
+         "WHERE quoteId = ? AND estimateIndex = ?");
+      
+      $result = $statement->execute(
+         [
+            $estimate->unitPrice,
+            $estimate->costPerHour,
+            $estimate->additionalCharge,
+            $estimate->chargeCode,
+            $estimate->totalCost,
+            $estimate->leadTime,
+            $estimate->quoteId,
+            $estimate->estimateIndex
+         ]);
+      
+      return ($result);
+   }
+      
+   public function deleteEstimate($quoteId, $estimateIndex)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM estimate WHERE quoteId = ? AND estimateIndex = ?");
+      
+      $result = $statement->execute([$quoteId, $estimateIndex]);
+      
+      return ($result);
+   }
       
    // **************************************************************************
    

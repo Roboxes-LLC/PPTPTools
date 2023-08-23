@@ -3,15 +3,19 @@
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/core/common/chargeCode.php';
 require_once ROOT.'/core/common/pptpdatabase.php';
+require_once ROOT.'/core/common/quoteDefs.php';
 require_once ROOT.'/core/common/quoteStatus.php';
 require_once ROOT.'/core/component/contact.php';
 require_once ROOT.'/core/component/customer.php';
+require_once ROOT.'/core/component/estimate.php';
 require_once ROOT.'/core/component/quoteAction.php';
 require_once ROOT.'/core/component/quoteAttachment.php';
 
 class Quote
 {
-   const UNKNOWN_QUOTE_ID = 0;
+   const UNKNOWN_QUOTE_ID = UNKNOWN_QUOTE_ID;  // global constant
+   
+   const MAX_ESTIMATES = MAX_ESTIMATES;  // global constant
    
    // Quote number formatting constants.
    const QUOTE_NUMBER_PREFIX = "PPTP";
@@ -20,19 +24,17 @@ class Quote
    
    public $quoteId;
    public $quoteStatus;
+   
    // Request info
    public $customerId;
    public $contactId;
    public $customerPartNumber;
    public $pptpPartNumber;
    public $quantity;
-   // Estimate info
-   public $unitPrice;
-   public $costPerHour;
-   public $additionalCharge;
-   public $chargeCode;
-   public $totalCost;
-   public $leadTime;   
+   
+   // Estimates
+   public $estimates;
+   public $selectedEstimate;
    
    public $actions;
    public $attachments;
@@ -46,12 +48,13 @@ class Quote
       $this->customerPartNumber = null;
       $this->pptpPartNumber = null;
       $this->quantity = 0;
-      $this->unitPrice = 0.0;
-      $this->costPerHour = 0.0;
-      $this->additionalCharge = 0.0;
-      $this->chargeCode = ChargeCode::UNKNOWN;
-      $this->totalCost = 0.0;
-      $this->leadTime = 0;
+      
+      $this->estimates = array();
+      for ($estimateIndex = 0; $estimateIndex < Quote::MAX_ESTIMATES; $estimateIndex++)
+      {
+         $this->estimates[$estimateIndex] = null;
+      }
+      $this->selectedEstimate = 0;
       
       $this->actions = array();
       $this->attachments = array();
@@ -72,6 +75,8 @@ class Quote
          
          $quote->initialize($row);
          
+         $quote->estimates = Quote::getEstimates($quote->quoteId);
+         
          $quote->actions = Quote::getActions($quote->quoteId);
          
          $quote->attachments = Quote::getAttachments($quote->quoteId);
@@ -83,7 +88,7 @@ class Quote
    public static function save($quote)
    {
       $success = false;
-      
+            
       if ($quote->quoteId == Quote::UNKNOWN_QUOTE_ID)
       {
          $success = PPTPDatabaseAlt::getInstance()->addQuote($quote);
@@ -93,6 +98,22 @@ class Quote
       else
       {
          $success = PPTPDatabaseAlt::getInstance()->updateQuote($quote);
+      }
+      
+      // Save estimates.
+      for ($estimateIndex = 0; $estimateIndex < Quote::MAX_ESTIMATES; $estimateIndex++)
+      {
+         if ($quote->estimates[$estimateIndex])
+         {
+            $quote->estimates[$estimateIndex]->quoteId = $quote->quoteId;
+            $quote->estimates[$estimateIndex]->estimateIndex = $estimateIndex;
+            
+            $success &= Estimate::save($quote->estimates[$estimateIndex]);
+         }
+         else if (PPTPDatabaseAlt::getInstance()->estimateExists($quote->quoteId, $estimateIndex))
+         {
+            $success &= Estimate::delete($quote->quoteId, $estimateIndex);
+         }
       }
       
       return ($success);
@@ -112,12 +133,8 @@ class Quote
       $this->customerPartNumber = $row["customerPartNumber"];
       $this->pptpPartNumber = $row["pptpPartNumber"];
       $this->quantity = doubleval($row["quantity"]);
-      $this->unitPrice = doubleval($row["unitPrice"]);
-      $this->costPerHour = doubleval($row["costPerHour"]);
-      $this->additionalCharge = doubleval($row["additionalCharge"]);
-      $this->chargeCode = intval($row["chargeCode"]);
-      $this->totalCost = doubleval($row["totalCost"]);
-      $this->leadTime = intval($row["leadTime"]);
+      
+      $this->selectedEstimate = intval($row["selectedEstimate"]);
    }
    
    // **************************************************************************
@@ -148,6 +165,52 @@ class Quote
       }
       
       return ($html);
+   }
+   
+   public static function getEstimates($quoteId)
+   {
+      $estimates = array();
+      
+      for ($estimateIndex = 0; $estimateIndex < Quote::MAX_ESTIMATES; $estimateIndex++)
+      {
+         $estimates[$estimateIndex] = Estimate::load($quoteId, $estimateIndex);
+      }
+      
+      return ($estimates);
+   }
+   
+   public function hasEstimate($estimateIndex)
+   {
+      return ($this->getEstimate($estimateIndex) != null);
+   }
+   
+   public function getEstimate($estimateIndex)
+   {
+      return (($estimateIndex < Quote::MAX_ESTIMATES) ? $this->estimates[$estimateIndex] : null);
+   }
+   
+   public function setEstimate($estimate, $estimateIndex)
+   {
+      if ($estimateIndex < Quote::MAX_ESTIMATES)
+      {
+         if ($estimate)
+         {
+            $this->estimates[$estimateIndex] = clone $estimate;
+            $this->estimates[$estimateIndex]->quoteId = $this->quoteId;
+            $this->estimates[$estimateIndex]->estimateIndex = $estimateIndex;
+         }
+         else
+         {
+            $this->estimates[$estimateIndex] = null;
+         }
+      }
+   }
+   
+   public function getSelectedEstimate()
+   {
+      return (($this->selectedEstimate < Quote::MAX_ESTIMATES) ? 
+                 $this->estimates[$this->selectedEstimate] : 
+                 null);
    }
    
    public static function getActions($quoteId)
@@ -222,14 +285,14 @@ class Quote
       return ((count($quoteActions) > 0) ? $quoteActions[0] : null);
    }
    
-   public function quote($dateTime, $userId, $notes)
+   public function estimate($dateTime, $userId, $notes)
    {
-      return ($this->addQuoteAction(QuoteStatus::QUOTED, $dateTime, $userId, $notes));
+      return ($this->addQuoteAction(QuoteStatus::ESTIMATED, $dateTime, $userId, $notes));
    }
    
-   public function isQuoted()
+   public function isEstimated()
    {
-      return (count($this->findActions(QuoteStatus::QUOTED)) > 0);
+      return (count($this->findActions(QuoteStatus::ESTIMATED)) > 0);
    }
    
    public function approve($dateTime, $userId, $notes)

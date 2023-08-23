@@ -5,14 +5,14 @@ abstract class QuoteStatus
    const UNKNOWN = 0;
    const FIRST = 1;
    const REQUESTED = QuoteStatus::FIRST;
-   const QUOTED = 2;
+   const ESTIMATED = 2;
    const APPROVED = 3;
    const UNAPPROVED = 4;
    const REVISED = 5;
    const SENT = 6;
    const ACCEPTED = 7;
    const REJECTED = 8;
-   const REQUOTED = 9;
+   const REQUOTED = 9;  // TODO: Rename?
    const PASSED = 10;
    const LAST = 11;
    const COUNT = QuoteStatus::LAST - QuoteStatus::FIRST;
@@ -20,7 +20,7 @@ abstract class QuoteStatus
    public static $values = 
       [
          QuoteStatus::REQUESTED,
-         QuoteStatus::QUOTED,
+         QuoteStatus::ESTIMATED,
          QuoteStatus::APPROVED,
          QuoteStatus::UNAPPROVED,
          QuoteStatus::REVISED,
@@ -34,7 +34,7 @@ abstract class QuoteStatus
    public static $activeStatuses = 
       [
          QuoteStatus::REQUESTED,
-         QuoteStatus::QUOTED,
+         QuoteStatus::ESTIMATED,
          QuoteStatus::APPROVED,
          QuoteStatus::UNAPPROVED,
          QuoteStatus::REVISED,
@@ -44,7 +44,7 @@ abstract class QuoteStatus
       
    public static function getLabel($quoteStatus)
    {
-      $labels = array("", "Requested", "Quoted", "Approved", "Unapproved", "Revised", "Sent", "Accepted", "Rejected", "Requoted", "Passed");
+      $labels = array("", "Requested", "Estimated", "Approved", "Unapproved", "Revised", "Sent", "Accepted", "Rejected", "Requoted", "Passed");
       
       return ($labels[$quoteStatus]);
    }
@@ -68,7 +68,7 @@ abstract class QuoteStatus
    public static function getJavascript($enumName)
    {
       // Note: Keep synced with enum.
-      $varNames = array("UNKNOWN", "REQUESTED", "QUOTED", "APPROVED", "UNAPPROVED", "REVISED", "SENT", "ACCEPTED", "REJECTED", "REQUOTED", "PASSED");
+      $varNames = array("UNKNOWN", "REQUESTED", "ESTIMATED", "APPROVED", "UNAPPROVED", "REVISED", "SENT", "ACCEPTED", "REJECTED", "REQUOTED", "PASSED");
       
       $html = "$enumName = {";
       

@@ -229,6 +229,20 @@ function getDescription()
    return ($description);
 }
 
+function getEstimateProperty($estimateIndex, $property)
+{
+   $value = null;
+   
+   $quote = getQuote();
+   
+   if ($quote && $quote->hasEstimate($estimateIndex))
+   {
+      $value = $quote->getEstimate($estimateIndex)->$property;
+   }
+   
+   return ($value);
+}
+
 function getRequestPanel()
 {
    global $getDisabled;
@@ -301,17 +315,25 @@ HEREDOC;
    return ($html);
 }
 
-function getQuotePanel()
+function getEstimatesPanel()
 {
    global $getDisabled;
    
    $quote = getQuote();
    
-   $chargeCodeOptions = ChargeCode::getOptions($quote->chargeCode);
+   // TODO: Multiple quotes
+   $unitPrice = getEstimateProperty(0, "unitPrice");
+   $costPerHour = getEstimateProperty(0, "costPerHour");
+   $additionalCharge = getEstimateProperty(0, "additionalCharge");
+   $chargeCode = getEstimateProperty(0, "chargeCode");
+   $totalCost = getEstimateProperty(0, "totalCost");
+   $leadTime = getEstimateProperty(0, "leadTime");
+   
+   $chargeCodeOptions = ChargeCode::getOptions($chargeCode);
    
    $html =
 <<< HEREDOC
-   <div id="quote-panel" class="collapsible-panel">
+   <div id="estimates-panel" class="collapsible-panel">
       <form id="quote-form" style="display:block">
 
          <input type="hidden" name="quoteId" value="$quote->quoteId"/>
@@ -320,30 +342,30 @@ function getQuotePanel()
          <div class="flex-horizontal flex-v-center collapsible-panel-header">
             <i class="material-icons icon-button expanded-icon">arrow_drop_down</i>
             <i class="material-icons icon-button collapsed-icon">arrow_right</i>
-            Estimate
+            Estimates
          </div>
 
          <div class="collapsible-panel-content">
 
             <div class="form-item">
                <div class="form-label">Selling Price</div>
-               <input id="unit-price-input" type="number" name="unitPrice" style="width:75px;" value="{$quote->unitPrice}" {$getDisabled(InputField::UNIT_PRICE)} />
+               <input id="unit-price-input" type="number" name="unitPrice" style="width:75px;" value="$unitPrice" {$getDisabled(InputField::UNIT_PRICE)} />
             </div>
       
             <div class="form-item">
                <div class="form-label">Dollars Per Hour</div>
-               <input id="cost-per-hour-input" type="number" name="costPerHour" style="width:75px;" value="{$quote->costPerHour}" {$getDisabled(InputField::COST_PER_HOUR)} />
+               <input id="cost-per-hour-input" type="number" name="costPerHour" style="width:75px;" value="$costPerHour" {$getDisabled(InputField::COST_PER_HOUR)} />
             </div>
 
             <div class="form-item">
                <div class="form-label">Profit/Markup</div>
-               <input id="additional-charge-input" type="number" name="additionalCharge" style="width:75px;" value="{$quote->additionalCharge}" {$getDisabled(InputField::ADDITIONAL_CHARGE)} />
+               <input id="additional-charge-input" type="number" name="markup" style="width:75px;" value="" {$getDisabled(InputField::ADDITIONAL_CHARGE)} />
                %
             </div>
       
             <div class="form-item">
                <div class="form-label">Additional Charge</div>
-               <input id="additional-charge-input" type="number" name="additionalCharge" style="width:75px;" value="{$quote->additionalCharge}" {$getDisabled(InputField::ADDITIONAL_CHARGE)} />
+               <input id="additional-charge-input" type="number" name="additionalCharge" style="width:75px;" value="$additionalCharge" {$getDisabled(InputField::ADDITIONAL_CHARGE)} />
             </div>
             
             <div class="form-item">
@@ -357,12 +379,12 @@ function getQuotePanel()
       
             <div class="form-item">
                <div class="form-label">Total Value</div>
-               <input id="total-cost-input" type="number" name="totalCost" style="width:75px;" value="{$quote->totalCost}" {$getDisabled(InputField::TOTAL_COST)} />
+               <input id="total-cost-input" type="number" name="totalCost" style="width:75px;" value="$totalCost" {$getDisabled(InputField::TOTAL_COST)} />
             </div>
             
             <div class="form-item">
                <div class="form-label">Lead Time (weeks)</div>
-               <input id="lead-time-input" type="number" name="leadTime" style="width:75px;" value="{$quote->leadTime}" {$getDisabled(InputField::LEAD_TIME)} />
+               <input id="lead-time-input" type="number" name="leadTime" style="width:75px;" value="$leadTime" {$getDisabled(InputField::LEAD_TIME)} />
             </div>
             
             <br>
@@ -613,7 +635,7 @@ function getTimeline()
 {
    $html = "";
    
-   $standardHappyPath = [QuoteStatus::REQUESTED, QuoteStatus::QUOTED, QuoteStatus::APPROVED, QuoteStatus::SENT, QuoteStatus::ACCEPTED];
+   $standardHappyPath = [QuoteStatus::REQUESTED, QuoteStatus::ESTIMATED, QuoteStatus::APPROVED, QuoteStatus::SENT, QuoteStatus::ACCEPTED];
    $revisedHappyPath = [QuoteStatus::UNAPPROVED, QuoteStatus::REJECTED, QuoteStatus::REVISED, QuoteStatus::APPROVED, QuoteStatus::SENT, QuoteStatus::ACCEPTED];
    $unhappyPath = [QuoteStatus::UNAPPROVED, QuoteStatus::REJECTED];
    $requiresRevision = [QuoteStatus::UNAPPROVED, QuoteStatus::REJECTED, QuoteStatus::REVISED];
@@ -718,7 +740,7 @@ $formId = "input-form";
 $timeline = getTimeline();
 $historyPanel = getHistoryPanel();
 $requestPanel = getRequestPanel();
-$quotePanel = getQuotePanel();
+$estimatesPanel = getEstimatesPanel();
 $approvePanel = getApprovePanel();
 $acceptPanel = getAcceptPanel();
 $sendPanel = getSendPanel();

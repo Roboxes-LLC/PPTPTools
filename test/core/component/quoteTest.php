@@ -20,7 +20,7 @@ class QuoteTest
    private const TOTAL_COST = 5000.75;
    private const LEAD_TIME = 3;
 
-   private const OTHER_QUOTE_STATUS = QuoteStatus::QUOTED;
+   private const OTHER_QUOTE_STATUS = QuoteStatus::ESTIMATED;
    private const OTHER_CUSTOMER_ID = 2;
    private const OTHER_CONTACT_ID = 2;
    private const OTHER_CUSTOMER_PART_NUMBER = "Hammersmill-66765";
@@ -74,12 +74,23 @@ class QuoteTest
       $quote->customerPartNumber = QuoteTest::CUSTOMER_PART_NUMBER;
       $quote->pptpPartNumber = QuoteTest::PPTP_PART_NUMBER;
       $quote->quantity = QuoteTest::QUANTITY;
-      $quote->unitPrice = QuoteTest::UNIT_PRICE;
-      $quote->costPerHour = QuoteTest::COST_PER_HOUR;
-      $quote->additionalCharge = QuoteTest::ADDITIONAL_CHARGE;
-      $quote->chargeCode = QuoteTest::CHARGE_CODE;
-      $quote->totalCost = QuoteTest::TOTAL_COST;
-      $quote->leadTime = QuoteTest::LEAD_TIME;
+      
+      $estimate = new Estimate();
+      $estimate->unitPrice = QuoteTest::UNIT_PRICE;
+      $estimate->costPerHour = QuoteTest::COST_PER_HOUR;
+      $estimate->additionalCharge = QuoteTest::ADDITIONAL_CHARGE;
+      $estimate->chargeCode = QuoteTest::CHARGE_CODE;
+      $estimate->totalCost = QuoteTest::TOTAL_COST;
+      $estimate->leadTime = QuoteTest::LEAD_TIME;
+      $quote->setEstimate($estimate, 0);
+
+      $estimate = clone $estimate;
+      $estimate->additionalCharge += 50;      
+      $quote->setEstimate($estimate, 1);
+      
+      $estimate = clone $estimate;
+      $estimate->totalCost += 50;
+      $quote->setEstimate($estimate, 2);
       
       Quote::save($quote);
       
@@ -104,12 +115,15 @@ class QuoteTest
       $quote->customerPartNumber = QuoteTest::OTHER_CUSTOMER_PART_NUMBER;
       $quote->pptpPartNumber = QuoteTest::OTHER_PPTP_PART_NUMBER;
       $quote->quantity = QuoteTest::OTHER_QUANTITY;
-      $quote->unitPrice = QuoteTest::OTHER_UNIT_PRICE;
-      $quote->costPerHour = QuoteTest::OTHER_COST_PER_HOUR;
-      $quote->additionalCharge = QuoteTest::OTHER_ADDITIONAL_CHARGE;
-      $quote->chargeCode = QuoteTest::OTHER_CHARGE_CODE;
-      $quote->totalCost = QuoteTest::OTHER_TOTAL_COST;
-      $quote->leadTime = QuoteTest::OTHER_LEAD_TIME;
+      
+      $estimate = clone $quote->getEstimate(0);
+      $estimate->unitPrice = QuoteTest::OTHER_UNIT_PRICE;
+      $estimate->costPerHour = QuoteTest::OTHER_COST_PER_HOUR;
+      $estimate->additionalCharge = QuoteTest::OTHER_ADDITIONAL_CHARGE;
+      $estimate->chargeCode = QuoteTest::OTHER_CHARGE_CODE;
+      $estimate->totalCost = QuoteTest::OTHER_TOTAL_COST;
+      $estimate->leadTime = QuoteTest::OTHER_LEAD_TIME;
+      $quote->setEstimate($estimate, 0);
       
       Quote::save($quote);
       

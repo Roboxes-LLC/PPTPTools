@@ -16,6 +16,9 @@ class QuoteManager
       {
          $quote = new Quote();
          $quote->initialize($row);
+         $quote->estimates = Quote::getEstimates($quote->quoteId);
+         $quote->actions = Quote::getActions($quote->quoteId);
+         $quote->attachments = Quote::getAttachments($quote->quoteId);
          
          $quotes[] = $quote;
       }
