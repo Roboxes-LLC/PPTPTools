@@ -640,3 +640,17 @@ button.hidden,
 .estimate-table-column.selected {
    background: #caf0ff;
 }
+
+.attachment {
+   margin-bottom: 20px; 
+}
+
+.attachment .icon-button {
+   color: var(--gray-dark);
+   font-size: 1.25em;
+}
+
+.attachment .icon-button:hover {
+   color: var(--accent-color-dark);
+}
+   

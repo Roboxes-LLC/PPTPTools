@@ -2,6 +2,7 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/app/page/page.php';
+require_once ROOT.'/common/upload.php';
 require_once ROOT.'/core/manager/quoteManager.php';
 
 class QuotePage extends Page
@@ -87,6 +88,110 @@ class QuotePage extends Page
                 else
                 {
                    $this->error("Invalid quote id [$quoteId]");
+                }
+             }
+             break;
+          }
+          
+          case "attach_file":
+          {
+             if (Page::requireParams($params, ["quoteId", "filename", "description"]))
+             {
+                if (isset($_FILES["quoteAttachment"]) && 
+                    ($_FILES["quoteAttachment"]["name"] != ""))
+                {
+                   $quoteId = $params->getInt("quoteId");
+                   $file = $_FILES["quoteAttachment"];
+                   $filename = $params->get("filename");
+                   $description = $params->get("description");
+                   
+                   // Use the actual filename if an alternate wasn't provided.
+                   if (empty($filename))
+                   {
+                      $filename = $_FILES["quoteAttachment"]["name"];
+                   }
+                   
+                   // Constrain the filename to an appropriate size.
+                   $filename = Upload::shortenFilename($filename, QuoteAttachment::MAX_FILENAME_SIZE);
+                   
+                   $storedFilename = null;
+                   $uploadStatus = Upload::uploadQuoteAttachment($file, $storedFilename);
+                   
+                   switch ($uploadStatus)
+                   {
+                      case UploadStatus::UPLOADED:
+                      {
+                         $quoteAttachment = new QuoteAttachment();
+                         $quoteAttachment->quoteId = $quoteId;
+                         $quoteAttachment->filename = $filename;
+                         $quoteAttachment->storedFilename = $storedFilename;
+                         $quoteAttachment->description = $description;
+                         
+                         if (QuoteAttachment::save($quoteAttachment))
+                         {
+                            $this->result->success = true;
+                            $this->result->quoteId = $quoteId;
+                            $this->result->quoteAttachment = $quoteAttachment; 
+                            
+                            ActivityLog::logAddQuoteAttachment(
+                               Authentication::getAuthenticatedUser()->employeeNumber,
+                               $quoteAttachment->quoteId,
+                               $quoteAttachment->attachmentId,
+                               $quoteAttachment->filename);
+                         }
+                         else
+                         {
+                            $this->error("Database error");
+                         }
+                         break;  
+                      }
+                      
+                      default:
+                      {
+                         $this->error("Upload error [" . UploadStatus::toString($uploadStatus) . "]");
+                      }
+                   }
+                }
+                else
+                {
+                   $this->error("Failed to upload file");
+                }
+             }
+             break;
+          }
+          
+          case "delete_attachment":
+          {
+             if (Page::requireParams($params, ["attachmentId"]))
+             {
+                $attachmentId = $params->getInt("attachmentId");
+                
+                $quoteAttachment = QuoteAttachment::load($attachmentId);
+                
+                if ($quoteAttachment)
+                {
+                   if (QuoteAttachment::delete($attachmentId))
+                   {
+                     // Delete file
+                      Upload::deleteFile($quoteAttachment->storedFilename);
+                      
+                      $this->result->success = true;
+                      $this->attachmentId = $attachmentId;
+                      
+                      ActivityLog::logDeleteQuoteAttachment(
+                         Authentication::getAuthenticatedUser()->employeeNumber,
+                         $quoteAttachment->quoteId,
+                         $attachmentId,
+                         $quoteAttachment->filename);
+                   }
+                   else
+                   {
+                      $this->error("Database error");
+                   }
+                }
+                else
+                {
+                   $this->error("Invalid attachment [$attachmentId]");
                 }
              }
              break;

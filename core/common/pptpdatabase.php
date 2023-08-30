@@ -536,18 +536,19 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
-   public function addQuoteAttachment($quoteAction)
+   public function addQuoteAttachment($quoteAttachment)
    {      
       $statement = $this->pdo->prepare(
          "INSERT INTO quoteattachment " .
-         "(quoteId, filename, storedFilename) " .
-         "VALUES (?, ?, ?)");
+         "(quoteId, filename, storedFilename, description) " .
+         "VALUES (?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
             $quoteAttachment->quoteId,
             $quoteAttachment->filename,
-            $quoteAttachment->storedFilename
+            $quoteAttachment->storedFilename,
+            $quoteAttachment->description
          ]);
       
       return ($result);
@@ -557,13 +558,14 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "UPDATE quoteattachment " .
-         "SET quoteId = ?, filename = ?, storedFilename = ? " .
+         "SET quoteId = ?, filename = ?, storedFilename = ?, description = ? " .
          "WHERE attachmentId = ?");
       
       $result = $statement->execute(
          [
             $quoteAttachment->quoteId,
             $quoteAttachment->filename,
+            $quoteAttachment->storedFilename,
             $quoteAttachment->storedFilename,
             $quoteAttachment->attachmentId
          ]);

@@ -7,11 +7,14 @@ class QuoteAttachment
    const UNKNOWN_ATTACHMENT_ID = 0;
    
    const UNKNOWN_QUOTE_ID = 0;
+   
+   const MAX_FILENAME_SIZE = 32;
 
    public $attachmentId;
    public $quoteId;
    public $filename;
    public $storedFilename;
+   public $description;
    
    public function __construct()
    {
@@ -19,6 +22,7 @@ class QuoteAttachment
       $this->quoteId = QuoteAttachment::UNKNOWN_QUOTE_ID;
       $this->filename = null;
       $this->storedFilename = null;
+      $this->description = null;
    }
    
    public function initialize($row)
@@ -26,7 +30,8 @@ class QuoteAttachment
       $this->attachmentId = intval($row["attachmentId"]);
       $this->quoteId = intval($row["quoteId"]);
       $this->filename = $row["filename"];
-      $this->storedFilename = $row["storedFilename"];      
+      $this->storedFilename = $row["storedFilename"];
+      $this->description = $row["description"];
    }
    
    // **************************************************************************
@@ -52,7 +57,7 @@ class QuoteAttachment
    {
       $success = false;
       
-      if ($quoteAttachment->quoteActionId == QuoteAttachment::UNKNOWN_ATTACHMENT_ID)
+      if ($quoteAttachment->attachmentId == QuoteAttachment::UNKNOWN_ATTACHMENT_ID)
       {
          $success = PPTPDatabaseAlt::getInstance()->addQuoteAttachment($quoteAttachment);
       }

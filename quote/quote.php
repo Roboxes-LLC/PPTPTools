@@ -316,6 +316,82 @@ HEREDOC;
    return ($html);
 }
 
+function getAttachmentsPanel()
+{
+   global $getDisabled;
+   
+   $quote = getQuote();
+   
+   $html =
+<<<HEREDOC
+   <div id="attachments-panel" class="collapsible-panel">
+      <form id="attachments-form" style="display:block">
+         <input type="hidden" name="quoteId" value="{$quote->quoteId}"/>
+         <input type="hidden" name="request" value="attach_file"/>
+
+         <div class="flex-horizontal flex-v-center collapsible-panel-header">
+            <i class="material-icons icon-button expanded-icon">arrow_drop_down</i>
+            <i class="material-icons icon-button collapsed-icon">arrow_right</i>
+            Attachments
+         </div>
+
+         <div class="collapsible-panel-content">
+HEREDOC;
+   
+   foreach ($quote->attachments as $attachment)
+   {
+      $downloadFilename = !empty($attachment->filename) ? 
+                             $attachment->filename : 
+                             $attachment->storedFilename;
+      
+      $descriptionTitle = !empty($attachment->description) ? 
+                             "title=\"$attachment->description\"" : 
+                             "title=\"No description\"";
+      
+      $html .=
+<<<HEREDOC
+      <div class="flex-horizontal attachment">
+         <a href="/uploads/{$attachment->storedFilename}" target="_blank">$attachment->filename</a>
+         &nbsp;&nbsp;
+         <i class="material-icons icon-button" $descriptionTitle>info</i>
+         &nbsp;
+         <a href="/uploads/{$attachment->storedFilename}" download="$downloadFilename">
+            <i class="material-icons icon-button" title="Download">download</i>
+         </a>
+         &nbsp;
+         <i class="material-icons icon-button delete-quote-attachment-button" title="Delete" data-attachmentid="$attachment->attachmentId">delete</i>
+      </div>
+HEREDOC;
+   }
+   
+   $html .=
+   <<<HEREDOC
+            <div class="form-item">
+               <div class="form-label">File</div>
+               <input type="file" name="quoteAttachment" {$getDisabled(InputField::CUSTOMER_PART_NUMBER)}>               
+            </div>
+
+            <div class="form-item">
+               <div class="form-label">Filename</div>
+               <input type="text" name="filename" maxlength="32" style="width:150px;" {$getDisabled(InputField::CUSTOMER_PART_NUMBER)} />
+            </div>
+
+            <div class="form-item">
+               <div class="form-label">Description</div>
+               <input type="text" name="description" maxlength="64" style="width:300px;" {$getDisabled(InputField::CUSTOMER_PART_NUMBER)} />
+            </div>
+
+            <div class="flex-horizontal flex-v-center flex-h-center" style="width:100%; margin-top:30px">
+               <button id="attach-button" type="button">Upload</button>
+            </div>
+         </div>
+      </form>
+   </div>
+HEREDOC;
+   
+   return ($html);
+}
+
 function getEstimatesPanel()
 {
    global $getDisabled;
@@ -619,7 +695,8 @@ HEREDOC;
       $description = $activity->getDescription();
       
       $comments = "";
-      if ($activity->objects[2] != null)
+      if (in_array($activity->activityType, ActivityType::$activitiesWithNotes) && 
+          ($activity->objects[2] != null))
       {
          $comments = "\"{$activity->objects[2]}\"";
       }
@@ -660,13 +737,6 @@ HEREDOC;
       </form>
    </div>
 HEREDOC;
-   
-   return ($html);
-}
-
-function getAttachPanel()
-{
-   $html = "";
    
    return ($html);
 }
@@ -780,6 +850,7 @@ $formId = "input-form";
 $timeline = getTimeline();
 $historyPanel = getHistoryPanel();
 $requestPanel = getRequestPanel();
+$attachmentsPanel = getAttachmentsPanel(); 
 $estimatesPanel = getEstimatesPanel();
 $approvePanel = getApprovePanel();
 $acceptPanel = getAcceptPanel();

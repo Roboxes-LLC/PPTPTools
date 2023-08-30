@@ -32,8 +32,10 @@ abstract class ActivityType
    const REVISE_QUOTE = 24;
    const PASS_QUOTE = 25;
    const ANNOTATE_QUOTE = 26;
+   const ADD_QUOTE_ATTACHMENT = 27;
+   const DELETE_QUOTE_ATTACHMENT = 28;
    //
-   const LAST = 27;
+   const LAST = 29;
    const COUNT = ActivityType::LAST - ActivityType::FIRST;
    
    public static $quoteActivites = 
@@ -50,6 +52,14 @@ abstract class ActivityType
          ActivityType::REVISE_QUOTE,
          ActivityType::PASS_QUOTE,
          ActivityType::ANNOTATE_QUOTE,
+      );
+      
+   public static $activitiesWithNotes =
+      array(
+         ActivityType::APPROVE_QUOTE,
+         ActivityType::UNAPPROVE_QUOTE,
+         ActivityType::ACCEPT_QUOTE,
+         ActivityType::REJECT_QUOTE,
       );
       
    public static function getLabel($activityType)
@@ -78,7 +88,9 @@ abstract class ActivityType
             "Accept Quote",
             "Reject Quote",
             "Revise Quote",
-            "Pass On Quote"                      
+            "Pass On Quote",
+            "Add Attachment",
+            "Remove Attachment"
          );
       
       return ($labels[$activityType]);
@@ -154,6 +166,18 @@ abstract class ActivityType
          case ActivityType::ANNOTATE_QUOTE:
          {
             $icon = "chat";
+            break;
+         }
+         
+         case ActivityType::ADD_QUOTE_ATTACHMENT:
+         {
+            $icon = "attachment";
+            break;
+         }
+         
+         case ActivityType::DELETE_QUOTE_ATTACHMENT:
+         {
+            $icon = "link_off";
             break;
          }
       

@@ -16,6 +16,8 @@ class Activity
    
    const MAX_OBJECT_LENGTH = 256;
    
+   const MAX_FILENAME_LENGTH = 16;
+   
    public $activityId;
    public $dateTime;
    public $author;
@@ -156,7 +158,7 @@ class Activity
          case ActivityType::ADD_CUSTOMER:
          {
             $customerName = Customer::getLink(intval($this->objects[0]));
-            $customerName = ($categoryName == "") ? $this->objects[1] : $customerName;
+            $customerName = ($customerName == "") ? $this->objects[1] : $customerName;
             
             $description = "User $authorUsername added new category $customerName";
             break;
@@ -310,6 +312,46 @@ class Activity
             $comments = $this->objects[1];
             
             $description = "$authorUsername: \"$comments\"";
+            break;
+         }
+         
+         case ActivityType::ADD_QUOTE_ATTACHMENT:
+         {
+            $quoteId = intval($this->objects[0]);
+            $quote = Quote::load($quoteId);
+            
+            $quoteNumber = Quote::getLink($quoteId);
+
+            $filename = $this->objects[2];
+            if (strlen($filename) > Activity::MAX_FILENAME_LENGTH)
+            {
+               // Turn "toolongfilename.txt" into "tool...txt".
+               $filename = substr($filename, 0, (Activity::MAX_FILENAME_LENGTH - 6)) .  // first 4 characters 
+                           "..." .                                                      // ellipses                         
+                           substr($filename, -3);                                    // extension
+            }
+            
+            $description = "User $authorUsername attached \"$filename\" to quote $quoteNumber";
+            break;
+         }
+         
+         case ActivityType::DELETE_QUOTE_ATTACHMENT:
+         {
+            $quoteId = intval($this->objects[0]);
+            $quote = Quote::load($quoteId);
+            
+            $quoteNumber = Quote::getLink($quoteId);
+            
+            $filename = $this->objects[2];
+            if (strlen($filename) > Activity::MAX_FILENAME_LENGTH)
+            {
+               // Turn "toolongfilename.txt" into "tool...txt".
+               $filename = substr($filename, 0, (Activity::MAX_FILENAME_LENGTH - 6)) .  // first 4 characters
+                           "..." .                                                      // ellipses
+                           substr($filename, -3);                                       // extension
+            }
+            
+            $description = "User $authorUsername removed \"$filename\" from quote $quoteNumber";
             break;
          }
             

@@ -71,6 +71,16 @@ class ActivityLog
       return (ActivityLog::createLogEntry($author, ActivityType::LOG_OUT, array()));
    }
    
+   public static function logAddQuoteAttachment($author, $componentId, $componentLabel, $filename)
+   {
+      return (ActivityLog::createLogEntry($author, ActivityType::ADD_QUOTE_ATTACHMENT, array($componentId, $componentLabel, $filename)));
+   }
+   
+   public static function logDeleteQuoteAttachment($author, $componentId, $componentLabel, $filename)
+   {
+      return (ActivityLog::createLogEntry($author, ActivityType::DELETE_QUOTE_ATTACHMENT, array($componentId, $componentLabel, $filename)));
+   }
+   
    public static function logApproveQuote($author, $componentId, $componentLabel, $notes)
    {
       return (ActivityLog::createLogEntry($author, ActivityType::APPROVE_QUOTE, array($componentId, $componentLabel, $notes)));

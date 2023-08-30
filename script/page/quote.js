@@ -5,6 +5,7 @@ class Quote
       // Forms
       "INPUT_FORM":          "input-form",
       "REQUEST_FORM":        "request-form",
+      "ATTACHMENTS_FORM":    "attachments-form",
       "QUOTE_FORM":          "quote-form",
       "APPROVE_FORM":        "approve-form",
       "ACCEPT_FORM":         "accept-form",
@@ -19,6 +20,7 @@ class Quote
       "SAVE_BUTTON":         "save-button",
       "CANCEL_BUTTON":       "cancel-button",
       "UPDATE_BUTTON":       "update-button",
+      "ATTACH_BUTTON":       "attach-button",
       "QUOTE_BUTTON":        "quote-button",
       "REVISE_BUTTON":       "revise-button",
       "APPROVE_BUTTON":      "approve-button",
@@ -28,6 +30,7 @@ class Quote
       "ACCEPT_BUTTON":       "accept-button",
       "REJECT_BUTTON":       "reject-button",
       "COMMENT_BUTTON":      "comment-button",
+      "DELETE_ATTACH_BUTTON": "delete-quote-attachment-button",
       // Input fields
       "CUSTOMER_ID_INPUT":   "customer-id-input",
       "CONTACT_ID_INPUT":    "contact-id-input",
@@ -35,6 +38,7 @@ class Quote
       "IS_ACCEPTED_INPUT":   "is-accepted-input",
       // Panels
       "REQUEST_PANEL":       "request-panel",
+      "ATTACHMENTS_PANEL":   "attachments-panel",
       "ESTIMATES_PANEL":     "estimates-panel",
       "APPROVE_PANEL":       "approve-panel",
       "SEND_PANEL":          "send-panel",
@@ -112,6 +116,23 @@ class Quote
          }.bind(this));
       }
       
+      if (document.getElementById(Quote.PageElements.ATTACH_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.ATTACH_BUTTON).addEventListener('click', function() {
+            this.onAttachButton();
+         }.bind(this));
+      }
+      
+      let deleteButtons = document.getElementsByClassName(Quote.PageElements.DELETE_ATTACH_BUTTON);
+      for (let button of deleteButtons)
+      {
+         let attachmentId = button.dataset.attachmentid;
+         
+         button.addEventListener('click', function() {
+            this.onDeleteAttachmentButton(attachmentId);
+         }.bind(this));
+      }  
+          
       if (document.getElementById(Quote.PageElements.QUOTE_BUTTON) != null)
       {
          document.getElementById(Quote.PageElements.QUOTE_BUTTON).addEventListener('click', function() {
@@ -407,6 +428,41 @@ class Quote
       }      
    }
    
+   onAttachButton()
+   {
+      if (this.validateRequestForm())
+      {
+         submitForm(Quote.PageElements.ATTACHMENTS_FORM, "/app/page/quote", function (response) {
+            if (response.success == true)
+            {
+               location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+            }
+            else
+            {
+               alert(response.error);
+            }
+         })
+      }      
+   }
+   
+   onDeleteAttachmentButton(attachmentId)
+   {
+      // AJAX call to delete the attachment.
+      let requestUrl = `/app/page/quote/?request=delete_attachment&attachmentId=${attachmentId}`;
+      
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            location.reload();
+         }
+         else
+         {
+            console.log("Call to delete the attachment failed.");
+            alert(response.error);
+         }
+      });
+   }
+   
    onQuoteButton()
    {
       if (this.validateQuoteForm())
@@ -652,6 +708,8 @@ class Quote
             this.hidePanel(Quote.PageElements.SEND_PANEL);
             this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
             
+            this.collapsePanel(Quote.PageElements.ATTACHMENTS_PANEL);
+                        
             this.hidePanel(Quote.PageElements.REVISE_BUTTON);
             break;
          }
@@ -662,6 +720,7 @@ class Quote
             this.hidePanel(Quote.PageElements.SEND_PANEL);
             this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
             
+            this.collapsePanel(Quote.PageElements.ATTACHMENTS_PANEL);
             this.collapsePanel(Quote.PageElements.ESTIMATES_PANEL);
             
             this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
@@ -683,6 +742,7 @@ class Quote
          {
             this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
             
+            this.collapsePanel(Quote.PageElements.ATTACHMENTS_PANEL);
             this.collapsePanel(Quote.PageElements.ESTIMATES_PANEL);
             this.collapsePanel(Quote.PageElements.APPROVE_PANEL);
 
@@ -696,6 +756,7 @@ class Quote
          {
             this.hidePanel(Quote.PageElements.APPROVE_PANEL);
             
+            this.collapsePanel(Quote.PageElements.ATTACHMENTS_PANEL);
             this.collapsePanel(Quote.PageElements.ESTIMATES_PANEL);
             this.collapsePanel(Quote.PageElements.APPROVE_PANEL);
             this.collapsePanel(Quote.PageElements.SEND_PANEL);
@@ -708,6 +769,7 @@ class Quote
          
          case QuoteStatus.ACCEPTED:
          {
+            this.collapsePanel(Quote.PageElements.ATTACHMENTS_PANEL);
             this.collapsePanel(Quote.PageElements.ESTIMATES_PANEL);
             this.collapsePanel(Quote.PageElements.APPROVE_PANEL);
             this.collapsePanel(Quote.PageElements.SEND_PANEL);

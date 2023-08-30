@@ -7,6 +7,7 @@ Required PHP variables:
    $timeline
    $historyPanel
    $requestPanel
+   $attachmentsPanel
    $estimatesPanel
    $approvePanel
    $sendPanel
@@ -59,6 +60,8 @@ Required PHP variables:
             
             <div class="flex-vertical">
                <?php echo $requestPanel ?>
+               
+               <?php echo $attachmentsPanel ?>
                
                <?php echo $estimatesPanel ?>
                
