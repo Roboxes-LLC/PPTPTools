@@ -3,7 +3,7 @@
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/common/userInfo.php';
 require_once ROOT.'/core/common/activityType.php';
-require_once ROOT.'/core/common/pptpDatabase.php';
+require_once ROOT.'/core/common/pptpdatabase.php';
 require_once ROOT.'/core/common/stringUtils.php';
 
 class Activity
