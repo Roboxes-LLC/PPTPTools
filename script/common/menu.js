@@ -22,6 +22,17 @@ class Menu
       {
          menuItem.classList.add('selected');
          
+         // Mark parent submenu-item (if present) as selected as well.
+         if (menuItem.parentElement.classList.contains("submenu"))
+         {
+            let submenuItem = menuItem.parentElement.previousElementSibling;
+            
+            if (submenuItem.classList.contains("submenu-item"))
+            {
+               submenuItem.classList.add('selected');
+            }
+         }
+         
          while (menuItem.parentElement.classList.contains("submenu"))
          {
             let submenuItem = menuItem.parentElement.previousElementSibling;
@@ -40,6 +51,10 @@ class Menu
       }
       else
       {
+         // Expand menu.
+         this.expand(this.menuElement);
+
+         // Expand submenu.
          this.expand(submenuItem);
       }
    }
@@ -53,15 +68,35 @@ class Menu
    {
       submenuItem.classList.remove("expanded");
       setSession(submenuItem.id + ".expanded", false);
+      
+      // If it is the menu that is being condensed, also condense all submenus.
+      if (submenuItem.classList.contains("menu"))
+      {
+         let submenuItems = document.getElementsByClassName("submenu-item");
+         
+         for (let submenuItem of submenuItems)
+         {
+            this.unexpand(submenuItem);
+         }
+      }
    }
    
    expand(submenuItem)
    {
       submenuItem.classList.add("expanded");
       setSession(submenuItem.id + ".expanded", true);
-      //this.show(this.getExpandedIcon(submenuItem), "flex");
-      //this.show(this.getSubmenuContainer(submenuItem), "flex");         
-      //this.hide(this.getUnexpandedIcon(submenuItem));
+   }
+   
+   toggle(submenuItem)
+   {
+      if (this.isExpanded(submenuItem))
+      {
+         this.unexpand(submenuItem);
+      }
+      else
+      {
+         this.expand(submenuItem);
+      }
    }
    
    getUnexpandedIcon(submenuItem)

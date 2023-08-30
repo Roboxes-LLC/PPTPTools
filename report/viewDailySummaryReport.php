@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 
    <?php Header::render("PPTP Tools"); ?>
    
-   <div class="main flex-horizontal flex-top flex-left"><!-- style="width: 90%;"-->
+   <div class="main flex-horizontal flex-top flex-left">
    
       <?php Menu::render() ?>
       

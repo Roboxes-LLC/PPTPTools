@@ -19,7 +19,9 @@ abstract class ChargeCode
    
    public static function getOptions($selectedChargeCode)
    {
-      $html = "<option style=\"display:none\">";
+      $label = "";
+      $value = ChargeCode::UNKNOWN;      
+      $html = "<option value=\"$value\">$label</option>";
       
       foreach (ChargeCode::$values as $chargeCode)
       {

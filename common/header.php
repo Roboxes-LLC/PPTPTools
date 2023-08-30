@@ -38,18 +38,7 @@ HEREDOC;
 <<<HEREDOC
       <script>
          document.getElementById("menu-button").addEventListener('click', function() {
-            var menu = document.getElementById("menu");
-            /*
-            if (isVisible("menu"))
-            {
-               hide("menu");
-            }
-            else
-            {
-               show("menu", "flex");
-            }
-            */
-            document.getElementById("menu").classList.toggle("condensed");
+            menu.toggle(menu.menuElement);
          });
       </script>
 HEREDOC;

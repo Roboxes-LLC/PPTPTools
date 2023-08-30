@@ -201,6 +201,16 @@ class Quote
             this.togglePanel(panelId);
          }.bind(this));
       }      
+      
+      // Estimate selection inputs
+      let inputs = document.getElementsByClassName("estimate-selection-input");
+      for (const element of inputs)
+      {
+         element.addEventListener('change', function() {
+            this.onEstimateSelected();
+         }.bind(this));
+      }
+      this.onEstimateSelected();
    }      
    
    createTable(tableElementId)
@@ -265,6 +275,23 @@ class Quote
       this.quoteStatus = quoteStatus;
       
       this.updateControls();
+   }
+   
+   onEstimateSelected()
+   {
+      let inputs = document.getElementsByClassName("estimate-selection-input");
+      
+      for (const element of inputs)
+      {
+         if (element.checked)
+         {
+            element.closest(".estimate-table-column").classList.add("selected");
+         }
+         else
+         {
+            element.closest(".estimate-table-column").classList.remove("selected");
+         }
+      }
    }
    
    // **************************************************************************

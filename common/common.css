@@ -126,6 +126,17 @@ form {
    color: var(--text-color-dark);
 }
 
+/* https://stackoverflow.com/questions/826782/how-to-disable-text-selection-highlighting */
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
 /* ***** Header ***** */
 
 .header {
@@ -201,8 +212,8 @@ form {
    min-width: 250px;
 }
 
-.menu.condensed {
-   min-width: 0px;
+.menu:not(.expanded) {
+   min-width: 80px;
 }
 
 /* Menu item */
@@ -221,9 +232,12 @@ form {
 }
 
 /* Menu item selected */
-.menu .menu-item.selected, 
-.menu .menu-item.selected .material-icons,
-.menu .menu-item.selected .menu-label {
+.menu .menu-item:not(.submenu-item).selected, 
+.menu .menu-item:not(.submenu-item).selected .material-icons,
+.menu .menu-item:not(.submenu-item).selected .menu-label,
+/* Submenu item selected */
+.menu:not(.expanded) .submenu-item.selected, 
+.menu:not(.expanded) .submenu-item.selected .material-icons {
    background: var(--main-color);
    color: var(--text-color-light);
 }
@@ -281,9 +295,8 @@ form {
    opacity: 100;
 }
 
-/* TODO: Work on this */
-.menu.condensed .menu-label,
-.menu.condensed .submenu-item .menu-item {
+.menu:not(.expanded) .menu-label,
+.menu:not(.expanded) .submenu-item + .submenu {
    display: none;
 }
 
@@ -585,6 +598,7 @@ input, select {
 
 .collapsible-panel {
 	width: 500px;
+	margin-right: 50px;
 }
  
 .collapsible-panel-header {
@@ -603,5 +617,26 @@ button.hidden,
    display: none;
 }
 
+.estimate-table-cell {
+	display: flex;
+   flex-direction: row;     /* flex-horizontal*/
+	justify-content: center; /* flex-h-center*/
+	height: 50px;
+}
 
+.estimate-table-column {
+   width: 150px;
+   padding-top: 15px;
+}
 
+.estimate-table-label-column {
+   width: 175px;
+}
+
+.estimate-table-cell.estimate-heading {
+   font-weight: bold;
+}
+
+.estimate-table-column.selected {
+   background: #caf0ff;
+}

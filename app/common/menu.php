@@ -118,6 +118,8 @@ class Menu
 { 
    const MENU_ELEMENT_ID = "menu";
    
+   const INITIAL_MENU_EXPANDED = false;
+   
    public static function render()
    {
       echo Menu::getHtml();
@@ -127,7 +129,15 @@ class Menu
    {
       $elementId = Menu::MENU_ELEMENT_ID;
       
-      $html = "<div id=\"$elementId\" class=\"menu flex-vertical\">";
+      // Initialize the menu to unexpanded, if not previously set.
+      if (!Session::isset($elementId . ".expanded"))
+      {
+         Menu::setExpanded($elementId, Menu::INITIAL_MENU_EXPANDED);
+      }
+      
+      $expanded = Menu::isExpanded($elementId) ? "expanded" : "";
+      
+      $html = "<div id=\"$elementId\" class=\"menu flex-vertical $expanded\">";
       
       $obj = Menu::getMenuObj();
 

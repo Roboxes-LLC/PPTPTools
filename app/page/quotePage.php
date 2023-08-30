@@ -94,7 +94,7 @@ class QuotePage extends Page
           
           case "estimate_quote":
           {
-             if (Page::requireParams($params, ["quoteId", "unitPrice", "costPerHour", "additionalCharge", "chargeCode", "totalCost", "leadTime"]))
+             if (Page::requireParams($params, ["quoteId"]))
              {
                 $quoteId = $params->getInt("quoteId");
                 $quote = Quote::load($quoteId);
@@ -456,17 +456,46 @@ class QuotePage extends Page
     
     private static function getEstimateParams(&$quote, $params)
     {
-       $estimate = new Estimate();
+       for ($estimateIndex = 0; $estimateIndex < Quote::MAX_ESTIMATES; $estimateIndex++)
+       {
+          $estimate = null;
+          
+          if (!QuotePage::isEmptyEstimate($params, $estimateIndex))
+          {
+             $estimate = new Estimate();
+             
+             $estimate->unitPrice = $params->getFloat(Estimate::getInputName("unitPrice", $estimateIndex));
+             $estimate->costPerHour = $params->getFloat(Estimate::getInputName("costPerHour", $estimateIndex));
+             $estimate->markup = $params->getFloat(Estimate::getInputName("markup", $estimateIndex));
+             $estimate->additionalCharge = $params->getFloat(Estimate::getInputName("additionalCharge", $estimateIndex));
+             $estimate->chargeCode = $params->getInt(Estimate::getInputName("chargeCode", $estimateIndex));
+             $estimate->totalCost = $params->getFloat(Estimate::getInputName("totalCost", $estimateIndex));
+             $estimate->leadTime = $params->getInt(Estimate::getInputName("leadTime", $estimateIndex));
+          }
+          
+          $quote->setEstimate($estimate, $estimateIndex);
+       }
        
-       $estimate->unitPrice = $params->getFloat("unitPrice");
-       $estimate->costPerHour = $params->getFloat("costPerHour");
-       $estimate->additionalCharge = $params->getFloat("additionalCharge");
-       $estimate->chargeCode = $params->getInt("chargeCode");
-       $estimate->totalCost = $params->getFloat("totalCost");
-       $estimate->leadTime = $params->getInt("leadTime");
+       $quote->selectedEstimate = $params->getInt("selectedEstimate");
+    }
+    
+    private static function isEmptyEstimate($params, $estimateIndex)
+    {
+       $isEmpty = true;
+       
+       $properties = ["unitPrice", "costPerHour", "markup", "additionalCharge", "chargeCode", "totalCost", "leadTime"];
+ 
+       foreach ($properties as $property)
+       {
+          $inputName = Estimate::getInputName($property, $estimateIndex);
+          if ($params->keyExists($inputName) && ($params->get($inputName) !== ""))
+          {
+             $isEmpty = false;
+             break;
+          }
+       }
 
-       // TODO: Multiple estimates.       
-       $quote->setEstimate($estimate, 0);
+       return ($isEmpty);
     }
     
     private static function augmentQuote(&$quote)

@@ -15,6 +15,7 @@ class Estimate
    public $estimateIndex;   
    public $unitPrice;
    public $costPerHour;
+   public $markup;
    public $additionalCharge;
    public $chargeCode;
    public $totalCost;
@@ -26,6 +27,7 @@ class Estimate
       $this->estimateIndex = 0;
       $this->unitPrice = 0.0;
       $this->costPerHour = 0.0;
+      $this->markup = 0.0;
       $this->additionalCharge = 0.0;
       $this->chargeCode = ChargeCode::UNKNOWN;
       $this->totalCost = 0.0;
@@ -81,6 +83,7 @@ class Estimate
       $this->estimateIndex = intval($row["estimateIndex"]);      
       $this->unitPrice = doubleval($row["unitPrice"]);
       $this->costPerHour = doubleval($row["costPerHour"]);
+      $this->markup = doubleval($row["markup"]);
       $this->additionalCharge = doubleval($row["additionalCharge"]);
       $this->chargeCode = intval($row["chargeCode"]);
       $this->totalCost = doubleval($row["totalCost"]);
@@ -93,5 +96,10 @@ class Estimate
    {
       return (($this->quoteId != Estimate::UNKNOWN_QUOTE_ID) &&
               ($this->estimateIndex < Estimate::MAX_ESTIMATES));
+   }
+   
+   public static function getInputName($property, $estimateIndex)
+   {
+      return ($property . "_" . $estimateIndex);
    }
 }
