@@ -83,6 +83,12 @@ class Contact
       return ($this->firstName . " " . $this->lastName);
    }
    
+   public function getFormalName()
+   {
+      // TODO
+      return ($this->firstName . " " . $this->lastName);
+   }
+   
    public static function getOptions($selectedContactId = null, $customerId = Customer::UNKNOWN_CUSTOMER_ID)
    {
       $html = "<option style=\"display:none\">";

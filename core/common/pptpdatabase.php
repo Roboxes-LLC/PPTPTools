@@ -158,6 +158,18 @@ class PPTPDatabaseAlt extends PDODatabase
    }   
    
    // **************************************************************************
+   //                                  Company
+   
+   public function getCompany($companyId)
+   {
+      $statement = $this->pdo->prepare("SELECT * FROM company WHERE companyId = ?;");
+      
+      $result = $statement->execute([$companyId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
    //                                   Contact
    
    public function getContact($contactId)

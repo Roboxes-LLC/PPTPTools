@@ -25,6 +25,7 @@ class Quote
       "REVISE_BUTTON":       "revise-button",
       "APPROVE_BUTTON":      "approve-button",
       "UNAPPROVE_BUTTON":    "unapprove-button",
+      "PREVIEW_BUTTON":      "preview-button",
       "SEND_BUTTON":         "send-button",
       "RESEND_BUTTON":       "resend-button",
       "ACCEPT_BUTTON":       "accept-button",
@@ -158,6 +159,13 @@ class Quote
       {
          document.getElementById(Quote.PageElements.UNAPPROVE_BUTTON).addEventListener('click', function() {
             this.onUnapproveButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.PREVIEW_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.PREVIEW_BUTTON).addEventListener('click', function() {
+            this.onPreviewButton();
          }.bind(this));
       }
       
@@ -388,6 +396,31 @@ class Quote
          });
       }
    }
+   
+   onPreviewButton()
+   {
+      if (this.validateForm())
+      {
+         let form = document.getElementById(Quote.PageElements.SEND_FORM);
+         
+         // Rememeber form properties.
+         let target = form.target;
+         let action = form.action;
+         let method = form.method;
+         
+         // Set target to open in new window.
+         form.target = "_blank";
+         form.action = "/quote/quotePreview.php";
+         form.method = "post";
+         
+         form.submit();
+         
+         // Restore form properties.
+         form.target = target;
+         form.action = action;
+         form.method = method;
+      }  
+   }
 
    onSaveButton()
    {
@@ -517,7 +550,9 @@ class Quote
       submitForm(Quote.PageElements.SEND_FORM, "/app/page/quote", function (response) {
          if (response.success == true)
          {
-            location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+            alert("Quote was submitted."); 
+            
+            location.reload();
          }
          else
          {
@@ -733,6 +768,8 @@ class Quote
             this.hidePanel(Quote.PageElements.APPROVE_PANEL);
             this.hidePanel(Quote.PageElements.SEND_PANEL);
             this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
+            
+            this.collapsePanel(Quote.PageElements.ATTACHMENTS_PANEL);
             
             this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
             break;

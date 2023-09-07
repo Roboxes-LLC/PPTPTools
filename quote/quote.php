@@ -10,6 +10,7 @@ require_once ROOT.'/core/manager/userManager.php';
 require_once ROOT.'/common/authentication.php';
 require_once ROOT.'/common/header.php';
 require_once ROOT.'/common/version.php';
+require_once ROOT.'/quote/quoteEmail.php';
 
 abstract class InputField
 {
@@ -440,7 +441,7 @@ HEREDOC;
             <br>
             
             <div class="flex-horizontal flex-h-center">
-               <button id="quote-button" type="button" class="accent-button">Quote</button>
+               <button id="quote-button" type="button" class="accent-button">Save</button>
                <button id="revise-button" type="button">Revise</button>
             </div>
             
@@ -616,7 +617,7 @@ function getSendPanel()
    $toEmail = getToEmail();
    $ccEmail = getCCEmail();
    $fromEmail = getFromEmail();
-   $emailBody = "";
+   $notes = $quote->getSentNotes();
    
    $html =
 <<< HEREDOC
@@ -641,7 +642,7 @@ function getSendPanel()
       
             <div class="form-item">
                <div class="form-label">CC</div>
-               <input type="text" name="ccEmail" style="width:300px;" value="$ccEmail" {$getDisabled(InputField::TO_EMAIL)} />
+               <input type="text" name="ccEmails" style="width:300px;" value="$ccEmail" {$getDisabled(InputField::TO_EMAIL)} />
             </div>
       
             <div class="form-item">
@@ -650,15 +651,17 @@ function getSendPanel()
             </div>
    
             <div class="form-item">
-               <div class="form-label">Body</div>
-               <textarea class="comments-input" type="text" name="emailBody" rows="8" maxlength="512" style="width:300px" <?php echo getDisabled(InputField::EMAIL_BODY) ?>$emailBody</textarea>
+               <div class="form-label">Notes</div>
+               <textarea class="comments-input" type="text" name="notes" rows="8" maxlength="512" style="width:300px" <?php echo getDisabled(InputField::EMAIL_BODY) ?>$notes</textarea>
             </div>
             
             <br>
             
-            <div class="flex-horizontal flex-h-center">
+            <div class="flex-horizontal flex-h-center flex-v-center">
                <button id="send-button" type="button" class="accent-button">Send</button>
                <button id="resend-button" type="button">Resend</button>
+               &nbsp;&nbsp;&nbsp;
+               <div id="preview-button" class="download-link">Preview</div>
             </div>
 
          </div>

@@ -315,6 +315,34 @@ class Quote
       return ($this->addQuoteAction(QuoteStatus::SENT, $dateTime, $userId, $notes));
    }
    
+   public function isSent()
+   {
+      return (count($this->findActions(QuoteStatus::SENT)) > 0);
+   }
+   
+   public function getSentAction()
+   {
+      $quoteActions = $this->findActions(QuoteStatus::SENT);
+      
+      return ((count($quoteActions) > 0) ? $quoteActions[0] : null);
+   }
+   
+   public function getSentNotes()
+   {
+      $sentNotes = null;
+      
+      // Retrieve last SENT action.
+      $quoteActions = $this->findActions(QuoteStatus::SENT);
+      $quoteAction = end($quoteActions);
+      
+      if ($quoteAction)
+      {
+         $sentNotes = $quoteAction->notes;
+      }
+      
+      return ($sentNotes);
+   }
+   
    public function accept($dateTime, $userId, $notes)
    {
       return ($this->addQuoteAction(QuoteStatus::ACCEPTED, $dateTime, $userId, $notes));

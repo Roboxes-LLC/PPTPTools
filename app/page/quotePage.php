@@ -3,6 +3,7 @@
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/app/page/page.php';
 require_once ROOT.'/common/upload.php';
+require_once ROOT.'/core/manager/emailManager.php';
 require_once ROOT.'/core/manager/quoteManager.php';
 
 class QuotePage extends Page
@@ -313,35 +314,47 @@ class QuotePage extends Page
           
           case "send_quote":
           {
-             if (Page::requireParams($params, ["toEmail", "ccEmail", "fromEmail", "emailBody"]))
+             if (Page::requireParams($params, ["quoteId", "toEmail", "ccEmails", "fromEmail", "notes"]))
              {
                 $quoteId = $params->getInt("quoteId");
                 $quote = Quote::load($quoteId);
                 
                 if ($quote)
                 {
-                   $toEmail = explode(";", $params->get("toEmail"));
-                   $ccEmail = explode(";", $params->get("ccEmail"));
+                   $toEmail = $params->get("toEmail");
+                   $ccEmails = explode(";", $params->get("ccEmails"));
                    $fromEmail = $params->get("fromEmail");
-                   $emailbody = $params->get("emailBody");
+                   $notes = $params->get("notes");
                    
-                   // TODO: Actually send.
+                   $result = 
+                      EmailManager::sendQuoteEmail(
+                         $quoteId, 
+                         Authentication::getAuthenticatedUser()->employeeNumber, 
+                         $ccEmails,
+                         $notes);
                    
-                   if ($quote->send(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null))
+                   if ($result->status == true)
                    {
-                      $this->result->quoteId = $quote->quoteId;
-                      $this->result->quote = $quote;
-                      $this->result->success = true;
-                      
-                      ActivityLog::logComponentActivity(
-                         Authentication::getAuthenticatedUser()->employeeNumber,
-                         ActivityType::SEND_QUOTE,
-                         $quote->quoteId,
-                         $quote->getQuoteNumber());
+                      if ($quote->send(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
+                      {
+                         $this->result->quoteId = $quote->quoteId;
+                         $this->result->quote = $quote;
+                         $this->result->success = true;
+                         
+                         ActivityLog::logComponentActivity(
+                            Authentication::getAuthenticatedUser()->employeeNumber,
+                            ActivityType::SEND_QUOTE,
+                            $quote->quoteId,
+                            $quote->getQuoteNumber());
+                      }
+                      else
+                      {
+                         $this->error("Database error");
+                      }
                    }
                    else
                    {
-                      $this->error("Database error");
+                      $this->error("Failed to send email: $result->message");
                    }
                 }
                 else
