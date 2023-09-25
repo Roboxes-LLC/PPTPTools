@@ -322,7 +322,7 @@ class QuotePage extends Page
                 if ($quote)
                 {
                    $toEmail = $params->get("toEmail");
-                   $ccEmails = explode(";", $params->get("ccEmails"));
+                   $ccEmails = !empty($params->get("ccEmails")) ? explode(";", $params->get("ccEmails")) : array();
                    $fromEmail = $params->get("fromEmail");
                    $notes = $params->get("notes");
                    

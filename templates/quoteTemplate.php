@@ -29,11 +29,6 @@ Required PHP variables:
             font-size: 24pt;
          }
          
-         #title2 {
-            font-weight: bold;
-            font-size: 2em;
-         }
-         
          #quote-number {
             font-size: 18pt;
          }
@@ -103,7 +98,6 @@ Required PHP variables:
    <body>
       <div id="header">
          <div id="title">Quotation</div>
-         <div id="title2">Quotation</div>
          <div id="quote-number"><?php echo $templateParams->quoteNumber ?></div>
       </div>
       <div id="from">

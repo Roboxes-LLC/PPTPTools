@@ -28,7 +28,7 @@ function getQuarter()
 
 function getYear()
 {
-   $year = 2022;  // TODO: Current year
+   $year = 2023;  // TODO: Current year
    
    if (isset($_SESSION["quarterlySummaryReport.filter.year"]))
    {
@@ -42,7 +42,7 @@ function getYearOptions($selectedYear)
 {
    $html = "<option style=\"display:none\">";
    
-   for ($year = 2020; $year <= 2022; $year++)  // TODO
+   for ($year = 2020; $year <= 2023; $year++)  // TODO
    {
       $selected = ($year == $selectedYear) ? "selected" : "";
       
