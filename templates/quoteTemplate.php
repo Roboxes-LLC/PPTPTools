@@ -152,7 +152,7 @@ Required PHP variables:
             <td><?php echo $templateParams->quote->customerPartNumber ?></td>
             <td></td>
             <td><?php echo number_format($templateParams->quote->quantity, 0) ?></td>
-            <td>$<?php echo number_format($templateParams->quote->getSelectedEstimate()->unitPrice, 2) ?></td>
+            <td>$<?php echo number_format($templateParams->quote->getSelectedEstimate()->unitPrice, 4) ?></td>
             <td>$<?php echo number_format($templateParams->quote->getSelectedEstimate()->additionalCharge, 2) ?></td>
             <td class="bold">$<?php echo number_format($templateParams->quote->getSelectedEstimate()->totalCost, 2) ?></td>
          </tr>
