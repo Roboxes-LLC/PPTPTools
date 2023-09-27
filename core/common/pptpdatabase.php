@@ -380,7 +380,7 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "INSERT INTO quote " .
-         "(quoteStatus, customerId, contactId, customerPartNumber, pptpPartNumber, quantity, selectedEstimate) " .
+         "(quoteStatus, customerId, contactId, customerPartNumber, pptpPartNumber, quantity) " .
          "VALUES (?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
@@ -391,7 +391,6 @@ class PPTPDatabaseAlt extends PDODatabase
             $quote->customerPartNumber,
             $quote->pptpPartNumber,
             $quote->quantity,
-            $quote->selectedEstimate
          ]);
       
       return ($result);
@@ -401,7 +400,7 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "UPDATE quote " .
-         "SET quoteStatus = ?, customerId = ?, contactId = ?, customerPartNumber = ?, pptpPartNumber = ?, quantity = ?, selectedEstimate = ? " .
+         "SET quoteStatus = ?, customerId = ?, contactId = ?, customerPartNumber = ?, pptpPartNumber = ?, quantity = ? " .
          "WHERE quoteId = ?");
       
       $result = $statement->execute(
@@ -412,7 +411,6 @@ class PPTPDatabaseAlt extends PDODatabase
             $quote->customerPartNumber,
             $quote->pptpPartNumber,
             $quote->quantity,
-            $quote->selectedEstimate,
             $quote->quoteId,
          ]);
       
@@ -615,20 +613,21 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "INSERT INTO estimate " .
-         "(quoteId, estimateIndex, unitPrice, costPerHour, markup, additionalCharge, chargeCode, totalCost, leadTime) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(quoteId, estimateIndex, quantity, unitPrice, costPerHour, markup, additionalCharge, chargeCode, leadTime, isSelected) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
             $estimate->quoteId,
             $estimate->estimateIndex,
+            $estimate->quantity,
             $estimate->unitPrice,
             $estimate->costPerHour,
             $estimate->markup,
             $estimate->additionalCharge,
             $estimate->chargeCode,
-            $estimate->totalCost,
-            $estimate->leadTime
+            $estimate->leadTime,
+            $estimate->isSelected ? 1 : 0,
          ]);
       
       return ($result);
@@ -638,18 +637,19 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "UPDATE estimate " .
-         "SET unitPrice = ?, costPerHour = ?, markup = ?, additionalCharge = ?, chargeCode = ?, totalCost = ?, leadTime = ? " .
+         "SET quantity = ?, unitPrice = ?, costPerHour = ?, markup = ?, additionalCharge = ?, chargeCode = ?, leadTime = ?, isSelected = ? " .
          "WHERE quoteId = ? AND estimateIndex = ?");
       
       $result = $statement->execute(
          [
+            $estimate->quantity,
             $estimate->unitPrice,
             $estimate->costPerHour,
             $estimate->markup,
             $estimate->additionalCharge,
             $estimate->chargeCode,
-            $estimate->totalCost,
             $estimate->leadTime,
+            $estimate->isSelected ? 1 : 0,
             $estimate->quoteId,
             $estimate->estimateIndex
          ]);

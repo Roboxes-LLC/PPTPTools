@@ -27,11 +27,12 @@ abstract class InputField
    const CHARGE_CODE = 9;
    const TOTAL_COST = 10;
    const LEAD_TIME = 11;
-   const TO_EMAIL = 12;
-   const CC_EMAIL = 13;
-   const FROM_EMAIL = 14;
-   const EMAIL_BODY = 15;
-   const LAST = 16;
+   const APPROVE_BUTTON = 12;
+   const TO_EMAIL = 13;
+   const CC_EMAIL = 14;
+   const FROM_EMAIL = 15;
+   const EMAIL_BODY = 16;
+   const LAST = 17;
    const COUNT = InputField::LAST - InputField::FIRST;
 }
 
@@ -171,6 +172,17 @@ function isEditable($field)
    
    switch ($field)
    {
+      case InputField::TOTAL_COST:
+      {
+         $isEditable = false;   
+      }
+      
+      case InputField::APPROVE_BUTTON:
+      {
+         $isEditable = Authentication::checkPermissions(Permission::APPROVE_QUOTE);
+         break;
+      }
+      
       default:
       {
          // Edit status based solely on view.
@@ -296,12 +308,12 @@ function getRequestPanel()
                <div class="form-label-long">PPTP Part #</div>
                <input id="pptp-part-number-input" type="text" name="pptpPartNumber" maxlength="16" style="width:150px;" value="{$quote->pptpPartNumber}" {$getDisabled(InputField::PPTP_PART_NUMBER)} />
             </div>
-      
+
             <div class="form-item">
                <div class="form-label-long">Quantity</div>
                <input id="quantity-input" type="number" name="quantity" style="width:75px;" value="{$quote->quantity}" {$getDisabled(InputField::QUANTITY)} />
             </div>
-      
+
             <br>
             
             <div class="flex-horizontal flex-h-center">
@@ -419,6 +431,7 @@ function getEstimatesPanel()
 
                <div class="estimate-table-column estimate-table-label-column flex-vertical">
                   <div class="estimate-table-cell"></div>
+                  <div class="estimate-table-cell estimate-table-label">Quantity</div>
                   <div class="estimate-table-cell estimate-table-label">Selling Price</div>
                   <div class="estimate-table-cell estimate-table-label">Dollars Per Hour</div>
                   <div class="estimate-table-cell estimate-table-label">Profit/Markup</div>
@@ -460,18 +473,19 @@ function getEstimatePanel($estimateIndex)
    
    $estimateId = $estimateIndex + 1;
    
+   $quantity = getEstimateProperty($estimateIndex, "quantity");
    $unitPrice = getEstimateProperty($estimateIndex, "unitPrice");
    $costPerHour = getEstimateProperty($estimateIndex, "costPerHour");
    $markup = getEstimateProperty($estimateIndex, "markup");
    $additionalCharge = getEstimateProperty($estimateIndex, "additionalCharge");
    $chargeCode = getEstimateProperty($estimateIndex, "chargeCode");
-   $totalCost = getEstimateProperty($estimateIndex, "totalCost");
    $leadTime = getEstimateProperty($estimateIndex, "leadTime");
+   $isSelected = getEstimateProperty($estimateIndex, "isSelected");
    
    $chargeCodeOptions = ChargeCode::getOptions($chargeCode);
    
    $quote = getQuote();
-   $checked = ($quote && ($quote->selectedEstimate == $estimateIndex)) ? "checked" : "";
+   $checked = $isSelected ? "checked" : "";
    
    $html =
 <<< HEREDOC
@@ -480,7 +494,11 @@ function getEstimatePanel($estimateIndex)
       <div class="estimate-table-cell estimate-heading">Estimate $estimateId</div>
 
       <div class="estimate-table-cell estimate-table-input">
-         <input type="number" name="unitPrice_$estimateIndex" style="width:75px;" value="$unitPrice" {$getDisabled(InputField::UNIT_PRICE)} />
+         <input type="number" class="estimate-quantity-input" name="quantity_$estimateIndex" style="width:75px;" value="$quantity" {$getDisabled(InputField::QUANTITY)} />
+      </div>
+
+      <div class="estimate-table-cell estimate-table-input">
+         <input type="number" class="unit-price-input" name="unitPrice_$estimateIndex" style="width:75px;" value="$unitPrice" {$getDisabled(InputField::UNIT_PRICE)} />
       </div>
       
       <div class="estimate-table-cell estimate-table-input">
@@ -493,7 +511,7 @@ function getEstimatePanel($estimateIndex)
       </div>
       
       <div class="estimate-table-cell estimate-table-input">
-         <input type="number" name="additionalCharge_$estimateIndex" style="width:75px;" value="$additionalCharge" {$getDisabled(InputField::ADDITIONAL_CHARGE)} />
+         <input type="number" class="additional-charge-input" name="additionalCharge_$estimateIndex" style="width:75px;" value="$additionalCharge" {$getDisabled(InputField::ADDITIONAL_CHARGE)} />
       </div>
       
       <div class="estimate-table-cell estimate-table-input">
@@ -503,7 +521,7 @@ function getEstimatePanel($estimateIndex)
       </div>
       
       <div class="estimate-table-cell estimate-table-input">
-         <input type="number" name="totalCost_$estimateIndex" style="width:75px;" value="$totalCost" {$getDisabled(InputField::TOTAL_COST)} />
+         <input type="number" class="total-cost-input" style="width:75px;" {$getDisabled(InputField::TOTAL_COST)} />
       </div>
       
       <div class="estimate-table-cell estimate-table-input">
@@ -511,7 +529,7 @@ function getEstimatePanel($estimateIndex)
       </div>
 
       <div class="estimate-table-cell estimate-table-input flex-horizontal flex-h-center">
-         <input class="estimate-selection-input" type="radio" name="selectedEstimate" value="$estimateIndex" $checked>
+         <input class="estimate-selection-input" type="checkbox" name="isSelected_$estimateIndex" $checked>
       </div>
 
    </div>
@@ -544,14 +562,14 @@ function getApprovePanel()
          <div class="collapsible-panel-content">
       
             <div class="form-item">
-               <textarea id="approve-notes-input" class="comments-input" type="text" name="approveNotes" rows="4" maxlength="256" style="width:300px" <?php echo getDisabled(InputField::APPROVAL_NOTES) ?></textarea>
+               <textarea id="approve-notes-input" class="comments-input" type="text" name="approveNotes" rows="4" maxlength="256" style="width:300px" {$getDisabled(InputField::APPROVE_BUTTON)}></textarea>
             </div>
             
             <br>
             
             <div class="flex-horizontal flex-h-center">
-               <button id="approve-button" type="button" class="accent-button" style="margin-right:20px">Approve</button>
-               <button id="unapprove-button" type="button">Unapprove</button>
+               <button id="approve-button" type="button" class="accent-button" style="margin-right:20px" {$getDisabled(InputField::APPROVE_BUTTON)} >Approve</button>
+               <button id="unapprove-button" type="button" {$getDisabled(InputField::APPROVE_BUTTON)} >Unapprove</button>
             </div>
 
          </div>

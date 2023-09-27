@@ -144,25 +144,39 @@ Required PHP variables:
             <th>Part #</th>
             <th>Part description</th>
             <th>Quantity</th>
-            <th>Unit price</th>
-            <th>Additional charge *</th>
-            <th>Total price **</th>
+            <th>Unit price * </th>
+            <th>Additional charge **</th>
+            <th>Total price ***</th>
          </tr>
-         <tr id="total-row">
-            <td><?php echo $templateParams->quote->customerPartNumber ?></td>
-            <td></td>
-            <td><?php echo number_format($templateParams->quote->quantity, 0) ?></td>
-            <td>$<?php echo number_format($templateParams->quote->getSelectedEstimate()->unitPrice, 4) ?></td>
-            <td>$<?php echo number_format($templateParams->quote->getSelectedEstimate()->additionalCharge, 2) ?></td>
-            <td class="bold">$<?php echo number_format($templateParams->quote->getSelectedEstimate()->totalCost, 2) ?></td>
-         </tr>
+         <?php 
+         foreach ($templateParams->quote->getSelectedEstimates() as $estimate)
+         {
+            $quantity = number_format($estimate->quantity, 0);
+            $unitPrice = "$".number_format($estimate->unitPrice, 4);
+            $additionalCharge = "$".number_format($estimate->additionalCharge, 2);
+            $totalCost = "$".number_format($estimate->getTotalCost(), 2);
+         
+            echo
+<<<HEREDOC
+            <tr id="total-row">
+               <td>{$templateParams->quote->customerPartNumber}</td>
+               <td></td>
+               <td>$quantity</td>
+               <td>$unitPrice</td>
+               <td>$additionalCharge</td>
+               <td class="bold">$totalCost</td>
+            </tr>
+HEREDOC;
+         }
+         ?>
       </table>
       
       <br>
       
       <div id="caveats">
-         <p>* One time charge that applies to the first order only.</p>
-         <p>** Any P.O. referencing this quotation is subject to acknowledgement/conditions of sale by PPTP.</p>
+         <p>* Price in effect (P.I.E.) Price may change at the time of material purchase.</p>
+         <p>** One time charge that applies to the first order only.</p>
+         <p>*** Any P.O. referencing this quotation is subject to acknowledgement/conditions of sale by PPTP.</p>
       </div>
       <div id="notes">
          <div class="bold">Additional notes:</div>

@@ -34,7 +34,6 @@ class Quote
    
    // Estimates
    public $estimates;
-   public $selectedEstimate;
    
    public $actions;
    public $attachments;
@@ -54,7 +53,6 @@ class Quote
       {
          $this->estimates[$estimateIndex] = null;
       }
-      $this->selectedEstimate = 0;
       
       $this->actions = array();
       $this->attachments = array();
@@ -133,8 +131,6 @@ class Quote
       $this->customerPartNumber = $row["customerPartNumber"];
       $this->pptpPartNumber = $row["pptpPartNumber"];
       $this->quantity = doubleval($row["quantity"]);
-      
-      $this->selectedEstimate = intval($row["selectedEstimate"]);
    }
    
    // **************************************************************************
@@ -206,11 +202,19 @@ class Quote
       }
    }
    
-   public function getSelectedEstimate()
+   public function getSelectedEstimates()
    {
-      return (($this->selectedEstimate < Quote::MAX_ESTIMATES) ? 
-                 $this->estimates[$this->selectedEstimate] : 
-                 null);
+      $selectedEstimates = [];
+      
+      foreach ($this->estimates as $estimate)
+      {
+         if ($estimate->isSelected)
+         {
+            $selectedEstimates[] = $estimate;
+         }
+      }
+      
+      return ($selectedEstimates);
    }
    
    public static function getActions($quoteId)

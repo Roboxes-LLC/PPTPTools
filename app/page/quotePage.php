@@ -248,65 +248,68 @@ class QuotePage extends Page
           
           case "approve_quote":
           {
-             if (Page::requireParams($params, ["quoteId", "approveNotes", "isApproved"]))
+             if (Page::authenticate([Permission::APPROVE_QUOTE]))
              {
-                $quoteId = $params->getInt("quoteId");
-                
-                $quote = Quote::load($quoteId);
-                
-                if ($quote)
+                if (Page::requireParams($params, ["quoteId", "approveNotes", "isApproved"]))
                 {
-                   $isApproved = $params->getBool("isApproved");
+                   $quoteId = $params->getInt("quoteId");
                    
-                   $notes = $params->get("approveNotes");
-                   // Don't store empty notes.
-                   if (empty($notes))
-                   {
-                      $notes = null;
-                   }
+                   $quote = Quote::load($quoteId);
                    
-                   if ($isApproved)
+                   if ($quote)
                    {
-                      if ($quote->approve(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
+                      $isApproved = $params->getBool("isApproved");
+                      
+                      $notes = $params->get("approveNotes");
+                      // Don't store empty notes.
+                      if (empty($notes))
                       {
-                         $this->result->quoteId = $quote->quoteId;
-                         $this->result->quote = $quote;
-                         $this->result->success = true;
-                  
-                         ActivityLog::logApproveQuote(
-                            Authentication::getAuthenticatedUser()->employeeNumber,
-                            $quote->quoteId,
-                            $quote->getQuoteNumber(),
-                            $notes);
+                         $notes = null;
                       }
-                      else
+                      
+                      if ($isApproved)
                       {
-                         $this->error("Database error");
-                      }
-                   }
-                   else
-                   {
-                      if ($quote->unapprove(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
-                      {
-                         $this->result->quoteId = $quote->quoteId;
-                         $this->result->quote = $quote;
-                         $this->result->success = true;
-                         
-                         ActivityLog::logUnapproveQuote(
+                         if ($quote->approve(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
+                         {
+                            $this->result->quoteId = $quote->quoteId;
+                            $this->result->quote = $quote;
+                            $this->result->success = true;
+                     
+                            ActivityLog::logApproveQuote(
                                Authentication::getAuthenticatedUser()->employeeNumber,
                                $quote->quoteId,
                                $quote->getQuoteNumber(),
                                $notes);
+                         }
+                         else
+                         {
+                            $this->error("Database error");
+                         }
                       }
-                      else 
+                      else
                       {
-                         $this->error("Database error");
+                         if ($quote->unapprove(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
+                         {
+                            $this->result->quoteId = $quote->quoteId;
+                            $this->result->quote = $quote;
+                            $this->result->success = true;
+                            
+                            ActivityLog::logUnapproveQuote(
+                                  Authentication::getAuthenticatedUser()->employeeNumber,
+                                  $quote->quoteId,
+                                  $quote->getQuoteNumber(),
+                                  $notes);
+                         }
+                         else 
+                         {
+                            $this->error("Database error");
+                         }
                       }
                    }
-                }
-                else 
-                {
-                   $this->error("Invalid quote id [$quoteId]");
+                   else 
+                   {
+                      $this->error("Invalid quote id [$quoteId]");
+                   }
                 }
              }
              break;
@@ -582,6 +585,7 @@ class QuotePage extends Page
           {
              $estimate = new Estimate();
              
+             $estimate->quantity = $params->getInt(Estimate::getInputName("quantity", $estimateIndex));
              $estimate->unitPrice = $params->getFloat(Estimate::getInputName("unitPrice", $estimateIndex));
              $estimate->costPerHour = $params->getFloat(Estimate::getInputName("costPerHour", $estimateIndex));
              $estimate->markup = $params->getFloat(Estimate::getInputName("markup", $estimateIndex));
@@ -589,19 +593,18 @@ class QuotePage extends Page
              $estimate->chargeCode = $params->getInt(Estimate::getInputName("chargeCode", $estimateIndex));
              $estimate->totalCost = $params->getFloat(Estimate::getInputName("totalCost", $estimateIndex));
              $estimate->leadTime = $params->getInt(Estimate::getInputName("leadTime", $estimateIndex));
+             $estimate->isSelected = $params->keyExists(Estimate::getInputName("isSelected", $estimateIndex));
           }
           
           $quote->setEstimate($estimate, $estimateIndex);
        }
-       
-       $quote->selectedEstimate = $params->getInt("selectedEstimate");
     }
     
     private static function isEmptyEstimate($params, $estimateIndex)
     {
        $isEmpty = true;
        
-       $properties = ["unitPrice", "costPerHour", "markup", "additionalCharge", "chargeCode", "totalCost", "leadTime"];
+       $properties = ["quantity", "unitPrice", "costPerHour", "markup", "additionalCharge", "chargeCode", "totalCost", "leadTime"];
  
        foreach ($properties as $property)
        {

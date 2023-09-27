@@ -240,6 +240,40 @@ class Quote
          }.bind(this));
       }
       this.onEstimateSelected();
+      
+      // Estimate quantity inputs
+      inputs = document.getElementsByClassName("estimate-quantity-input");
+      for (const element of inputs)
+      {
+         element.addEventListener('change', function(event) {
+            Quote.recalculateTotalCost(event.target);
+         });
+      }
+      
+      // Unit price inputs
+      inputs = document.getElementsByClassName("unit-price-input");
+      for (const element of inputs)
+      {
+         element.addEventListener('change', function(event) {
+            Quote.recalculateTotalCost(event.target);
+         });
+      }
+      
+      // Unit price inputs
+      inputs = document.getElementsByClassName("additional-charge-input");
+      for (const element of inputs)
+      {
+         element.addEventListener('change', function(event) {
+            Quote.recalculateTotalCost(event.target);
+         });
+      }
+      
+      // Total cost inputs
+      inputs = document.getElementsByClassName("total-cost-input");
+      for (const element of inputs)
+      {
+         Quote.recalculateTotalCost(element);
+      }
    }      
    
    createTable(tableElementId)
@@ -853,5 +887,28 @@ class Quote
    expandPanel(panelId)
    {
       document.getElementById(panelId).classList.remove("collapsed");
+   }
+   
+   static recalculateTotalCost(element)
+   {
+      // Get the parent table column.
+      let parent = element;
+      while ((parent = parent.parentElement) && !parent.classList.contains("estimate-table-column"));
+      
+      if (parent != null)
+      {
+         // Retrieve compoenents.
+         let quantity = parseInt(parent.querySelector(".estimate-quantity-input").value);
+         let unitPrice = parseFloat(parent.querySelector(".unit-price-input").value);
+         let additionalCharge = parseFloat(parent.querySelector(".additional-charge-input").value);
+      
+         // Total cost calculation.
+         let totalCost = ((quantity * unitPrice) + additionalCharge);
+         totalCost = Math.round((totalCost + Number.EPSILON) * 100) / 100;
+         totalCost = totalCost.toFixed(2);
+         
+         // Set new value in input field.
+         parent.querySelector(".total-cost-input").value = totalCost;
+      }
    }
 }

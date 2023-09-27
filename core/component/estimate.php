@@ -12,26 +12,28 @@ class Estimate
    const MAX_ESTIMATES = MAX_ESTIMATES;  // global constant
    
    public $quoteId;
-   public $estimateIndex;   
+   public $estimateIndex;
+   public $quantity;
    public $unitPrice;
    public $costPerHour;
    public $markup;
    public $additionalCharge;
    public $chargeCode;
-   public $totalCost;
-   public $leadTime;   
+   public $leadTime;
+   public $isSelected;
    
    public function __construct()
    {
       $this->quoteId = Estimate::UNKNOWN_QUOTE_ID;
       $this->estimateIndex = 0;
+      $this->quantity = 0;
       $this->unitPrice = 0.0;
       $this->costPerHour = 0.0;
       $this->markup = 0.0;
       $this->additionalCharge = 0.0;
       $this->chargeCode = ChargeCode::UNKNOWN;
-      $this->totalCost = 0.0;
       $this->leadTime = 0;
+      $this->isSelected = false;
    }
    
    // **************************************************************************
@@ -81,13 +83,14 @@ class Estimate
    {
       $this->quoteId = intval($row["quoteId"]);
       $this->estimateIndex = intval($row["estimateIndex"]);      
+      $this->quantity = doubleval($row["quantity"]);
       $this->unitPrice = doubleval($row["unitPrice"]);
       $this->costPerHour = doubleval($row["costPerHour"]);
       $this->markup = doubleval($row["markup"]);
       $this->additionalCharge = doubleval($row["additionalCharge"]);
       $this->chargeCode = intval($row["chargeCode"]);
-      $this->totalCost = doubleval($row["totalCost"]);
       $this->leadTime = intval($row["leadTime"]);
+      $this->isSelected = filter_var($row["isSelected"], FILTER_VALIDATE_BOOLEAN);
    }
    
    // **************************************************************************
@@ -101,5 +104,10 @@ class Estimate
    public static function getInputName($property, $estimateIndex)
    {
       return ($property . "_" . $estimateIndex);
+   }
+   
+   public function getTotalCost()
+   {
+      return (($this->quantity * $this->unitPrice) + $this->additionalCharge);
    }
 }
