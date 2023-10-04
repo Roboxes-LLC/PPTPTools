@@ -1,0 +1,56 @@
+@CHARSET "ISO-8859-1";
+
+#pin-pad-container {
+   align-items: center;
+   justify-content: center;
+}
+
+#pin-pad {
+   font-size: 18pt;
+}
+
+#pin-pad .material-icons {
+   font-size: 18pt;
+   background-color: #e8f0fd;
+}
+
+/* Key */
+#pin-pad > div > div {
+   width: 65px;
+   height: 65px;
+   align-items: center;
+   justify-content: center;
+   display: flex;
+   border-radius: 50%;
+   background-color: #e8f0fd;
+   margin: 3px;
+   user-select: none;
+}
+
+/* Function Key */
+#pin-pad > div > div.function-key,
+#pin-pad > div > div.function-key .material-icons  {
+   background-color: #dadce0;
+}
+
+#pin-pad > div > div.function-key .material-icons  {
+   pointer-events: none;
+}
+
+#pin-pad-display {
+   justify-content: space-evenly;
+}
+
+/* Dots */
+#pin-pad-display > div {
+   width: 15px;
+   height: 15px;
+   margin: 10px;
+   border: solid 4px #dadce0;
+   border-radius: 50%;
+   background-color: white;
+}
+
+#pin-pad-display > div.filled {
+   background-color: #dadce0;
+}

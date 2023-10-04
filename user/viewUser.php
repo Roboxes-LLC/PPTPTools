@@ -331,7 +331,7 @@ if (!Authentication::isAuthenticated())
       
                <div class="form-item">
                   <div class="form-label">Email</div>
-                  <input id="email-input" type="text" name="email" form="input-form" maxlength="32" style="width:300px;" value="<?php echo getUserInfo()->email; ?>" <?php echo !isEditable(UserInputField::EMAIL) ? "disabled" : ""; ?> />
+                  <input id="email-input" type="text" name="email" form="input-form" maxlength="64" style="width:300px;" value="<?php echo getUserInfo()->email; ?>" <?php echo !isEditable(UserInputField::EMAIL) ? "disabled" : ""; ?> />
                </div>
       
                <div class="form-item">

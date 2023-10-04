@@ -25,6 +25,8 @@ Required PHP variables:
    
    <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
+   <link rel="stylesheet" type="text/css" href="../css/modal.css"/>
+   <link rel="stylesheet" type="text/css" href="../css/pinPad.css"/>
    
    <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
    <script src="../thirdParty/moment/moment.min.js"></script>
@@ -32,7 +34,9 @@ Required PHP variables:
    <script src="/common/common.js"></script>
    <script src="/script/common/common.js<?php echo $versionQuery ?>"></script>
    <script src="/script/common/commonDefs.php<?php echo $versionQuery ?>"></script>
-   <script src="/script/common/menu.js<?php echo $versionQuery ?>"></script>   
+   <script src="/script/common/menu.js<?php echo $versionQuery ?>"></script>
+   <script src="/script/common/modal.js<?php echo $versionQuery ?>"></script>
+   <script src="/script/common/pinPad.js<?php echo $versionQuery ?>"></script>   
    <script src="/script/page/<?php echo $javascriptFile ?>"></script>
       
 </head>
@@ -82,6 +86,15 @@ Required PHP variables:
       
    </div> <!-- main -->
    
+   <div id="pin-confirm-modal" class="modal">
+      <div class="flex-vertical modal-content" style="width:300px;">
+         <?php 
+            $errorMessage = "";
+            include ROOT.'/templates/pinPad.php'
+          ?>
+      </div>    
+   </div>
+   
    <script>
       preserveSession();
    
@@ -96,6 +109,23 @@ Required PHP variables:
 
       // Store the initial state of the form, for change detection.
       //setInitialFormState(TODO);
+      
+      PINPAD.onPin = function(pin) {
+         var url = "/app/page/user/?request=confirm_pin&confirmPin=" + pin;  // Note: Don't name parameter "pin".  It results in re-authentication.
+         
+         ajaxRequest(url, function(response) {
+            console.log(response);
+            if (response.confirmed)
+            {
+               PAGE.onPinConfirmed();
+            }
+            else
+            {
+               PINPAD.setErrorMessage("Incorrect PIN");
+            }         
+         });
+      }                 
+      
    </script>
    
 </body>

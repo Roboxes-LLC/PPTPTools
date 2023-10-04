@@ -106,7 +106,7 @@ if (!Authentication::isAuthenticated())
             {title:"Employee #", field:"employeeNumber", hozAlign:"left", responsive:0},
             {title:"Name",       field:"name",           hozAlign:"left", responsive:1, headerFilter:true},
             {title:"Username",   field:"username",       hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Email",      field:"email",          hozAlign:"left", responsive:2, width:150},
+            {title:"Email",      field:"email",          hozAlign:"left", responsive:2, width:250	},
             {title:"Role",       field:"roleLabel",      hozAlign:"left", responsive:0, headerFilter:true},
             {title:"",           field:"delete",                          responsive:0,
                formatter:function(cell, formatterParams, onRendered){

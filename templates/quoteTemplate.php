@@ -2,6 +2,7 @@
 Required PHP variables:
    $quoteNumber
    $quote
+   $logo
    $company
    $author
    $quoteDate
@@ -31,6 +32,30 @@ Required PHP variables:
          
          #quote-number {
             font-size: 18pt;
+         }
+         
+         #company {
+            margin-bottom: 10px;
+         }
+         
+         #company-logo {
+            float: left;
+            width: 50px;
+            margin-right: 10px;
+         }
+         
+         #company-name {
+            float: left;
+            color: #cca300;
+            font-weight: bold;
+            font-size: 18pt;
+            margin-top: 13px;
+         }
+         
+         .clearfix:after {
+            content:"";
+            display:block;
+            clear:both;
          }
          
          .bold {
@@ -101,8 +126,8 @@ Required PHP variables:
          <div id="quote-number"><?php echo $templateParams->quoteNumber ?></div>
       </div>
       <div id="from">
-         <div>
-            <img src=""/>
+         <div id="company" class="clearfix">
+            <img id="company-logo" src="<?php echo $templateParams->logo ?>"/>
             <div id="company-name" class="bold"><?php echo $templateParams->company->companyName ?></div>
           </div>
           <div>
@@ -110,7 +135,7 @@ Required PHP variables:
              <div><?php echo "{$templateParams->company->address->city}, {$templateParams->company->address->stateAbbreviation} {$templateParams->company->address->zipcode}" ?></div>
              <div>Phone: <?php echo $templateParams->company->phone ?></div>
              <div>Fax: <?php echo $templateParams->company->fax ?></div>
-             <div><?php echo $templateParams->author->email ?></div>
+             <div><a href="mailto:<?php echo $templateParams->author->email ?>"><?php echo $templateParams->author->email ?></a></div>
           </div>
       </div>
       

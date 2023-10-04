@@ -44,7 +44,8 @@ class Quote
       "APPROVE_PANEL":       "approve-panel",
       "SEND_PANEL":          "send-panel",
       "ACCEPT_PANEL":        "accept-panel",
-      "HISTORY_PANEL":       "history-panel"
+      "HISTORY_PANEL":       "history-panel",
+      "PIN_CONFIRM_MODAL":   "pin-confirm-modal"
    };
 
    constructor()
@@ -581,10 +582,20 @@ class Quote
    
    onSendButton()
    {
+      PINPAD.reset();
+      PINPAD.setErrorMessage("Enter employee # to send");
+      
+      showModal(Quote.PageElements.PIN_CONFIRM_MODAL, "block");
+   }
+   
+   onPinConfirmed()
+   {
+      hideModal(Quote.PageElements.PIN_CONFIRM_MODAL);
+            
       submitForm(Quote.PageElements.SEND_FORM, "/app/page/quote", function (response) {
          if (response.success == true)
          {
-            alert("Quote was submitted."); 
+            alert("Quote was sent."); 
             
             location.reload();
          }
@@ -592,7 +603,7 @@ class Quote
          {
             alert(response.error);
          }
-      })
+      });
    }
    
    onAcceptButton()

@@ -172,16 +172,24 @@ class QuoteEmail
          
          $templateParams->quote = $this->quote;
          
+         //$templateParams->logo = "$IMAGES_DIR/pptp-logo-192x192.png";
+         
+         $path = ROOT.$IMAGES_DIR.'/pptp-logo-192x192.png';
+         $type = pathinfo($path, PATHINFO_EXTENSION);
+         $data = file_get_contents($path);
+         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+         $templateParams->logo = $base64;
+         
          $templateParams->company = Company::load(Company::PPTP_ID);
                   
          // quoteDate
          if ($this->quote->isSent())
          {
-            $templateParams->quoteDate = Time::dateTimeObject($this->quote->getSentAction()->dateTime)->format("m-d-Y");
+            $templateParams->quoteDate = Time::dateTimeObject($this->quote->getSentAction()->dateTime)->format("n/j/Y");
          }
          else
          {
-            $templateParams->quoteDate = Time::now("m-d-Y");
+            $templateParams->quoteDate = Time::now("n/j/Y");
          }
          
          $templateParams->customer = Customer::load($this->quote->customerId);
@@ -219,15 +227,14 @@ class QuoteEmail
          if ($contact)
          {
             // For testing
+            /*
             $params->toEmail = $user->email;  // Send to self
             $params->toName = $user->getFullName();
+            */
             
             // For production
-            /*
             $params->toEmail = $contact->email;
-            
             $params->toName = $contact->getFullName();
-            */
          }
          
          // bcc
