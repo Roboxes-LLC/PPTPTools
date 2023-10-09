@@ -381,7 +381,7 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare(
          "INSERT INTO quote " .
          "(quoteStatus, customerId, contactId, customerPartNumber, pptpPartNumber, quantity) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?)");
+         "VALUES (?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -613,14 +613,16 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "INSERT INTO estimate " .
-         "(quoteId, estimateIndex, quantity, unitPrice, costPerHour, markup, additionalCharge, chargeCode, leadTime, isSelected) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(quoteId, estimateIndex, quantity, grossPiecesPerHour, netPiecesPerHour, unitPrice, costPerHour, markup, additionalCharge, chargeCode, leadTime, isSelected) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
             $estimate->quoteId,
             $estimate->estimateIndex,
             $estimate->quantity,
+            $estimate->grossPiecesPerHour,
+            $estimate->netPiecesPerHour,
             $estimate->unitPrice,
             $estimate->costPerHour,
             $estimate->markup,
@@ -637,12 +639,14 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "UPDATE estimate " .
-         "SET quantity = ?, unitPrice = ?, costPerHour = ?, markup = ?, additionalCharge = ?, chargeCode = ?, leadTime = ?, isSelected = ? " .
+         "SET quantity = ?, grossPiecesPerHour = ?, netPiecesPerHour = ?, unitPrice = ?, costPerHour = ?, markup = ?, additionalCharge = ?, chargeCode = ?, leadTime = ?, isSelected = ? " .
          "WHERE quoteId = ? AND estimateIndex = ?");
       
       $result = $statement->execute(
          [
             $estimate->quantity,
+            $estimate->grossPiecesPerHour,
+            $estimate->netPiecesPerHour,
             $estimate->unitPrice,
             $estimate->costPerHour,
             $estimate->markup,

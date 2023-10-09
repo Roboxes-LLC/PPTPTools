@@ -586,6 +586,8 @@ class QuotePage extends Page
              $estimate = new Estimate();
              
              $estimate->quantity = $params->getInt(Estimate::getInputName("quantity", $estimateIndex));
+             $estimate->grossPiecesPerHour = $params->getInt(Estimate::getInputName("grossPiecesPerHour", $estimateIndex));
+             $estimate->netPiecesPerHour = $params->getInt(Estimate::getInputName("netPiecesPerHour", $estimateIndex));
              $estimate->unitPrice = $params->getFloat(Estimate::getInputName("unitPrice", $estimateIndex));
              $estimate->costPerHour = $params->getFloat(Estimate::getInputName("costPerHour", $estimateIndex));
              $estimate->markup = $params->getFloat(Estimate::getInputName("markup", $estimateIndex));

@@ -20,19 +20,21 @@ abstract class InputField
    const CUSTOMER_PART_NUMBER = 2;
    const PPTP_PART_NUMBER = 3;
    const QUANTITY = 4;
-   const UNIT_PRICE = 5;
-   const COST_PER_HOUR = 6;
-   const MARKUP = 7;
-   const ADDITIONAL_CHARGE = 8;
-   const CHARGE_CODE = 9;
-   const TOTAL_COST = 10;
-   const LEAD_TIME = 11;
-   const APPROVE_BUTTON = 12;
-   const TO_EMAIL = 13;
-   const CC_EMAIL = 14;
-   const FROM_EMAIL = 15;
-   const EMAIL_BODY = 16;
-   const LAST = 17;
+   const GROSS_PIECES_PER_HOUR = 5;
+   const NET_PIECES_PER_HOUR = 6;
+   const UNIT_PRICE = 7;
+   const COST_PER_HOUR = 8;
+   const MARKUP = 9;
+   const ADDITIONAL_CHARGE = 10;
+   const CHARGE_CODE = 11;
+   const TOTAL_COST = 12;
+   const LEAD_TIME = 13;
+   const APPROVE_BUTTON = 14;
+   const TO_EMAIL = 15;
+   const CC_EMAIL = 16;
+   const FROM_EMAIL = 17;
+   const EMAIL_BODY = 18;
+   const LAST = 19;
    const COUNT = InputField::LAST - InputField::FIRST;
 }
 
@@ -175,6 +177,7 @@ function isEditable($field)
       case InputField::TOTAL_COST:
       {
          $isEditable = false;   
+         break;
       }
       
       case InputField::APPROVE_BUTTON:
@@ -432,6 +435,8 @@ function getEstimatesPanel()
                <div class="estimate-table-column estimate-table-label-column flex-vertical">
                   <div class="estimate-table-cell"></div>
                   <div class="estimate-table-cell estimate-table-label">Quantity</div>
+                  <div class="estimate-table-cell estimate-table-label">Gross Pcs/Hour</div>
+                  <div class="estimate-table-cell estimate-table-label">Net Pcs/Hour</div>
                   <div class="estimate-table-cell estimate-table-label">Selling Price</div>
                   <div class="estimate-table-cell estimate-table-label">Dollars Per Hour</div>
                   <div class="estimate-table-cell estimate-table-label">Profit/Markup</div>
@@ -474,6 +479,8 @@ function getEstimatePanel($estimateIndex)
    $estimateId = $estimateIndex + 1;
    
    $quantity = getEstimateProperty($estimateIndex, "quantity");
+   $grossPiecesPerHour = getEstimateProperty($estimateIndex, "grossPiecesPerHour");
+   $netPiecesPerHour = getEstimateProperty($estimateIndex, "netPiecesPerHour");
    $unitPrice = getEstimateProperty($estimateIndex, "unitPrice");
    $costPerHour = getEstimateProperty($estimateIndex, "costPerHour");
    $markup = getEstimateProperty($estimateIndex, "markup");
@@ -495,6 +502,14 @@ function getEstimatePanel($estimateIndex)
 
       <div class="estimate-table-cell estimate-table-input">
          <input type="number" class="estimate-quantity-input" name="quantity_$estimateIndex" style="width:75px;" value="$quantity" {$getDisabled(InputField::QUANTITY)} />
+      </div>
+
+      <div class="estimate-table-cell estimate-table-input">
+         <input type="number" name="grossPiecesPerHour_$estimateIndex" style="width:75px;" value="$grossPiecesPerHour" {$getDisabled(InputField::GROSS_PIECES_PER_HOUR)} />
+      </div>
+
+      <div class="estimate-table-cell estimate-table-input">
+         <input type="number" name="netPiecesPerHour_$estimateIndex" style="width:75px;" value="$netPiecesPerHour" {$getDisabled(InputField::NET_PIECES_PER_HOUR)} />
       </div>
 
       <div class="estimate-table-cell estimate-table-input">

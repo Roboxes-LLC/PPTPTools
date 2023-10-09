@@ -14,6 +14,8 @@ class Estimate
    public $quoteId;
    public $estimateIndex;
    public $quantity;
+   public $grossPiecesPerHour;
+   public $netPiecesPerHour;
    public $unitPrice;
    public $costPerHour;
    public $markup;
@@ -27,6 +29,8 @@ class Estimate
       $this->quoteId = Estimate::UNKNOWN_QUOTE_ID;
       $this->estimateIndex = 0;
       $this->quantity = 0;
+      $this->grossPiecesPerHour = 0;
+      $this->netPiecesPerHour = 0;
       $this->unitPrice = 0.0;
       $this->costPerHour = 0.0;
       $this->markup = 0.0;
@@ -84,6 +88,8 @@ class Estimate
       $this->quoteId = intval($row["quoteId"]);
       $this->estimateIndex = intval($row["estimateIndex"]);      
       $this->quantity = doubleval($row["quantity"]);
+      $this->grossPiecesPerHour = intval($row["grossPiecesPerHour"]);
+      $this->netPiecesPerHour = intval($row["netPiecesPerHour"]);
       $this->unitPrice = doubleval($row["unitPrice"]);
       $this->costPerHour = doubleval($row["costPerHour"]);
       $this->markup = doubleval($row["markup"]);
