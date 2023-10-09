@@ -1,9 +1,10 @@
 <?php
 
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/app/common/menu.php';
 require_once '../common/authentication.php';
 require_once '../common/database.php';
 require_once '../common/header.php';
-require_once '../common/menu.php';
 require_once '../common/panTicket.php';
 require_once '../common/params.php';
 require_once '../common/timeCardInfo.php';
@@ -83,7 +84,8 @@ if (!Authentication::isAuthenticated())
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
    <link rel="stylesheet" type="text/css" href="../common/panTicket.css"/>
    
-   <script src="../common/common.js"></script>
+   <script src="/common/common.js"></script>
+   <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
       
 </head>
 
@@ -93,7 +95,7 @@ if (!Authentication::isAuthenticated())
    
    <div class="main flex-horizontal flex-top flex-left">
    
-      <?php Menu::render(Activity::TIME_CARD); ?>
+      <?php Menu::render(); ?>
       
       <div class="content flex-vertical flex-top flex-left">
       
@@ -129,7 +131,9 @@ if (!Authentication::isAuthenticated())
    </div> <!-- main -->
    
    <script>
-   
+      var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
+      menu.setMenuItemSelected(<?php echo AppPage::TIME_CARD ?>); 
+      
       preserveSession();
       
       // Setup event handling on all DOM elements.
@@ -138,7 +142,6 @@ if (!Authentication::isAuthenticated())
       document.getElementById("wash-parts-button").onclick = function(){location.href = "../partWasherLog/partWasherLogEntry.php?timeCardId=<?php echo getPanTicketId(); ?>";};
       document.getElementById("print-copies-button").onclick = function(){location.href = "printPanTicket.php?panTicketId=<?php echo getPanTicketId(); ?>";};
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-      document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
    </script>
    
 </body>

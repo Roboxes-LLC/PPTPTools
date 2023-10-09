@@ -1,15 +1,13 @@
 <?php
 
-require_once '../common/activity.php';
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/app/common/menu.php';
+require_once ROOT.'/core/common/notification.php';
 require_once '../common/commentCodes.php';
 require_once '../common/header.php';
 require_once '../common/userInfo.php';
-require_once '../common/menu.php';
 require_once '../common/params.php';
 require_once '../common/timeCardInfo.php';
-
-const ACTIVITY = Activity::USER;
-$activity = Activity::getActivity(ACTIVITY);
 
 abstract class UserInputField
 {
@@ -24,7 +22,8 @@ abstract class UserInputField
    const AUTHENTICATION_TOKEN = 7;
    const DEFAULT_SHIFT_HOURS = 8;
    const PERMISSIONS = 9;
-   const LAST = 10;
+   const NOTIFICATIONS = 10;
+   const LAST = 11;
    const COUNT = UserInputField::LAST - UserInputField::FIRST;
 }
 
@@ -226,6 +225,33 @@ HEREDOC;
    return ($html);
 }
 
+function getNotificationInputs()
+{
+   $html = "";
+   
+   $userInfo = getUserInfo();
+   
+   $disabled = isEditable(UserInputField::NOTIFICATIONS) ? "" : "disabled";
+   
+   foreach (Notification::getNotifications() as $notification)
+   {
+      $id = "notification-" . $notification->notificationId . "-input";
+      $name = $notification->getInputName();
+      $description = $notification->notificationName;
+      $checked = $notification->isSetIn($userInfo->notifications) ? "checked" : "";
+      
+      $html .=
+<<<HEREDOC
+      <div class="flex-horizontal flex-v-center">
+         <input id="$id" type="checkbox" class="permission-checkbox" form="input-form" name="$name" $checked $disabled/>
+         <label for="$id" class="form-input-medium">$description</label>
+      </div>
+HEREDOC;
+   }
+   
+   return ($html);
+}
+
 // ********************************** BEGIN ************************************
 
 Time::init();
@@ -252,9 +278,10 @@ if (!Authentication::isAuthenticated())
    <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
    
-   <script src="../common/common.js"></script>
-   <script src="../common/validate.js"></script>
-   <script src="user.js"></script>
+   <script src="/common/common.js"></script>
+   <script src="/script/common/menu.js<?php echo versionQuery();?>"></script> 
+   <script src="/common/validate.js"></script>
+   <script src="/user/user.js"></script>
 
 </head>
 
@@ -268,7 +295,7 @@ if (!Authentication::isAuthenticated())
    
    <div class="main flex-horizontal flex-top flex-left">
    
-      <?php Menu::render(ACTIVITY); ?>
+      <?php Menu::render(); ?>
       
       <div class="content flex-vertical flex-top flex-left">
       
@@ -304,7 +331,7 @@ if (!Authentication::isAuthenticated())
       
                <div class="form-item">
                   <div class="form-label">Email</div>
-                  <input id="email-input" type="text" name="email" form="input-form" maxlength="32" style="width:300px;" value="<?php echo getUserInfo()->email; ?>" <?php echo !isEditable(UserInputField::EMAIL) ? "disabled" : ""; ?> />
+                  <input id="email-input" type="text" name="email" form="input-form" maxlength="64" style="width:300px;" value="<?php echo getUserInfo()->email; ?>" <?php echo !isEditable(UserInputField::EMAIL) ? "disabled" : ""; ?> />
                </div>
       
                <div class="form-item">
@@ -349,6 +376,11 @@ if (!Authentication::isAuthenticated())
                <?php echo getPermissionInputs(); ?>
             </div>
             
+            <div class="flex-vertical flex-top">
+               <div class="form-section-header">Notifications</div>
+               <?php echo getNotificationInputs(); ?>
+            </div>
+            
          </div>
          
          <div class="flex-horizontal flex-h-center">
@@ -361,6 +393,8 @@ if (!Authentication::isAuthenticated())
    </div> <!-- main -->   
          
    <script>
+      var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
+      menu.setMenuItemSelected(<?php echo AppPage::USER ?>);   
    
       preserveSession();
       
@@ -374,7 +408,6 @@ if (!Authentication::isAuthenticated())
       document.getElementById("cancel-button").onclick = function(){onCancel();};
       document.getElementById("save-button").onclick = function(){onSaveUser();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-      document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
       document.getElementById("role-input").onchange = onRoleChange;
       
       // Store the initial state of the form, for change detection.

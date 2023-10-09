@@ -1,11 +1,12 @@
 <?php
 
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/app/common/menu.php';
 require_once '../common/authentication.php';
 require_once '../common/database.php';
 require_once '../common/filterDateType.php';
 require_once '../common/header.php';
 require_once '../common/materialEntry.php';
-require_once '../common/menu.php';
 require_once '../common/version.php';
 
 function getFilterStatus()
@@ -109,8 +110,9 @@ if (!Authentication::isAuthenticated())
    <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
    <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
    
-   <script src="../common/common.js<?php echo versionQuery();?>"></script>
-   <script src="../common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/common/common.js<?php echo versionQuery();?>"></script>
+   <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>  
    <script src="material.js<?php echo versionQuery();?>"></script>
       
 </head>
@@ -121,7 +123,7 @@ if (!Authentication::isAuthenticated())
    
    <div class="main flex-horizontal flex-top flex-left">
    
-      <?php Menu::render(Activity::MATERIAL); ?>
+      <?php Menu::render(); ?>
       
       <div class="content flex-vertical flex-top flex-left">
       
@@ -174,7 +176,9 @@ if (!Authentication::isAuthenticated())
    </div> <!-- main -->
    
    <script>
-   
+      var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
+      menu.setMenuItemSelected(<?php echo AppPage::MATERIAL ?>);  
+      
       preserveSession();
 
       function getTableQuery()
@@ -434,7 +438,6 @@ if (!Authentication::isAuthenticated())
       document.getElementById("print-link").onclick = function(){table.print(false, true);};
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-      document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
 
    </script>
    

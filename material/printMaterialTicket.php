@@ -1,9 +1,10 @@
 <?php
 
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/app/common/menu.php';
 require_once '../common/authentication.php';
 require_once '../common/database.php';
 require_once '../common/header.php';
-require_once '../common/menu.php';
 require_once '../common/materialEntry.php';
 require_once '../common/materialTicket.php';
 require_once '../common/params.php';
@@ -117,10 +118,11 @@ if (!Authentication::isAuthenticated())
    <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
    
-   <script src="../common/common.js"></script>
-   <script src="../common/materialTicket.js"></script>
+   <script src="/common/common.js"></script>   
+   <script src="/common/materialTicket.js"></script>
+   <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
    <!-- script src="https://www.labelwriter.com/software/dls/sdk/js/DYMO.Label.Framework.3.0.js" type="text/javascript" charset="UTF-8"></script-->
-   <script src="../thirdParty/dymo/DYMO.Label.Framework.3.0.js" type="text/javascript" charset="UTF-8"></script>
+   <script src="/thirdParty/dymo/DYMO.Label.Framework.3.0.js" type="text/javascript" charset="UTF-8"></script>
       
 </head>
 
@@ -134,7 +136,7 @@ if (!Authentication::isAuthenticated())
    
    <div class="main flex-horizontal flex-top flex-left">
    
-      <?php Menu::render(Activity::MATERIAL); ?>
+      <?php Menu::render(); ?>
       
       <div class="content flex-vertical flex-top flex-left">
       
@@ -184,7 +186,9 @@ if (!Authentication::isAuthenticated())
    </div> <!-- main -->
    
    <script>
-   
+      var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
+      menu.setMenuItemSelected(<?php echo AppPage::MATERIAL ?>); 
+      
       preserveSession();
 
       function printMaterialTicket()
@@ -235,7 +239,6 @@ if (!Authentication::isAuthenticated())
       document.getElementById("cancel-button").onclick = function(){window.history.back();};
       document.getElementById("print-button").onclick = printMaterialTicket;
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-      document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
       
       dymo.label.framework.init(function() {
          var label = new MaterialTicket(<?php echo getMaterialTicketId() ?>, "material-ticket-image");

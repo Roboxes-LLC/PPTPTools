@@ -143,9 +143,30 @@ class UserInfo
       return ($users);
    }
    
+   public static function getUsername($employeeeNumber)
+   {
+      return (($userInfo = UserInfo::load($employeeeNumber)) ? $userInfo->username : "");
+   }
+   
    public function getFullName()
    {
       return ($this->firstName . " " . $this->lastName);
+   }
+   
+   
+   public static function getLink($employeeNumber)
+   {
+      $html = "";
+      
+      $userInfo = UserInfo::load($employeeNumber);
+      if ($userInfo)
+      {
+         $label = $userInfo->username;
+         
+         $html = "<a href=\"/user/viewUser.php?employeeNumber=$employeeNumber\">$label</a>";
+      }
+      
+      return ($html);
    }
    
    public static function getOptions($roles, $includeUsers, $selectedEmployeeNumber)

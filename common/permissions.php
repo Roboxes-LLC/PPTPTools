@@ -35,8 +35,13 @@ class Permission
    const ISSUE_MATERIAL           = 29;
    const ACKNOWLEDGE_MATERIAL     = 30;
    const VIEW_SHIPPING_CARD       = 31;
-   const EDIT_SHIPPING_CARD       = 32;   
-   const LAST                     = Permission::EDIT_SHIPPING_CARD;
+   const EDIT_SHIPPING_CARD       = 32;
+   const VIEW_CUSTOMER            = 33;
+   const EDIT_CUSTOMER            = 34;
+   const VIEW_QUOTE               = 35;
+   const EDIT_QUOTE               = 36;
+   const APPROVE_QUOTE            = 37;
+   const LAST                     = Permission::APPROVE_QUOTE;
    
    const NO_PERMISSIONS = 0x00000000;
    const ALL_PERMISSIONS = 0xFFFFFFFF;
@@ -83,7 +88,12 @@ class Permission
                   new Permission(Permission::ISSUE_MATERIAL,           "Issue materials"),
                   new Permission(Permission::ACKNOWLEDGE_MATERIAL,     "Acknowledge materials"),
                   new Permission(Permission::VIEW_SHIPPING_CARD,       "View shipping card"),
-                  new Permission(Permission::EDIT_SHIPPING_CARD,       "Edit shipping card")        
+                  new Permission(Permission::EDIT_SHIPPING_CARD,       "Edit shipping card"),
+                  new Permission(Permission::VIEW_CUSTOMER,            "View customer"),
+                  new Permission(Permission::EDIT_CUSTOMER,            "Edit customer"),
+                  new Permission(Permission::VIEW_QUOTE,               "View quote"),
+                  new Permission(Permission::EDIT_QUOTE,               "Edit quote"),
+                  new Permission(Permission::APPROVE_QUOTE,            "Approve quote")
             );
       }
       

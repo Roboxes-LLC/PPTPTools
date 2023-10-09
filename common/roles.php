@@ -1,7 +1,8 @@
 <?php
 
-require_once 'activity.php';
-require_once 'permissions.php';
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/app/common/appPage.php';
+require_once ROOT.'/common/permissions.php';
 
 class Role
 {
@@ -22,20 +23,20 @@ class Role
    
    public $defaultPermissions;
    
-   public $defaultActivity;
+   public $defaultAppPage;
       
    public static function getRoles()
    {
       if (Role::$roles == null)
       {
          Role::$roles = 
-            array(new Role(Role::SUPER_USER,  "Super User",  Permission::ALL_PERMISSIONS,                                                                                                                             Activity::REPORT),
-                  new Role(Role::ADMIN,       "Admin",       Permission::ALL_PERMISSIONS,                                                                                                                             Activity::REPORT),
-                  new Role(Role::OPERATOR,    "Operator",    Permission::getBits(Permission::VIEW_TIME_CARD, Permission::EDIT_TIME_CARD, Permission::VIEW_PART_INSPECTION),                                           Activity::TIME_CARD),
-                  new Role(Role::LABORER,     "Laborer",     Permission::getBits(Permission::VIEW_PART_WEIGHT_LOG, Permission::EDIT_PART_WEIGHT_LOG),                                                                 Activity::PART_WEIGHT),
-                  new Role(Role::PART_WASHER, "Part Washer", Permission::getBits(Permission::VIEW_PART_WASHER_LOG, Permission::EDIT_PART_WASHER_LOG),                                                                 Activity::PART_WASH),
-                  new Role(Role::SHIPPER,     "Shipper",     Permission::getBits(Permission::VIEW_PART_WASHER_LOG, Permission::EDIT_PART_WASHER_LOG, Permission::VIEW_SHIPPING_CARD, Permission::EDIT_SHIPPING_CARD), Activity::SHIPPING_CARD),
-                  new Role(Role::INSPECTOR,   "Inspector",   Permission::getBits(Permission::VIEW_PART_INSPECTION, Permission::VIEW_INSPECTION, Permission::EDIT_INSPECTION),                                         Activity::INSPECTION)
+            array(new Role(Role::SUPER_USER,  "Super User",  Permission::ALL_PERMISSIONS,                                                                                                                             AppPage::REPORT),
+                  new Role(Role::ADMIN,       "Admin",       Permission::ALL_PERMISSIONS,                                                                                                                             AppPage::REPORT),
+                  new Role(Role::OPERATOR,    "Operator",    Permission::getBits(Permission::VIEW_TIME_CARD, Permission::EDIT_TIME_CARD, Permission::VIEW_PART_INSPECTION),                                           AppPage::TIME_CARD),
+                  new Role(Role::LABORER,     "Laborer",     Permission::getBits(Permission::VIEW_PART_WEIGHT_LOG, Permission::EDIT_PART_WEIGHT_LOG),                                                                 AppPage::PART_WEIGHT),
+                  new Role(Role::PART_WASHER, "Part Washer", Permission::getBits(Permission::VIEW_PART_WASHER_LOG, Permission::EDIT_PART_WASHER_LOG),                                                                 AppPage::PART_WASH),
+                  new Role(Role::SHIPPER,     "Shipper",     Permission::getBits(Permission::VIEW_PART_WASHER_LOG, Permission::EDIT_PART_WASHER_LOG, Permission::VIEW_SHIPPING_CARD, Permission::EDIT_SHIPPING_CARD), AppPage::SHIPPING_CARD),
+                  new Role(Role::INSPECTOR,   "Inspector",   Permission::getBits(Permission::VIEW_PART_INSPECTION, Permission::VIEW_INSPECTION, Permission::EDIT_INSPECTION),                                         AppPage::INSPECTION)
             );
       }
       
@@ -44,7 +45,7 @@ class Role
    
    public static function getRole($roleId)
    {
-      $role = new Role(Role::UNKNOWN, "", Permission::NO_PERMISSIONS, ACTIVITY::UNKNOWN);
+      $role = new Role(Role::UNKNOWN, "", Permission::NO_PERMISSIONS, AppPage::UNKNOWN);
       
       if (($roleId >= Role::FIRST) && ($roleId <= Role::LAST))
       {
@@ -63,12 +64,12 @@ class Role
    
    private static $roles = null;
       
-   private function __construct($roleId, $roleName, $defaultPermissions, $defaultActivity)
+   private function __construct($roleId, $roleName, $defaultPermissions, $defaultAppPage)
    {
       $this->roleId = $roleId;
       $this->roleName = $roleName;
       $this->defaultPermissions = $defaultPermissions;
-      $this->defaultActivity = $defaultActivity;
+      $this->defaultAppPage = $defaultAppPage;
    }
 }
 
@@ -77,7 +78,7 @@ $role = Role::getRole(Role::PART_WASHER);
 
 foreach (Permission::getPermissions() as $permission)
 {
-   $isSet = $permission->isSetIn($role->$defaultPermissions) ? "set" : "";
+   $isSet = $permission->isSetIn($role->defaultPermissions) ? "set" : "";
    echo "{$permission->permissionName}: $isSet<br/>";
 }
 

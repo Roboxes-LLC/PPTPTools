@@ -1,9 +1,9 @@
 <?php
 
-require_once '../common/activity.php';
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/app/common/menu.php';
 require_once '../common/database.php';
 require_once '../common/header.php';
-require_once '../common/menu.php';
 require_once '../common/permissions.php';
 require_once '../common/roles.php';
 require_once '../common/version.php';
@@ -41,7 +41,8 @@ if (!Authentication::isAuthenticated())
    <!-- script src="../thirdParty/moment/moment.min.js"></script> TODO: Figure this out. -->
    <script src="../thirdParty/dymo/DYMO.Label.Framework.3.0.js" type="text/javascript" charset="UTF-8"></script>
    
-   <script src="../common/common.js<?php echo versionQuery();?>"></script>
+   <script src="/common/common.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>  
    <script src="printer.js<?php echo versionQuery();?>"></script>
       
 </head>
@@ -52,7 +53,7 @@ if (!Authentication::isAuthenticated())
    
    <div class="main flex-horizontal flex-top flex-left">
    
-      <?php Menu::render(Activity::PRINT_MANAGER); ?>
+      <?php Menu::render(); ?>
       
       <div class="content flex-vertical flex-top flex-left">
       
@@ -94,7 +95,9 @@ if (!Authentication::isAuthenticated())
    </div> <!-- main -->
    
    <script>
-   
+      var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
+      menu.setMenuItemSelected(<?php echo AppPage::PRINT_MANAGER ?>); 
+      
       preserveSession();
 
       /*
@@ -265,7 +268,6 @@ if (!Authentication::isAuthenticated())
 
       // Setup event handling on all DOM elements.
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-      document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
    </script>
    
 </body>

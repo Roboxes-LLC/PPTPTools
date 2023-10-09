@@ -1,6 +1,10 @@
 <?php
 class Time
 {
+   public const DEFAULT_TIME_ZONE = "America/New_York";
+   
+   public const STANDARD_FORMAT = "Y-m-d H:i:s";
+   
    // Date format required for initializing date inputs.
    static public $javascriptDateFormat = "Y-m-d";
    
@@ -9,62 +13,62 @@ class Time
    
    static public function init()
    {
-      date_default_timezone_set('America/New_York');
+      date_default_timezone_set(Time::DEFAULT_TIME_ZONE);
    }
    
    static public function dateTimeObject($dateTimeString)
    {
-      return (new DateTime($dateTimeString, new DateTimeZone('America/New_York')));
+      return (new DateTime($dateTimeString, new DateTimeZone(Time::DEFAULT_TIME_ZONE)));
    }
    
-   static public function now($format)
+   static public function now($format = Time::STANDARD_FORMAT)
    {
       $dateTime = new DateTime();
-      $dateTime->setTimezone(new DateTimeZone('America/New_York'));
+      $dateTime->setTimezone(new DateTimeZone(Time::DEFAULT_TIME_ZONE));
       
       return ($dateTime->format($format));
    }
    
    static public function toMySqlDate($dateString)
    {
-      $dateTime = new DateTime($dateString, new DateTimeZone('America/New_York'));
+      $dateTime = new DateTime($dateString, new DateTimeZone(Time::DEFAULT_TIME_ZONE));
       $dateTime->setTimezone(new DateTimeZone('UTC'));
       
       return ($dateTime->format("Y-m-d H:i:s"));
    }
    
-   static public function fromMySqlDate($dateString, $format)
+   static public function fromMySqlDate($dateString, $format = Time::STANDARD_FORMAT)
    {
       $dateTime= new DateTime($dateString, new DateTimeZone('UTC'));
-      $dateTime->setTimezone(new DateTimeZone('America/New_York'));
+      $dateTime->setTimezone(new DateTimeZone(Time::DEFAULT_TIME_ZONE));
       
       return ($dateTime->format($format));
    }
    
    static public function toJavascriptDate($dateString)
    {
-      $dateTime = new DateTime($dateString, new DateTimeZone('America/New_York'));
+      $dateTime = new DateTime($dateString, new DateTimeZone(Time::DEFAULT_TIME_ZONE));
       
       return ($dateTime->format("Y-m-d"));
    }
    
    static public function startOfDay($dateTime)
    {
-      $startDateTime = new DateTime($dateTime, new DateTimeZone('America/New_York'));
+      $startDateTime = new DateTime($dateTime, new DateTimeZone(Time::DEFAULT_TIME_ZONE));
       
       return ($startDateTime->format("Y-m-d 00:00:00"));
    }
    
    static public function endOfDay($dateTime)
    {
-      $endDateTime = new DateTime($dateTime, new DateTimeZone('America/New_York'));
+      $endDateTime = new DateTime($dateTime, new DateTimeZone(Time::DEFAULT_TIME_ZONE));
       
       return ($endDateTime->format("Y-m-d 23:59:59"));
    }
    
    static public function weekNumber($dateTime)
    {
-      $evalDateTime = new DateTime($dateTime, new DateTimeZone('America/New_York'));
+      $evalDateTime = new DateTime($dateTime, new DateTimeZone(Time::DEFAULT_TIME_ZONE));
       
       return (intval($evalDateTime->format("W")));
    }
@@ -87,8 +91,8 @@ class Time
    
    static public function isNew($dateTime, $newThresholdMinutes)
    {
-      $now = new DateTime("now", new DateTimeZone('America/New_York'));
-      $then = new DateTime($dateTime, new DateTimeZone('America/New_York'));
+      $now = new DateTime("now", new DateTimeZone(Time::DEFAULT_TIME_ZONE));
+      $then = new DateTime($dateTime, new DateTimeZone(Time::DEFAULT_TIME_ZONE));
       
       // Determine the interval between the supplied date and the current time.
       $interval = $then->diff($now);

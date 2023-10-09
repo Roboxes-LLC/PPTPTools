@@ -1,11 +1,12 @@
 <?php
 
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/app/common/menu.php';
 require_once '../common/authentication.php';
 require_once '../common/database.php';
 require_once '../common/weeklySummaryReport.php';
 require_once '../common/header.php';
 require_once '../common/jobInfo.php';
-require_once '../common/menu.php';
 require_once '../common/newIndicator.php';
 require_once '../common/permissions.php';
 require_once '../common/roles.php';
@@ -118,16 +119,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css"/>
+   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css<?php echo versionQuery();?>"/>
    
    <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
    
-   <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
-   <script src="../thirdParty/moment/moment.min.js"></script>
+   <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
+   <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
    
-   <script src="../common/common.js<?php echo versionQuery();?>"></script>
-   <script src="../common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/common/common.js<?php echo versionQuery();?>"></script>
+   <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
       
 </head>
 
@@ -137,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    
    <div class="main flex-horizontal flex-top flex-left">
    
-      <?php Menu::render(Activity::WEEKLY_REPORT); ?>
+      <?php Menu::render(); ?>
       
       <div class="content flex-vertical flex-top flex-left">
       
@@ -203,7 +205,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    </div> <!-- main -->
    
    <script>
-   
+      var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
+      menu.setMenuItemSelected(<?php echo AppPage::WEEKLY_REPORT ?>);   
+      
       const OPERATOR_SUMMARY_TABLE = <?php echo WeeklySummaryReportTable::OPERATOR_SUMMARY; ?>;
       const SHOP_SUMMARY_TABLE = <?php echo WeeklySummaryReportTable::SHOP_SUMMARY; ?>;
       const BONUS_TABLE = <?php echo WeeklySummaryReportTable::BONUS; ?>;
@@ -619,7 +623,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       document.getElementById("print-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].print(false, true);};
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-      document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
       
       updateReportDates();
    </script>

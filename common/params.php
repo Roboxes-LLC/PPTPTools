@@ -46,6 +46,11 @@ class Params extends ArrayObject
       return (intval($this->get($key)));
    }
    
+   public function getFloat($key)
+   {
+      return (floatval($this->get($key)));
+   }
+   
    public function getBool($key)
    {
       return (filter_var($this->get($key), FILTER_VALIDATE_BOOLEAN));

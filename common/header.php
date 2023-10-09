@@ -33,6 +33,15 @@ HEREDOC;
       }
             
       echo "</div></div>";
+      
+      echo
+<<<HEREDOC
+      <script>
+         document.getElementById("menu-button").addEventListener('click', function() {
+            menu.toggle(menu.menuElement);
+         });
+      </script>
+HEREDOC;
    }
 }
 ?>

@@ -2,6 +2,7 @@
 
 if (!defined('ROOT')) require_once 'root.php';
 require_once ROOT.'/core/manager/emailKey.php';
+require_once ROOT.'/quote/quoteEmail.php';
 require_once ROOT.'/thirdParty/mailin-api-php/src/Sendinblue/Mailin.php';
 
 use Sendinblue\Mailin;
@@ -118,7 +119,6 @@ class EmailManager
    
    public static function sendEmail($emailParams)
    {
-      var_dump($emailParams);
       $result = new EmailResult();
       
       if (!$emailParams->validate())
@@ -134,6 +134,21 @@ class EmailManager
       return ($result);
    }
    
+   // **************************************************************************
+   //                                    Quote
+   
+   public static function sendQuoteEmail($quoteId, $userId, $ccEmails, $notes)
+   {
+      $quoteEmail = new QuoteEmail($quoteId);
+      $quoteEmail->setNotes($notes);
+      
+      $result = $quoteEmail->send($userId, $ccEmails);
+      
+      return ($result);
+   }
+
+   // **************************************************************************
+      
    private static function sendViaSendInBlue($emailParams)
    {
       global $SEND_IN_BLUE_API_KEY;
