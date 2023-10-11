@@ -43,33 +43,14 @@ function getFilterEndDate()
 
 function getFilterInspectionType()
 {
-   $inspectionStatus = InspectionType::UNKNOWN;
+   $inspectionType = InspectionType::UNKNOWN;
    
    if (isset($_SESSION["inspection.filter.inspectionType"]))
    {
-      $inspectionStatus = intval($_SESSION["inspection.filter.inspectionType"]);
+      $inspectionType = intval($_SESSION["inspection.filter.inspectionType"]);
    }
    
-   return ($inspectionStatus);
-}
-
-function getInspectionTypeOptions()
-{
-   $selectedInspectionType = getFilterInspectionType();
-   
-   $selected = ($selectedInspectionType == InspectionType::UNKNOWN) ? "selected" : "";
-   $unknown = InspectionType::UNKNOWN;
-   
-   $options = "<option value=\"$unknown\" $selected>All</option>";
-   
-   foreach (InspectionType::$VALUES as $inspectionType)
-   {
-      $selected = ($inspectionType == $selectedInspectionType) ? "selected" : "";
-      
-      $options .= "<option value=\"$inspectionType\" $selected>" . InspectionType::getLabel($inspectionType) . "</option>";
-   }
-   
-   return ($options);
+   return ($inspectionType);
 }
 
 function getReportFilename()
@@ -147,7 +128,7 @@ if (!Authentication::isAuthenticated())
             <div class="flex-horizontal">
                <div style="white-space: nowrap">Inspection type</div>
                &nbsp;
-               <select id="inspection-type-filter"><?php echo getInspectionTypeOptions(); ?></select>
+               <select id="inspection-type-filter"><?php echo getInspectionTypeOptions(getFilterInspectionType(), true, [InspectionType::OASIS]); ?></select>
             </div>
             &nbsp;&nbsp;
             <div class="flex-horizontal">
@@ -233,6 +214,13 @@ if (!Authentication::isAuthenticated())
                }
             },
             {title:"Inspector",       field:"inspectorName",       hozAlign:"left",   responsive:0, headerFilter:true},
+            {title:"Mfg Date",        field:"mfgDate",             hozAlign:"left",   responsive:0,
+               formatter:"datetime",  // Requires moment.js 
+               formatterParams:{
+                  outputFormat:"MM/DD/YYYY",
+                  invalidPlaceholder:""
+               }
+            },         
             {title:"Operator",        field:"operatorName",        hozAlign:"left",   responsive:0, headerFilter:true},
             {title:"Job",             field:"jobNumber",           hozAlign:"left",   responsive:0, headerFilter:true},
             {title:"Work Center",     field:"wcLabel",             hozAlign:"left",   responsive:0, headerFilter:true},
@@ -307,7 +295,7 @@ if (!Authentication::isAuthenticated())
 
                if (filterId == "inspection-type-filter")
                {
-                  setSession("inspection.filter.inspectionStatus", document.getElementById("inspection-type-filter").value);
+                  setSession("inspection.filter.inspectionType", document.getElementById("inspection-type-filter").value);
                }
                else if (filterId == "start-date-filter")
                {

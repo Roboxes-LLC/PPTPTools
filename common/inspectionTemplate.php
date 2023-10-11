@@ -176,24 +176,28 @@ class InspectionTemplate
          case InspectionType::IN_PROCESS:
          case InspectionType::LINE:
          case InspectionType::QCP:
+         case InspectionType::FIRST_PART:
+         case InspectionType::FINAL:
          {
-           $jobInfo = JobInfo::load($jobId);
-           if ($jobInfo)
-           {
-              if ($inspectionType == InspectionType::IN_PROCESS)
-              {
-                 $templateIds[] = $jobInfo->inProcessTemplateId;
-              }
-              else if ($inspectionType == InspectionType::LINE)
-              {
-                 $templateIds[] = $jobInfo->lineTemplateId;
-              }
-              else if ($inspectionType == InspectionType::QCP)
-              {
-                 $templateIds[] = $jobInfo->qcpTemplateId;
-              }
-           }
-           break;
+            $jobInfo = JobInfo::load($jobId);
+            if ($jobInfo)
+            {
+               if (($inspectionType == InspectionType::IN_PROCESS) ||
+                   ($inspectionType == InspectionType::FIRST_PART) ||  // Uses In Process template
+                   ($inspectionType == InspectionType::FINAL))         // Uses In Process template
+               {
+                  $templateIds[] = $jobInfo->inProcessTemplateId;
+               }
+               else if ($inspectionType == InspectionType::LINE)
+               {
+                  $templateIds[] = $jobInfo->lineTemplateId;
+               }
+               else if ($inspectionType == InspectionType::QCP)
+               {
+                  $templateIds[] = $jobInfo->qcpTemplateId;
+               }
+            }
+            break;
          }
             
          default:
@@ -203,8 +207,7 @@ class InspectionTemplate
       }
       
       return ($templateIds);
-   }
-   
+   }   
 }
 
 /*

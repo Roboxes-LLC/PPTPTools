@@ -1416,11 +1416,10 @@ class PPTPDatabase extends MySqlDatabase
       $typeClause = "";
       if ($inspectionType != InspectionType::UNKNOWN)
       {
-         $typeClause = "inspectiontemplate.inspectionType = $inspectionType AND ";
+         $typeClause = "inspection.inspectionType = $inspectionType AND ";
       }
       
       $query = "SELECT * FROM inspection " .
-               "INNER JOIN inspectiontemplate ON inspection.templateId = inspectiontemplate.templateId " .
                "WHERE $userClause $typeClause inspection.dateTime BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY inspection.dateTime DESC, inspectionId DESC;";
       
       $result = $this->query($query);
@@ -1450,13 +1449,14 @@ class PPTPDatabase extends MySqlDatabase
    
    public function newInspection($inspection)
    {
-      $dateTime = Time::toMySqlDate($inspection->dateTime);
+      $dateTime = Time::toMySqlDate($inspection->dateTime);      
+      $mfgDate = $inspection->mfgDate ? Time::toMySqlDate($inspection->mfgDate) : null;
       
       $query =
       "INSERT INTO inspection " .
-      "(templateId, dateTime, inspector, comments, jobId, jobNumber, wcNumber, operator, samples, naCount, passCount, failCount, dataFile) " .
+      "(templateId, inspectionType, dateTime, inspector, comments, jobId, jobNumber, wcNumber, operator, mfgDate, samples, naCount, passCount, failCount, dataFile) " .
       "VALUES " .
-      "('$inspection->templateId', '$dateTime', '$inspection->inspector', '$inspection->comments', '$inspection->jobId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->failCount', '$inspection->dataFile');";
+      "('$inspection->templateId', '$inspection->inspectionType', '$dateTime', '$inspection->inspector', '$inspection->comments', '$inspection->jobId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', '$mfgDate', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->failCount', '$inspection->dataFile');";
 
       $result = $this->query($query);
       
@@ -1491,10 +1491,13 @@ class PPTPDatabase extends MySqlDatabase
    public function updateInspection($inspection)
    {
       $dateTime = Time::toMySqlDate($inspection->dateTime);
+      $mfgDate = $inspection->mfgDate ? Time::toMySqlDate($inspection->mfgDate) : null;
+      
+      $mfgClause = "mfgDate = " . ($mfgDate ? "'$mfgDate'" : "NULL");  
       
       $query =
       "UPDATE inspection " .
-      "SET dateTime = '$dateTime', inspector = '$inspection->inspector', comments = '$inspection->comments', jobId = '$inspection->jobId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
+      "SET dateTime = '$dateTime', inspector = '$inspection->inspector', comments = '$inspection->comments', jobId = '$inspection->jobId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', $mfgClause, samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
       "WHERE inspectionId = '$inspection->inspectionId';";
 
       $result = $this->query($query);

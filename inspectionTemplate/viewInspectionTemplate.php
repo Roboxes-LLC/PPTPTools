@@ -167,27 +167,6 @@ function getSampleSize()
    return ($sampleSize);
 }
 
-function getInspectionTypeOptions()
-{
-   $options = "<option style=\"display:none\">";
-   
-   $selectedInspectionType = getInspectionType();
-   
-   for ($inspectionType = InspectionType::FIRST; $inspectionType != InspectionType::LAST; $inspectionType++)
-   {
-      if ($inspectionType != InspectionType::OASIS)  // Does not support templates.
-      {
-         $selected = ($inspectionType == $selectedInspectionType) ? "selected" : "";
-         
-         $label = InspectionType::getLabel($inspectionType);
-         
-         $options .= "<option value=\"$inspectionType\" $selected>$label</option>";
-      }
-   }
-   
-   return ($options);
-}
-
 function getDataTypeOptions($selectedDataType)
 {
    $options = "<option value\"" . InspectionDataType::UNKNOWN . "\"></option>";
@@ -503,7 +482,7 @@ if (!Authentication::isAuthenticated())
          <div class="form-item">
             <div class="form-label">Inspection Type</div>
             <select id="inspection-type-input" name="inspectionType"  form="input-form" oninput="onInspectionTypeChange();" <?php echo getDisabled(InspectionTemplateInputField::INSPECTION_TYPE); ?>>
-                <?php echo getInspectionTypeOptions(); ?>
+                <?php echo getInspectionTypeOptions(getInspectionType(), false, [InspectionType::OASIS]); ?>
             </select>
          </div>
       

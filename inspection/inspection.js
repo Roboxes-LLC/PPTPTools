@@ -85,9 +85,11 @@ function onDeleteInspection(inspectionId)
 function isJobBasedInspection(inspectionType)
 {
    return((inspectionType == OASIS) ||
+          (inspectionType == FIRST_PART) ||
           (inspectionType == LINE) ||
           (inspectionType == QCP) || 
-          (inspectionType == IN_PROCESS));
+          (inspectionType == IN_PROCESS) ||
+          (inspectionType == FINAL));
 }
 
 function onInspectionTypeChange()
@@ -308,6 +310,10 @@ function validateInspection()
    {
       alert("Please select an operator.");    
    }
+   else if (isEnabled("mfg-date-input") && !validate("mfg-date-input"))
+   {
+      alert("Please enter a manufacture date.");
+   }
    else
    {
       valid = true;
@@ -353,4 +359,41 @@ function approveAll()
       input.value = PASS;
       onInspectionStatusUpdate(input);
    }
+}
+
+function formattedDate(date)
+{
+   // Convert to Y-M-D format, per HTML5 Date control.
+   // https://stackoverflow.com/questions/12346381/set-date-in-input-type-date
+   var day = ("0" + date.getDate()).slice(-2);
+   var month = ("0" + (date.getMonth() + 1)).slice(-2);
+   
+   var formattedDate = date.getFullYear() + "-" + (month) + "-" + (day);
+
+   return (formattedDate);
+}
+
+function onTodayButton()
+{
+   var mfgDateInput = document.querySelector('#mfg-date-input');
+   
+   if (mfgDateInput != null)
+   {
+      var today = new Date();
+      
+      mfgDateInput.value = formattedDate(today); 
+   }         
+}
+
+function onYesterdayButton()
+{
+   var mfgDateInput = document.querySelector('#mfg-date-input');
+   
+   if (mfgDateInput != null)
+   {
+      var yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      mfgDateInput.value = formattedDate(yesterday); 
+   }      
 }

@@ -37,23 +37,6 @@ function getParams()
    return ($params);
 }
 
-function getInspectionTypeOptions()
-{
-   $options = "<option style=\"display:none\">";
-   
-   for ($inspectionType = InspectionType::FIRST; $inspectionType != InspectionType::LAST; $inspectionType++)
-   {
-      if ($inspectionType != InspectionType::OASIS)  // Cannot make manually.
-      {
-         $label = InspectionType::getLabel($inspectionType);
-         
-         $options .= "<option value=\"$inspectionType\">$label</option>";
-      }
-   }
-   
-   return ($options);
-}
-
 function getJobNumberOptions()
 {
    $options = "<option style=\"display:none\">";
@@ -159,7 +142,7 @@ if (!Authentication::isAuthenticated())
                   <div class="form-item">
                      <div class="form-label">Inspection Type</div>
                      <select id="inspection-type-input" class="form-input-medium" name="inspectionType" form="input-form" oninput="onInspectionTypeChange(); updateTemplateId();" <?php echo !isEditable(InspectionInputField::INSPECTION_TYPE) ? "disabled" : ""; ?>>
-                         <?php echo getInspectionTypeOptions(); ?>
+                         <?php echo getInspectionTypeOptions(null, false, [InspectionType::OASIS]); ?>
                      </select>
                   </div>
          
@@ -209,11 +192,14 @@ if (!Authentication::isAuthenticated())
       
       preserveSession();
       
+      // TODO: Add getJavascript(InspectionType) function
       const OASIS = <?php echo InspectionType::OASIS; ?>;
+      const FIRST_PART = <?php echo InspectionType::FIRST_PART; ?>;
       const LINE = <?php echo InspectionType::LINE; ?>;
       const QCP = <?php echo InspectionType::QCP; ?>;
       const IN_PROCESS = <?php echo InspectionType::IN_PROCESS; ?>;
       const GENERIC = <?php echo InspectionType::GENERIC; ?>;
+      const FINAL = <?php echo InspectionType::FINAL; ?>;
    
       var inspectionTypeValidator = new SelectValidator("inspection-type-input");
       var jobNumberValidator = new SelectValidator("job-number-input");

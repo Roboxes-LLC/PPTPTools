@@ -150,6 +150,9 @@ function getNewInspection()
    
    $params = getParams();
    
+   $inspection->inspectionType = 
+      ($params->keyExists("inspectionType") ? $params->getInt("inspectionType") : InspectionType::UNKNOWN_INSPECTION_ID);
+   
    $inspection->templateId = 
       ($params->keyExists("templateId") ? $params->get("templateId") : Inspection::UNKNOWN_INSPECTION_ID);
       
@@ -160,10 +163,10 @@ function getNewInspection()
    }
    
    $jobNumber =
-   ($params->keyExists("jobNumber") ? $params->get("jobNumber") : JobInfo::UNKNOWN_JOB_NUMBER);
+      ($params->keyExists("jobNumber") ? $params->get("jobNumber") : JobInfo::UNKNOWN_JOB_NUMBER);
    
    $wcNumber =
-   ($params->keyExists("wcNumber") ? $params->get("wcNumber") : 0);
+      ($params->keyExists("wcNumber") ? $params->get("wcNumber") : 0);
    
    $inspection->jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
    
@@ -187,7 +190,6 @@ function getNewInspection()
             }
          }
       }
-
    }
  
    return ($inspection);
@@ -251,22 +253,7 @@ function getInspectionTemplateName()
 
 function getInspectionType()
 {
-   $inspectionType = InspectionType::UNKNOWN;
-   
-   $inspectionTemplate = getInspectionTemplate();
-   
-   if ($inspectionTemplate)
-   {
-      $inspectionType = $inspectionTemplate->inspectionType;
-   }
-   else
-   {
-      $params = getParams();
-      
-      $inspectionType = ($params->keyExists("inspectionType") ? $params->getInt("inspectionType") : InspectionType::UNKNOWN);
-   }
-   
-   return ($inspectionType);
+   return (getInspection()->inspectionType);
 }
 
 function hasData($inspection, $inspectionPropertyId)
@@ -367,6 +354,24 @@ function getWcNumber()
    }
    
    return ($wcNumber);
+}
+
+function getMfgDate()
+{
+   $mfgDate = null;
+   
+   if (getInspectionId() != Inspection::UNKNOWN_INSPECTION_ID)
+   {
+      $inspection = getInspection();
+      
+      if ($inspection && $inspection->mfgDate)
+      {
+         // Convert to Javascript date format.
+         $mfgDate = Time::dateTimeObject($inspection->mfgDate)->format(Time::$javascriptDateFormat);
+      }
+   }
+   
+   return ($mfgDate);
 }
 
 function getCustomerPrint()
@@ -546,24 +551,6 @@ function getDescription()
    }
    
    return ($description);
-}
-
-function getInspectionTypeOptions()
-{
-   $options = "<option style=\"display:none\">";
-   
-   $selectedInspectionType = getInspectionType();
-   
-   foreach (InspectionType::$VALUES as $inspectionType)
-   {
-      $selected = ($inspectionType == $selectedInspectionType) ? "selected" : "";
-      
-      $label = InspectionType::getLabel($inspectionType);
-      
-      $options .= "<option value=\"$inspectionType\" $selected>$label</option>";
-   }
-   
-   return ($options);
 }
 
 function getJobNumberOptions()
@@ -831,7 +818,7 @@ function getInspectionInput($inspectionProperty, $sampleIndex, $inspectionResult
       $disabled = !isEditable(InspectionInputField::INSPECTION) ? "disabled" : "";
       
       $html .=
-      <<<HEREDOC
+<<<HEREDOC
       <div class="flex-vertical">
          <select name="$name" class="inspection-status-input $class" form="input-form" oninput="onInspectionStatusUpdate(this)" $disabled>
             <option value="$nonApplicableValue" $nonApplicable>N/A</option>
@@ -894,7 +881,7 @@ function getInspectionDataInput($inspectionProperty, $sampleIndex, $inspectionRe
       }
       
       $html .=
-      <<<HEREDOC
+  <<<HEREDOC
       <input name="$dataName" type="$inputType" form="input-form" style="width:80px;" value="$dataValue" $disabled>&nbsp$dataUnits
 HEREDOC;
    }
@@ -911,7 +898,7 @@ function getQuickInspectionButton()
    if (Authentication::checkPermissions(Permission::QUICK_INSPECTION))
    {
       $html =
-      <<<HEREDOC
+<<<HEREDOC
       <i class="material-icons" onclick="approveAll()">thumb_up</i>
 HEREDOC;
    }
@@ -958,6 +945,7 @@ if (!Authentication::isAuthenticated())
    <form id="input-form" action="" method="POST">
       <input id="inspection-id-input" type="hidden" name="inspectionId" value="<?php echo getInspectionId(); ?>">
       <!-- Hidden inputs make sure disabled fields below get posted. -->
+      <input type="hidden" name="inspectionType" value="<?php echo getInspectionType(); ?>">
       <input type="hidden" name="templateId" value="<?php echo getTemplateId(); ?>">
       <input type="hidden" name="jobNumber" value="<?php echo getJobNumber(); ?>">
       <input type="hidden" name="wcNumber" value="<?php echo getWcNumber(); ?>">
@@ -991,7 +979,7 @@ if (!Authentication::isAuthenticated())
                   <div class="form-item">
                      <div class="form-label">Inspection Type</div>
                      <select id="inspection-type-input" class="form-input-medium" name="inspectionType" form="input-form" oninput="" <?php echo !isEditable(InspectionInputField::INSPECTION_TYPE) ? "disabled" : ""; ?>>
-                         <?php echo getInspectionTypeOptions(); ?>
+                         <?php echo getInspectionTypeOptions(getInspectionType(), false, [InspectionType::OASIS]); ?>
                      </select>
                   </div>
                   
@@ -1030,6 +1018,15 @@ if (!Authentication::isAuthenticated())
                      <select id="operator-input" class="form-input-medium" name="operator" form="input-form" <?php echo !isEditable(InspectionInputField::OPERATOR) ? "disabled" : ""; ?>>
                         <?php echo getOperatorOptions(); ?>
                      </select>
+                  </div>
+                  
+                  <div class="form-item optional-property-container <?php echo showOptionalProperty(OptionalInspectionProperties::MFG_DATE) ? "" : "hidden";?>">
+                     <div class="form-label">Mfg Date</div>
+                     <input id="mfg-date-input" type="date" name="mfgDate" form="input-form" value="<?php echo getMfgDate() ?>">
+                     &nbsp;&nbsp;
+                     <button id="today-button" class="small-button">Today</button>
+                     &nbsp;&nbsp;
+                     <button id="yesterday-button" class="small-button">Yesterday</button>
                   </div>
                   
                   <div class="form-item" style="display: <?php echo (getNotes() == "") ? "none" : "flex"; ?>">
@@ -1079,10 +1076,12 @@ if (!Authentication::isAuthenticated())
       var jobNumberValidator = new SelectValidator("job-number-input");
       var wcNumberValidator = new SelectValidator("wc-number-input");
       var operatorValidator = new SelectValidator("operator-input");
+      var mfgDateValidator = new DateValidator("mfg-date-input");
 
       jobNumberValidator.init();
       wcNumberValidator.init();
       operatorValidator.init();
+      mfgDateValidator.init();
 
       function onInspectionStatusUpdate(element)
       {
@@ -1115,7 +1114,9 @@ if (!Authentication::isAuthenticated())
       document.getElementById("cancel-button").onclick = function(){location.href = "viewInspections.php";};
       document.getElementById("save-button").onclick = function(){onSaveInspection();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-            
+      document.getElementById("today-button").onclick = function(){onTodayButton();};
+      document.getElementById("yesterday-button").onclick = function(){onYesterdayButton();};
+                        
    </script>
 
 </body>

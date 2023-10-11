@@ -1930,10 +1930,12 @@ $router->add("saveInspection", function($params) {
    if ($result->success)
    {
       if (isset($params["templateId"]) &&
+          isset($params["inspectionType"]) &&
           isset($params["inspector"]) &&
           isset($params["comments"]))
       {
          $inspection->templateId = intval($params["templateId"]);
+         $inspection->inspectionType = intval($params["inspectionType"]);
          $inspection->inspector = intval($params["inspector"]);
          $inspection->comments = $params["comments"];
          
@@ -1956,6 +1958,11 @@ $router->add("saveInspection", function($params) {
             if (isset($params["operator"]))
             {
                $inspection->operator = $params->get("operator");
+            }
+            
+            if (isset($params["mfgDate"]))
+            {
+               $inspection->mfgDate = Time::startOfDay($params->get("mfgDate"));
             }
             
             $jobId = JobInfo::getJobIdByComponents($params->get("jobNumber"), $params->getInt("wcNumber"));

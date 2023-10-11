@@ -77,6 +77,7 @@ class Inspection
    const UNKNOWN_INSPECTION_ID = 0;
    
    public $inspectionId;
+   public $inspectionType;
    public $dateTime;
    public $templateId;
    public $inspector;
@@ -85,6 +86,7 @@ class Inspection
    // Properties for job-based inspections (LINE, QCP, IN_PROCESS).
    public $jobId;
    public $operator;
+   public $mfgDate;
    
    // Optional properties for GENERIC inspections.
    public $jobNumber;
@@ -107,11 +109,13 @@ class Inspection
    public function __construct()
    {
       $this->inspectionId = Inspection::UNKNOWN_INSPECTION_ID;
+      $this->inspectionType = InspectionType::UNKNOWN;
       $this->templateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
       $this->inspector = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->comments = "";
       $this->jobId = JobInfo::UNKNOWN_JOB_ID;
       $this->operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->mfgDate = null;
       $this->jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
       $this->wcNumber = JobInfo::UNKNOWN_WC_NUMBER;
       $this->samples = 0;
@@ -162,12 +166,14 @@ class Inspection
    public function initializeFromDatabaseRow($row)
    {
       $this->inspectionId = intval($row['inspectionId']);
+      $this->inspectionType = intval($row['inspectionType']);
       $this->templateId = intval($row['templateId']);
       $this->dateTime = Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
       $this->inspector = intval($row['inspector']);
       $this->comments = $row['comments'];
       $this->jobId = $row['jobId'];
       $this->operator = intval($row['operator']);
+      $this->mfgDate = $row['mfgDate'] ? Time::fromMySqlDate($row['mfgDate'], "Y-m-d") : null;
       $this->jobNumber = $row['jobNumber'];
       $this->wcNumber = intval($row['wcNumber']);
       
