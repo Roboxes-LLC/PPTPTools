@@ -413,9 +413,11 @@ $router->add("saveJob", function($params) {
           isset($params["grossPartsPerHour"]) &&
           isset($params["netPartsPerHour"]) &&
           isset($params["status"]) &&
+          isset($params["firstPartTemplateId"]) &&
           isset($params["qcpTemplateId"]) &&
           isset($params["lineTemplateId"]) &&
-          isset($params["inProcessTemplateId"]))
+          isset($params["inProcessTemplateId"]) &&
+          isset($params["finalTemplateId"]))
       {
          $jobInfo->jobNumber = $params["jobNumber"];
          $jobInfo->creator = intval($params["creator"]);
@@ -425,9 +427,11 @@ $router->add("saveJob", function($params) {
          $jobInfo->grossPartsPerHour = intval($params["grossPartsPerHour"]);
          $jobInfo->netPartsPerHour = intval($params["netPartsPerHour"]);
          $jobInfo->status = intval($params["status"]);
+         $jobInfo->firstPartTemplateId = intval($params["firstPartTemplateId"]);
          $jobInfo->qcpTemplateId = intval($params["qcpTemplateId"]);
          $jobInfo->lineTemplateId = intval($params["lineTemplateId"]);
          $jobInfo->inProcessTemplateId = intval($params["inProcessTemplateId"]);
+         $jobInfo->finalTemplateId = intval($params["finalTemplateId"]);
             
          if ($jobInfo->jobId == JobInfo::UNKNOWN_JOB_ID)
          {
@@ -1856,6 +1860,7 @@ $router->add("inspectionData", function($params) {
          }
          
          $row["dateTime"] = $inspection->dateTime;
+         $row["mfgDate"] = $inspection->mfgDate;
          
          $row["inspectionTypeLabel"] = InspectionType::getLabel(intval($row["inspectionType"]));
          
@@ -1930,12 +1935,10 @@ $router->add("saveInspection", function($params) {
    if ($result->success)
    {
       if (isset($params["templateId"]) &&
-          isset($params["inspectionType"]) &&
           isset($params["inspector"]) &&
           isset($params["comments"]))
       {
          $inspection->templateId = intval($params["templateId"]);
-         $inspection->inspectionType = intval($params["inspectionType"]);
          $inspection->inspector = intval($params["inspector"]);
          $inspection->comments = $params["comments"];
          

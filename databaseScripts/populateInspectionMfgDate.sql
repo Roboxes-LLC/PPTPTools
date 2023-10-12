@@ -1,0 +1,1 @@
+UPDATE inspection SET mfgDate = dateTime;

@@ -149,10 +149,7 @@ function getNewInspection()
    $inspection = new Inspection();
    
    $params = getParams();
-   
-   $inspection->inspectionType = 
-      ($params->keyExists("inspectionType") ? $params->getInt("inspectionType") : InspectionType::UNKNOWN_INSPECTION_ID);
-   
+      
    $inspection->templateId = 
       ($params->keyExists("templateId") ? $params->get("templateId") : Inspection::UNKNOWN_INSPECTION_ID);
       
@@ -253,7 +250,23 @@ function getInspectionTemplateName()
 
 function getInspectionType()
 {
-   return (getInspection()->inspectionType);
+   $inspectionType = InspectionType::UNKNOWN;
+   
+   $inspectionTemplate = getInspectionTemplate();
+   
+   if ($inspectionTemplate)
+   {
+      $inspectionType = $inspectionTemplate->inspectionType;
+   }
+   else
+   {
+      $params = getParams();
+      
+      $inspectionType =
+         ($params->keyExists("inspectionType") ? $params->getInt("inspectionType") : InspectionType::UNKNOWN);
+   }
+   
+   return ($inspectionType);
 }
 
 function hasData($inspection, $inspectionPropertyId)
@@ -945,7 +958,6 @@ if (!Authentication::isAuthenticated())
    <form id="input-form" action="" method="POST">
       <input id="inspection-id-input" type="hidden" name="inspectionId" value="<?php echo getInspectionId(); ?>">
       <!-- Hidden inputs make sure disabled fields below get posted. -->
-      <input type="hidden" name="inspectionType" value="<?php echo getInspectionType(); ?>">
       <input type="hidden" name="templateId" value="<?php echo getTemplateId(); ?>">
       <input type="hidden" name="jobNumber" value="<?php echo getJobNumber(); ?>">
       <input type="hidden" name="wcNumber" value="<?php echo getWcNumber(); ?>">

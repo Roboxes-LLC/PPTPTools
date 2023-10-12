@@ -1054,9 +1054,9 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "INSERT INTO job " .
-      "(jobNumber, creator, dateTime, partNumber, sampleWeight, wcNumber, grossPartsPerHour, netPartsPerHour, status, customerPrint, inProcessTemplateId, lineTemplateId, qcpTemplateId) " .
+      "(jobNumber, creator, dateTime, partNumber, sampleWeight, wcNumber, grossPartsPerHour, netPartsPerHour, status, customerPrint, firstPartTemplateId, inProcessTemplateId, lineTemplateId, qcpTemplateId, finalTemplateId) " .
       "VALUES " .
-      "('$jobInfo->jobNumber', '$jobInfo->creator', '$dateTime', '$jobInfo->partNumber', '$jobInfo->sampleWeight', '$jobInfo->wcNumber', '$jobInfo->grossPartsPerHour', '$jobInfo->netPartsPerHour', '$jobInfo->status', '$jobInfo->customerPrint', '$jobInfo->inProcessTemplateId', '$jobInfo->lineTemplateId', '$jobInfo->qcpTemplateId');";
+      "('$jobInfo->jobNumber', '$jobInfo->creator', '$dateTime', '$jobInfo->partNumber', '$jobInfo->sampleWeight', '$jobInfo->wcNumber', '$jobInfo->grossPartsPerHour', '$jobInfo->netPartsPerHour', '$jobInfo->status', '$jobInfo->customerPrint', '$jobInfo->firstPartTemplateId', '$jobInfo->inProcessTemplateId', '$jobInfo->lineTemplateId', '$jobInfo->qcpTemplateId', '$jobInfo->finalTemplateId');";
 
       $result = $this->query($query);
 
@@ -1069,7 +1069,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
          "UPDATE job " .
-         "SET creator = '$jobInfo->creator', dateTime = '$dateTime', partNumber = '$jobInfo->partNumber', sampleWeight = '$jobInfo->sampleWeight', wcNumber = '$jobInfo->wcNumber', grossPartsPerHour = '$jobInfo->grossPartsPerHour', netPartsPerHour = '$jobInfo->netPartsPerHour', status = '$jobInfo->status', customerPrint = '$jobInfo->customerPrint', inProcessTemplateId = '$jobInfo->inProcessTemplateId', lineTemplateId = '$jobInfo->lineTemplateId',  qcpTemplateId = '$jobInfo->qcpTemplateId' " .
+         "SET creator = '$jobInfo->creator', dateTime = '$dateTime', partNumber = '$jobInfo->partNumber', sampleWeight = '$jobInfo->sampleWeight', wcNumber = '$jobInfo->wcNumber', grossPartsPerHour = '$jobInfo->grossPartsPerHour', netPartsPerHour = '$jobInfo->netPartsPerHour', status = '$jobInfo->status', customerPrint = '$jobInfo->customerPrint', firstPartTemplateId = '$jobInfo->firstPartTemplateId', inProcessTemplateId = '$jobInfo->inProcessTemplateId', lineTemplateId = '$jobInfo->lineTemplateId',  qcpTemplateId = '$jobInfo->qcpTemplateId', finalTemplateId = '$jobInfo->finalTemplateId' " .
          "WHERE jobId = '$jobInfo->jobId';";
 
       $result = $this->query($query);
@@ -1416,11 +1416,12 @@ class PPTPDatabase extends MySqlDatabase
       $typeClause = "";
       if ($inspectionType != InspectionType::UNKNOWN)
       {
-         $typeClause = "inspection.inspectionType = $inspectionType AND ";
+         $typeClause = "inspectiontemplate.inspectionType = $inspectionType AND ";
       }
       
       $query = "SELECT * FROM inspection " .
-               "WHERE $userClause $typeClause inspection.dateTime BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY inspection.dateTime DESC, inspectionId DESC;";
+               "INNER JOIN inspectiontemplate ON inspection.templateId = inspectiontemplate.templateId " .
+               "WHERE $userClause $typeClause inspection.mfgDate BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY inspection.dateTime DESC, inspectionId DESC;";
       
       $result = $this->query($query);
       
@@ -1454,9 +1455,9 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "INSERT INTO inspection " .
-      "(templateId, inspectionType, dateTime, inspector, comments, jobId, jobNumber, wcNumber, operator, mfgDate, samples, naCount, passCount, failCount, dataFile) " .
+      "(templateId, dateTime, inspector, comments, jobId, jobNumber, wcNumber, operator, mfgDate, samples, naCount, passCount, failCount, dataFile) " .
       "VALUES " .
-      "('$inspection->templateId', '$inspection->inspectionType', '$dateTime', '$inspection->inspector', '$inspection->comments', '$inspection->jobId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', '$mfgDate', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->failCount', '$inspection->dataFile');";
+      "('$inspection->templateId', '$dateTime', '$inspection->inspector', '$inspection->comments', '$inspection->jobId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', '$mfgDate', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->failCount', '$inspection->dataFile');";
 
       $result = $this->query($query);
       

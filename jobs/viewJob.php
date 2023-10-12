@@ -20,11 +20,13 @@ abstract class JobInputField
    const NET_PERCENTAGE = 8;
    const NET_PIECES = 9;
    const STATUS = 10;
-   const IN_PROCESS_TEMPLATE = 11;
-   const LINE_TEMPLATE = 12;
-   const QCP_TEMPLATE = 13;
-   const CUSTOMER_PRINT = 14;
-   const LAST = 15;
+   const FIRST_PART_TEMPLATE = 11;
+   const IN_PROCESS_TEMPLATE = 12;
+   const LINE_TEMPLATE = 13;
+   const QCP_TEMPLATE = 14;
+   const FINAL_TEMPLATE = 15;
+   const CUSTOMER_PRINT = 16;
+   const LAST = 17;
    const COUNT = JobInputField::LAST - JobInputField::FIRST;
 }
 
@@ -457,10 +459,15 @@ if (!Authentication::isAuthenticated())
                </div>
       
                <div class="form-item">
+                  <div class="form-label-long">First Part Template</div>
+                  <div><select name="firstPartTemplateId" form="input-form" <?php echo getDisabled(JobInputField::FIRST_PART_TEMPLATE); ?>><?php echo getInspectionTemplateOptions(InspectionType::FIRST_PART, getJobInfo()->firstPartTemplateId); ?></select></div>
+               </div>
+      
+               <div class="form-item">
                   <div class="form-label-long">In Process Template</div>
                   <div><select name="inProcessTemplateId" form="input-form" <?php echo getDisabled(JobInputField::IN_PROCESS_TEMPLATE); ?>><?php echo getInspectionTemplateOptions(InspectionType::IN_PROCESS, getJobInfo()->inProcessTemplateId); ?></select></div>
                </div>
-      
+            
                <div class="form-item">
                   <div class="form-label-long">Line Template</div>
                   <div><select name="lineTemplateId" form="input-form" <?php echo getDisabled(JobInputField::LINE_TEMPLATE); ?>><?php echo getInspectionTemplateOptions(InspectionType::LINE, getJobInfo()->lineTemplateId); ?></select></div>
@@ -469,6 +476,11 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label-long">QCP Template</div>
                   <div><select name="qcpTemplateId" form="input-form" <?php echo getDisabled(JobInputField::QCP_TEMPLATE); ?>><?php echo getInspectionTemplateOptions(InspectionType::QCP, getJobInfo()->qcpTemplateId); ?></select></div>
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label-long">Final Template</div>
+                  <div><select name="finalTemplateId" form="input-form" <?php echo getDisabled(JobInputField::FINAL_TEMPLATE); ?>><?php echo getInspectionTemplateOptions(InspectionType::FINAL, getJobInfo()->finalTemplateId); ?></select></div>
                </div>
       
                <div class="form-item">

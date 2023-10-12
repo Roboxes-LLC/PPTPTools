@@ -68,9 +68,11 @@ class JobInfo
    public $grossPartsPerHour;
    public $netPartsPerHour;
    public $status = JobStatus::PENDING;
+   public $firstPartTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
    public $inProcessTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
    public $lineTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
    public $qcpTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
+   public $finalTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
    public $customerPrint;
    
    public function isActive()
@@ -107,9 +109,11 @@ class JobInfo
             $jobInfo->grossPartsPerHour =   intval($row['grossPartsPerHour']);
             $jobInfo->netPartsPerHour =     intval($row['netPartsPerHour']);
             $jobInfo->status =              $row['status'];
+            $jobInfo->firstPartTemplateId = intval($row['firstPartTemplateId']);
             $jobInfo->inProcessTemplateId = intval($row['inProcessTemplateId']);
             $jobInfo->lineTemplateId =      intval($row['lineTemplateId']);
             $jobInfo->qcpTemplateId =       intval($row['qcpTemplateId']);
+            $jobInfo->finalTemplateId =     intval($row['finalTemplateId']);
             $jobInfo->customerPrint =       $row['customerPrint'];
          }
       }
@@ -316,9 +320,11 @@ if (isset($_GET["$jobId"]))
       echo "wcNumber: " .            $jobInfo->wcNumber .            "<br/>";
       echo "grossPartsPerHour: " .   $jobInfo->grossPartsPerHour .   "<br/>";
       echo "netPartsPerHour: " .     $jobInfo->netPartsPerHour .     "<br/>";
+      echo "firstPartTemplateId: " . $jobInfo->firstPartTemplateId . "<br/>";
       echo "inProcessTemplateId: " . $jobInfo->inProcessTemplateId . "<br/>";
       echo "lineTemplateId: " .      $jobInfo->lineTemplateId .      "<br/>";
       echo "qcpTemplateId: " .       $jobInfo->qcpTemplateId .       "<br/>";
+      echo "finalTemplateId: " .     $jobInfo->finalTemplateId .     "<br/>";
       echo "customerPrint: " .       $jobInfo->customerPrint .       "<br/>";
       
       echo "status: " . JobStatus::getName($jobInfo->status) . "<br/>";

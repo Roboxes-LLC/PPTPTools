@@ -77,7 +77,6 @@ class Inspection
    const UNKNOWN_INSPECTION_ID = 0;
    
    public $inspectionId;
-   public $inspectionType;
    public $dateTime;
    public $templateId;
    public $inspector;
@@ -109,7 +108,6 @@ class Inspection
    public function __construct()
    {
       $this->inspectionId = Inspection::UNKNOWN_INSPECTION_ID;
-      $this->inspectionType = InspectionType::UNKNOWN;
       $this->templateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
       $this->inspector = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->comments = "";
@@ -166,7 +164,6 @@ class Inspection
    public function initializeFromDatabaseRow($row)
    {
       $this->inspectionId = intval($row['inspectionId']);
-      $this->inspectionType = intval($row['inspectionType']);
       $this->templateId = intval($row['templateId']);
       $this->dateTime = Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
       $this->inspector = intval($row['inspector']);

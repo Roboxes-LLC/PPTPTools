@@ -1,4 +1,0 @@
-# Copy inspection type from template
-UPDATE inspection
-INNER JOIN inspectiontemplate ON inspectiontemplate.inspectionId = inspection.templateId
-SET inspection.inspectionType = inspectionTemplate.inspectionType;
