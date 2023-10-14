@@ -91,6 +91,9 @@ class Inspection
    public $jobNumber;
    public $wcNumber;
    
+   // Properties for Final inspections.
+   public $quantity;
+   
    // Inspection results summary properties.
    // Note: By storing these directly in the database, we can more quickly build the inspection table.
    public $samples;
@@ -116,6 +119,7 @@ class Inspection
       $this->mfgDate = null;
       $this->jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
       $this->wcNumber = JobInfo::UNKNOWN_WC_NUMBER;
+      $this->quantity = 0;
       $this->samples = 0;
       $this->naCount = 0;
       $this->passCount = 0;
@@ -173,6 +177,7 @@ class Inspection
       $this->mfgDate = $row['mfgDate'] ? Time::fromMySqlDate($row['mfgDate'], "Y-m-d") : null;
       $this->jobNumber = $row['jobNumber'];
       $this->wcNumber = intval($row['wcNumber']);
+      $this->quantity = intval($row['quantity']);
       
       // Inspection summary.
       $this->samples = intval($row['samples']);
@@ -432,6 +437,32 @@ class Inspection
       }
       
       return ($dateTimeStr);
+   }
+   
+   function getSampleSize($quantity = null)
+   {
+      $sampleSize = SamplingPlan::$minSamples;
+      
+      $inspectionTemplate = InspectionTemplate::load($this->templateId);
+      
+      if ($inspectionTemplate)
+      {
+         // For Final inspections, sample size is based on the part quantity.
+         if ($inspectionTemplate->inspectionType == InspectionType::FINAL)
+         {
+            // Optionally, specify a check quantity as a parameter.
+            $checkQuantity = ($quantity != null) ? $quantity : $this->quantity;
+            
+            $sampleSize = SamplingPlan::getSampleCount($checkQuantity);
+         }
+         // For all others, consult the template.
+         else
+         {
+            $sampleSize = $inspectionTemplate->sampleSize;
+         }
+      }
+      
+      return ($sampleSize);
    }
 }
 

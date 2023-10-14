@@ -298,6 +298,8 @@ function validateInspection()
 {
    valid = false;
    
+   var inspectionType = document.getElementById("inspection-type-input").value;
+   
    if (isEnabled("job-number-input") && !validate("job-number-input"))
    {
       alert("Please select an active job.");   
@@ -313,6 +315,10 @@ function validateInspection()
    else if (isEnabled("mfg-date-input") && !validate("mfg-date-input"))
    {
       alert("Please enter a manufacture date.");
+   }
+   else if ((inspectionType == InspectionType.FINAL) && !(document.getElementById("quantity-input").validator.validate()))
+   {
+      alert("Please enter a final part quantity.");    
    }
    else
    {
@@ -356,7 +362,7 @@ function approveAll()
    
    for (var input of inspectionInputs)
    {
-      input.value = PASS;
+      input.value = InspectionStatus.PASS;
       onInspectionStatusUpdate(input);
    }
 }
@@ -396,4 +402,52 @@ function onYesterdayButton()
       
       mfgDateInput.value = formattedDate(yesterday); 
    }      
+}
+
+function onQuantityChanged()
+{   
+   let inspectionId = parseInt(document.querySelector('#inspection-id-input').value);
+   
+   let templateId = parseInt(document.querySelector('#template-id-input').value);
+   
+   let quantity = parseInt(document.querySelector('#quantity-input').value);
+   
+   ajaxRequest(`/api/inspectionTable/?inspectionId=${inspectionId}&templateId=${templateId}&quantity=${quantity}`, function(response) {
+      if (response.success)
+      {
+         updateInspectionTable(response.html);   
+      }
+      else
+      {
+         console.log("Failed to fetch inspection table: " + response.error);
+      }
+   });
+}
+
+function onInspectionStatusUpdate(element)
+{
+   // Clear classes
+   for (const inspectionStatusClass of InspectionStatusClasses)
+   {
+      if (inspectionStatusClass != "")
+      {
+         element.classList.remove(inspectionStatusClass);
+      }
+   }
+
+   // Add new class.
+   var inspectionStatus = parseInt(element.value);
+   element.classList.add(InspectionStatusClasses[inspectionStatus]);
+}
+
+function updateInspectionTable(html)
+{
+   console.log("updateInspesctionTable");
+   
+   let template = document.createElement('template');
+   template.innerHTML = html;
+   
+   console.log(template.content.firstChild);
+   
+   document.querySelector('.inspection-table').replaceWith(template.content.cloneNode(true));
 }

@@ -26,6 +26,7 @@ require_once '../common/upload.php';
 require_once '../common/userInfo.php';
 require_once '../common/weeklySummaryReport.php';
 require_once '../core/job/jobManager.php';
+require_once '../inspection/inspectionTable.php';
 require_once '../printer/printJob.php';
 require_once '../printer/printQueue.php';
 
@@ -1968,6 +1969,11 @@ $router->add("saveInspection", function($params) {
                $inspection->mfgDate = Time::startOfDay($params->get("mfgDate"));
             }
             
+            if (isset($params["quantity"]))
+            {
+               $inspection->quantity = $params->getInt("quantity");
+            }
+            
             $jobId = JobInfo::getJobIdByComponents($params->get("jobNumber"), $params->getInt("wcNumber"));
                
             if ($jobId != JobInfo::UNKNOWN_JOB_ID)
@@ -1977,7 +1983,7 @@ $router->add("saveInspection", function($params) {
             
             foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
             {
-               for ($sampleIndex = 0; $sampleIndex < $inspectionTemplate->sampleSize; $sampleIndex++)
+               for ($sampleIndex = 0; $sampleIndex < $inspection->getSampleSize(); $sampleIndex++)
                {
                   $name = InspectionResult::getInputName($inspectionProperty->propertyId, $sampleIndex);
                   $dataName = $name . "_data";
@@ -2298,6 +2304,50 @@ $router->add("deleteInspectionTemplate", function($params) {
    
    echo json_encode($result);
 });
+
+$router->add("inspectionTable", function($params) {
+   $result = new stdClass();
+   $result->success = true;
+   
+   if (isset($params["inspectionId"]) &&
+       isset($params["templateId"]) &&
+       isset($params["quantity"]))
+   {
+      $inspectionId = $params->getInt("inspectionId");
+      $templateId = $params->getInt("templateId");
+      $quantity = $params->getInt("quantity");
+      
+      $inspection = null;
+      $inspectionTemplate = null;
+      
+      if ($inspectionId != Inspection::UNKNOWN_INSPECTION_ID)
+      {
+         $inspection = Inspection::load($inspectionId, false);  // Don't load results.
+      }
+      else if ($templateId != InspectionTemplate::UNKNOWN_TEMPLATE_ID)
+      {
+         $inspectionTemplate = InspectionTemplate::load($templateId);
+      }
+      
+      if ($inspection || $inspectionTemplate)
+      {
+         $result->success = true;
+         $result->html = InspectionTable::getHtml($inspectionId, $templateId, $quantity, Authentication::checkPermissions(Permission::QUICK_INSPECTION), true);
+      }
+      else
+      {
+         $result->success = false;
+         $result->error = "No existing inspection/template found.";
+      }
+   }
+   else
+   {
+      $result->success = false;
+      $result->error = "Missing parameters.";
+   }      
+   
+   echo json_encode($result);
+});      
 
 $router->add("printerData", function($params) {
    $result = array();

@@ -16,6 +16,8 @@ abstract class InspectionStatus
    const LAST = 5;
    const COUNT = InspectionStatus::LAST - InspectionStatus::FIRST;
    
+   public static $values = [InspectionStatus::PASS, InspectionStatus::WARNING, InspectionStatus::FAIL, InspectionStatus::NON_APPLICABLE];
+   
    public static function getLabel($inspectionStatus)
    {
       $labels = array("---", "PASS", "WARNING", "FAIL", "N/A");
@@ -28,6 +30,47 @@ abstract class InspectionStatus
       $classes = array("", "pass", "warning", "fail", "n/a");
       
       return ($classes[$inspectionStatus]);
+   }
+   
+   public static function getJavascript($enumName)
+   {
+      // Note: Keep synced with enum.
+      $varNames = array("UNKNOWN", "PASS", "WARNING", "FAIL", "NON_APPLICABLE");
+      
+      $html = "$enumName = {";
+      
+      $html .= "{$varNames[InspectionStatus::UNKNOWN]}: " . InspectionStatus::UNKNOWN . ", ";
+      
+      $index = 0;
+      
+      foreach (InspectionStatus::$values as $inspectionStatus)
+      {
+         $html .= "{$varNames[$inspectionStatus]}: $inspectionStatus";
+         $html .= ($index < (count(InspectionStatus::$values) - 1) ? ", " : "");
+         
+         $index++;
+      }
+      
+      $html .= "};";
+      
+      return ($html);
+   }
+   
+   public static function getJavascriptInspectionClasses($enumName)
+   {
+      $html = "$enumName = [";
+      
+      for ($inspectionStatus = InspectionStatus::FIRST; $inspectionStatus < InspectionStatus::LAST; $inspectionStatus++)
+      {
+         $class = InspectionStatus::getClass($inspectionStatus);
+         
+         $html .= "\"$class\"";
+         $html .= ($inspectionStatus < (InspectionStatus::LAST - 1)) ? ", " : "";
+      }
+      
+      $html .= "];";
+      
+      return ($html);
    }
 }
 
@@ -72,6 +115,30 @@ abstract class InspectionType
    {
       return ($inspectionType == InspectionType::QCP);
    }
+   
+   public static function getJavascript($enumName)
+   {
+      // Note: Keep synced with enum.
+      $varNames = array("UNKNOWN", "OASIS", "LINE", "QCP", "IN_PROCESS", "GENERIC", "FIRST_PART", "FINAL");
+      
+      $html = "$enumName = {";
+      
+      $html .= "{$varNames[InspectionType::UNKNOWN]}: " . InspectionType::UNKNOWN . ", ";
+      
+      $index = 0;
+      
+      foreach (InspectionType::$VALUES as $inspectionType)
+      {
+         $html .= "{$varNames[$inspectionType]}: $inspectionType";
+         $html .= ($index < (count(InspectionType::$VALUES) - 1) ? ", " : "");
+         
+         $index++;
+      }
+      
+      $html .= "};";
+      
+      return ($html);
+   } 
 }
 
 function getInspectionTypeOptions($selectedInspectionType, $includeAllOption = false, $excludeTypes = [])
@@ -163,5 +230,50 @@ abstract class OptionalInspectionProperties
       return ($labels[$optionalProperty]);
    }
 }
+
+abstract class SamplingPlan
+{
+   public static $minSamples = 3;
+   
+   public static $maxSamples = 29;
+   
+   // Table for determining the number of samples required in a Final Inspection
+   // based on party quantity produced.
+   // Note: Provided by J. Orbin in 10/11/23 email "sampling plan".
+   private static $sampleThresholds = 
+      // quantity threshold => samples
+      array(
+         25 => 3, 
+         90 => 6,
+         150 => 7,
+         280 => 10,
+         500 => 11,
+         1200 => 15,
+         3200 => 18,
+         10000 => 22,
+         35000 => 29
+      );
+      
+   public static function getSampleCount($quantity)
+   {
+      $sampleCount = SamplingPlan::$maxSamples;
+      
+      foreach (SamplingPlan::$sampleThresholds as $threshold => $samples)
+      {
+         if ($quantity <= $threshold)
+         {
+            $sampleCount = $samples;
+            break;
+         }
+      }
+      
+      // Can't have more samples than parts.
+      $sampleCount = min([$sampleCount, $quantity]);
+      
+      return ($sampleCount);
+   }
+}
+
+
 
 ?>
