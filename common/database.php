@@ -1267,6 +1267,67 @@ class PPTPDatabase extends MySqlDatabase
       return ($result);
    }
    
+   public function getInspectionTemplatesForJobNumber($inspectionType, $jobNumber)
+   {
+      $result = null;
+      
+      // Not valid for GENERIC inspections.
+      if ($inspectionType != InspectionType::GENERIC)
+      {
+         $typeClause = ($inspectionType != InspectionType::UNKNOWN) ?
+                          "inspectionType = $inspectionType " :
+                          "TRUE";
+         
+         $templateIdClause = "TRUE";
+         switch ($inspectionType)
+         {
+            case InspectionType::LINE:
+            {
+               $templateIdClause = "job.lineTemplateId = inspectiontemplate.templateId";
+               break;
+            }
+            
+            case InspectionType::QCP:
+            {
+               $templateIdClause = "job.qcpTemplateId = inspectiontemplate.templateId";
+               break;
+            }
+            
+            case InspectionType::IN_PROCESS:
+            {
+               $templateIdClause = "job.inProcessTemplateId = inspectiontemplate.templateId";
+               break;
+            }
+            
+            case InspectionType::FIRST_PART:
+            {
+               $templateIdClause = "job.firstPartTemplateId = inspectiontemplate.templateId";
+               break;
+            }
+            
+            case InspectionType::FINAL:
+            {
+               $templateIdClause = "job.finalTemplateId = inspectiontemplate.templateId";
+               break;
+            }
+            
+            default:
+            {
+               break;
+            }
+         }
+      
+         $query = "SELECT * FROM inspectiontemplate " .
+                  "INNER JOIN job ON $templateIdClause " .
+                  "WHERE $typeClause AND job.jobNumber = '$jobNumber' " .
+                  "ORDER BY name ASC;";
+         
+         $result = $this->query($query);
+      }
+            
+      return ($result);
+   }
+   
    public function getInspectionTemplate($templateId)
    {
       $query = "SELECT * FROM inspectiontemplate WHERE templateId = $templateId;";
@@ -1421,7 +1482,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query = "SELECT * FROM inspection " .
                "INNER JOIN inspectiontemplate ON inspection.templateId = inspectiontemplate.templateId " .
-               "WHERE $userClause $typeClause inspection.mfgDate BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY inspection.dateTime DESC, inspectionId DESC;";
+               "WHERE $userClause $typeClause inspection.dateTime BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY inspection.dateTime DESC, inspectionId DESC;";
       
       $result = $this->query($query);
       
@@ -1453,12 +1514,14 @@ class PPTPDatabase extends MySqlDatabase
       $dateTime = Time::toMySqlDate($inspection->dateTime);      
       $mfgDate = $inspection->mfgDate ? Time::toMySqlDate($inspection->mfgDate) : null;
       
+      $mfgClause = ($mfgDate ? "'$mfgDate'" : "NULL");
+      
       $query =
       "INSERT INTO inspection " .
-      "(templateId, dateTime, inspector, comments, jobId, jobNumber, wcNumber, operator, mfgDate, quantity, samples, naCount, passCount, failCount, dataFile) " .
+      "(templateId, dateTime, inspector, comments, jobId, jobNumber, wcNumber, operator, mfgDate, inspectionNumber, quantity, samples, naCount, passCount, failCount, dataFile) " .
       "VALUES " .
-      "('$inspection->templateId', '$dateTime', '$inspection->inspector', '$inspection->comments', '$inspection->jobId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', '$mfgDate', '$inspection->quantity', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->failCount', '$inspection->dataFile');";
-
+      "('$inspection->templateId', '$dateTime', '$inspection->inspector', '$inspection->comments', '$inspection->jobId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', $mfgClause, '$inspection->inspectionNumber', '$inspection->quantity', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->failCount', '$inspection->dataFile');";
+      
       $result = $this->query($query);
       
       if ($result && $inspection->inspectionResults)
@@ -1498,7 +1561,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "UPDATE inspection " .
-      "SET dateTime = '$dateTime', inspector = '$inspection->inspector', comments = '$inspection->comments', jobId = '$inspection->jobId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', $mfgClause, quantity = '$inspection->quantity', samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
+      "SET dateTime = '$dateTime', inspector = '$inspection->inspector', comments = '$inspection->comments', jobId = '$inspection->jobId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', $mfgClause, inspectionNumber = '$inspection->inspectionNumber', quantity = '$inspection->quantity', samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
       "WHERE inspectionId = '$inspection->inspectionId';";
 
       $result = $this->query($query);
@@ -1551,6 +1614,13 @@ class PPTPDatabase extends MySqlDatabase
                }
             }
          }
+         
+         // Delete inspections results that were invalidated by a sample size change.
+         $query = 
+         "DELETE FROM inspectionresult  " .
+         "WHERE inspectionId = '$inspection->inspectionId' AND propertyId = '$inspectionResult->propertyId' AND sampleIndex >= {$inspection->getSampleSize()};";
+         
+         $result &= $this->query($query);
       }
       
       return ($result);

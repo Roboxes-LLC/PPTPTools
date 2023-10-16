@@ -249,6 +249,12 @@ class JobInfo
       
       switch ($wcNumber)
       {
+         case JobInfo::UNKNOWN_WC_NUMBER:
+         {
+            $label = "";
+            break;   
+         }
+         
          case JobInfo::OUTSIDE_WC_NUMBER:
          {
             $label = JobInfo::OUTSIDE_WC_LABEL;

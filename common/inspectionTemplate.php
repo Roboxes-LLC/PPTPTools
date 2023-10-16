@@ -138,7 +138,14 @@ class InspectionTemplate
    
    public function isOptionalPropertySet($optionalProperty)
    {
-      return (($this->optionalProperties & (1 << $optionalProperty)) > 0);
+      // GENERIC inspections have configurable optional properties.
+      // All other types have hardcoded values.
+      $optionalProperties = 
+         ($this->inspectionType == InspectionType::GENERIC) ? 
+            $this->optionalProperties : 
+            InspectionType::getDefaultOptionalProperties($this->inspectionType);
+      
+      return (($optionalProperties & (1 << $optionalProperty)) > 0);
    }
    
    public static function getInspectionTemplates($inspectionType)
@@ -160,7 +167,26 @@ class InspectionTemplate
       return ($templateIds);
    }
    
-   public static function getInspectionTemplatesForJob($inspectionType, $jobId)
+   public static function getInspectionTemplatesForJobNumber($inspectionType, $jobNumber)
+   {
+      $templateIds = array();
+      
+      $database = PPTPDatabase::getInstance();
+      
+      if ($database && $database->isConnected())
+      {
+         $result = $database->getInspectionTemplatesForJobNumber($inspectionType, $jobNumber);
+         
+         while ($result && ($row = $result->fetch_assoc()))
+         {
+            $templateIds[] = intval($row["templateId"]);
+         }
+      }
+      
+      return ($templateIds);
+   }
+   
+   public static function getInspectionTemplatesForJob($inspectionType, $jobNumber, $jobId)
    {
       $templateIds = array();
 
@@ -171,13 +197,12 @@ class InspectionTemplate
          {
             $templateIds = InspectionTemplate::getInspectionTemplates($inspectionType);
             break;
-         }
-            
+         }         
+                        
          case InspectionType::FIRST_PART:
          case InspectionType::IN_PROCESS:
          case InspectionType::LINE:
          case InspectionType::QCP:
-         case InspectionType::FINAL:
          {
             $jobInfo = JobInfo::load($jobId);
             if ($jobInfo)
@@ -205,6 +230,12 @@ class InspectionTemplate
             }
             break;
          }
+         
+         case InspectionType::FINAL:
+         {
+            $templateIds = InspectionTemplate::getInspectionTemplatesForJobNumber($inspectionType, $jobNumber);
+            break;
+         }            
             
          default:
          {

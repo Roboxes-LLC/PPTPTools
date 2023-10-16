@@ -1780,17 +1780,11 @@ $router->add("inspectionTemplates", function($params) {
    {
       $inspectionType = intval($params["inspectionType"]);
 
-      $jobId = JobInfo::UNKNOWN_JOB_ID;
-      
-      if (isset($params["jobNumber"]) &&
-          is_numeric($params["wcNumber"]))
-      {
-         $jobNumber = $params["jobNumber"];
-         $wcNumber = intval($params["wcNumber"]);
-         $jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
-      }
-      
-      $templateIds = InspectionTemplate::getInspectionTemplatesForJob($inspectionType, $jobId);
+      $jobNumber = isset($params["jobNumber"]) ? $params["jobNumber"] : JobInfo::UNKNOWN_JOB_NUMBER;
+      $wcNumber = isset($params["wcNumber"]) ? $params->getInt("wcNumber") : JobInfo::UNKNOWN_WC_NUMBER;
+      $jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
+
+      $templateIds = InspectionTemplate::getInspectionTemplatesForJob($inspectionType, $jobNumber, $jobId);
       
       foreach ($templateIds as $templateId)
       {
@@ -1911,7 +1905,8 @@ $router->add("saveInspection", function($params) {
        (intval($params["inspectionId"]) != Inspection::UNKNOWN_INSPECTION_ID))
    {
       //  Updated entry
-      $inspection = Inspection::load($params["inspectionId"], true);  // Load actual results.
+      //  Note: Don't load actual results.  We'll rebuild them below.
+      $inspection = Inspection::load($params["inspectionId"], false);
       
       if (!$inspection)
       {
@@ -1946,9 +1941,7 @@ $router->add("saveInspection", function($params) {
          $inspectionTemplate = InspectionTemplate::load($inspection->templateId, true);  // Load properties. 
          
          if ($inspectionTemplate)
-         {
-            $inspection->initialize($inspectionTemplate);
-            
+         {            
             if (isset($params["jobNumber"]))
             {
                $inspection->jobNumber = $params->get("jobNumber");
@@ -1967,6 +1960,11 @@ $router->add("saveInspection", function($params) {
             if (isset($params["mfgDate"]))
             {
                $inspection->mfgDate = Time::startOfDay($params->get("mfgDate"));
+            }
+            
+            if (isset($params["inspectionNumber"]))
+            {
+               $inspection->inspectionNumber = $params->getInt("inspectionNumber");
             }
             
             if (isset($params["quantity"]))
@@ -1996,6 +1994,11 @@ $router->add("saveInspection", function($params) {
                      $inspectionResult->sampleIndex = $sampleIndex;
                      $inspectionResult->status = intval($params[$name]);
                      $inspectionResult->data = $params[$dataName];
+                     
+                     if (!isset($inspection->inspectionResults[$inspectionResult->propertyId]))
+                     {
+                        $inspection->inspectionResults[$inspectionResult->propertyId] = array();
+                     }
                      
                      $inspection->inspectionResults[$inspectionResult->propertyId][$sampleIndex] = $inspectionResult;
                   }
@@ -2070,9 +2073,14 @@ $router->add("deleteInspection", function($params) {
    
    $database = PPTPDatabase::getInstance();
    
-   if (isset($params["inspectionId"]) &&
-       is_numeric($params["inspectionId"]) &&
-       (intval($params["inspectionId"]) != Inspection::UNKNOWN_INSPECTION_ID))
+   if (!Authentication::checkPermissions(Permission::DELETE_INSPECTION))
+   {
+      $result->success = false;
+      $result->error = "Permissions error.";
+   }
+   else if (isset($params["inspectionId"]) &&
+            is_numeric($params["inspectionId"]) &&
+            (intval($params["inspectionId"]) != Inspection::UNKNOWN_INSPECTION_ID))
    {
       $inspectionId = intval($params["inspectionId"]);
       

@@ -99,14 +99,32 @@ abstract class InspectionType
    
    public static function getLabel($inspectionType)
    {
-      $labels = array("", "Oasis Inspection", "Line Inspection", "QCP Inspection", "In Process", "Generic", "First Part", "Final");
+      $labels = array("", "Oasis Inspection", "Line Inspection", "QCP Inspection", "In Process", "Generic", "First Piece", "Final");
       
       return ($labels[$inspectionType]);
    }
    
    public static function getDefaultOptionalProperties($inspectionType)
    {
-      $optionalProperties = array(0b0000, 0b1110, 0b1110, 0b1110, 0b1110, 0b0000, 0b1110, 0b1110);
+      // Bits
+      // 0 = UNKNOWN;
+      // 1 = JOB_NUMBER
+      // 2 = WC_NUMBER
+      // 3 = OPERATOR
+      // 4 = MFG_DATE
+      // 5 = INSPECTION_NUMBER
+      // 6 = QUANTITY
+      
+      $optionalProperties = [
+         0b0000000,  // UNKNOWN
+         0b0001110,  // OASIS
+         0b0011110,  // LINE
+         0b0011110,  // QCP
+         0b0111110,  // IN_PROCESS
+         0b0000000,  // GENERIC (configurable)
+         0b0011110,  // FIRST_PART
+         0b1000010   // FINAL              
+      ];
          
       return ($optionalProperties[$inspectionType]);
    }
@@ -139,6 +157,25 @@ abstract class InspectionType
       
       return ($html);
    } 
+}
+
+// The number of required In Process inspections.
+const REQUIRED_IN_PROCESS_INPECTIONS = 2;
+
+function getInspectionNumberOptions($selectedInspectionNumber)
+{
+   $html = "<option style=\"display:none\">";
+   
+   for ($inspectionNumber = 1; $inspectionNumber <= REQUIRED_IN_PROCESS_INPECTIONS; $inspectionNumber++)
+   {
+      $value = $inspectionNumber;
+      $label = $inspectionNumber;
+      $selected = ($inspectionNumber == $selectedInspectionNumber) ? "selected" : "";
+      
+      $html .= "<option value=\"$value\" $selected>$label</option>";
+   }
+   
+   return ($html);
 }
 
 function getInspectionTypeOptions($selectedInspectionType, $includeAllOption = false, $excludeTypes = [])
@@ -220,12 +257,22 @@ abstract class OptionalInspectionProperties
    const WC_NUMBER = 2;
    const OPERATOR = 3;
    const MFG_DATE = 4;
-   const LAST = 5;
+   const INSPECTION_NUMBER = 5;
+   const QUANTITY = 6;
+   const LAST = 7;
    const COUNT = OptionalInspectionProperties::LAST - OptionalInspectionProperties::FIRST;
+   
+   // Optional inspection properties that are valid for Generic inspections.
+   public static $genericOptionalInspectionProperties = [
+      OptionalInspectionProperties::JOB_NUMBER,
+      OptionalInspectionProperties::WC_NUMBER,
+      OptionalInspectionProperties::OPERATOR,
+      OptionalInspectionProperties::MFG_DATE
+   ];
    
    public static function getLabel($optionalProperty)
    {
-      $labels = array("", "Job Number", "WC Number", "Operator", "Mfg Date");
+      $labels = array("", "Job Number", "WC Number", "Operator", "Mfg Date", "Inspection #", "Quantity");
       
       return ($labels[$optionalProperty]);
    }

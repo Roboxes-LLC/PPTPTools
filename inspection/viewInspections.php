@@ -199,7 +199,7 @@ if (!Authentication::isAuthenticated())
             {title:"Id",              field:"inspectionId",        hozAlign:"left", visible:false},
             {title:"Inspection Type", field:"inspectionTypeLabel", hozAlign:"left", responsive:1},
             {title:"Name",            field:"name",                hozAlign:"left", responsive:2, headerFilter:true},
-            {title:"Date",            field:"dateTime",            hozAlign:"left", responsive:0,
+            {title:"Inspection Date", field:"dateTime",            hozAlign:"left", responsive:0,
                formatter:"datetime",  // Requires moment.js 
                formatterParams:{
                   outputFormat:"MM/DD/YYYY",
@@ -239,7 +239,7 @@ if (!Authentication::isAuthenticated())
                   return ("<div class=\"inspection-status " + cssClass + "\">" + label + "</div>");
                }
             },
-            {title:"",                field:"delete",                               responsive:0,
+            {title:"",                field:"delete",                               responsive:0, <?php echo !Authentication::checkPermissions(Permission::DELETE_INSPECTION) ? "visible:false, " : "" ?>
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }

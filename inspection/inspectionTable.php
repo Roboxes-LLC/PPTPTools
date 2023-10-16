@@ -50,25 +50,6 @@ HEREDOC;
          $inspection->templateId = $templateId;
          
          $inspectionTemplate = InspectionTemplate::load($inspection->templateId, true);  // Load properties.
-         
-         /*
-         if ($inspectionTemplate)
-         {
-            $inspection->initialize($inspectionTemplate);
-            
-            foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
-            {
-               for ($sampleIndex = 0; $sampleIndex < $inspectionTemplate->sampleSize; $sampleIndex++)
-               {
-                  $inspectionResult = new InspectionResult();
-                  $inspectionResult->propertyId = $inspectionProperty->propertyId;
-                  $inspectionResult->status = InspectionStatus::NON_APPLICABLE;
-                  
-                  $inspection->inspectionResults[$inspectionProperty->propertyId][$sampleIndex] = $inspectionResult;
-               }
-            }
-         }
-         */
       }
       
       return ($inspection);

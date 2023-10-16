@@ -459,7 +459,7 @@ if (!Authentication::isAuthenticated())
                </div>
       
                <div class="form-item">
-                  <div class="form-label-long">First Part Template</div>
+                  <div class="form-label-long">First Piece Template</div>
                   <div><select name="firstPartTemplateId" form="input-form" <?php echo getDisabled(JobInputField::FIRST_PART_TEMPLATE); ?>><?php echo getInspectionTemplateOptions(InspectionType::FIRST_PART, getJobInfo()->firstPartTemplateId); ?></select></div>
                </div>
       

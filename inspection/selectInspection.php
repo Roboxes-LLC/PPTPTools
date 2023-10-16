@@ -100,12 +100,13 @@ if (!Authentication::isAuthenticated())
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
    
-   <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
-   <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
-   <link rel="stylesheet" type="text/css" href="inspection.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="/common/theme.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="/common/common.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="/inspection/inspection.css<?php echo versionQuery();?>"/>
    
-   <script src="../common/common.js<?php echo versionQuery();?>"></script>
-   <script src="../common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/common/common.js<?php echo versionQuery();?>"></script>
+   <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/commonDefs.php<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script> 
    <script src="inspection.js<?php echo versionQuery();?>"></script>
 
@@ -213,6 +214,7 @@ if (!Authentication::isAuthenticated())
       document.getElementById("cancel-button").onclick = function(){window.history.back();};
       document.getElementById("next-button").onclick = function(){onSelectInspectionTemplate();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
+      document.getElementById("inspection-type-input").onclick = function(){onInspectionTypeChanged();};
    </script>
 
 </body>

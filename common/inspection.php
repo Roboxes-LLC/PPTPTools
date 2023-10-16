@@ -91,6 +91,9 @@ class Inspection
    public $jobNumber;
    public $wcNumber;
    
+   // Properties for In Process inspections.
+   public $inspectionNumber;  // 1 or 2
+   
    // Properties for Final inspections.
    public $quantity;
    
@@ -119,6 +122,7 @@ class Inspection
       $this->mfgDate = null;
       $this->jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
       $this->wcNumber = JobInfo::UNKNOWN_WC_NUMBER;
+      $this->inspectionNumber = 0;
       $this->quantity = 0;
       $this->samples = 0;
       $this->naCount = 0;
@@ -129,6 +133,7 @@ class Inspection
       $this->inspectionResults = null;  // 2D array, indexed as [propertyId][sampleIndex]
    }
    
+   /*
    public function initialize($inspectionTemplate)
    {
       if ($inspectionTemplate)
@@ -139,6 +144,7 @@ class Inspection
          {
             $this->inspectionResults[$inspectionProperty->propertyId] = array($inspectionTemplate->sampleSize);
             
+            // TODO: This creates inspection results for FINAL inspections that are not needed.
             for ($sampleSize = 0; $sampleSize < $inspectionTemplate->sampleSize; $sampleSize++)
             {
                $this->inspectionResults[$inspectionProperty->propertyId][$sampleSize] = null; 
@@ -146,6 +152,7 @@ class Inspection
          }
       }
    }
+   */
    
    public function initializeFromOasisReport($oasisReport)
    {
@@ -177,6 +184,7 @@ class Inspection
       $this->mfgDate = $row['mfgDate'] ? Time::fromMySqlDate($row['mfgDate'], "Y-m-d") : null;
       $this->jobNumber = $row['jobNumber'];
       $this->wcNumber = intval($row['wcNumber']);
+      $this->inspectionNumber = intval($row['inspectionNumber']);
       $this->quantity = intval($row['quantity']);
       
       // Inspection summary.

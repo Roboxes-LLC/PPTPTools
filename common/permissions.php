@@ -41,10 +41,11 @@ class Permission
    const VIEW_QUOTE               = 35;
    const EDIT_QUOTE               = 36;
    const APPROVE_QUOTE            = 37;
-   const LAST                     = Permission::APPROVE_QUOTE;
+   const DELETE_INSPECTION        = 38;
+   const LAST                     = Permission::DELETE_INSPECTION;
    
-   const NO_PERMISSIONS = 0x00000000;
-   const ALL_PERMISSIONS = 0xFFFFFFFF;
+   const NO_PERMISSIONS = 0x0000000000000000;
+   const ALL_PERMISSIONS = 0xFFFFFFFFFFFFFFFF;
    
    public $permissionId;
    
@@ -93,7 +94,8 @@ class Permission
                   new Permission(Permission::EDIT_CUSTOMER,            "Edit customer"),
                   new Permission(Permission::VIEW_QUOTE,               "View quote"),
                   new Permission(Permission::EDIT_QUOTE,               "Edit quote"),
-                  new Permission(Permission::APPROVE_QUOTE,            "Approve quote")
+                  new Permission(Permission::APPROVE_QUOTE,            "Approve quote"),
+                  new Permission(Permission::DELETE_INSPECTION,        "Delete inspection"),
             );
       }
       

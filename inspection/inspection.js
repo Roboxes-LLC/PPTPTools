@@ -119,13 +119,15 @@ function onInspectionTypeChange()
 
 function onJobNumberChange()
 {
-   jobNumber = document.getElementById("job-number-input").value;
+   let inspectionType = parseInt(document.getElementById("inspection-type-input").value);
+   
+   let jobNumber = document.getElementById("job-number-input").value;
    
    if (jobNumber == null)
    {
       disable("wc-number-input");
    }
-   else
+   else if (inspectionType != InspectionType.FINAL)
    {
       enable("wc-number-input");
       
@@ -174,7 +176,7 @@ function updateTemplateId()
    {
       // AJAX call to populate template id based on selected inspection type, job number, and WC number.
       requestUrl = "../api/inspectionTemplates/?inspectionType=" + inspectionType + "&jobNumber=" + jobNumber + "&wcNumber=" + wcNumber;
-      
+
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function()
       {
@@ -265,15 +267,15 @@ function validateInspectionSelection()
    
    var inspectionType = document.getElementById("inspection-type-input").value;
    
-   if (!(document.getElementById("inspection-type-input").validator.validate()))
+   if (!validate("inspection-type-input"))
    {
       alert("Start by selecting an inspection type.");    
    }
-   else if (isJobBasedInspection(inspectionType) && !(document.getElementById("job-number-input").validator.validate()))
+   else if (isEnabled("job-number-input") && !validate("job-number-input"))
    {
       alert("Please select an active job.");    
    }
-   else if (isJobBasedInspection(inspectionType) && !(document.getElementById("wc-number-input").validator.validate()))
+   else if (isEnabled("wc-number-input") && !validate("wc-number-input"))
    {
       alert("Please select a work center.");    
    }
@@ -300,7 +302,11 @@ function validateInspection()
    
    var inspectionType = document.getElementById("inspection-type-input").value;
    
-   if (isEnabled("job-number-input") && !validate("job-number-input"))
+   if (isEnabled("inspection-number-input") && !validate("inspection-number-input"))
+   {
+      alert("Please enter an in-process inspection number.");    
+   }
+   else if (isEnabled("job-number-input") && !validate("job-number-input"))
    {
       alert("Please select an active job.");   
    }
@@ -316,9 +322,9 @@ function validateInspection()
    {
       alert("Please enter a manufacture date.");
    }
-   else if ((inspectionType == InspectionType.FINAL) && !(document.getElementById("quantity-input").validator.validate()))
+   else if (isEnabled("quantity-input") && !validate("quantity-input"))
    {
-      alert("Please enter a final part quantity.");    
+      alert("Please enter a final inspection quantity.");
    }
    else
    {
@@ -404,6 +410,26 @@ function onYesterdayButton()
    }      
 }
 
+function onInspectionTypeChanged()
+{   
+   let inspectionType = parseInt(document.querySelector('#inspection-type-input').value);
+   
+   if (inspectionType == InspectionType.FINAL)
+   {
+      disable("wc-number-input");
+   }
+   else if (inspectionType == InspectionType.GENERIC)
+   {
+      disable("job-number-input");
+      disable("wc-number-input");
+   }
+   else
+   {
+      enable("job-number-input");
+      enable ("wc-number-input");
+   }
+}
+
 function onQuantityChanged()
 {   
    let inspectionId = parseInt(document.querySelector('#inspection-id-input').value);
@@ -442,12 +468,8 @@ function onInspectionStatusUpdate(element)
 
 function updateInspectionTable(html)
 {
-   console.log("updateInspesctionTable");
-   
    let template = document.createElement('template');
    template.innerHTML = html;
-   
-   console.log(template.content.firstChild);
    
    document.querySelector('.inspection-table').replaceWith(template.content.cloneNode(true));
 }

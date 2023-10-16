@@ -267,6 +267,12 @@ function isEditable($field)
    
    switch ($field)
    {
+      case InspectionTemplateInputField::INSPECTION_TYPE:
+      {
+         $isEditable = ($view == View::NEW_INSPECTION_TEMPLATE);
+         break;   
+      }
+      
       default:
       {
          // Edit status based solely on view.
@@ -290,9 +296,7 @@ function getOptionalProperties()
    
    if ($inspectionTemplate)
    {
-      for ($optionalProperty = OptionalInspectionProperties::FIRST;
-      $optionalProperty < OptionalInspectionProperties::LAST;
-      $optionalProperty++)
+      foreach (OptionalInspectionProperties::$genericOptionalInspectionProperties as $optionalProperty)
       {
          $name = "optional-property-$optionalProperty-input";
          $label = OptionalInspectionProperties::getLabel($optionalProperty);
@@ -450,6 +454,7 @@ if (!Authentication::isAuthenticated())
    
    <script src="/common/common.js"></script>
    <script src="/common/validate.js"></script>
+   <script src="/script/common/commonDefs.php<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
    <script src="inspectionTemplate.js"></script>
 
@@ -459,6 +464,7 @@ if (!Authentication::isAuthenticated())
         
    <form id="input-form" action="" method="POST">
       <input id="inspection-id-input" type="hidden" name="templateId" value="<?php echo getTemplateId(); ?>">
+      <input type="hidden" name="inspectionType" value="<?php echo getInspectionType(); ?>">
       <!-- Hidden inputs make sure disabled fields below get posted. -->
    </form>
 
@@ -488,7 +494,7 @@ if (!Authentication::isAuthenticated())
       
          <div class="form-item">
             <div class="form-label">Inspection Name</div>
-            <input name="templateName" type="text"  style="width: 250px;" form="input-form" value="<?php echo getInspectionName() ?>" <?php echo getDisabled(InspectionTemplateInputField::NAME); ?>>
+            <input id="template-name-input" name="templateName" type="text"  style="width: 250px;" form="input-form" value="<?php echo getInspectionName() ?>" <?php echo getDisabled(InspectionTemplateInputField::NAME); ?>>
          </div>
          
          <div class="form-item">
@@ -496,9 +502,9 @@ if (!Authentication::isAuthenticated())
             <input name="templateDescription" type="text"  style="width: 450px;" form="input-form" value="<?php echo getInspectionDescription() ?>" <?php echo getDisabled(InspectionTemplateInputField::DESCRIPTION); ?>>
          </div>
          
-         <div class="form-item">
+         <div id="sample-size-input-container" class="form-item">
             <div class="form-label">Sample Size</div>
-            <input name="sampleSize" type="number"  style="width: 50px;" form="input-form" value="<?php echo getSampleSize() ?>" <?php echo getDisabled(InspectionTemplateInputField::SAMPLE_SIZE); ?>>
+            <input id="sample-size-input" name="sampleSize" type="number"  style="width: 50px;" form="input-form" value="<?php echo getSampleSize() ?>" <?php echo getDisabled(InspectionTemplateInputField::SAMPLE_SIZE); ?>>
          </div>
          
          <div id="optional-properties-input-container" class="form-item">
@@ -550,11 +556,9 @@ if (!Authentication::isAuthenticated())
       
       preserveSession();
       
-      const OASIS = <?php echo InspectionType::OASIS; ?>;
-      const LINE = <?php echo InspectionType::LINE; ?>;
-      const QCP = <?php echo InspectionType::QCP; ?>;
-      const IN_PROCESS = <?php echo InspectionType::IN_PROCESS; ?>;
-      const GENERIC = <?php echo InspectionType::GENERIC; ?>;
+      var inspectionTypeValidator = new SelectValidator("inspection-type-input");
+      
+      inspectionTypeValidator.init();
    
       var propertyCount = <?php echo getInspectionPropertyCount(); ?>;
    
