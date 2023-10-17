@@ -1524,11 +1524,11 @@ class PPTPDatabase extends MySqlDatabase
       
       $result = $this->query($query);
       
+      // Get the last auto-increment id, which should be the inspection id.
+      $inspectionId = $result ? mysqli_insert_id($this->getConnection()) : Inspection::UNKNOWN_INSPECTION_ID;
+      
       if ($result && $inspection->inspectionResults)
       {
-         // Get the last auto-increment id, which should be the inspection id.
-         $inspectionId = mysqli_insert_id($this->getConnection());
-         
          foreach ($inspection->inspectionResults as $inspectionRow)
          {
             foreach ($inspectionRow as $inspectionResult)
@@ -1549,7 +1549,7 @@ class PPTPDatabase extends MySqlDatabase
          }
       }
       
-      return ($result);
+      return ($inspectionId);  // A little different because we need the newly created inspectionId for notifications.
    }
    
    public function updateInspection($inspection)

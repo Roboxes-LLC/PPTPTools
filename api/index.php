@@ -26,6 +26,7 @@ require_once '../common/upload.php';
 require_once '../common/userInfo.php';
 require_once '../common/weeklySummaryReport.php';
 require_once '../core/job/jobManager.php';
+require_once '../core/manager/notificationManager.php';
 require_once '../inspection/inspectionTable.php';
 require_once '../printer/printJob.php';
 require_once '../printer/printQueue.php';
@@ -1899,6 +1900,7 @@ $router->add("saveInspection", function($params) {
    $dbaseResult = null;
    
    $inspection = null;
+   $newInspection = false;
    
    if (isset($params["inspectionId"]) &&
        is_numeric($params["inspectionId"]) &&
@@ -1923,6 +1925,7 @@ $router->add("saveInspection", function($params) {
    {
       // New entry.
       $inspection = new Inspection();
+      $newInspection = true;
       
       // Use current date/time as the entry time.
       $inspection->dateTime = Time::now("Y-m-d h:i:s A");
@@ -2037,14 +2040,30 @@ $router->add("saveInspection", function($params) {
                
                if ($inspection->inspectionId == Inspection::UNKNOWN_INSPECTION_ID)
                {
-                  $dbaseResult = $database->newInspection($inspection);
+                  $newInspectionId = $database->newInspection($inspection);
+                  $dbaseResult = ($newInspectionId != Inspection::UNKNOWN_INSPECTION_ID);
+                  
+                  if ($dbaseResult)
+                  {
+                     $inspection->inspectionId = $newInspectionId;
+                  }
                }
                else
                {
                   $dbaseResult = $database->updateInspection($inspection);
                }
                
-               if (!$dbaseResult)
+               if ($dbaseResult)
+               {
+                  // Success.
+                  
+                  // Send a notification.
+                  if ($newInspection)
+                  {
+                     NotificationManager::onFinalInspectionCreated($inspection->inspectionId);
+                  }
+               }
+               else
                {
                   $result->success = false;
                   $result->error = "Database query failed.";
