@@ -427,6 +427,7 @@ function getEstimatesPanel()
       
          <input type="hidden" name="quoteId" value="$quote->quoteId"/>
          <input type="hidden" name="request" value="estimate_quote"/>
+         <input id="submit-estimate-input" type="hidden" name="submitEstimate" value="false"/>
          
          <div class="flex-horizontal flex-v-center collapsible-panel-header">
             <i class="material-icons icon-button expanded-icon">arrow_drop_down</i>
@@ -465,8 +466,9 @@ HEREDOC;
             <br>
             
             <div class="flex-horizontal flex-h-center">
-               <button id="quote-button" type="button" style="margin-right:20px">Save</button>
-               <button id="submit-estimate-button" type="button">Submit</button>
+               <button id="save-estimate-button" type="button" style="margin-right:20px">Save</button>
+               <button id="submit-estimate-button" type="button" class="accent-button" style="margin-right:20px">Submit</button>
+               <button id="revise-button" type="button">Revise</button>
             </div>
             
          </div>

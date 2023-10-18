@@ -297,6 +297,23 @@ class Quote
       return ((count($quoteActions) > 0) ? $quoteActions[0] : null);
    }
    
+   public function isValidEstimate()
+   {
+      $selectedCount = 0;
+      $allSelectedComplete = true;
+      
+      foreach ($this->estimates as $estimate)
+      {
+         if ($estimate->isSelected)
+         {
+            $selectedCount++;
+            $allSelectedComplete &= $estimate->isComplete();
+         }
+      }
+      
+      return (($selectedCount > 0) && $allSelectedComplete);
+   }
+   
    public function estimate($dateTime, $userId, $notes)
    {
       return ($this->addQuoteAction(QuoteStatus::ESTIMATED, $dateTime, $userId, $notes));

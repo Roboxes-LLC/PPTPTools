@@ -205,6 +205,8 @@ class QuotePage extends Page
                 $quoteId = $params->getInt("quoteId");
                 $quote = Quote::load($quoteId);
                 
+                $submitEstimate = $params->keyExists("submitEstimate") ? $params->getBool("submitEstimate") : false;
+                
                 if ($quote)
                 {
                    QuotePage::getEstimateParams($quote, $params);
@@ -215,23 +217,33 @@ class QuotePage extends Page
                       $this->result->quote = $quote;
                       $this->result->success = true;
                       
-                      $isEstimated = $quote->isEstimated();
-                      
-                      if (!$isEstimated)
+                      if ($submitEstimate)
                       {
-                         $quote->estimate(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                         if (!$quote->isValidEstimate())
+                         {
+                            $this->error("One or more selected estimates are not complete.");
+                         }
+                         else
+                         {
+                            $isEstimated = $quote->isEstimated();
+                            
+                            if (!$isEstimated)
+                            {
+                               $quote->estimate(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                            }
+                            else if (($quote->quoteStatus == QuoteStatus::UNAPPROVED) ||
+                                     ($quote->quoteStatus == QuoteStatus::REJECTED))
+                            {
+                               $quote->revise(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                            }
+                            
+                            ActivityLog::logComponentActivity(
+                               Authentication::getAuthenticatedUser()->employeeNumber,
+                               ($isEstimated ? ActivityType::REVISE_QUOTE : ActivityType::ESTIMATE_QUOTE),
+                               $quote->quoteId,
+                               $quote->getQuoteNumber());
+                         }
                       }
-                      else if (($quote->quoteStatus == QuoteStatus::UNAPPROVED) ||
-                               ($quote->quoteStatus == QuoteStatus::REJECTED))
-                      {
-                         $quote->revise(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
-                      }
-                      
-                      ActivityLog::logComponentActivity(
-                         Authentication::getAuthenticatedUser()->employeeNumber,
-                         ($isEstimated ? ActivityType::REVISE_QUOTE : ActivityType::ESTIMATE_QUOTE),
-                         $quote->quoteId,
-                         $quote->getQuoteNumber());
                    }
                    else
                    {

@@ -20,7 +20,7 @@ if (!Authentication::isAuthenticated())
 $params = Params::parse();
 
 $quoteId = $params->get("quoteId");
-$notes = $params->get("notes");
+$notes = $params->get("emailNotes");
 
 $quoteEmail = new QuoteEmail($quoteId);
 $quoteEmail->setNotes($notes);

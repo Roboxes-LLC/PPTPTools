@@ -3,52 +3,54 @@ class Quote
    // HTML elements
    static PageElements = {
       // Forms
-      "INPUT_FORM":          "input-form",
-      "REQUEST_FORM":        "request-form",
-      "ATTACHMENTS_FORM":    "attachments-form",
-      "QUOTE_FORM":          "quote-form",
-      "APPROVE_FORM":        "approve-form",
-      "ACCEPT_FORM":         "accept-form",
-      "SEND_FORM":           "send-form",
-      "HISTORY_FORM":        "history-form",
+      "INPUT_FORM":             "input-form",
+      "REQUEST_FORM":           "request-form",
+      "ATTACHMENTS_FORM":       "attachments-form",
+      "QUOTE_FORM":             "quote-form",
+      "APPROVE_FORM":           "approve-form",
+      "ACCEPT_FORM":            "accept-form",
+      "SEND_FORM":              "send-form",
+      "HISTORY_FORM":           "history-form",
       // Filters
-      "START_DATE_INPUT":    "start-date-input",
-      "END_DATE_INPUT":      "end-date-input",
-      "ACTIVE_QUOTES_INPUT": "active-quotes-input",
+      "START_DATE_INPUT":       "start-date-input",
+      "END_DATE_INPUT":         "end-date-input",
+      "ACTIVE_QUOTES_INPUT":    "active-quotes-input",
       // Buttons
-      "ADD_BUTTON":          "add-button",
-      "SAVE_BUTTON":         "save-button",
-      "CANCEL_BUTTON":       "cancel-button",
-      "UPDATE_BUTTON":       "update-button",
-      "ATTACH_BUTTON":       "attach-button",
-      "QUOTE_BUTTON":        "quote-button",
-      "REVISE_BUTTON":       "revise-button",
-      "APPROVE_BUTTON":      "approve-button",
-      "UNAPPROVE_BUTTON":    "unapprove-button",
-      "PREVIEW_BUTTON":      "preview-button",
-      "SAVE_DRAFT_BUTTON":   "save-draft-button",
-      "SEND_BUTTON":         "send-button",
-      "RESEND_BUTTON":       "resend-button",
-      "ACCEPT_BUTTON":       "accept-button",
-      "REJECT_BUTTON":       "reject-button",
-      "COMMENT_BUTTON":      "comment-button",
-      "DELETE_ATTACH_BUTTON": "delete-quote-attachment-button",
+      "ADD_BUTTON":             "add-button",
+      "SAVE_BUTTON":            "save-button",
+      "CANCEL_BUTTON":          "cancel-button",
+      "UPDATE_BUTTON":          "update-button",
+      "ATTACH_BUTTON":          "attach-button",
+      "SAVE_ESTIMATE_BUTTON":   "save-estimate-button",
+      "SUBMIT_ESTIMATE_BUTTON": "submit-estimate-button",
+      "REVISE_BUTTON":          "revise-button",
+      "APPROVE_BUTTON":         "approve-button",
+      "UNAPPROVE_BUTTON":       "unapprove-button",
+      "PREVIEW_BUTTON":         "preview-button",
+      "SAVE_DRAFT_BUTTON":      "save-draft-button",
+      "SEND_BUTTON":            "send-button",
+      "RESEND_BUTTON":          "resend-button",
+      "ACCEPT_BUTTON":          "accept-button",
+      "REJECT_BUTTON":          "reject-button",
+      "COMMENT_BUTTON":         "comment-button",
+      "DELETE_ATTACH_BUTTON":   "delete-quote-attachment-button",
       // Input fields
-      "QUOTE_ID_INPUT":      "quote-id-input",
-      "CUSTOMER_ID_INPUT":   "customer-id-input",
-      "CONTACT_ID_INPUT":    "contact-id-input",
-      "IS_APPROVED_INPUT":   "is-approved-input",
-      "IS_ACCEPTED_INPUT":   "is-accepted-input",
-      "EMAIL_NOTES_INPUT":   "email-notes-input",
+      "QUOTE_ID_INPUT":         "quote-id-input",
+      "CUSTOMER_ID_INPUT":      "customer-id-input",
+      "CONTACT_ID_INPUT":       "contact-id-input",
+      "SUBMIT_ESTIMATE_INPUT":  "submit-estimate-input",
+      "IS_APPROVED_INPUT":      "is-approved-input",
+      "IS_ACCEPTED_INPUT":      "is-accepted-input",
+      "EMAIL_NOTES_INPUT":      "email-notes-input",
       // Panels
-      "REQUEST_PANEL":       "request-panel",
-      "ATTACHMENTS_PANEL":   "attachments-panel",
-      "ESTIMATES_PANEL":     "estimates-panel",
-      "APPROVE_PANEL":       "approve-panel",
-      "SEND_PANEL":          "send-panel",
-      "ACCEPT_PANEL":        "accept-panel",
-      "HISTORY_PANEL":       "history-panel",
-      "PIN_CONFIRM_MODAL":   "pin-confirm-modal"
+      "REQUEST_PANEL":          "request-panel",
+      "ATTACHMENTS_PANEL":      "attachments-panel",
+      "ESTIMATES_PANEL":        "estimates-panel",
+      "APPROVE_PANEL":          "approve-panel",
+      "SEND_PANEL":             "send-panel",
+      "ACCEPT_PANEL":           "accept-panel",
+      "HISTORY_PANEL":          "history-panel",
+      "PIN_CONFIRM_MODAL":      "pin-confirm-modal"
    };
 
    constructor()
@@ -138,20 +140,27 @@ class Quote
          }.bind(this));
       }  
           
-      if (document.getElementById(Quote.PageElements.QUOTE_BUTTON) != null)
+      if (document.getElementById(Quote.PageElements.SAVE_ESTIMATE_BUTTON) != null)
       {
-         document.getElementById(Quote.PageElements.QUOTE_BUTTON).addEventListener('click', function() {
-            this.onQuoteButton();
+         document.getElementById(Quote.PageElements.SAVE_ESTIMATE_BUTTON).addEventListener('click', function() {
+            this.onSaveEstimateButton(false);  // Save, but don't submit.
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.SUBMIT_ESTIMATE_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.SUBMIT_ESTIMATE_BUTTON).addEventListener('click', function() {
+            this.onSaveEstimateButton(true);  // Save and submit.
          }.bind(this));
       }
       
       if (document.getElementById(Quote.PageElements.REVISE_BUTTON) != null)
       {
          document.getElementById(Quote.PageElements.REVISE_BUTTON).addEventListener('click', function() {
-            this.onQuoteButton();
+            this.onSaveEstimateButton(true);  // Save and re-submit.
          }.bind(this));
       }
-      
+            
       if (document.getElementById(Quote.PageElements.APPROVE_BUTTON) != null)
       {
          document.getElementById(Quote.PageElements.APPROVE_BUTTON).addEventListener('click', function() {
@@ -542,14 +551,24 @@ class Quote
       });
    }
    
-   onQuoteButton()
+   onSaveEstimateButton(submitEstimate)
    {
+      // Set a form variable to indicate if the estimate is being submitted for approval.
+      document.getElementById(Quote.PageElements.SUBMIT_ESTIMATE_INPUT).value = submitEstimate;
+      
       if (this.validateQuoteForm())
       {
          submitForm(Quote.PageElements.QUOTE_FORM, "/app/page/quote", function (response) {
             if (response.success == true)
             {
-               location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+               if (submitEstimate)
+               {
+                  location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
+               }
+               else
+               {
+                  alert("Estimate saved.");  
+               }
             }
             else
             {
@@ -642,7 +661,7 @@ class Quote
    {
       document.getElementById(Quote.PageElements.IS_ACCEPTED_INPUT).value = "true";
       
-      submitForm(Quote.PageElements.SEND_FORM, "/app/page/quote", function (response) {
+      submitForm(Quote.PageElements.ACCEPT_FORM, "/app/page/quote", function (response) {
          if (response.success == true)
          {
             location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
@@ -816,68 +835,73 @@ class Quote
       {
          case QuoteStatus.REQUESTED:
          {
-            this.hidePanel(Quote.PageElements.APPROVE_PANEL);
-            this.hidePanel(Quote.PageElements.SEND_PANEL);
-            this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
+            this.hideElement(Quote.PageElements.APPROVE_PANEL);
+            this.hideElement(Quote.PageElements.SEND_PANEL);
+            this.hideElement(Quote.PageElements.ACCEPT_PANEL);
             
             this.collapsePanel(Quote.PageElements.ATTACHMENTS_PANEL);
-                        
-            this.hidePanel(Quote.PageElements.REVISE_BUTTON);
+            
+            this.hideElement(Quote.PageElements.REVISE_BUTTON);
             break;
          }
          
          case QuoteStatus.ESTIMATED:
          case QuoteStatus.REVISED:
          {
-            this.hidePanel(Quote.PageElements.SEND_PANEL);
-            this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
+            this.hideElement(Quote.PageElements.SEND_PANEL);
+            this.hideElement(Quote.PageElements.ACCEPT_PANEL);
             
             this.collapsePanel(Quote.PageElements.ATTACHMENTS_PANEL);
             this.collapsePanel(Quote.PageElements.ESTIMATES_PANEL);
             
-            this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
+            this.hideElement(Quote.PageElements.SAVE_ESTIMATE_BUTTON);
+            this.hideElement(Quote.PageElements.SUBMIT_ESTIMATE_BUTTON);
             break;
          }
          
          case QuoteStatus.UNAPPROVED:
          case QuoteStatus.REJECTED:
          {
-            this.hidePanel(Quote.PageElements.APPROVE_PANEL);
-            this.hidePanel(Quote.PageElements.SEND_PANEL);
-            this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
+            this.hideElement(Quote.PageElements.APPROVE_PANEL);
+            this.hideElement(Quote.PageElements.SEND_PANEL);
+            this.hideElement(Quote.PageElements.ACCEPT_PANEL);
             
             this.collapsePanel(Quote.PageElements.ATTACHMENTS_PANEL);
             
-            this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
+            this.hideElement(Quote.PageElements.SUBMIT_ESTIMATE_BUTTON);
+            
+            this.accentButton(Quote.PageElements.REVISE_BUTTON);
             break;
          }
          
          case QuoteStatus.APPROVED:
          {
-            this.hidePanel(Quote.PageElements.ACCEPT_PANEL);
+            this.hideElement(Quote.PageElements.ACCEPT_PANEL);
             
             this.collapsePanel(Quote.PageElements.ATTACHMENTS_PANEL);
             this.collapsePanel(Quote.PageElements.ESTIMATES_PANEL);
             this.collapsePanel(Quote.PageElements.APPROVE_PANEL);
 
-            this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
-            this.hidePanel(Quote.PageElements.APPROVE_BUTTON);
-            this.hidePanel(Quote.PageElements.RESEND_BUTTON);
+            this.hideElement(Quote.PageElements.SAVE_ESTIMATE_BUTTON);
+            this.hideElement(Quote.PageElements.SUBMIT_ESTIMATE_BUTTON);
+            this.hideElement(Quote.PageElements.APPROVE_BUTTON);
+            this.hideElement(Quote.PageElements.RESEND_BUTTON);
             break;
          }
          
          case QuoteStatus.SENT:
          {
-            this.hidePanel(Quote.PageElements.APPROVE_PANEL);
+            this.hideElement(Quote.PageElements.APPROVE_PANEL);
             
             this.collapsePanel(Quote.PageElements.ATTACHMENTS_PANEL);
             this.collapsePanel(Quote.PageElements.ESTIMATES_PANEL);
             this.collapsePanel(Quote.PageElements.APPROVE_PANEL);
             this.collapsePanel(Quote.PageElements.SEND_PANEL);
                         
-            this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
-            this.hidePanel(Quote.PageElements.APPROVE_BUTTON);
-            this.hidePanel(Quote.PageElements.SEND_BUTTON);
+            this.hideElement(Quote.PageElements.SAVE_ESTIMATE_BUTTON);
+            this.hideElement(Quote.PageElements.SUBMIT_ESTIMATE_BUTTON);
+            this.hideElement(Quote.PageElements.APPROVE_BUTTON);
+            this.hideElement(Quote.PageElements.SEND_BUTTON);
             break;
          }
          
@@ -889,10 +913,11 @@ class Quote
             this.collapsePanel(Quote.PageElements.SEND_PANEL);
             this.collapsePanel(Quote.PageElements.ACCEPT_PANEL);
             
-            this.hidePanel(Quote.PageElements.QUOTE_BUTTON);
-            this.hidePanel(Quote.PageElements.APPROVE_BUTTON);
-            this.hidePanel(Quote.PageElements.SEND_BUTTON);
-            this.hidePanel(Quote.PageElements.ACCEPT_BUTTON);
+            this.hideElement(Quote.PageElements.SAVE_ESTIMATE_BUTTON);
+            this.hideElement(Quote.PageElements.SUBMIT_ESTIMATE_BUTTON);
+            this.hideElement(Quote.PageElements.APPROVE_BUTTON);
+            this.hideElement(Quote.PageElements.SEND_BUTTON);
+            this.hideElement(Quote.PageElements.ACCEPT_BUTTON);
             break;
          }
          
@@ -903,7 +928,7 @@ class Quote
       }
    }
    
-   hidePanel(panelId)
+   hideElement(panelId)
    {
       document.getElementById(panelId).classList.add("hidden");
    }
@@ -930,6 +955,11 @@ class Quote
    expandPanel(panelId)
    {
       document.getElementById(panelId).classList.remove("collapsed");
+   }
+   
+   accentButton(buttonId)
+   {
+      document.getElementById(buttonId).classList.add("accent-button");
    }
    
    static recalculateTotalCost(element)
