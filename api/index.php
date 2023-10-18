@@ -2038,7 +2038,7 @@ $router->add("saveInspection", function($params) {
             {
                $inspection->updateSummary();
                
-               if ($inspection->inspectionId == Inspection::UNKNOWN_INSPECTION_ID)
+               if ($newInspection)
                {
                   $newInspectionId = $database->newInspection($inspection);
                   $dbaseResult = ($newInspectionId != Inspection::UNKNOWN_INSPECTION_ID);
@@ -2058,7 +2058,8 @@ $router->add("saveInspection", function($params) {
                   // Success.
                   
                   // Send a notification.
-                  if ($newInspection)
+                  if ($newInspection && 
+                      ($inspectionTemplate->inspectionType == InspectionType::FINAL))
                   {
                      NotificationManager::onFinalInspectionCreated($inspection->inspectionId);
                   }

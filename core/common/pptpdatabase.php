@@ -380,8 +380,8 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "INSERT INTO quote " .
-         "(quoteStatus, customerId, contactId, customerPartNumber, pptpPartNumber, quantity) " .
-         "VALUES (?, ?, ?, ?, ?, ?)");
+         "(quoteStatus, customerId, contactId, customerPartNumber, pptpPartNumber, partDescription, quantity) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -390,6 +390,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $quote->contactId,
             $quote->customerPartNumber,
             $quote->pptpPartNumber,
+            $quote->partDescription,
             $quote->quantity,
          ]);
       
@@ -400,7 +401,7 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "UPDATE quote " .
-         "SET quoteStatus = ?, customerId = ?, contactId = ?, customerPartNumber = ?, pptpPartNumber = ?, quantity = ? " .
+         "SET quoteStatus = ?, customerId = ?, contactId = ?, customerPartNumber = ?, pptpPartNumber = ?, partDescription = ?, quantity = ? " .
          "WHERE quoteId = ?");
       
       $result = $statement->execute(
@@ -410,6 +411,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $quote->contactId,
             $quote->customerPartNumber,
             $quote->pptpPartNumber,
+            $quote->partDescription,
             $quote->quantity,
             $quote->quoteId,
          ]);
@@ -423,6 +425,16 @@ class PPTPDatabaseAlt extends PDODatabase
          "UPDATE quote SET quoteStatus = ? WHERE quoteId = ?");
       
       $result = $statement->execute([$quoteStatus, $quoteId]);
+      
+      return ($result);
+   }
+   
+   public function updateQuoteEmailNotes($quoteId, $emailNotes)
+   {
+      $statement = $this->pdo->prepare(
+         "UPDATE quote SET emailNotes = ? WHERE quoteId = ?");
+      
+      $result = $statement->execute([$emailNotes, $quoteId]);
       
       return ($result);
    }

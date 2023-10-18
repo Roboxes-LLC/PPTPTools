@@ -19,22 +19,23 @@ abstract class InputField
    const CONTACT_ID = 1;
    const CUSTOMER_PART_NUMBER = 2;
    const PPTP_PART_NUMBER = 3;
-   const QUANTITY = 4;
-   const GROSS_PIECES_PER_HOUR = 5;
-   const NET_PIECES_PER_HOUR = 6;
-   const UNIT_PRICE = 7;
-   const COST_PER_HOUR = 8;
-   const MARKUP = 9;
-   const ADDITIONAL_CHARGE = 10;
-   const CHARGE_CODE = 11;
-   const TOTAL_COST = 12;
-   const LEAD_TIME = 13;
-   const APPROVE_BUTTON = 14;
-   const TO_EMAIL = 15;
-   const CC_EMAIL = 16;
-   const FROM_EMAIL = 17;
-   const EMAIL_BODY = 18;
-   const LAST = 19;
+   const PART_DESCRIPTION = 4;
+   const QUANTITY = 5;
+   const GROSS_PIECES_PER_HOUR = 6;
+   const NET_PIECES_PER_HOUR = 7;
+   const UNIT_PRICE = 8;
+   const COST_PER_HOUR = 9;
+   const MARKUP = 10;
+   const ADDITIONAL_CHARGE = 11;
+   const CHARGE_CODE = 12;
+   const TOTAL_COST = 13;
+   const LEAD_TIME = 14;
+   const APPROVE_BUTTON = 15;
+   const TO_EMAIL = 16;
+   const CC_EMAIL = 17;
+   const FROM_EMAIL = 18;
+   const EMAIL_BODY = 19;
+   const LAST = 20;
    const COUNT = InputField::LAST - InputField::FIRST;
 }
 
@@ -273,7 +274,7 @@ function getRequestPanel()
 <<< HEREDOC
    <div id="request-panel" class="collapsible-panel">
       <form id="request-form" style="display:block">
-         <input type="hidden" name="quoteId" value="$quote->quoteId"/>
+         <input id="quote-id-input" type="hidden" name="quoteId" value="$quote->quoteId"/>
          <input type="hidden" name="request" value="save_quote"/>
 
          <div class="flex-horizontal flex-v-center collapsible-panel-header">
@@ -310,6 +311,11 @@ function getRequestPanel()
             <div class="form-item">
                <div class="form-label-long">PPTP Part #</div>
                <input id="pptp-part-number-input" type="text" name="pptpPartNumber" maxlength="16" style="width:150px;" value="{$quote->pptpPartNumber}" {$getDisabled(InputField::PPTP_PART_NUMBER)} />
+            </div>
+
+            <div class="form-item">
+               <div class="form-label-long">Description</div>
+               <input id="part-description-input" type="text" name="partDescription" maxlength="32" style="width:250px;" value="{$quote->partDescription}" {$getDisabled(InputField::PART_DESCRIPTION)} />
             </div>
 
             <div class="form-item">
@@ -443,7 +449,7 @@ function getEstimatesPanel()
                   <div class="estimate-table-cell estimate-table-label">Additional Charge</div>
                   <div class="estimate-table-cell estimate-table-label">Charge Code</div>
                   <div class="estimate-table-cell estimate-table-label">Total Value</div>
-                  <div class="estimate-table-cell estimate-table-label">Lead Time (weeks)</div>
+                  <div class="estimate-table-cell estimate-table-label">Lead Time</div>
                </div>
 HEREDOC;
    
@@ -459,8 +465,8 @@ HEREDOC;
             <br>
             
             <div class="flex-horizontal flex-h-center">
-               <button id="quote-button" type="button" class="accent-button">Save</button>
-               <button id="revise-button" type="button">Revise</button>
+               <button id="quote-button" type="button" style="margin-right:20px">Save</button>
+               <button id="submit-estimate-button" type="button">Submit</button>
             </div>
             
          </div>
@@ -490,6 +496,8 @@ function getEstimatePanel($estimateIndex)
    $isSelected = getEstimateProperty($estimateIndex, "isSelected");
    
    $chargeCodeOptions = ChargeCode::getOptions($chargeCode);
+   
+   $leadTimeOptions = LeadTime::getOptions($leadTime);
    
    $quote = getQuote();
    $checked = $isSelected ? "checked" : "";
@@ -540,7 +548,9 @@ function getEstimatePanel($estimateIndex)
       </div>
       
       <div class="estimate-table-cell estimate-table-input">
-         <input type="number" name="leadTime_$estimateIndex" style="width:75px;" value="$leadTime" {$getDisabled(InputField::LEAD_TIME)} />
+         <select name="leadTime_$estimateIndex" {$getDisabled(InputField::LEAD_TIME)}>
+            $leadTimeOptions
+         </select>
       </div>
 
       <div class="estimate-table-cell estimate-table-input flex-horizontal flex-h-center">
@@ -650,7 +660,6 @@ function getSendPanel()
    $toEmail = getToEmail();
    $ccEmail = getCCEmail();
    $fromEmail = getFromEmail();
-   $notes = $quote->getSentNotes();
    
    $html =
 <<< HEREDOC
@@ -685,12 +694,13 @@ function getSendPanel()
    
             <div class="form-item">
                <div class="form-label">Notes</div>
-               <textarea class="comments-input" type="text" name="notes" rows="8" maxlength="512" style="width:300px" <?php echo getDisabled(InputField::EMAIL_BODY) ?>$notes</textarea>
+               <textarea id="email-notes-input" class="email-notes-input" type="text" name="emailNotes" rows="8" maxlength="512" style="width:300px" <?php echo getDisabled(InputField::EMAIL_BODY) ?>{$quote->emailNotes}</textarea>
             </div>
             
             <br>
             
             <div class="flex-horizontal flex-h-center flex-v-center">
+               <button id="save-draft-button" type="button" style="margin-right:20px">Save Draft</button>
                <button id="send-button" type="button" class="accent-button">Send</button>
                <button id="resend-button" type="button">Resend</button>
                &nbsp;&nbsp;&nbsp;

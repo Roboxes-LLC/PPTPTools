@@ -185,7 +185,7 @@ Required PHP variables:
 <<<HEREDOC
             <tr id="total-row">
                <td>{$templateParams->quote->customerPartNumber}</td>
-               <td></td>
+               <td>{$templateParams->quote->partDescription}</td>
                <td>$quantity</td>
                <td>$unitPrice</td>
                <td>$additionalCharge</td>

@@ -26,6 +26,7 @@ class Quote
       "APPROVE_BUTTON":      "approve-button",
       "UNAPPROVE_BUTTON":    "unapprove-button",
       "PREVIEW_BUTTON":      "preview-button",
+      "SAVE_DRAFT_BUTTON":   "save-draft-button",
       "SEND_BUTTON":         "send-button",
       "RESEND_BUTTON":       "resend-button",
       "ACCEPT_BUTTON":       "accept-button",
@@ -33,10 +34,12 @@ class Quote
       "COMMENT_BUTTON":      "comment-button",
       "DELETE_ATTACH_BUTTON": "delete-quote-attachment-button",
       // Input fields
+      "QUOTE_ID_INPUT":      "quote-id-input",
       "CUSTOMER_ID_INPUT":   "customer-id-input",
       "CONTACT_ID_INPUT":    "contact-id-input",
       "IS_APPROVED_INPUT":   "is-approved-input",
       "IS_ACCEPTED_INPUT":   "is-accepted-input",
+      "EMAIL_NOTES_INPUT":   "email-notes-input",
       // Panels
       "REQUEST_PANEL":       "request-panel",
       "ATTACHMENTS_PANEL":   "attachments-panel",
@@ -167,6 +170,13 @@ class Quote
       {
          document.getElementById(Quote.PageElements.PREVIEW_BUTTON).addEventListener('click', function() {
             this.onPreviewButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Quote.PageElements.SAVE_DRAFT_BUTTON) != null)
+      {
+         document.getElementById(Quote.PageElements.SAVE_DRAFT_BUTTON).addEventListener('click', function() {
+            this.onSaveDraftButton();
          }.bind(this));
       }
       
@@ -306,6 +316,7 @@ class Quote
             {title:"Contact",         field:"contactName",             headerFilter:true},
             {title:"Customer Part #", field:"customerPartNumber",      headerFilter:true},
             {title:"PPTP Part #",     field:"pptpPartNumber",          headerFilter:true},
+            {title:"Description",     field:"partDescription",         headerFilter:true},
             {title:"Quantity",        field:"quantity",                headerFilter:false},
             {title:"Estimates",       field:"estimateCount",           headerFilter:false},
             {title:"Status",          field:"quoteStatusLabel",        headerFilter:true},
@@ -580,6 +591,27 @@ class Quote
       })
    }
    
+   onSaveDraftButton()
+   {
+      let quoteId = document.getElementById(Quote.PageElements.QUOTE_ID_INPUT).value;
+      let emailNotes = document.getElementById(Quote.PageElements.EMAIL_NOTES_INPUT).value;
+      
+      // AJAX call to delete the component.
+      let requestUrl = `/app/page/quote/?request=save_email_draft&quoteId=${quoteId}&emailNotes=${emailNotes}`;
+      
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            alert("Draft saved.");
+         }
+         else
+         {
+            console.log("Call to save the email draft.");
+            alert(response.error);
+         }
+      });
+   }
+   
    onSendButton()
    {
       PINPAD.reset();
@@ -610,7 +642,7 @@ class Quote
    {
       document.getElementById(Quote.PageElements.IS_ACCEPTED_INPUT).value = "true";
       
-      submitForm(Quote.PageElements.ACCEPT_FORM, "/app/page/quote", function (response) {
+      submitForm(Quote.PageElements.SEND_FORM, "/app/page/quote", function (response) {
          if (response.success == true)
          {
             location.href = `/quote/quote.php?quoteId=${response.quoteId}`;
@@ -667,7 +699,7 @@ class Quote
             console.log("Call to delete the comment failed.");
             alert(response.error);
          }
-         });
+      });
    }
    
    onCustomerChanged()
