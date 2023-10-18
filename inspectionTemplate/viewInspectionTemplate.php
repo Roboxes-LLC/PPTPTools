@@ -393,7 +393,9 @@ function getInspectionRow($propertyIndex, $inspectionProperty)
       <td><select name="{$name}_dataType" form="input-form" $disabled>$dataTypeOptions</select></td>
       <td><select name="{$name}_dataUnits" form="input-form" $disabled>$dataUnitsOptions</select></td>
       <td><div class="flex-vertical"><button onclick="onReorderProperty($propertyIndex, -1)">&#x25B2</button><button onclick="onReorderProperty($propertyIndex, 1)">&#x25BC</button></div></td>
-   </tr>
+      <td><i onclick="onDeleteProperty($propertyIndex)" class="material-icons icon-button">delete</i></td>
+      <td></td> <!-- for padding -->   
+</tr>
 HEREDOC;
    
    return ($html);
@@ -522,12 +524,14 @@ if (!Authentication::isAuthenticated())
             <div class="form-item">
                <table id="property-table">
                   <tr>
-                     <th></th>
+                     <th></th> <!-- id -->
                      <th>Property</th>
                      <th>Specification</th>
                      <th>Data Type</th>
                      <th>Units</th>
-                     <th></th>
+                     <th></th> <!-- reorder -->
+                     <th></th> <!-- delete -->
+                     <th></th> <!-- for padding --> 
                   <tr>
                   <?php echo getInspectionProperties() ?>
                </table>

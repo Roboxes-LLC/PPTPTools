@@ -1392,6 +1392,18 @@ class PPTPDatabase extends MySqlDatabase
 
       if ($result)
       {
+         // Gather the original set of property ids.
+         $origInspectionPropertyIds = [];
+         $query = "SELECT propertyId FROM inspectionproperty WHERE templateId = '$inspectionTemplate->templateId'";
+         $result = $this->query($query);
+         while ($result && ($row = $result->fetch_assoc()))
+         {
+            $origInspectionPropertyIds[] = intval($row["propertyId"]);
+         }
+         
+         // Gather the current set of property ids as we go.
+         $updatedInspectionPropertyIds = [];
+         
          foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
          {
             if ($inspectionProperty->propertyId == InspectionProperty::UNKNOWN_PROPERTY_ID)
@@ -1403,22 +1415,36 @@ class PPTPDatabase extends MySqlDatabase
                "VALUES " .
                "('$inspectionTemplate->templateId', '$inspectionProperty->name', '$inspectionProperty->specification', '$inspectionProperty->dataType', '$inspectionProperty->dataUnits', '$inspectionProperty->ordering');";
 
-               $result &= $this->query($query);
+               $result = $this->query($query);
             }
             else
             {
+               $updatedInspectionPropertyIds[] = $inspectionProperty->propertyId;
+               
                // Updated property.
                $query =
                "UPDATE inspectionproperty " .
                "SET name = '$inspectionProperty->name', specification = '$inspectionProperty->specification', dataType =  '$inspectionProperty->dataType', dataUnits = '$inspectionProperty->dataUnits', ordering = '$inspectionProperty->ordering' " .
                "WHERE propertyId = '$inspectionProperty->propertyId';";
 
-               $result &= $this->query($query);
+               $result = $this->query($query);
             }
             
             if (!$result)
             {
                break;
+            }
+         }
+         
+         // Process deletes.
+         if ($result)
+         {
+            $deletedInspectionPropertyIds = array_diff($origInspectionPropertyIds, $updatedInspectionPropertyIds);
+
+            foreach ($deletedInspectionPropertyIds as $inspectionPropertyId)
+            {
+               $query = "DELETE FROM inspectionproperty WHERE propertyId = '$inspectionPropertyId';";
+               $this->query($query);
             }
          }
       }

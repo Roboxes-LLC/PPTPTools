@@ -183,6 +183,18 @@ function onReorderProperty(propertyId, orderDelta)
    }
 }
 
+function onDeleteProperty(propertyId)
+{
+   var rowId = "property" + propertyId + "_row";
+
+   var row = document.getElementById(rowId);
+   
+   if (row != null)
+   {
+      row.remove();
+   }
+}
+
 function reorder()
 {
    var table = document.getElementById("property-table");

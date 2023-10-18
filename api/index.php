@@ -2175,7 +2175,8 @@ $router->add("saveInspectionTemplate", function($params) {
        (intval($params["templateId"]) != InspectionTemplate::UNKNOWN_TEMPLATE_ID))
    {
       //  Updated entry
-      $inspectionTemplate = InspectionTemplate::load($params["templateId"], true);  // Load properties.
+      //  Note: Don't load properties.  We'll build the new set below.
+      $inspectionTemplate = InspectionTemplate::load($params["templateId"], false);
       
       if (!$inspectionTemplate)
       {
@@ -2223,11 +2224,27 @@ $router->add("saveInspectionTemplate", function($params) {
             }
          }
          
-         $propertyIndex = 0;
-         $name = "property" . $propertyIndex;
-         
-         while (isset($params[$name . "_name"]))
+         // Gather up all submitted property indexes.
+         $propertyIndexes = [];
+         foreach ($params as $key => $value)
          {
+            // Look for "name" parameters.
+            // Ex. property1_name
+            if (strpos($key, "_name") !== false)
+            {
+               $startPos = strpos($key, "property") + strlen("property");
+               $endPos = strpos($key, "_name");
+               $length = ($endPos - $startPos);
+               $index = intval(substr($key, $startPos, $length));
+               
+               $propertyIndexes[] = $index;
+            }
+         }
+         
+         foreach ($propertyIndexes as $propertyIndex)
+         {
+            $name = "property" . $propertyIndex;
+            
             if (isset($params[$name . "_propertyId"]) &&
                 isset($params[$name . "_ordering"]) &&
                 isset($params[$name . "_specification"]) &&
@@ -2262,9 +2279,6 @@ $router->add("saveInspectionTemplate", function($params) {
                $result->error = "Missing parameters for property[$propertyIndex].";
                break;
             }
-
-            $propertyIndex++;
-            $name = "property" . $propertyIndex;
          }
                
          if ($result->success)
