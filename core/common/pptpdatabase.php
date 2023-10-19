@@ -97,12 +97,22 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $order = $orderAscending ? "ASC" : "DESC";
       
+      $questionMarks = array();
+      for ($i = 0; $i < count(ActivityType::$quoteActivites); $i++)
+      {
+         $questionMarks[] = "?";
+      }
+      $activityList = "(" . implode(", ", $questionMarks) . ")";
+      
       $statement = $this->pdo->prepare(
          "SELECT * FROM activity " .
-         "WHERE object_0 = ? " .
+         "WHERE object_0 = ? AND activityType IN $activityList " .
          "ORDER BY dateTime $order;");
+      
+      $params = [$quoteId];
+      $params = array_merge($params, ActivityType::$quoteActivites);
             
-      $result = $statement->execute([$quoteId]) ? $statement->fetchAll() : null;
+      $result = $statement->execute($params) ? $statement->fetchAll() : null;
       
       return ($result);
    }

@@ -967,13 +967,13 @@ class PPTPDatabase extends MySqlDatabase
       // If an array of job statuses is specified, it must not be empty.
       if (is_null($jobStatuses) || (count($jobStatuses) > 0))
       {
-         $jobNumberClause = "";
+         $jobNumberClause = "TRUE";
          if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
          {
-            $jobNumberClause = "jobNumber = '$jobNumber' AND ";
+            $jobNumberClause = "jobNumber = '$jobNumber'";
          }
          
-         $jobStatusClause = "";
+         $jobStatusClause = "TRUE";
          if ($jobStatuses && count($jobStatuses) > 0)
          {
             $jobStatusClause = "(";
@@ -994,13 +994,7 @@ class PPTPDatabase extends MySqlDatabase
             $jobStatusClause .= ")";
          }
          
-         $whereClause = "";
-         if (($jobNumberClause != "") || ($jobStatusClause != ""))
-         {
-            $whereClause = "WHERE " . $jobNumberClause . $jobStatusClause;
-         }
-         
-         $query = "SELECT * FROM job $whereClause ORDER BY jobNumber ASC;";
+         $query = "SELECT * FROM job WHERE $jobNumberClause AND $jobStatusClause ORDER BY jobNumber ASC;";
 
          $result = $this->query($query);
       }

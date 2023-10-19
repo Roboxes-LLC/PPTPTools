@@ -73,7 +73,7 @@ class JobInfo
    public $lineTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
    public $qcpTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
    public $finalTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
-   public $customerPrint;
+   public $customerPrint = null;
    
    public function isActive()
    {
@@ -306,6 +306,26 @@ class JobInfo
       }
       
       return ($html);
+   }
+   
+   public static function getCustomerPrint($jobNumber)
+   {
+      $customerPrint = null;
+      
+      $result = PPTPDatabase::getInstance()->getJobs($jobNumber, null);
+
+      while ($result && ($row = $result->fetch_assoc()))
+      {
+         $customerPrint = $row['customerPrint'];
+         
+         if ($customerPrint)
+         {
+            // Assumption: All jobs with the same job number share the same customer print.
+            break;
+         }
+      }
+      
+      return ($customerPrint);
    }
 }
 
