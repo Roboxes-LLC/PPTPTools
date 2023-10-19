@@ -18,28 +18,6 @@ function getFilterInspectionType()
    return ($inspectionType);
 }
 
-function getInspectionTypeOptions()
-{
-   $selectedInspectionType = getFilterInspectionType();
-   
-   $selected = ($selectedInspectionType == InspectionType::UNKNOWN) ? "selected" : "";
-   $unknown = InspectionType::UNKNOWN;
-   
-   $options = "<option value=\"$unknown\" $selected>All</option>";
-   
-   foreach (InspectionType::$VALUES as $inspectionType)
-   {
-      if ($inspectionType != InspectionType::OASIS)  // Does not support templates.
-      {
-         $selected = ($inspectionType == $selectedInspectionType) ? "selected" : "";
-         
-         $options .= "<option value=\"$inspectionType\" $selected>" . InspectionType::getLabel($inspectionType) . "</option>";
-      }
-   }
-   
-   return ($options);
-}
-
 function getReportFilename()
 {
    $filename = "InspectionTemplates.csv";
@@ -100,7 +78,7 @@ if (!Authentication::isAuthenticated())
 
          <br>
          
-         <select id="inspection-type-filter"><?php echo getInspectionTypeOptions(); ?></select>
+         <select id="inspection-type-filter"><?php echo getInspectionTypeOptions(getFilterInspectionType(), true, [InspectionType::OASIS]); ?></select>
 
          <br>
         

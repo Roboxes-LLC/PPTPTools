@@ -107,6 +107,14 @@ class Estimate
               ($this->estimateIndex < Estimate::MAX_ESTIMATES));
    }
    
+   public function isComplete()
+   {
+      return ($this->isValid() &&
+              ($this->quantity > 0) &&
+              ($this->unitPrice > 0) &&
+              ($this->leadTime != LeadTime::UNKNOWN));
+   }
+   
    public static function getInputName($property, $estimateIndex)
    {
       return ($property . "_" . $estimateIndex);

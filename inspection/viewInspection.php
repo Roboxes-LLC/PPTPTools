@@ -2,24 +2,28 @@
 
 if (!defined('ROOT')) require_once '../root.php';
 require_once ROOT.'/app/common/menu.php';
-require_once '../common/header.php';
-require_once '../common/inspection.php';
-require_once '../common/isoInfo.php';
-require_once '../common/params.php';
-require_once '../common/version.php';
+require_once ROOT.'/common/header.php';
+require_once ROOT.'/common/inspection.php';
+require_once ROOT.'/common/isoInfo.php';
+require_once ROOT.'/common/params.php';
+require_once ROOT.'/common/version.php';
+require_once ROOT.'/inspection/inspectionTable.php';
 
 abstract class InspectionInputField
 {
    const FIRST = 0;
    const INSPECTION_TYPE = InspectionInputField::FIRST;
    const INSPECTION_TEMPLATE = 1;
-   const JOB_NUMBER = 2;
-   const WC_NUMBER = 3;
-   const INSPECTOR = 4;
-   const OPERATOR = 5;
-   const INSPECTION = 6;
-   const COMMENTS = 7;
-   const LAST = 8;
+   const INSPECTION_NUMBER = 2;
+   const JOB_NUMBER = 3;
+   const WC_NUMBER = 4;
+   const INSPECTOR = 5;
+   const OPERATOR = 6;
+   const INSPECTION = 7;
+   const COMMENTS = 8;
+   const MFG_DATE = 9;
+   const QUANTITY = 10;
+   const LAST = 11;
    const COUNT = InspectionInputField::LAST - InspectionInputField::FIRST;
 }
 
@@ -80,24 +84,39 @@ function isEditable($field)
          break;
       }
       
+      case InspectionInputField::INSPECTION_NUMBER:
+      {
+         $isEditable &= showOptionalProperty(OptionalInspectionProperties::INSPECTION_NUMBER);
+         break;
+      }
+      
       case InspectionInputField::JOB_NUMBER:
       {
-         $isEditable &= ((getInspectionType() != InspectionType::GENERIC) ||
-                         showOptionalProperty(OptionalInspectionProperties::JOB_NUMBER));
+         $isEditable &= showOptionalProperty(OptionalInspectionProperties::JOB_NUMBER);
          break;
       }
       
       case InspectionInputField::WC_NUMBER:
       {
-         $isEditable &= ((getInspectionType() != InspectionType::GENERIC) ||
-                         showOptionalProperty(OptionalInspectionProperties::WC_NUMBER));
+         $isEditable &= showOptionalProperty(OptionalInspectionProperties::WC_NUMBER);
          break;
       }
       
       case InspectionInputField::OPERATOR:
       {
-         $isEditable &= ((getInspectionType() != InspectionType::GENERIC) ||
-                         showOptionalProperty(OptionalInspectionProperties::OPERATOR));
+         $isEditable &= showOptionalProperty(OptionalInspectionProperties::OPERATOR);
+         break;
+      }
+      
+      case InspectionInputField::MFG_DATE:
+      {
+         $isEditable &= showOptionalProperty(OptionalInspectionProperties::MFG_DATE);
+         break;
+      }
+      
+      case InspectionInputField::QUANTITY:
+      {
+         $isEditable &= showOptionalProperty(OptionalInspectionProperties::QUANTITY);
          break;
       }
       
@@ -109,6 +128,11 @@ function isEditable($field)
    }
    
    return ($isEditable);
+}
+
+function getHidden($optionalProperty)
+{
+   return (showOptionalProperty($optionalProperty) ? "" : "hidden");
 }
 
 function getDisabled($field)
@@ -149,7 +173,7 @@ function getNewInspection()
    $inspection = new Inspection();
    
    $params = getParams();
-   
+      
    $inspection->templateId = 
       ($params->keyExists("templateId") ? $params->get("templateId") : Inspection::UNKNOWN_INSPECTION_ID);
       
@@ -160,10 +184,10 @@ function getNewInspection()
    }
    
    $jobNumber =
-   ($params->keyExists("jobNumber") ? $params->get("jobNumber") : JobInfo::UNKNOWN_JOB_NUMBER);
+      ($params->keyExists("jobNumber") ? $params->get("jobNumber") : JobInfo::UNKNOWN_JOB_NUMBER);
    
    $wcNumber =
-   ($params->keyExists("wcNumber") ? $params->get("wcNumber") : 0);
+      ($params->keyExists("wcNumber") ? $params->get("wcNumber") : 0);
    
    $inspection->jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
    
@@ -173,21 +197,25 @@ function getNewInspection()
       
       if ($inspectionTemplate)
       {
-         $inspection->initialize($inspectionTemplate);
+         $sampleSize = $inspection->getSampleSize();
          
          foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
          {
-            for ($sampleIndex = 0; $sampleIndex < $inspectionTemplate->sampleSize; $sampleIndex++)
+            for ($sampleIndex = 0; $sampleIndex < $sampleSize; $sampleIndex++)
             {
                $inspectionResult = new InspectionResult();
                $inspectionResult->propertyId = $inspectionProperty->propertyId;
                $inspectionResult->status = InspectionStatus::NON_APPLICABLE;
                
+               if (!isset($inspection->inspectionResults[$inspectionResult->propertyId]))
+               {
+                  $inspection->inspectionResults[$inspectionResult->propertyId] = array();
+               }
+               
                $inspection->inspectionResults[$inspectionProperty->propertyId][$sampleIndex] = $inspectionResult;
             }
          }
       }
-
    }
  
    return ($inspection);
@@ -263,46 +291,39 @@ function getInspectionType()
    {
       $params = getParams();
       
-      $inspectionType = ($params->keyExists("inspectionType") ? $params->getInt("inspectionType") : InspectionType::UNKNOWN);
+      $inspectionType =
+         ($params->keyExists("inspectionType") ? $params->getInt("inspectionType") : InspectionType::UNKNOWN);
    }
    
    return ($inspectionType);
 }
 
-function hasData($inspection, $inspectionPropertyId)
-{
-   $hasData = false;
-   
-   if (isset($inspection->inspectionResults[$inspectionPropertyId]))
-   {
-      foreach ($inspection->inspectionResults[$inspectionPropertyId] as $inspectionResult)
-      {
-         if (!(($inspectionResult->sampleIndex == InspectionResult::COMMENT_SAMPLE_INDEX) ||
-               ($inspectionResult->data == null) ||
-               ($inspectionResult->data === "")))
-         {
-            $hasData = true;
-            break;
-         }
-      }
-   }
-   
-   return ($hasData);
-}
-
 function showOptionalProperty($optionalProperty)
 {
-   $showOptionalProperty = true;
+   $showOptionalProperty = false;
    
    $inspectionTemplate = getInspectionTemplate();
    
-   if (($inspectionTemplate) &&
-       ($inspectionTemplate->inspectionType == InspectionType::GENERIC))
+   if ($inspectionTemplate)
    {
       $showOptionalProperty = $inspectionTemplate->isOptionalPropertySet($optionalProperty);
    }
    
    return ($showOptionalProperty);
+}
+
+function getInspectionNumber()
+{
+   $inspectionNumber = 0;
+   
+   $inspection = getInspection();
+   
+   if ($inspection)
+   {
+      $inspectionNumber = $inspection->inspectionNumber;
+   }
+   
+   return ($inspectionNumber);
 }
 
 function getJobNumber()
@@ -369,15 +390,47 @@ function getWcNumber()
    return ($wcNumber);
 }
 
+function getMfgDate()
+{
+   $mfgDate = null;
+   
+   if (getInspectionId() != Inspection::UNKNOWN_INSPECTION_ID)
+   {
+      $inspection = getInspection();
+      
+      if ($inspection && $inspection->mfgDate)
+      {
+         // Convert to Javascript date format.
+         $mfgDate = Time::dateTimeObject($inspection->mfgDate)->format(Time::$javascriptDateFormat);
+      }
+   }
+   
+   return ($mfgDate);
+}
+
+function getQuantity()
+{
+   $quantity = null;
+   
+   $inspection = getInspection();
+   
+   if ($inspection && $inspection->quantity > 0)
+   {
+      $quantity = $inspection->quantity;
+   }
+   
+   return ($quantity);
+}
+
 function getCustomerPrint()
 {
    $customerPrint = "";
    
+   $jobId = getInspection()->jobId;
    $jobNumber = getJobNumber();
    $wcNumber = getWcNumber();
    
-   $jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
-   
+   // Job ID
    if ($jobId != JobInfo::UNKNOWN_JOB_ID)
    {
       $jobInfo = JobInfo::load($jobId);
@@ -386,6 +439,25 @@ function getCustomerPrint()
       {
          $customerPrint = $jobInfo->customerPrint;
       }
+   }
+   // Job Number and WC Number
+   else if (($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER) &&
+            ($wcNumber != JobInfo::UNKNOWN_WC_NUMBER))
+   {
+      $jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
+      
+      $jobInfo = JobInfo::load($jobId);
+      
+      if ($jobInfo)
+      {
+         $customerPrint = $jobInfo->customerPrint;
+      }
+   }
+   // Job Number
+   // Note: This is the case of FINAL inspections, that don't include a WC number.
+   else if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
+   {
+      $customerPrint = JobInfo::getCustomerPrint($jobNumber);
    }
    
    return ($customerPrint);
@@ -486,6 +558,12 @@ function getIso()
    
    switch (getInspectionType())
    {
+      case InspectionType::FIRST_PART:
+      {
+         $iso = IsoInfo::getIsoNumber(IsoDoc::FIRST_PART_INSPECTION);
+         break;
+      }
+      
       case InspectionType::IN_PROCESS:
       {
          $iso = IsoInfo::getIsoNumber(IsoDoc::IN_PROCESS_INSPECTION);
@@ -501,6 +579,12 @@ function getIso()
       case InspectionType::LINE:
       {
          $iso = IsoInfo::getIsoNumber(IsoDoc::LINE_INSPECTION);
+         break;
+      }
+      
+      case InspectionType::FINAL:
+      {
+         $iso = IsoInfo::getIsoNumber(IsoDoc::FINAL_INSPECTION);
          break;
       }
       
@@ -546,24 +630,6 @@ function getDescription()
    }
    
    return ($description);
-}
-
-function getInspectionTypeOptions()
-{
-   $options = "<option style=\"display:none\">";
-   
-   $selectedInspectionType = getInspectionType();
-   
-   foreach (InspectionType::$VALUES as $inspectionType)
-   {
-      $selected = ($inspectionType == $selectedInspectionType) ? "selected" : "";
-      
-      $label = InspectionType::getLabel($inspectionType);
-      
-      $options .= "<option value=\"$inspectionType\" $selected>$label</option>";
-   }
-   
-   return ($options);
 }
 
 function getJobNumberOptions()
@@ -673,252 +739,6 @@ function getOperatorOptions()
    return ($options);
 }
 
-function getInspections()
-{
-   $html = "";
-   
-   $inspection = getInspection();
-   
-   $inspectionTemplate = getInspectionTemplate();
-   
-   if ($inspection && $inspectionTemplate)
-   {
-      $quickInspection = getQuickInspectionButton();
-      
-      $html .=
-<<<HEREDOC
-      <tr>
-         <td>$quickInspection</td>
-         <td></td>
-HEREDOC;
-      
-      // Sample heading.
-      for ($sampleIndex = 0; $sampleIndex < $inspectionTemplate->sampleSize; $sampleIndex++)
-      {
-         $sampleId = ($sampleIndex + 1);
-         
-         if (InspectionType::isTimeBased($inspectionTemplate->inspectionType))
-         {
-            $timeStr = "";
-            
-            $dateTime = $inspection->getSampleDateTime($sampleIndex, false);
-            if ($dateTime != null)
-            {
-               $timeStr = Time::dateTimeObject($dateTime)->format("g:i a");
-            }
-            
-            $html .=
-<<<HEREDOC
-            <th>
-               <div class="flex-column">
-                  <div>Check $sampleId</div>
-                  <div>$timeStr</div>
-               </div>
-            </th>
-HEREDOC;
-         }
-         else
-         {
-            $html .=
-<<<HEREDOC
-            <th>Sample $sampleId</th>
-HEREDOC;
-         }
-      }
-      
-      $html .= "<th>Comment</tr>";
-      
-      $html .= "</tr>";
-      
-      foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
-      {
-         $hasData = hasData($inspection, $inspectionProperty->propertyId);
-         $dataRowDisplayStyle = $hasData ? "" : "none";
-         $expandButtonDisplayStyle = $hasData ? "none" : "";
-         $condenseButtonDisplayStyle = $hasData ? "" : "none";
-         
-         $html .= "<tr>";
-         
-         $html .=
-<<<HEREDOC
-         <td><div class="expand-button" style="display:$expandButtonDisplayStyle;" onclick="showData(this)">+</div><div class="condense-button" style="display:$condenseButtonDisplayStyle;" onclick="hideData(this)">-</div></td>
-         <td>
-            <div class="flex-vertical">
-               <div class="inspection-property-name">$inspectionProperty->name</div>
-               <div>$inspectionProperty->specification</div>
-            </div>
-         </td>
-HEREDOC;
-         
-         for ($sampleIndex = 0; $sampleIndex < $inspectionTemplate->sampleSize; $sampleIndex++)
-         {
-            $inspectionResult = null;
-            if (isset($inspection->inspectionResults[$inspectionProperty->propertyId][$sampleIndex]))
-            {
-               $inspectionResult = $inspection->inspectionResults[$inspectionProperty->propertyId][$sampleIndex];
-            }
-            
-            $html .= getInspectionInput($inspectionProperty, $sampleIndex, $inspectionResult);
-         }
-         
-         $comment = "";
-         if (isset($inspection->inspectionResults[$inspectionProperty->propertyId][InspectionResult::COMMENT_SAMPLE_INDEX]))
-         {
-            $inspectionResult = $inspection->inspectionResults[$inspectionProperty->propertyId][InspectionResult::COMMENT_SAMPLE_INDEX];
-            
-            $comment = $inspectionResult->data;
-         }
-         
-         $html .= getInspectionCommentInput($inspectionProperty, $comment);
-         
-         $html .= "</tr>";
-         
-         $html .= "<tr style=\"display:$dataRowDisplayStyle;\"><td/><td/>";
-         
-         for ($sampleIndex = 0; $sampleIndex < $inspectionTemplate->sampleSize; $sampleIndex++)
-         {
-            $inspectionResult = null;
-            if (isset($inspection->inspectionResults[$inspectionProperty->propertyId][$sampleIndex]))
-            {
-               $inspectionResult = $inspection->inspectionResults[$inspectionProperty->propertyId][$sampleIndex];
-            }
-            
-            $html .= getInspectionDataInput($inspectionProperty, $sampleIndex, $inspectionResult);
-         }
-         
-         $html .= "</tr>";
-      }
-   }
-   
-   return ($html);
-}
-
-function getInspectionInput($inspectionProperty, $sampleIndex, $inspectionResult)
-{
-   $html = "<td>";
-   
-   if ($inspectionProperty)
-   {
-      $name = InspectionResult::getInputName($inspectionProperty->propertyId, $sampleIndex);
-      
-      $pass = "";
-      $warning = "";
-      $fail = "";
-      $nonApplicable = "selected";
-      $updateTime = "";
-      $class = "";
-      
-      if ($inspectionResult)
-      {
-         $pass = ($inspectionResult->pass()) ? "selected" : "";
-         $warning = ($inspectionResult->warning()) ? "selected" : "";
-         $fail = ($inspectionResult->fail()) ? "selected" : "";
-         $nonApplicable = ($inspectionResult->nonApplicable()) ? "selected" : "";
-         $class = InspectionStatus::getClass($inspectionResult->status);
-         
-         if (!$inspectionResult->nonApplicable() && ($inspectionResult->dateTime))
-         {
-            $dateTime = new DateTime($inspectionResult->dateTime, new DateTimeZone('America/New_York'));
-            $updateTime = $dateTime->format("g:i a");
-         }
-      }
-      
-      $nonApplicableValue = InspectionStatus::NON_APPLICABLE;
-      $passValue = InspectionStatus::PASS;
-      $warningValue = InspectionStatus::WARNING;
-      $failValue = InspectionStatus::FAIL;
-      
-      $disabled = !isEditable(InspectionInputField::INSPECTION) ? "disabled" : "";
-      
-      $html .=
-      <<<HEREDOC
-      <div class="flex-vertical">
-         <select name="$name" class="inspection-status-input $class" form="input-form" oninput="onInspectionStatusUpdate(this)" $disabled>
-            <option value="$nonApplicableValue" $nonApplicable>N/A</option>
-            <option value="$passValue" $pass>PASS</option>
-            <option value="$warningValue" $warning>WARNING</option>
-            <option value="$failValue" $fail>FAIL</option>
-         </select>
-         <!--div style="height:20px">$updateTime</div-->
-      </div>
-HEREDOC;
-   }
-   
-   $html .= "</td>";
-   
-   return ($html);
-}
-
-function getInspectionCommentInput($inspectionProperty, $comment)
-{
-   $html = "<td>";
-   
-   if ($inspectionProperty)
-   {
-      $name = InspectionResult::getInputName($inspectionProperty->propertyId, InspectionResult::COMMENT_SAMPLE_INDEX);
-      
-      $disabled = !isEditable(InspectionInputField::INSPECTION) ? "disabled" : "";
-      
-      $html .= "<input name=\"$name\" type=\"text\" form=\"input-form\" maxlength=\"80\" value=\"$comment\" $disabled>";
-   }
-   
-   $html .= "</td>";
-   
-   return ($html);
-}
-
-function getInspectionDataInput($inspectionProperty, $sampleIndex, $inspectionResult)
-{
-   $html = "<td>";
-   
-   if ($inspectionProperty)
-   {
-      $name = InspectionResult::getInputName($inspectionProperty->propertyId, $sampleIndex);
-      $dataName = $name . "_data";
-      $inputType = "text";
-      $dataValue = "";
-      
-      if ($inspectionResult)
-      {
-         $dataValue = $inspectionResult->data;
-      }
-      
-      $disabled = !isEditable(InspectionInputField::COMMENTS) ? "disabled" : "";
-      
-      $dataUnits = InspectionDataUnits::getAbbreviatedLabel($inspectionProperty->dataUnits);
-      
-      if (($inspectionProperty->dataType == InspectionDataType::INTEGER) ||
-         ($inspectionProperty->dataType == InspectionDataType::DECIMAL))
-      {
-         $inputType = "number";
-      }
-      
-      $html .=
-      <<<HEREDOC
-      <input name="$dataName" type="$inputType" form="input-form" style="width:80px;" value="$dataValue" $disabled>&nbsp$dataUnits
-HEREDOC;
-   }
-   
-   $html .= "</td>";
-   
-   return ($html);
-}
-
-function getQuickInspectionButton()
-{
-   $html = "";
-   
-   if (Authentication::checkPermissions(Permission::QUICK_INSPECTION))
-   {
-      $html =
-      <<<HEREDOC
-      <i class="material-icons" onclick="approveAll()">thumb_up</i>
-HEREDOC;
-   }
-   
-   return ($html);
-}
-
 // ********************************** BEGIN ************************************
 
 Time::init();
@@ -948,6 +768,8 @@ if (!Authentication::isAuthenticated())
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script> 
+   <script src="/script/common/commonDefs.php<?php echo versionQuery();?>"></script> 
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script> 
    <script src="inspection.js<?php echo versionQuery();?>"></script>
 
@@ -958,7 +780,7 @@ if (!Authentication::isAuthenticated())
    <form id="input-form" action="" method="POST">
       <input id="inspection-id-input" type="hidden" name="inspectionId" value="<?php echo getInspectionId(); ?>">
       <!-- Hidden inputs make sure disabled fields below get posted. -->
-      <input type="hidden" name="templateId" value="<?php echo getTemplateId(); ?>">
+      <input id="template-id-input" type="hidden" name="templateId" value="<?php echo getTemplateId(); ?>">
       <input type="hidden" name="jobNumber" value="<?php echo getJobNumber(); ?>">
       <input type="hidden" name="wcNumber" value="<?php echo getWcNumber(); ?>">
    </form>
@@ -990,46 +812,67 @@ if (!Authentication::isAuthenticated())
                
                   <div class="form-item">
                      <div class="form-label">Inspection Type</div>
-                     <select id="inspection-type-input" class="form-input-medium" name="inspectionType" form="input-form" oninput="" <?php echo !isEditable(InspectionInputField::INSPECTION_TYPE) ? "disabled" : ""; ?>>
-                         <?php echo getInspectionTypeOptions(); ?>
+                     <select id="inspection-type-input" class="form-input-medium" name="inspectionType" form="input-form" oninput="" <?php echo getDisabled(InspectionInputField::INSPECTION_TYPE) ?>>
+                         <?php echo getInspectionTypeOptions(getInspectionType(), false, [InspectionType::OASIS]); ?>
                      </select>
                   </div>
                   
                   <div class="form-item">
                      <div class="form-label">Template</div>
-                     <select class="form-input-medium" name="inspectionType" form="input-form" oninput="" <?php echo !isEditable(InspectionInputField::INSPECTION_TEMPLATE) ? "disabled" : ""; ?>>
+                     <select class="form-input-medium" name="inspectionType" form="input-form" oninput="" <?php echo getDisabled(InspectionInputField::INSPECTION_TEMPLATE) ?>>
                          <option><?php echo getInspectionTemplateName(); ?></option>
+                     </select>
+                  </div>
+                  
+                  <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::INSPECTION_NUMBER) ?>">
+                     <div class="form-label">Inspection #</div>
+                     <select id="inspection-number-input" class="form-input-medium" name="inspectionNumber" form="input-form" <?php echo getDisabled(InspectionInputField::INSPECTION_NUMBER) ?>>
+                        <?php echo getInspectionNumberOptions(getInspectionNumber()); ?>
                      </select>
                   </div>
                   
                   <div class="form-item">
                      <div class="form-label">Inspector</div>
-                     <select id="inspector-input" class="form-input-medium" name="inspector" form="input-form" <?php echo !isEditable(InspectionInputField::INSPECTOR) ? "disabled" : ""; ?>>
+                     <select id="inspector-input" class="form-input-medium" name="inspector" form="input-form" <?php echo getDisabled(InspectionInputField::INSPECTOR) ?>>
                         <?php echo getInspectorOptions(); ?>
                      </select>
                   </div>
          
-                  <div class="form-item optional-property-container <?php echo showOptionalProperty(OptionalInspectionProperties::JOB_NUMBER) ? "" : "hidden";?>">
+                  <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::JOB_NUMBER) ?>">
                      <div class="form-label">Job Number</div>
-                     <select id="job-number-input" class="form-input-medium" name="jobNumber" form="input-form" oninput="onJobNumberChange();" <?php echo !isEditable(InspectionInputField::JOB_NUMBER) ? "disabled" : ""; ?>>
+                     <select id="job-number-input" class="form-input-medium" name="jobNumber" form="input-form" oninput="onJobNumberChange();" <?php echo getDisabled(InspectionInputField::JOB_NUMBER) ?>>
                          <?php echo getJobNumberOptions(); ?>
                      </select>
                      &nbsp;&nbsp;
                      <div id="customer-print-div"><a href="<?php $ROOT ?>/uploads/<?php echo getCustomerPrint(); ?>" target="_blank"><?php echo getCustomerPrint(); ?></a></div>
                   </div>
          
-                  <div class="form-item optional-property-container <?php echo showOptionalProperty(OptionalInspectionProperties::WC_NUMBER) ? "" : "hidden";?>">
+                  <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::WC_NUMBER) ?>">
                      <div class="form-label">WC Number</div>
-                     <select id="wc-number-input" class="form-input-medium" name="wcNumber" form="input-form" <?php echo !isEditable(InspectionInputField::WC_NUMBER) ? "disabled" : ""; ?>>
+                     <select id="wc-number-input" class="form-input-medium" name="wcNumber" form="input-form" <?php echo getDisabled(InspectionInputField::WC_NUMBER) ?>>
                         <?php echo JobInfo::getWcNumberOptions(getJobNumber(), getWcNumber()); ?>
                      </select>
                   </div>
                   
-                  <div class="form-item optional-property-container <?php echo showOptionalProperty(OptionalInspectionProperties::OPERATOR) ? "" : "hidden";?>">
+                  <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::OPERATOR) ?>">
                      <div class="form-label">Operator</div>
-                     <select id="operator-input" class="form-input-medium" name="operator" form="input-form" <?php echo !isEditable(InspectionInputField::OPERATOR) ? "disabled" : ""; ?>>
+                     <select id="operator-input" class="form-input-medium" name="operator" form="input-form" <?php echo getDisabled(InspectionInputField::OPERATOR) ?>>
                         <?php echo getOperatorOptions(); ?>
                      </select>
+                  </div>
+                  
+                  <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::MFG_DATE) ?>">
+                     <div class="form-label">Mfg Date</div>
+                     <input id="mfg-date-input" type="date" name="mfgDate" form="input-form" value="<?php echo getMfgDate() ?>" <?php echo getDisabled(InspectionInputField::MFG_DATE) ?>>
+                     &nbsp;&nbsp;
+                     <button id="today-button" class="small-button">Today</button>
+                     &nbsp;&nbsp;
+                     <button id="yesterday-button" class="small-button">Yesterday</button>
+                  </div>
+                                    
+                  <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::QUANTITY) ?>">
+                     <div class="form-label">Quantity</div>
+                     <input id="quantity-input" type="number" class="form-input-small" name="quantity" form="input-form" style="width:75px" value="<?php echo getQuantity() ?>" <?php echo getDisabled(InspectionInputField::QUANTITY) ?>>
                   </div>
                   
                   <div class="form-item" style="display: <?php echo (getNotes() == "") ? "none" : "flex"; ?>">
@@ -1038,13 +881,11 @@ if (!Authentication::isAuthenticated())
                   </div>
                   
                   <div class="form-item">
-                     <table class="inspection-table">
-                        <?php echo getInspections(); ?>
-                     </table>
+                     <?php echo InspectionTable::getHtml(getInspection()->inspectionId, getInspection()->templateId, getInspection()->quantity, Authentication::checkPermissions(Permission::QUICK_INSPECTION), isEditable(InspectionInputField::INSPECTION)) ?>
                   </div>
             
                   <div class="form-item">
-                     <textarea form="input-form" class="comments-input" type="text" name="comments" placeholder="Enter comments ..." <?php echo !isEditable(InspectionInputField::COMMENTS) ? "disabled" : ""; ?>><?php echo getComments(); ?></textarea>
+                     <textarea form="input-form" class="comments-input" type="text" name="comments" placeholder="Enter comments ..." <?php echo getDisabled(InspectionInputField::COMMENTS) ?>><?php echo getComments(); ?></textarea>
                   </div>
          
                </div>
@@ -1074,48 +915,28 @@ if (!Authentication::isAuthenticated())
       var notes = document.getElementById('notes-input');
       notes.style.height = notes.scrollHeight + "px";
    
-      const PASS = <?php echo InspectionStatus::PASS; ?>;
-   
       var jobNumberValidator = new SelectValidator("job-number-input");
       var wcNumberValidator = new SelectValidator("wc-number-input");
       var operatorValidator = new SelectValidator("operator-input");
+      var mfgDateValidator = new DateValidator("mfg-date-input");
+      var quantityValidator = new IntValidator("quantity-input", 6, 1, 999999, false);
+      var inspectionNumberValidator = new SelectValidator("inspection-number-input");
 
       jobNumberValidator.init();
       wcNumberValidator.init();
       operatorValidator.init();
-
-      function onInspectionStatusUpdate(element)
-      {
-         var inspectionStatusClasses = [
-         <?php
-         for ($inspectionStatus = InspectionStatus::FIRST; $inspectionStatus < InspectionStatus::LAST; $inspectionStatus++)
-         {
-            $class = InspectionStatus::getClass($inspectionStatus);
-            echo "\"$class\"";
-            echo ($inspectionStatus < (InspectionStatus::LAST - 1)) ? ", " : "";
-         }
-         ?>
-         ];
-
-         // Clear classes
-         for (const inspectionStatusClass of inspectionStatusClasses)
-         {
-            if (inspectionStatusClass != "")
-            {
-               element.classList.remove(inspectionStatusClass);
-            }
-         }
-
-         // Add new class.
-         var inspectionStatus = parseInt(element.value);
-         element.classList.add(inspectionStatusClasses[inspectionStatus]);
-      }
+      mfgDateValidator.init();
+      quantityValidator.init();
+      inspectionNumberValidator.init();
 
       // Setup event handling on all DOM elements.
       document.getElementById("cancel-button").onclick = function(){location.href = "viewInspections.php";};
       document.getElementById("save-button").onclick = function(){onSaveInspection();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-            
+      document.getElementById("today-button").onclick = function(){onTodayButton();};
+      document.getElementById("yesterday-button").onclick = function(){onYesterdayButton();};
+      document.getElementById("quantity-input").onchange = function(){onQuantityChanged();};
+                        
    </script>
 
 </body>

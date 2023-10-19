@@ -30,7 +30,11 @@ class Quote
    public $contactId;
    public $customerPartNumber;
    public $pptpPartNumber;
+   public $partDescription;
    public $quantity;
+   
+   // Sending
+   public $emailNotes;
    
    // Estimates
    public $estimates;
@@ -46,7 +50,9 @@ class Quote
       $this->contactId = Contact::UNKNOWN_CONTACT_ID;
       $this->customerPartNumber = null;
       $this->pptpPartNumber = null;
+      $this->partDescription = null;
       $this->quantity = 0;
+      $this->emailNotes = null;
       
       $this->estimates = array();
       for ($estimateIndex = 0; $estimateIndex < Quote::MAX_ESTIMATES; $estimateIndex++)
@@ -130,7 +136,9 @@ class Quote
       $this->contactId = intval($row["contactId"]);
       $this->customerPartNumber = $row["customerPartNumber"];
       $this->pptpPartNumber = $row["pptpPartNumber"];
+      $this->partDescription = $row["partDescription"];
       $this->quantity = doubleval($row["quantity"]);
+      $this->emailNotes = $row["emailNotes"];
    }
    
    // **************************************************************************
@@ -289,6 +297,23 @@ class Quote
       return ((count($quoteActions) > 0) ? $quoteActions[0] : null);
    }
    
+   public function isValidEstimate()
+   {
+      $selectedCount = 0;
+      $allSelectedComplete = true;
+      
+      foreach ($this->estimates as $estimate)
+      {
+         if ($estimate->isSelected)
+         {
+            $selectedCount++;
+            $allSelectedComplete &= $estimate->isComplete();
+         }
+      }
+      
+      return (($selectedCount > 0) && $allSelectedComplete);
+   }
+   
    public function estimate($dateTime, $userId, $notes)
    {
       return ($this->addQuoteAction(QuoteStatus::ESTIMATED, $dateTime, $userId, $notes));
@@ -314,8 +339,17 @@ class Quote
       return ($this->addQuoteAction(QuoteStatus::REVISED, $dateTime, $userId, $notes));
    }
    
+   public function saveEmailDraft($emailNotes)
+   {
+      $this->emailNotes = $emailNotes;
+      
+      return (PPTPDatabaseAlt::getInstance()->updateQuoteEmailNotes($this->quoteId, $emailNotes));
+   }
+   
    public function send($dateTime, $userId, $notes)
    {
+      $this->saveEmailDraft($notes); 
+      
       return ($this->addQuoteAction(QuoteStatus::SENT, $dateTime, $userId, $notes));
    }
    

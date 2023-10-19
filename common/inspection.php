@@ -85,10 +85,17 @@ class Inspection
    // Properties for job-based inspections (LINE, QCP, IN_PROCESS).
    public $jobId;
    public $operator;
+   public $mfgDate;
    
    // Optional properties for GENERIC inspections.
    public $jobNumber;
    public $wcNumber;
+   
+   // Properties for In Process inspections.
+   public $inspectionNumber;  // 1 or 2
+   
+   // Properties for Final inspections.
+   public $quantity;
    
    // Inspection results summary properties.
    // Note: By storing these directly in the database, we can more quickly build the inspection table.
@@ -112,8 +119,11 @@ class Inspection
       $this->comments = "";
       $this->jobId = JobInfo::UNKNOWN_JOB_ID;
       $this->operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->mfgDate = null;
       $this->jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
       $this->wcNumber = JobInfo::UNKNOWN_WC_NUMBER;
+      $this->inspectionNumber = 0;
+      $this->quantity = 0;
       $this->samples = 0;
       $this->naCount = 0;
       $this->passCount = 0;
@@ -123,6 +133,7 @@ class Inspection
       $this->inspectionResults = null;  // 2D array, indexed as [propertyId][sampleIndex]
    }
    
+   /*
    public function initialize($inspectionTemplate)
    {
       if ($inspectionTemplate)
@@ -133,6 +144,7 @@ class Inspection
          {
             $this->inspectionResults[$inspectionProperty->propertyId] = array($inspectionTemplate->sampleSize);
             
+            // TODO: This creates inspection results for FINAL inspections that are not needed.
             for ($sampleSize = 0; $sampleSize < $inspectionTemplate->sampleSize; $sampleSize++)
             {
                $this->inspectionResults[$inspectionProperty->propertyId][$sampleSize] = null; 
@@ -140,6 +152,7 @@ class Inspection
          }
       }
    }
+   */
    
    public function initializeFromOasisReport($oasisReport)
    {
@@ -168,8 +181,11 @@ class Inspection
       $this->comments = $row['comments'];
       $this->jobId = $row['jobId'];
       $this->operator = intval($row['operator']);
+      $this->mfgDate = $row['mfgDate'] ? Time::fromMySqlDate($row['mfgDate'], "Y-m-d") : null;
       $this->jobNumber = $row['jobNumber'];
       $this->wcNumber = intval($row['wcNumber']);
+      $this->inspectionNumber = intval($row['inspectionNumber']);
+      $this->quantity = intval($row['quantity']);
       
       // Inspection summary.
       $this->samples = intval($row['samples']);
@@ -429,6 +445,32 @@ class Inspection
       }
       
       return ($dateTimeStr);
+   }
+   
+   function getSampleSize($quantity = null)
+   {
+      $sampleSize = SamplingPlan::$minSamples;
+      
+      $inspectionTemplate = InspectionTemplate::load($this->templateId);
+      
+      if ($inspectionTemplate)
+      {
+         // For Final inspections, sample size is based on the part quantity.
+         if ($inspectionTemplate->inspectionType == InspectionType::FINAL)
+         {
+            // Optionally, specify a check quantity as a parameter.
+            $checkQuantity = ($quantity != null) ? $quantity : $this->quantity;
+            
+            $sampleSize = SamplingPlan::getSampleCount($checkQuantity);
+         }
+         // For all others, consult the template.
+         else
+         {
+            $sampleSize = $inspectionTemplate->sampleSize;
+         }
+      }
+      
+      return ($sampleSize);
    }
 }
 

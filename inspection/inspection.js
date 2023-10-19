@@ -85,9 +85,11 @@ function onDeleteInspection(inspectionId)
 function isJobBasedInspection(inspectionType)
 {
    return((inspectionType == OASIS) ||
+          (inspectionType == FIRST_PART) ||
           (inspectionType == LINE) ||
           (inspectionType == QCP) || 
-          (inspectionType == IN_PROCESS));
+          (inspectionType == IN_PROCESS) ||
+          (inspectionType == FINAL));
 }
 
 function onInspectionTypeChange()
@@ -117,13 +119,15 @@ function onInspectionTypeChange()
 
 function onJobNumberChange()
 {
-   jobNumber = document.getElementById("job-number-input").value;
+   let inspectionType = parseInt(document.getElementById("inspection-type-input").value);
+   
+   let jobNumber = document.getElementById("job-number-input").value;
    
    if (jobNumber == null)
    {
       disable("wc-number-input");
    }
-   else
+   else if (inspectionType != InspectionType.FINAL)
    {
       enable("wc-number-input");
       
@@ -172,7 +176,7 @@ function updateTemplateId()
    {
       // AJAX call to populate template id based on selected inspection type, job number, and WC number.
       requestUrl = "../api/inspectionTemplates/?inspectionType=" + inspectionType + "&jobNumber=" + jobNumber + "&wcNumber=" + wcNumber;
-      
+
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function()
       {
@@ -263,15 +267,15 @@ function validateInspectionSelection()
    
    var inspectionType = document.getElementById("inspection-type-input").value;
    
-   if (!(document.getElementById("inspection-type-input").validator.validate()))
+   if (!validate("inspection-type-input"))
    {
       alert("Start by selecting an inspection type.");    
    }
-   else if (isJobBasedInspection(inspectionType) && !(document.getElementById("job-number-input").validator.validate()))
+   else if (isEnabled("job-number-input") && !validate("job-number-input"))
    {
       alert("Please select an active job.");    
    }
-   else if (isJobBasedInspection(inspectionType) && !(document.getElementById("wc-number-input").validator.validate()))
+   else if (isEnabled("wc-number-input") && !validate("wc-number-input"))
    {
       alert("Please select a work center.");    
    }
@@ -296,7 +300,13 @@ function validateInspection()
 {
    valid = false;
    
-   if (isEnabled("job-number-input") && !validate("job-number-input"))
+   var inspectionType = document.getElementById("inspection-type-input").value;
+   
+   if (isEnabled("inspection-number-input") && !validate("inspection-number-input"))
+   {
+      alert("Please enter an in-process inspection number.");    
+   }
+   else if (isEnabled("job-number-input") && !validate("job-number-input"))
    {
       alert("Please select an active job.");   
    }
@@ -307,6 +317,14 @@ function validateInspection()
    else if (isEnabled("operator-input") && !validate("operator-input"))
    {
       alert("Please select an operator.");    
+   }
+   else if (isEnabled("mfg-date-input") && !validate("mfg-date-input"))
+   {
+      alert("Please enter a manufacture date.");
+   }
+   else if (isEnabled("quantity-input") && !validate("quantity-input"))
+   {
+      alert("Please enter a final inspection quantity.");
    }
    else
    {
@@ -350,7 +368,108 @@ function approveAll()
    
    for (var input of inspectionInputs)
    {
-      input.value = PASS;
+      input.value = InspectionStatus.PASS;
       onInspectionStatusUpdate(input);
    }
+}
+
+function formattedDate(date)
+{
+   // Convert to Y-M-D format, per HTML5 Date control.
+   // https://stackoverflow.com/questions/12346381/set-date-in-input-type-date
+   var day = ("0" + date.getDate()).slice(-2);
+   var month = ("0" + (date.getMonth() + 1)).slice(-2);
+   
+   var formattedDate = date.getFullYear() + "-" + (month) + "-" + (day);
+
+   return (formattedDate);
+}
+
+function onTodayButton()
+{
+   var mfgDateInput = document.querySelector('#mfg-date-input');
+   
+   if (mfgDateInput != null)
+   {
+      var today = new Date();
+      
+      mfgDateInput.value = formattedDate(today); 
+   }         
+}
+
+function onYesterdayButton()
+{
+   var mfgDateInput = document.querySelector('#mfg-date-input');
+   
+   if (mfgDateInput != null)
+   {
+      var yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      mfgDateInput.value = formattedDate(yesterday); 
+   }      
+}
+
+function onInspectionTypeChanged()
+{   
+   let inspectionType = parseInt(document.querySelector('#inspection-type-input').value);
+   
+   if (inspectionType == InspectionType.FINAL)
+   {
+      disable("wc-number-input");
+   }
+   else if (inspectionType == InspectionType.GENERIC)
+   {
+      disable("job-number-input");
+      disable("wc-number-input");
+   }
+   else
+   {
+      enable("job-number-input");
+      enable ("wc-number-input");
+   }
+}
+
+function onQuantityChanged()
+{   
+   let inspectionId = parseInt(document.querySelector('#inspection-id-input').value);
+   
+   let templateId = parseInt(document.querySelector('#template-id-input').value);
+   
+   let quantity = parseInt(document.querySelector('#quantity-input').value);
+   
+   ajaxRequest(`/api/inspectionTable/?inspectionId=${inspectionId}&templateId=${templateId}&quantity=${quantity}`, function(response) {
+      if (response.success)
+      {
+         updateInspectionTable(response.html);   
+      }
+      else
+      {
+         console.log("Failed to fetch inspection table: " + response.error);
+      }
+   });
+}
+
+function onInspectionStatusUpdate(element)
+{
+   // Clear classes
+   for (const inspectionStatusClass of InspectionStatusClasses)
+   {
+      if (inspectionStatusClass != "")
+      {
+         element.classList.remove(inspectionStatusClass);
+      }
+   }
+
+   // Add new class.
+   var inspectionStatus = parseInt(element.value);
+   element.classList.add(InspectionStatusClasses[inspectionStatus]);
+}
+
+function updateInspectionTable(html)
+{
+   let template = document.createElement('template');
+   template.innerHTML = html;
+   
+   document.querySelector('.inspection-table').replaceWith(template.content.cloneNode(true));
 }

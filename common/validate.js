@@ -343,4 +343,52 @@ class RegExpressionValidator
       return (valid);
    }   
 }
+
+function DateValidator(inputId)
+{
+   this.inputId = inputId;
+   
+   DateValidator.prototype.init = function()
+   {
+      var element = document.getElementById(this.inputId);
+      
+      if (element)
+      {
+         element.validator = this;
+      }
+   }
+   
+   DateValidator.prototype.isValid = function()
+   {   
+      var element = document.getElementById(this.inputId);
+      
+      return ((element.value != "") && (element.value != null));
+   }
+   
+   DateValidator.prototype.color = function(color)
+   {
+      var element = document.getElementById(this.inputId);
+      
+      if (element)
+      {
+         element.style.color = color;
+      }
+   }
+   
+   DateValidator.prototype.validate = function()
+   {
+      var valid = this.isValid();
+      
+      if (valid)
+      {
+         this.color("#000000");
+      }
+      else
+      {
+         this.color("#FF0000");
+      }
+
+      return (valid);
+   }
+}
    

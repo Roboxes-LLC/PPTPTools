@@ -75,6 +75,11 @@ function getForm()
       </div>
 
       <div class="form-item">
+         <div class="form-label-long">Description</div>
+         <input id="part-description-input" type="text" name="partDescription" maxlength="32" style="width:250px;"/>
+      </div>
+
+      <div class="form-item">
          <div class="form-label-long">Quantity</div>
          <input id="quantity-input" type="number" name="quantity" style="width:75px;"/>
       </div>

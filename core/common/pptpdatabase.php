@@ -97,12 +97,22 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $order = $orderAscending ? "ASC" : "DESC";
       
+      $questionMarks = array();
+      for ($i = 0; $i < count(ActivityType::$quoteActivites); $i++)
+      {
+         $questionMarks[] = "?";
+      }
+      $activityList = "(" . implode(", ", $questionMarks) . ")";
+      
       $statement = $this->pdo->prepare(
          "SELECT * FROM activity " .
-         "WHERE object_0 = ? " .
+         "WHERE object_0 = ? AND activityType IN $activityList " .
          "ORDER BY dateTime $order;");
+      
+      $params = [$quoteId];
+      $params = array_merge($params, ActivityType::$quoteActivites);
             
-      $result = $statement->execute([$quoteId]) ? $statement->fetchAll() : null;
+      $result = $statement->execute($params) ? $statement->fetchAll() : null;
       
       return ($result);
    }
@@ -380,8 +390,8 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "INSERT INTO quote " .
-         "(quoteStatus, customerId, contactId, customerPartNumber, pptpPartNumber, quantity) " .
-         "VALUES (?, ?, ?, ?, ?, ?)");
+         "(quoteStatus, customerId, contactId, customerPartNumber, pptpPartNumber, partDescription, quantity) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -390,6 +400,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $quote->contactId,
             $quote->customerPartNumber,
             $quote->pptpPartNumber,
+            $quote->partDescription,
             $quote->quantity,
          ]);
       
@@ -400,7 +411,7 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "UPDATE quote " .
-         "SET quoteStatus = ?, customerId = ?, contactId = ?, customerPartNumber = ?, pptpPartNumber = ?, quantity = ? " .
+         "SET quoteStatus = ?, customerId = ?, contactId = ?, customerPartNumber = ?, pptpPartNumber = ?, partDescription = ?, quantity = ? " .
          "WHERE quoteId = ?");
       
       $result = $statement->execute(
@@ -410,6 +421,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $quote->contactId,
             $quote->customerPartNumber,
             $quote->pptpPartNumber,
+            $quote->partDescription,
             $quote->quantity,
             $quote->quoteId,
          ]);
@@ -423,6 +435,16 @@ class PPTPDatabaseAlt extends PDODatabase
          "UPDATE quote SET quoteStatus = ? WHERE quoteId = ?");
       
       $result = $statement->execute([$quoteStatus, $quoteId]);
+      
+      return ($result);
+   }
+   
+   public function updateQuoteEmailNotes($quoteId, $emailNotes)
+   {
+      $statement = $this->pdo->prepare(
+         "UPDATE quote SET emailNotes = ? WHERE quoteId = ?");
+      
+      $result = $statement->execute([$emailNotes, $quoteId]);
       
       return ($result);
    }

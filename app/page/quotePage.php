@@ -205,6 +205,8 @@ class QuotePage extends Page
                 $quoteId = $params->getInt("quoteId");
                 $quote = Quote::load($quoteId);
                 
+                $submitEstimate = $params->keyExists("submitEstimate") ? $params->getBool("submitEstimate") : false;
+                
                 if ($quote)
                 {
                    QuotePage::getEstimateParams($quote, $params);
@@ -215,23 +217,33 @@ class QuotePage extends Page
                       $this->result->quote = $quote;
                       $this->result->success = true;
                       
-                      $isEstimated = $quote->isEstimated();
-                      
-                      if (!$isEstimated)
+                      if ($submitEstimate)
                       {
-                         $quote->estimate(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                         if (!$quote->isValidEstimate())
+                         {
+                            $this->error("One or more selected estimates are not complete.");
+                         }
+                         else
+                         {
+                            $isEstimated = $quote->isEstimated();
+                            
+                            if (!$isEstimated)
+                            {
+                               $quote->estimate(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                            }
+                            else if (($quote->quoteStatus == QuoteStatus::UNAPPROVED) ||
+                                     ($quote->quoteStatus == QuoteStatus::REJECTED))
+                            {
+                               $quote->revise(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                            }
+                            
+                            ActivityLog::logComponentActivity(
+                               Authentication::getAuthenticatedUser()->employeeNumber,
+                               ($isEstimated ? ActivityType::REVISE_QUOTE : ActivityType::ESTIMATE_QUOTE),
+                               $quote->quoteId,
+                               $quote->getQuoteNumber());
+                         }
                       }
-                      else if (($quote->quoteStatus == QuoteStatus::UNAPPROVED) ||
-                               ($quote->quoteStatus == QuoteStatus::REJECTED))
-                      {
-                         $quote->revise(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
-                      }
-                      
-                      ActivityLog::logComponentActivity(
-                         Authentication::getAuthenticatedUser()->employeeNumber,
-                         ($isEstimated ? ActivityType::REVISE_QUOTE : ActivityType::ESTIMATE_QUOTE),
-                         $quote->quoteId,
-                         $quote->getQuoteNumber());
                    }
                    else
                    {
@@ -317,7 +329,7 @@ class QuotePage extends Page
           
           case "send_quote":
           {
-             if (Page::requireParams($params, ["quoteId", "toEmail", "ccEmails", "fromEmail", "notes"]))
+             if (Page::requireParams($params, ["quoteId", "toEmail", "ccEmails", "fromEmail", "emailNotes"]))
              {
                 $quoteId = $params->getInt("quoteId");
                 $quote = Quote::load($quoteId);
@@ -327,18 +339,18 @@ class QuotePage extends Page
                    $toEmail = $params->get("toEmail");
                    $ccEmails = !empty($params->get("ccEmails")) ? explode(";", $params->get("ccEmails")) : array();
                    $fromEmail = $params->get("fromEmail");
-                   $notes = $params->get("notes");
+                   $emailNotes = $params->get("emailNotes");
                    
                    $result = 
                       EmailManager::sendQuoteEmail(
                          $quoteId, 
                          Authentication::getAuthenticatedUser()->employeeNumber, 
                          $ccEmails,
-                         $notes);
+                         $emailNotes);
                    
                    if ($result->status == true)
                    {
-                      if ($quote->send(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
+                      if ($quote->send(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $emailNotes))
                       {
                          $this->result->quoteId = $quote->quoteId;
                          $this->result->quote = $quote;
@@ -363,6 +375,32 @@ class QuotePage extends Page
                 else
                 {
                    $this->error("Invalid quote id [$quoteId]");
+                }
+             }
+             break;
+          }
+          
+          case "save_email_draft":
+          {
+             if (Page::requireParams($params, ["quoteId", "emailNotes"]))
+             {
+                $quoteId = $params->getInt("quoteId");
+                $quote = Quote::load($quoteId);
+                
+                if ($quote)
+                {
+                   $emailNotes = $params->get("emailNotes");
+                   
+                   if ($quote->saveEmailDraft($emailNotes))
+                   {
+                      $this->result->quoteId = $quote->quoteId;
+                      $this->result->quote = $quote;
+                      $this->result->success = true;
+                   }
+                   else
+                   {
+                      $this->error("Database error");
+                   }
                 }
              }
              break;
@@ -572,7 +610,9 @@ class QuotePage extends Page
        $quote->contactId = $params->getInt("contactId");
        $quote->customerPartNumber = $params->get("customerPartNumber");
        $quote->pptpPartNumber = $params->get("pptpPartNumber");
+       $quote->partDescription = $params->get("partDescription");
        $quote->quantity = $params->getInt("quantity");
+       $quote->emailNotes = $params->get("emailNotes");
     }
     
     private static function getEstimateParams(&$quote, $params)

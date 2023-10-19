@@ -967,13 +967,13 @@ class PPTPDatabase extends MySqlDatabase
       // If an array of job statuses is specified, it must not be empty.
       if (is_null($jobStatuses) || (count($jobStatuses) > 0))
       {
-         $jobNumberClause = "";
+         $jobNumberClause = "TRUE";
          if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
          {
-            $jobNumberClause = "jobNumber = '$jobNumber' AND ";
+            $jobNumberClause = "jobNumber = '$jobNumber'";
          }
          
-         $jobStatusClause = "";
+         $jobStatusClause = "TRUE";
          if ($jobStatuses && count($jobStatuses) > 0)
          {
             $jobStatusClause = "(";
@@ -994,13 +994,7 @@ class PPTPDatabase extends MySqlDatabase
             $jobStatusClause .= ")";
          }
          
-         $whereClause = "";
-         if (($jobNumberClause != "") || ($jobStatusClause != ""))
-         {
-            $whereClause = "WHERE " . $jobNumberClause . $jobStatusClause;
-         }
-         
-         $query = "SELECT * FROM job $whereClause ORDER BY jobNumber ASC;";
+         $query = "SELECT * FROM job WHERE $jobNumberClause AND $jobStatusClause ORDER BY jobNumber ASC;";
 
          $result = $this->query($query);
       }
@@ -1054,9 +1048,9 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "INSERT INTO job " .
-      "(jobNumber, creator, dateTime, partNumber, sampleWeight, wcNumber, grossPartsPerHour, netPartsPerHour, status, customerPrint, inProcessTemplateId, lineTemplateId, qcpTemplateId) " .
+      "(jobNumber, creator, dateTime, partNumber, sampleWeight, wcNumber, grossPartsPerHour, netPartsPerHour, status, customerPrint, firstPartTemplateId, inProcessTemplateId, lineTemplateId, qcpTemplateId, finalTemplateId) " .
       "VALUES " .
-      "('$jobInfo->jobNumber', '$jobInfo->creator', '$dateTime', '$jobInfo->partNumber', '$jobInfo->sampleWeight', '$jobInfo->wcNumber', '$jobInfo->grossPartsPerHour', '$jobInfo->netPartsPerHour', '$jobInfo->status', '$jobInfo->customerPrint', '$jobInfo->inProcessTemplateId', '$jobInfo->lineTemplateId', '$jobInfo->qcpTemplateId');";
+      "('$jobInfo->jobNumber', '$jobInfo->creator', '$dateTime', '$jobInfo->partNumber', '$jobInfo->sampleWeight', '$jobInfo->wcNumber', '$jobInfo->grossPartsPerHour', '$jobInfo->netPartsPerHour', '$jobInfo->status', '$jobInfo->customerPrint', '$jobInfo->firstPartTemplateId', '$jobInfo->inProcessTemplateId', '$jobInfo->lineTemplateId', '$jobInfo->qcpTemplateId', '$jobInfo->finalTemplateId');";
 
       $result = $this->query($query);
 
@@ -1069,7 +1063,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
          "UPDATE job " .
-         "SET creator = '$jobInfo->creator', dateTime = '$dateTime', partNumber = '$jobInfo->partNumber', sampleWeight = '$jobInfo->sampleWeight', wcNumber = '$jobInfo->wcNumber', grossPartsPerHour = '$jobInfo->grossPartsPerHour', netPartsPerHour = '$jobInfo->netPartsPerHour', status = '$jobInfo->status', customerPrint = '$jobInfo->customerPrint', inProcessTemplateId = '$jobInfo->inProcessTemplateId', lineTemplateId = '$jobInfo->lineTemplateId',  qcpTemplateId = '$jobInfo->qcpTemplateId' " .
+         "SET creator = '$jobInfo->creator', dateTime = '$dateTime', partNumber = '$jobInfo->partNumber', sampleWeight = '$jobInfo->sampleWeight', wcNumber = '$jobInfo->wcNumber', grossPartsPerHour = '$jobInfo->grossPartsPerHour', netPartsPerHour = '$jobInfo->netPartsPerHour', status = '$jobInfo->status', customerPrint = '$jobInfo->customerPrint', firstPartTemplateId = '$jobInfo->firstPartTemplateId', inProcessTemplateId = '$jobInfo->inProcessTemplateId', lineTemplateId = '$jobInfo->lineTemplateId',  qcpTemplateId = '$jobInfo->qcpTemplateId', finalTemplateId = '$jobInfo->finalTemplateId' " .
          "WHERE jobId = '$jobInfo->jobId';";
 
       $result = $this->query($query);
@@ -1267,6 +1261,67 @@ class PPTPDatabase extends MySqlDatabase
       return ($result);
    }
    
+   public function getInspectionTemplatesForJobNumber($inspectionType, $jobNumber)
+   {
+      $result = null;
+      
+      // Not valid for GENERIC inspections.
+      if ($inspectionType != InspectionType::GENERIC)
+      {
+         $typeClause = ($inspectionType != InspectionType::UNKNOWN) ?
+                          "inspectionType = $inspectionType " :
+                          "TRUE";
+         
+         $templateIdClause = "TRUE";
+         switch ($inspectionType)
+         {
+            case InspectionType::LINE:
+            {
+               $templateIdClause = "job.lineTemplateId = inspectiontemplate.templateId";
+               break;
+            }
+            
+            case InspectionType::QCP:
+            {
+               $templateIdClause = "job.qcpTemplateId = inspectiontemplate.templateId";
+               break;
+            }
+            
+            case InspectionType::IN_PROCESS:
+            {
+               $templateIdClause = "job.inProcessTemplateId = inspectiontemplate.templateId";
+               break;
+            }
+            
+            case InspectionType::FIRST_PART:
+            {
+               $templateIdClause = "job.firstPartTemplateId = inspectiontemplate.templateId";
+               break;
+            }
+            
+            case InspectionType::FINAL:
+            {
+               $templateIdClause = "job.finalTemplateId = inspectiontemplate.templateId";
+               break;
+            }
+            
+            default:
+            {
+               break;
+            }
+         }
+      
+         $query = "SELECT * FROM inspectiontemplate " .
+                  "INNER JOIN job ON $templateIdClause " .
+                  "WHERE $typeClause AND job.jobNumber = '$jobNumber' " .
+                  "ORDER BY name ASC;";
+         
+         $result = $this->query($query);
+      }
+            
+      return ($result);
+   }
+   
    public function getInspectionTemplate($templateId)
    {
       $query = "SELECT * FROM inspectiontemplate WHERE templateId = $templateId;";
@@ -1331,6 +1386,18 @@ class PPTPDatabase extends MySqlDatabase
 
       if ($result)
       {
+         // Gather the original set of property ids.
+         $origInspectionPropertyIds = [];
+         $query = "SELECT propertyId FROM inspectionproperty WHERE templateId = '$inspectionTemplate->templateId'";
+         $result = $this->query($query);
+         while ($result && ($row = $result->fetch_assoc()))
+         {
+            $origInspectionPropertyIds[] = intval($row["propertyId"]);
+         }
+         
+         // Gather the current set of property ids as we go.
+         $updatedInspectionPropertyIds = [];
+         
          foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
          {
             if ($inspectionProperty->propertyId == InspectionProperty::UNKNOWN_PROPERTY_ID)
@@ -1342,22 +1409,36 @@ class PPTPDatabase extends MySqlDatabase
                "VALUES " .
                "('$inspectionTemplate->templateId', '$inspectionProperty->name', '$inspectionProperty->specification', '$inspectionProperty->dataType', '$inspectionProperty->dataUnits', '$inspectionProperty->ordering');";
 
-               $result &= $this->query($query);
+               $result = $this->query($query);
             }
             else
             {
+               $updatedInspectionPropertyIds[] = $inspectionProperty->propertyId;
+               
                // Updated property.
                $query =
                "UPDATE inspectionproperty " .
                "SET name = '$inspectionProperty->name', specification = '$inspectionProperty->specification', dataType =  '$inspectionProperty->dataType', dataUnits = '$inspectionProperty->dataUnits', ordering = '$inspectionProperty->ordering' " .
                "WHERE propertyId = '$inspectionProperty->propertyId';";
 
-               $result &= $this->query($query);
+               $result = $this->query($query);
             }
             
             if (!$result)
             {
                break;
+            }
+         }
+         
+         // Process deletes.
+         if ($result)
+         {
+            $deletedInspectionPropertyIds = array_diff($origInspectionPropertyIds, $updatedInspectionPropertyIds);
+
+            foreach ($deletedInspectionPropertyIds as $inspectionPropertyId)
+            {
+               $query = "DELETE FROM inspectionproperty WHERE propertyId = '$inspectionPropertyId';";
+               $this->query($query);
             }
          }
       }
@@ -1450,21 +1531,24 @@ class PPTPDatabase extends MySqlDatabase
    
    public function newInspection($inspection)
    {
-      $dateTime = Time::toMySqlDate($inspection->dateTime);
+      $dateTime = Time::toMySqlDate($inspection->dateTime);      
+      $mfgDate = $inspection->mfgDate ? Time::toMySqlDate($inspection->mfgDate) : null;
+      
+      $mfgClause = ($mfgDate ? "'$mfgDate'" : "NULL");
       
       $query =
       "INSERT INTO inspection " .
-      "(templateId, dateTime, inspector, comments, jobId, jobNumber, wcNumber, operator, samples, naCount, passCount, failCount, dataFile) " .
+      "(templateId, dateTime, inspector, comments, jobId, jobNumber, wcNumber, operator, mfgDate, inspectionNumber, quantity, samples, naCount, passCount, failCount, dataFile) " .
       "VALUES " .
-      "('$inspection->templateId', '$dateTime', '$inspection->inspector', '$inspection->comments', '$inspection->jobId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->failCount', '$inspection->dataFile');";
-
+      "('$inspection->templateId', '$dateTime', '$inspection->inspector', '$inspection->comments', '$inspection->jobId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', $mfgClause, '$inspection->inspectionNumber', '$inspection->quantity', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->failCount', '$inspection->dataFile');";
+      
       $result = $this->query($query);
+      
+      // Get the last auto-increment id, which should be the inspection id.
+      $inspectionId = $result ? mysqli_insert_id($this->getConnection()) : Inspection::UNKNOWN_INSPECTION_ID;
       
       if ($result && $inspection->inspectionResults)
       {
-         // Get the last auto-increment id, which should be the inspection id.
-         $inspectionId = mysqli_insert_id($this->getConnection());
-         
          foreach ($inspection->inspectionResults as $inspectionRow)
          {
             foreach ($inspectionRow as $inspectionResult)
@@ -1485,16 +1569,19 @@ class PPTPDatabase extends MySqlDatabase
          }
       }
       
-      return ($result);
+      return ($inspectionId);  // A little different because we need the newly created inspectionId for notifications.
    }
    
    public function updateInspection($inspection)
    {
       $dateTime = Time::toMySqlDate($inspection->dateTime);
+      $mfgDate = $inspection->mfgDate ? Time::toMySqlDate($inspection->mfgDate) : null;
+      
+      $mfgClause = "mfgDate = " . ($mfgDate ? "'$mfgDate'" : "NULL");  
       
       $query =
       "UPDATE inspection " .
-      "SET dateTime = '$dateTime', inspector = '$inspection->inspector', comments = '$inspection->comments', jobId = '$inspection->jobId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
+      "SET dateTime = '$dateTime', inspector = '$inspection->inspector', comments = '$inspection->comments', jobId = '$inspection->jobId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', $mfgClause, inspectionNumber = '$inspection->inspectionNumber', quantity = '$inspection->quantity', samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
       "WHERE inspectionId = '$inspection->inspectionId';";
 
       $result = $this->query($query);
@@ -1547,6 +1634,13 @@ class PPTPDatabase extends MySqlDatabase
                }
             }
          }
+         
+         // Delete inspections results that were invalidated by a sample size change.
+         $query = 
+         "DELETE FROM inspectionresult  " .
+         "WHERE inspectionId = '$inspection->inspectionId' AND propertyId = '$inspectionResult->propertyId' AND sampleIndex >= {$inspection->getSampleSize()};";
+         
+         $result &= $this->query($query);
       }
       
       return ($result);
