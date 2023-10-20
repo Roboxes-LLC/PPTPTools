@@ -1502,7 +1502,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query = "SELECT * FROM inspection " .
                "INNER JOIN inspectiontemplate ON inspection.templateId = inspectiontemplate.templateId " .
-               "WHERE $userClause $typeClause inspection.dateTime BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY inspection.dateTime DESC, inspectionId DESC;";
+               "WHERE $userClause $typeClause inspection.mfgDate BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY inspection.dateTime DESC, inspectionId DESC;";
       
       $result = $this->query($query);
       

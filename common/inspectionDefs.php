@@ -123,7 +123,7 @@ abstract class InspectionType
          0b0111110,  // IN_PROCESS
          0b0000000,  // GENERIC (configurable)
          0b0011110,  // FIRST_PART
-         0b1000010   // FINAL              
+         0b1010010   // FINAL              
       ];
          
       return ($optionalProperties[$inspectionType]);
