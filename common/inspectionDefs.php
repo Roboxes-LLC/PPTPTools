@@ -13,21 +13,22 @@ abstract class InspectionStatus
    const WARNING = 2;
    const FAIL = 3;
    const NON_APPLICABLE = 4;
-   const LAST = 5;
+   const INCOMPLETE = 5;
+   const LAST = 6;
    const COUNT = InspectionStatus::LAST - InspectionStatus::FIRST;
    
    public static $values = [InspectionStatus::PASS, InspectionStatus::WARNING, InspectionStatus::FAIL, InspectionStatus::NON_APPLICABLE];
    
    public static function getLabel($inspectionStatus)
    {
-      $labels = array("---", "PASS", "WARNING", "FAIL", "N/A");
+      $labels = array("", "PASS", "WARNING", "FAIL", "N/A", "INCOMPLETE");
       
       return ($labels[$inspectionStatus]);
    }
    
    public static function getClass($inspectionStatus)
    {
-      $classes = array("", "pass", "warning", "fail", "n/a");
+      $classes = array("", "pass", "warning", "fail", "n/a", "incomplete");
       
       return ($classes[$inspectionStatus]);
    }
@@ -35,7 +36,7 @@ abstract class InspectionStatus
    public static function getJavascript($enumName)
    {
       // Note: Keep synced with enum.
-      $varNames = array("UNKNOWN", "PASS", "WARNING", "FAIL", "NON_APPLICABLE");
+      $varNames = array("UNKNOWN", "PASS", "WARNING", "FAIL", "NON_APPLICABLE", "INCOMPLETE");
       
       $html = "$enumName = {";
       
@@ -114,16 +115,17 @@ abstract class InspectionType
       // 4 = MFG_DATE
       // 5 = INSPECTION_NUMBER
       // 6 = QUANTITY
+      // 7 = IS_PRIORITY
       
       $optionalProperties = [
-         0b0000000,  // UNKNOWN
-         0b0001110,  // OASIS
-         0b0011110,  // LINE
-         0b0011110,  // QCP
-         0b0111110,  // IN_PROCESS
-         0b0000000,  // GENERIC (configurable)
-         0b0011110,  // FIRST_PART
-         0b1010010   // FINAL              
+         0b00000000,  // UNKNOWN
+         0b00001110,  // OASIS
+         0b00011110,  // LINE
+         0b00011110,  // QCP
+         0b00111110,  // IN_PROCESS
+         0b00000000,  // GENERIC (configurable)
+         0b00011110,  // FIRST_PART
+         0b11010010   // FINAL              
       ];
          
       return ($optionalProperties[$inspectionType]);
@@ -132,6 +134,12 @@ abstract class InspectionType
    public static function isTimeBased($inspectionType)
    {
       return ($inspectionType == InspectionType::QCP);
+   }
+   
+   public static function usesDefinedSpecifications($inspectionType)
+   {
+      return (!(($inspectionType == InspectionType::OASIS) ||
+                ($inspectionType == InspectionType::GENERIC)));
    }
    
    public static function getJavascript($enumName)
@@ -259,7 +267,8 @@ abstract class OptionalInspectionProperties
    const MFG_DATE = 4;
    const INSPECTION_NUMBER = 5;
    const QUANTITY = 6;
-   const LAST = 7;
+   const IS_PRIORITY = 7;
+   const LAST = 8;
    const COUNT = OptionalInspectionProperties::LAST - OptionalInspectionProperties::FIRST;
    
    // Optional inspection properties that are valid for Generic inspections.
@@ -272,7 +281,7 @@ abstract class OptionalInspectionProperties
    
    public static function getLabel($optionalProperty)
    {
-      $labels = array("", "Job Number", "WC Number", "Operator", "Mfg Date", "Inspection #", "Quantity");
+      $labels = array("", "Job Number", "WC Number", "Operator", "Mfg Date", "Inspection #", "Quantity", "Priority");
       
       return ($labels[$optionalProperty]);
    }
@@ -321,6 +330,98 @@ abstract class SamplingPlan
    }
 }
 
-
+abstract class Specification
+{
+   const UNKNOWN = 0;
+   const FIRST = 1;
+   const CALIPERS = Specification::FIRST;
+   const COMPARATOR = 2;
+   const CONCENTRICITY = 3;
+   const DEPTH_CALIPER = 4;
+   const DEPTH_MICS = 5;
+   const GAGE_PINS = 6;
+   const MICS = 7;
+   const OASIS = 8;
+   const PIPE_RING = 9;
+   const PROFILOMETER = 10;
+   const RINGS = 11;
+   const VISUAL = 12;
+   const LAST = 123;
+   const COUNT = Specification::LAST - Specification::FIRST;
+   
+   public static $values = [
+      Specification::CALIPERS,
+      Specification::COMPARATOR,
+      Specification::CONCENTRICITY,
+      Specification::DEPTH_CALIPER,
+      Specification::DEPTH_MICS,
+      Specification::GAGE_PINS,
+      Specification::MICS,
+      Specification::OASIS,
+      Specification::PIPE_RING,
+      Specification::PROFILOMETER,
+      Specification::RINGS,
+      Specification::VISUAL
+   ];
+   
+   private static $labels = [
+      "",
+      "Calipers",
+      "Comparator",
+      "Concentricity",
+      "Depth Caliper",
+      "Depth Mics",
+      "Gage Pins",
+      "Mics",
+      "Oasis",
+      "Pipe Ring",
+      "Profilometer",
+      "Rings",
+      "Visual"
+   ];
+   
+   public static function getLabel($specification)
+   {
+      return (Specification::$labels[$specification]);
+   }
+   
+   public static function isDefinedSpecification($specificationLabel)
+   {
+      return (in_array($specificationLabel, Specification::$labels));
+   }
+   
+   public static function getOptions($selectedSpecificationLabel)
+   {
+      $label = Specification::getLabel(Specification::UNKNOWN);
+      $value = Specification::getLabel(Specification::UNKNOWN);
+      $selected = ($value == $selectedSpecificationLabel) ? "selected" : "";
+      
+      $html = "<option value=\"$value\" $selected>$label</option>";
+      
+      foreach (Specification::$values as $specification)
+      {
+         $label = Specification::getLabel($specification);
+         $value = $label;  // Store as label, rather than the enumerator.  (See below.)
+         $selected = ($value == $selectedSpecificationLabel) ? "selected" : "";
+         
+         $html .= "<option value=\"$value\" $selected>$label</option>";
+      }
+      
+      // Add the selected specification as a option, if not part of the enumeration.
+      //
+      // Prior to v1.3F, inspection template specifications were entered via a text input.
+      // In order to preserve these, specifications are stored in the database as text, rather than an enumerator.
+      if (!Specification::isDefinedSpecification($selectedSpecificationLabel))
+      {
+         $label = $selectedSpecificationLabel;
+         $value = $selectedSpecificationLabel;
+         $selected = "selected";
+         
+         $html .= "<option value=\"$value\" $selected>$label</option>";
+      }
+      
+      return ($html);
+   }   
+}
 
 ?>

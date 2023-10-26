@@ -14,7 +14,7 @@ class NotificationEmail
    const FROM_NAME = "PPTP Tools";
    
    // Notification types supported by this class.
-   public static $supportedNotificationTypes = [Notification::FINAL_INSPECTION];
+   public static $supportedNotificationTypes = [Notification::FINAL_INSPECTION, Notification::FIRST_PART_INSPECTION];
    
    private $notificationType;
    
@@ -135,7 +135,8 @@ class NotificationEmail
         "",  // PRINTER_ALERT (Has its own email object)
         "",  // QUOTE_REQUESTED
         "",  // QUOTE_SENT
-        "A new final part inspection has been created"  // FINAL_INSPECTION
+        "A new final inspection has been created",         // FINAL_INSPECTION
+        "A new first piece inspection has been completed"  // FIRST_PART_INSPECTION
       ];
       
       return ($titles[$this->notificationType]);
@@ -148,27 +149,43 @@ class NotificationEmail
       switch ($this->notificationType)
       {
          case Notification::FINAL_INSPECTION:
+         case Notification::FIRST_PART_INSPECTION:
          {
             if ($this->details && isset($this->details->inspectionId))
             {
+               $inspectionTypeLabels = array("", "Oasis", "line", "QCP", "in process", "generic", "first piece", "final");
+               
                // Template variables.
                $inspectionId = "[unknown]";
+               $inspectionType = "";
                $creationDateTime = "";
                $inspectorName = "";
                $jobNumber = "";
                $link = "";
                $quantity = "";
+               $showQuantity = "hidden";
                
                $inspectionId = $this->details->inspectionId;
                $inspection = Inspection::load($inspectionId, true);
                
                if ($inspection)
                {
+                  $inspectionTemplate = InspectionTemplate::load($inspection->templateId);
+                  if ($inspectionTemplate)
+                  {
+                     if ($inspectionTemplate->inspectionType == InspectionType::FINAL)
+                     {
+                        $showQuantity = "";
+                     }
+                     
+                     $inspectionType = $inspectionTypeLabels[$inspectionTemplate->inspectionType];
+                  }
+
                   $creationDateTime = Time::dateTimeObject($inspection->dateTime)->format("n/j/Y g:i A");
                   
                   if ($inspection->jobId != JobInfo::UNKNOWN_JOB_ID)
                   {
-                     $job = JobInfo::load(jobId);
+                     $job = JobInfo::load($inspection->jobId);
                      if ($job)
                      {
                         $jobNumber = $job->jobNumber;
@@ -192,7 +209,7 @@ class NotificationEmail
                
                $html =
 <<<HEREDOC
-               <p>A new final parts inspection has been generated for job <b>$jobNumber</b>.</p>
+               <p>A new $inspectionType inspection has been generated for job <b>$jobNumber</b>.</p>
  
                <style>
                   th {
@@ -203,6 +220,9 @@ class NotificationEmail
                   }
                   tr {
                      height: 25px;
+                  }
+                  tr.hidden {
+                     display: none
                   }
                </style>
                <table>
@@ -217,7 +237,7 @@ class NotificationEmail
                      <th>Job:</th>
                      <td>$jobNumber</td>
                   </tr>
-                  <tr>
+                  <tr class="$showQuantity">
                      <th>Quantity:</th>
                      <td>$quantity</td>
                   </tr>

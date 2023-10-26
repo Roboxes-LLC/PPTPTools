@@ -23,7 +23,9 @@ abstract class InspectionInputField
    const COMMENTS = 8;
    const MFG_DATE = 9;
    const QUANTITY = 10;
-   const LAST = 11;
+   const AUTHOR = 11;
+   const IS_PRIORITY = 12;
+   const LAST = 13;
    const COUNT = InspectionInputField::LAST - InspectionInputField::FIRST;
 }
 
@@ -120,6 +122,18 @@ function isEditable($field)
          break;
       }
       
+      case InspectionInputField::IS_PRIORITY:
+      {
+         $isEditable &= showOptionalProperty(OptionalInspectionProperties::IS_PRIORITY);
+         break;
+      }
+      
+      case InspectionInputField::AUTHOR:
+      {
+         $isEditable = false;
+         break;
+      }
+      
       default:
       {
          // Edit status based solely on view.
@@ -180,6 +194,7 @@ function getNewInspection()
    $userInfo = Authentication::getAuthenticatedUser();
    if ($userInfo)
    {
+      $inspection->author = $userInfo->employeeNumber;
       $inspection->inspector = $userInfo->employeeNumber;
    }
    
@@ -659,29 +674,55 @@ function getJobNumberOptions()
    return ($options);
 }
 
-function getInspectorOptions()
+function getAuthorOptions()
 {
    $options = "<option style=\"display:none\">";
    
-   $inspectors = PPTPDatabase::getInstance()->getUsersByRole(Role::INSPECTOR);
+   $userInfo = UserInfo::load(getInspection()->author);
+   
+   if ($userInfo)
+   {
+      $label = $userInfo->getFullName();
+      $value = $userInfo->employeeNumber;
+      $selected = "selected";
+      
+      $options .= "<option value=\"$value\" $selected>$label</option>";
+   }
+   
+   return ($options);
+}
+
+function getInspectorOptions()
+{
+   $options = "<option style=\"display:none\">";
 
    // Create an array of employee numbers.
    $employeeNumbers = array();
-   foreach ($inspectors as $inspector)
+   
+   // Multiple roles requested by customer in 10/2023.
+   $inspectorRoles = [Role::INSPECTOR, Role::ADMIN, Role::SUPER_USER];
+   
+   foreach ($inspectorRoles as $role)
    {
-      $employeeNumbers[] = intval($inspector["employeeNumber"]);
+      $users = PPTPDatabase::getInstance()->getUsersByRole($role);
+
+      foreach ($users as $user)
+      {
+         $employeeNumbers[] = intval($user["employeeNumber"]);
+      }
    }
    
    $selectedInspector = getInspector();
    
-   // Add selected job number, if not already in the array.
-   // Note: This handles the case of viewing an entry with an operator that is not assigned to the OPERATOR role.
+   // Add selected inspector, if not already in the array.
+   // Note: This handles the case of viewing an entry with an inspector that is not assigned to the INSPECTOR role.
    if (($selectedInspector != UserInfo::UNKNOWN_EMPLOYEE_NUMBER) &&
-      (!in_array($selectedInspector, $employeeNumbers)))
+       (!in_array($selectedInspector, $employeeNumbers)))
    {
       $employeeNumbers[] = $selectedInspector;
-      sort($employeeNumbers);
    }
+   
+   sort($employeeNumbers);
    
    foreach ($employeeNumbers as $employeeNumber)
    {
@@ -781,6 +822,7 @@ if (!Authentication::isAuthenticated())
       <input id="inspection-id-input" type="hidden" name="inspectionId" value="<?php echo getInspectionId(); ?>">
       <!-- Hidden inputs make sure disabled fields below get posted. -->
       <input id="template-id-input" type="hidden" name="templateId" value="<?php echo getTemplateId(); ?>">
+      <input type="hidden" name="author" value="<?php echo getInspection()->author; ?>">
       <input type="hidden" name="jobNumber" value="<?php echo getJobNumber(); ?>">
       <input type="hidden" name="wcNumber" value="<?php echo getWcNumber(); ?>">
    </form>
@@ -817,6 +859,11 @@ if (!Authentication::isAuthenticated())
                      </select>
                   </div>
                   
+                  <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::IS_PRIORITY) ?>">
+                     <div class="form-label">Priority</div>
+                     <input id="is-priority-input" name="isPriority" form="input-form" type="checkbox" <?php echo getInspection()->isPriority ? "checked" : "" ?> <?php echo getDisabled(InspectionInputField::IS_PRIORITY) ?>>
+                  </div>
+                  
                   <div class="form-item">
                      <div class="form-label">Template</div>
                      <select class="form-input-medium" name="inspectionType" form="input-form" oninput="" <?php echo getDisabled(InspectionInputField::INSPECTION_TEMPLATE) ?>>
@@ -828,6 +875,13 @@ if (!Authentication::isAuthenticated())
                      <div class="form-label">Inspection #</div>
                      <select id="inspection-number-input" class="form-input-medium" name="inspectionNumber" form="input-form" <?php echo getDisabled(InspectionInputField::INSPECTION_NUMBER) ?>>
                         <?php echo getInspectionNumberOptions(getInspectionNumber()); ?>
+                     </select>
+                  </div>
+                  
+                  <div class="form-item">
+                     <div class="form-label">Created By</div>
+                     <select id="author-input" class="form-input-medium" name="author" form="input-form" <?php echo getDisabled(InspectionInputField::AUTHOR) ?>>
+                        <?php echo getAuthorOptions(); ?>
                      </select>
                   </div>
                   

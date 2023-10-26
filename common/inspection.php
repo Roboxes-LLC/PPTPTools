@@ -79,6 +79,7 @@ class Inspection
    public $inspectionId;
    public $dateTime;
    public $templateId;
+   public $author;
    public $inspector;
    public $comments;
    
@@ -96,6 +97,7 @@ class Inspection
    
    // Properties for Final inspections.
    public $quantity;
+   public $isPriority;
    
    // Inspection results summary properties.
    // Note: By storing these directly in the database, we can more quickly build the inspection table.
@@ -115,6 +117,7 @@ class Inspection
    {
       $this->inspectionId = Inspection::UNKNOWN_INSPECTION_ID;
       $this->templateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
+      $this->author = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->inspector = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->comments = "";
       $this->jobId = JobInfo::UNKNOWN_JOB_ID;
@@ -124,6 +127,7 @@ class Inspection
       $this->wcNumber = JobInfo::UNKNOWN_WC_NUMBER;
       $this->inspectionNumber = 0;
       $this->quantity = 0;
+      $this->isPriority = false;
       $this->samples = 0;
       $this->naCount = 0;
       $this->passCount = 0;
@@ -157,6 +161,7 @@ class Inspection
    public function initializeFromOasisReport($oasisReport)
    {
       $this->templateId = InspectionTemplate::OASIS_TEMPLATE_ID;
+      $this->author = $oasisReport->getEmployeeNumber();
       $this->inspector = $oasisReport->getEmployeeNumber();
       $this->comments = $oasisReport->getComments();
       $this->jobId = JobInfo::UNKNOWN_JOB_ID;
@@ -165,7 +170,7 @@ class Inspection
       $this->wcNumber = $oasisReport->getMachineNumber();
       $this->samples = $oasisReport->getPartInspectionCount();
       $this->naCount = 0;
-      $this->warningCount = 0;  // TODO
+      $this->warningCount = 0;
       $this->failCount = $oasisReport->getFailureCount();
       $this->passCount = ($this->samples - $this->failCount);
       $this->dataFile = $oasisReport->getDataFile();
@@ -177,6 +182,7 @@ class Inspection
       $this->inspectionId = intval($row['inspectionId']);
       $this->templateId = intval($row['templateId']);
       $this->dateTime = Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
+      $this->author = intval($row['author']);
       $this->inspector = intval($row['inspector']);
       $this->comments = $row['comments'];
       $this->jobId = $row['jobId'];
@@ -186,6 +192,7 @@ class Inspection
       $this->wcNumber = intval($row['wcNumber']);
       $this->inspectionNumber = intval($row['inspectionNumber']);
       $this->quantity = intval($row['quantity']);
+      $this->isPriority = filter_var($row["isPriority"], FILTER_VALIDATE_BOOLEAN);
       
       // Inspection summary.
       $this->samples = intval($row['samples']);
@@ -356,7 +363,9 @@ class Inspection
    
    public function pass()
    {
-      return (!$this->fail() && !$this->warning());
+      return (!$this->fail() && 
+              !$this->warning() && 
+              ($this->getPassCount() > 0));
    }
    
    public function warning()
@@ -367,6 +376,11 @@ class Inspection
    public function fail()
    {
       return ($this->getCountByStatus(InspectionStatus::FAIL) > 0);
+   }
+   
+   public function incomplete()
+   {
+      return (!$this->fail() && !$this->warning() && !$this->pass());
    }
    
    public function getMeasurementCount()
@@ -395,9 +409,13 @@ class Inspection
       {
          $inspectionStatus = InspectionStatus::WARNING;
       }
-      else
+      else if ($this->pass())
       {
          $inspectionStatus = InspectionStatus::PASS;
+      }
+      else
+      {
+         $inspectionStatus = InspectionStatus::INCOMPLETE;
       }
       
       return ($inspectionStatus);

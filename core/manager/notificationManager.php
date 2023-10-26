@@ -14,13 +14,20 @@ class NotificationManager
          (object)array("inspectionId" => $inspectionId));
    }
    
+   public static function onFirstPartInspectionComplete($inspectionId)
+   {
+      NotificationManager::sendNotification(
+         Notification::FIRST_PART_INSPECTION,
+         (object)array("inspectionId" => $inspectionId));
+   }
+   
    // **************************************************************************
    
    private static function sendNotification($notificationType, $details)
    {
       // TODO: Augment to match FlexScreen Inventory.
       
-      $users = UserManager::getUsersForNotification(Notification::PRINTER_ALERT);
+      $users = UserManager::getUsersForNotification($notificationType);
       
       $userIds = [];
       foreach ($users as $user)

@@ -6,7 +6,7 @@ require_once ROOT.'/core/common/notificationEmail.php';
 class NotificationEmailTest
 {
    // Test constants.
-   private const INSPECTION_ID = 46979;
+   private const INSPECTION_ID = 46993;
    private const TO_USER_ID = 1975;
    
    public static function run()

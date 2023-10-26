@@ -1830,20 +1830,20 @@ $router->add("inspectionData", function($params) {
       $inspectionType = intval($params["inspectionType"]);
    }
    
-   $inspector = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;  // Get inspections for all inspectors.
+   $authorInspector = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;  // Get inspections for all authors/inspectors.
    $operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;  // Get inspections for all operators.
    if (Authentication::checkPermissions(Permission::VIEW_OTHER_USERS) == false)
    {
       // Limit to own inspections.
-      $inspector = Authentication::getAuthenticatedUser()->employeeNumber;
-      $operator = $inspector;
+      $authorInspector = Authentication::getAuthenticatedUser()->employeeNumber;
+      $operator = $authorInspector;
    }
    
    $database = PPTPDatabase::getInstance();
    
    if ($database && $database->isConnected())
    {
-      $databaseResult = $database->getInspections($inspectionType, $inspector, $operator, $startDate, $endDate);
+      $databaseResult = $database->getInspections($inspectionType, $authorInspector, $operator, $startDate, $endDate);
       
       // Populate data table.
       foreach ($databaseResult as $row)
@@ -1861,9 +1861,15 @@ $router->add("inspectionData", function($params) {
          $row["inspectionTypeLabel"] = InspectionType::getLabel(intval($row["inspectionType"]));
          
          $inspectionStatus = $inspection->getInspectionStatus();
-         $row["inspectionStatus"] = $inspection->getInspectionStatus();
+         $row["inspectionStatus"] = $inspectionStatus;
          $row["inspectionStatusLabel"] = InspectionStatus::getLabel($inspectionStatus);
          $row["inspectionStatusClass"] = InspectionStatus::getClass($inspectionStatus);
+         
+         $userInfo = UserInfo::load($inspection->author);
+         if ($userInfo)
+         {
+            $row["authorName"] = $userInfo->getFullName();
+         }
          
          $userInfo = UserInfo::load($inspection->inspector);
          if ($userInfo)
@@ -1934,10 +1940,12 @@ $router->add("saveInspection", function($params) {
    if ($result->success)
    {
       if (isset($params["templateId"]) &&
+          isset($params["author"]) &&
           isset($params["inspector"]) &&
           isset($params["comments"]))
       {
          $inspection->templateId = intval($params["templateId"]);
+         $inspection->author = intval($params["author"]);
          $inspection->inspector = intval($params["inspector"]);
          $inspection->comments = $params["comments"];
          
@@ -1974,6 +1982,8 @@ $router->add("saveInspection", function($params) {
             {
                $inspection->quantity = $params->getInt("quantity");
             }
+            
+            $inspection->isPriority = $params->keyExists("isPriority");
             
             $jobId = JobInfo::getJobIdByComponents($params->get("jobNumber"), $params->getInt("wcNumber"));
                
@@ -2062,6 +2072,11 @@ $router->add("saveInspection", function($params) {
                       ($inspectionTemplate->inspectionType == InspectionType::FINAL))
                   {
                      NotificationManager::onFinalInspectionCreated($inspection->inspectionId);
+                  }
+                  else if (($inspectionTemplate->inspectionType == InspectionType::FIRST_PART) &&
+                           (!$inspection->incomplete()))
+                  {
+                     NotificationManager::onFirstPartInspectionComplete($inspection->inspectionId);
                   }
                }
                else

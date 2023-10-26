@@ -8,7 +8,8 @@ class Notification
    const QUOTE_REQUESTED = 2;
    const QUOTE_SENT = 3;
    const FINAL_INSPECTION = 4;
-   const LAST = 5;
+   const FIRST_PART_INSPECTION = 5;
+   const LAST = 6;
    
    const NO_NOTIFICATIONS = 0x00000000;
    const ALL_NOTIFICATIONS = 0xFFFFFFFF;
@@ -17,7 +18,8 @@ class Notification
       Notification::PRINTER_ALERT, 
       Notification::QUOTE_REQUESTED, 
       Notification::QUOTE_SENT,
-      Notification::FINAL_INSPECTION
+      Notification::FINAL_INSPECTION,
+      Notification::FIRST_PART_INSPECTION
    ];
    
    public $notificationId;
@@ -32,10 +34,11 @@ class Notification
       {
          Notification::$notifications =
             array(
-               new Notification(Notification::PRINTER_ALERT,    "Printer Alert"),
-               new Notification(Notification::QUOTE_REQUESTED,  "Quote Requested"),
-               new Notification(Notification::QUOTE_SENT,       "Quote Sent"),
-               new Notification(Notification::FINAL_INSPECTION, "Final Inspection Created")
+               new Notification(Notification::PRINTER_ALERT,         "Printer Alert"),
+               new Notification(Notification::QUOTE_REQUESTED,       "Quote Requested"),
+               new Notification(Notification::QUOTE_SENT,            "Quote Sent"),
+               new Notification(Notification::FINAL_INSPECTION,      "Final Inspection Created"),
+               new Notification(Notification::FIRST_PART_INSPECTION, "First Part Inspection Complete")
             );
       }
       

@@ -110,7 +110,7 @@ input.nonApplicable:checked + label > div  {
    background-color: grey;
    border: none;
    
-   width: 75px;
+   width: 90px;
    height: 20px;	
 }
 
@@ -124,6 +124,10 @@ input.nonApplicable:checked + label > div  {
 
 .inspection-status.fail {
    background-color: red;
+}
+
+.inspection-status.incomplete {
+   background-color: grey;
 }
 
 .inspection-status-input {

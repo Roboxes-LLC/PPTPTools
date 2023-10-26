@@ -100,29 +100,7 @@ function onInspectionTypeChange()
 {
    var inspectionType = parseInt(document.getElementById("inspection-type-input").value);
    
-   show("sample-size-input-container", "flex");
-   hide("optional-properties-input-container");
-   
-   switch (inspectionType)
-   {
-      case InspectionType.FINAL:
-      {
-         document.getElementById("sample-size-input").value = null;
-         hide("sample-size-input-container", "flex");
-         break;
-      }
-      
-      case InspectionType.GENERIC:
-      {
-         show("optional-properties-input-container", "flex");
-         break;
-      }
-      
-      default:
-      {
-         break;
-      }
-   }
+   window.location.search += `&inspectionType=${inspectionType}`;
 }
 
 function incrementPropertyName(name)
@@ -233,4 +211,33 @@ function validateInspectionTemplate()
    }
    
    return (valid);  
+}
+
+function updateControls()
+{
+   var inspectionType = parseInt(document.getElementById("inspection-type-input").value);
+   
+   show("sample-size-input-container", "flex");
+   hide("optional-properties-input-container");
+   
+   switch (inspectionType)
+   {
+      case InspectionType.FINAL:
+      {
+         document.getElementById("sample-size-input").value = null;
+         hide("sample-size-input-container", "flex");
+         break;
+      }
+      
+      case InspectionType.GENERIC:
+      {
+         show("optional-properties-input-container", "flex");
+         break;
+      }
+      
+      default:
+      {
+         break;
+      }
+   }
 }

@@ -87,24 +87,37 @@ function getInspectionTemplate()
       
       $copyFromTemplateId = getCopyFromTemplateId();
       
+      // Existing template.
       if ($templateId != InspectionTemplate::UNKNOWN_TEMPLATE_ID)
       {
          $inspectionTemplate = InspectionTemplate::load($templateId, true);  // Load properties.
       }
-      else if ($copyFromTemplateId != InspectionTemplate::UNKNOWN_TEMPLATE_ID)
-      {
-         $inspectionTemplate = InspectionTemplate::load($copyFromTemplateId, true);  // Load properties.
-         
-         // Clear/modify select fields.
-         $inspectionTemplate->templateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
-         $inspectionTemplate->name = $inspectionTemplate->name . "_copy";
-      }
       else
       {
-         $inspectionTemplate = new InspectionTemplate();
+         // Copied template.
+         if ($copyFromTemplateId != InspectionTemplate::UNKNOWN_TEMPLATE_ID)
+         {
+            $inspectionTemplate = InspectionTemplate::load($copyFromTemplateId, true);  // Load properties.
+            
+            // Clear/modify select fields.
+            $inspectionTemplate->templateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
+            $inspectionTemplate->name = $inspectionTemplate->name . "_copy";
+         }
+         // New template.
+         else
+         {
+            $inspectionTemplate = new InspectionTemplate();
+            
+            // Start with a single property.
+            $inspectionTemplate->inspectionProperties[] = new InspectionProperty();
+         }
          
-         // Start with a single property.
-         $inspectionTemplate->inspectionProperties[] = new InspectionProperty();
+         // Set the inspection type, if specified in the params.
+         $params = getParams();
+         if ($params->keyExists("inspectionType"))
+         {
+            $inspectionTemplate->inspectionType = $params->getInt("inspectionType");
+         }
       }
    }
    
@@ -356,7 +369,7 @@ function getInspectionProperties()
       $propertyIndex = 0;
       foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
       {
-         $html .= getInspectionRow($propertyIndex, $inspectionProperty);
+         $html .= getInspectionRow($inspectionTemplate->inspectionType, $propertyIndex, $inspectionProperty);
          
          $propertyIndex++;
       }
@@ -365,9 +378,8 @@ function getInspectionProperties()
    return ($html);
 }
 
-function getInspectionRow($propertyIndex, $inspectionProperty)
-{
-   
+function getInspectionRow($inspectionType, $propertyIndex, $inspectionProperty)
+{   
    $name = "property" . $propertyIndex;
    
    $propertyId = $inspectionProperty ? $inspectionProperty->propertyId : "0";
@@ -376,7 +388,7 @@ function getInspectionRow($propertyIndex, $inspectionProperty)
    $dataType = $inspectionProperty ? $inspectionProperty->dataType : InspectionDataType::UNKNOWN;
    $dataUnits = $inspectionProperty ? $inspectionProperty->dataUnits : InspectionDataUnits::UNKNOWN;
    $ordering = $inspectionProperty ? $inspectionProperty->ordering : "$propertyIndex";
-   
+
    $dataTypeOptions = getDataTypeOptions($dataType);
    $dataUnitsOptions = getDataUnitsOptions($dataUnits);
    
@@ -389,13 +401,34 @@ function getInspectionRow($propertyIndex, $inspectionProperty)
       <input name="{$name}_ordering" type="hidden" form="input-form" value="$ordering" $disabled>
       <td></td>
       <td><input name="{$name}_name" type="text" form="input-form" value="$propertyName" $disabled></td>
+HEREDOC;
+   
+   // Starting in v1.3F, for certain inspection types, specification is entered via a drop-down, rather than a text box.
+   if (InspectionType::usesDefinedSpecifications($inspectionType))
+   {
+      $specificationOptions = Specification::getOptions($specification);
+      
+      $html .= 
+<<<HEREDOC
+      <td><select name="{$name}_specification" form="input-form" $disabled>$specificationOptions</select></td>
+HEREDOC;
+   }
+   else
+   {
+      $html .=
+<<<HEREDOC
       <td><input name="{$name}_specification" type="text" form="input-form" value="$specification" $disabled></td>
+HEREDOC;
+   }
+   
+   $html .=
+<<<HEREDOC
       <td><select name="{$name}_dataType" form="input-form" $disabled>$dataTypeOptions</select></td>
       <td><select name="{$name}_dataUnits" form="input-form" $disabled>$dataUnitsOptions</select></td>
       <td><div class="flex-vertical"><button onclick="onReorderProperty($propertyIndex, -1)">&#x25B2</button><button onclick="onReorderProperty($propertyIndex, 1)">&#x25BC</button></div></td>
       <td><i onclick="onDeleteProperty($propertyIndex)" class="material-icons icon-button">delete</i></td>
       <td></td> <!-- for padding -->   
-</tr>
+   </tr>
 HEREDOC;
    
    return ($html);
@@ -568,7 +601,7 @@ if (!Authentication::isAuthenticated())
    
       function getNewInspectionRow()
       {
-         var innerHtml = "<?php echo preg_replace( "/\r|\n/", "", addslashes(getInspectionRow("@", null)));?>";
+         var innerHtml = "<?php echo preg_replace( "/\r|\n/", "", addslashes(getInspectionRow(getInspectionType(), "@", null)));?>";
 
          innerHtml = innerHtml.replace(/@/g, propertyCount);
 
@@ -578,7 +611,7 @@ if (!Authentication::isAuthenticated())
       }
 
       // Initialize visibility of optional properties.
-      onInspectionTypeChange();
+      updateControls();
 
       // Setup event handling on all DOM elements.
       document.getElementById("cancel-button").onclick = function(){onCancel();};

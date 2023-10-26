@@ -653,4 +653,8 @@ button.hidden,
 .attachment .icon-button:hover {
    color: var(--accent-color-dark);
 }
+
+.priority-icon {
+	color: red;
+}
    

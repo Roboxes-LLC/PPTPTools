@@ -197,6 +197,19 @@ if (!Authentication::isAuthenticated())
          //Define Table Columns
          columns:[
             {title:"Id",              field:"inspectionId",        hozAlign:"left", visible:false},
+            {title:"",                field:"isPriority",          hozAlign:"left", responsive:1, width: 25,
+               formatter:function(cell, formatterParams, onRendered){
+                  let cellValue = "";
+                  let isPriority = (cell.getValue() != 0);
+                  
+                  if (isPriority)
+                  {
+                     cellValue = "<i class=\"material-icons priority-icon\">priority_high</i>"
+                  }
+
+                  return (cellValue);
+               }
+            },
             {title:"Inspection Type", field:"inspectionTypeLabel", hozAlign:"left", responsive:1},
             {title:"Name",            field:"name",                hozAlign:"left", responsive:2, headerFilter:true},
             {title:"Inspection Date", field:"dateTime",            hozAlign:"left", responsive:0,
@@ -213,6 +226,7 @@ if (!Authentication::isAuthenticated())
                   invalidPlaceholder:"---"
                }
             },
+            {title:"Created By",      field:"authorName",          hozAlign:"left",   responsive:0, headerFilter:true},
             {title:"Inspector",       field:"inspectorName",       hozAlign:"left",   responsive:0, headerFilter:true},
             {title:"Mfg Date",        field:"mfgDate",             hozAlign:"left",   responsive:0,
                formatter:"datetime",  // Requires moment.js 
@@ -232,7 +246,7 @@ if (!Authentication::isAuthenticated())
                   return (passCount + "/" + (count - naCount));
                }
             },
-            {title:"Pass/Fail",       field:"inspectionStatus",    hozAlign:"center", responsive:0, headerFilter:true,
+            {title:"Status",       field:"inspectionStatus",    hozAlign:"center", responsive:0, headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   var label = cell.getRow().getData().inspectionStatusLabel;
                   var cssClass = cell.getRow().getData().inspectionStatusClass;
