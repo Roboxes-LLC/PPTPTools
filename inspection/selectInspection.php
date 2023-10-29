@@ -192,15 +192,6 @@ if (!Authentication::isAuthenticated())
       menu.setMenuItemSelected(<?php echo AppPage::INSPECTION ?>); 
       
       preserveSession();
-      
-      // TODO: Add getJavascript(InspectionType) function
-      const OASIS = <?php echo InspectionType::OASIS; ?>;
-      const FIRST_PART = <?php echo InspectionType::FIRST_PART; ?>;
-      const LINE = <?php echo InspectionType::LINE; ?>;
-      const QCP = <?php echo InspectionType::QCP; ?>;
-      const IN_PROCESS = <?php echo InspectionType::IN_PROCESS; ?>;
-      const GENERIC = <?php echo InspectionType::GENERIC; ?>;
-      const FINAL = <?php echo InspectionType::FINAL; ?>;
    
       var inspectionTypeValidator = new SelectValidator("inspection-type-input");
       var jobNumberValidator = new SelectValidator("job-number-input");
@@ -214,7 +205,7 @@ if (!Authentication::isAuthenticated())
       document.getElementById("cancel-button").onclick = function(){window.history.back();};
       document.getElementById("next-button").onclick = function(){onSelectInspectionTemplate();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-      document.getElementById("inspection-type-input").onclick = function(){onInspectionTypeChanged();};
+      document.getElementById("inspection-type-input").onchange = function(){onInspectionTypeChanged();};
    </script>
 
 </body>
