@@ -1,5 +1,41 @@
 <?php
 
+// *****************************************************************************
+//                             Notification Priority
+
+abstract class NotificationPriority
+{
+   const UNKNOWN = 0;
+   const FIRST = 1;
+   // Informational
+   const INFORMATIONAL = NotificationPriority::FIRST;
+   // Timely
+   const PRIORITY = 2;
+   // Problematic, but not devastating.
+   const WARNING = 3;
+   // Devastating and immediate.
+   const CRITICAL = 4;
+   const LAST = 5;
+   const COUNT = NotificationPriority::LAST - NotificationPriority::FIRST;
+   
+   public static $values = array(NotificationPriority::INFORMATIONAL, NotificationPriority::PRIORITY, NotificationPriority::WARNING, NotificationPriority::CRITICAL);
+   
+   public static function getLabel($priority)
+   {
+      $labels = array("", "Informational", "Priority", "Warning", "Critical");
+      
+      return ($labels[$priority]);
+   }
+   
+   public static function getClass($priority)
+   {
+      return (strtolower(NotificationPriority::getLabel($priority)));
+   }
+}
+
+// *****************************************************************************
+//                                   Notification
+
 class Notification
 {
    const UNKNOWN = 0;

@@ -6,7 +6,7 @@ require_once ROOT.'/core/common/notificationEmail.php';
 class NotificationEmailTest
 {
    // Test constants.
-   private const INSPECTION_ID = 46993;
+   private const INSPECTION_ID = 46988;
    private const TO_USER_ID = 1975;
    
    public static function run()
@@ -28,7 +28,7 @@ class NotificationEmailTest
       {
          if (in_array($notificationType, NotificationEmail::$supportedNotificationTypes))
          {
-            $notificationEmail = new NotificationEmail($notificationType, (object)array("inspectionId" => NotificationEmailTest::INSPECTION_ID));
+            $notificationEmail = new NotificationEmail($notificationType, NotificationPriority::INFORMATIONAL, (object)array("inspectionId" => NotificationEmailTest::INSPECTION_ID));
             
             echo 
 <<< HEREDOC
@@ -37,6 +37,18 @@ class NotificationEmailTest
             </div>
 HEREDOC;
          }
+      }
+      
+      foreach (NotificationPriority::$values as $notificationPriority)
+      {
+         $notificationEmail = new NotificationEmail(Notification::FINAL_INSPECTION, $notificationPriority, (object)array("inspectionId" => NotificationEmailTest::INSPECTION_ID));
+            
+         echo
+<<< HEREDOC
+         <div style="width: 800px; margin-bottom:25px">
+            {$notificationEmail->getHtml()}
+         </div>
+HEREDOC;
       }
    }
    

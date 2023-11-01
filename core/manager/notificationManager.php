@@ -7,10 +7,11 @@ class NotificationManager
    // **************************************************************************
    //                          System event handling
    
-   public static function onFinalInspectionCreated($inspectionId)
+   public static function onFinalInspectionCreated($inspectionId,$isPriority)
    {
       NotificationManager::sendNotification(
          Notification::FINAL_INSPECTION,
+         $isPriority ? NotificationPriority::PRIORITY : NotificationPriority::INFORMATIONAL,
          (object)array("inspectionId" => $inspectionId));
    }
    
@@ -18,12 +19,13 @@ class NotificationManager
    {
       NotificationManager::sendNotification(
          Notification::FIRST_PART_INSPECTION,
+         NotificationPriority::INFORMATIONAL,
          (object)array("inspectionId" => $inspectionId));
    }
    
    // **************************************************************************
    
-   private static function sendNotification($notificationType, $details)
+   private static function sendNotification($notificationType, $priority, $details)
    {
       // TODO: Augment to match FlexScreen Inventory.
       
@@ -37,18 +39,18 @@ class NotificationManager
       
       if (!empty($userIds))
       {
-         $result = NotificationManager::sendEmailNotification($userIds, $notificationType, $details);
+         $result = NotificationManager::sendEmailNotification($userIds, $notificationType, $priority, $details);
          
          // Debug
          //var_dump($result);
       }
    }
    
-   private static function sendEmailNotification($userIds, $notificationType, $details)
+   private static function sendEmailNotification($userIds, $notificationType, $priority, $details)
    {
       $result = new EmailResult();
       
-      $email = new NotificationEmail($notificationType, $details);
+      $email = new NotificationEmail($notificationType, $priority, $details);
       
       if ($email->validate())
       {

@@ -18,6 +18,24 @@
             text-align: center;
          }
          
+         .banner.informational {
+         }
+         
+         .banner.priority {
+            background: #4287f5;
+            color: white;
+         }
+         
+         .banner.warning {
+            background: orange;
+            color: white;
+         }
+         
+         .banner.critical {
+            background: red;
+            color: white;
+         }
+         
          .content {
             width: 75%;
             padding: 25px;
@@ -56,7 +74,7 @@
       </style>
    </head>
    <body>
-      <div class="banner">An alert has been generated for <b><?php echo $templateParams->siteName ?></b></div>
+      <div class="banner <?php echo $templateParams->priorityClass ?>"><?php echo $templateParams->alertDescription ?> has been generated for <b><?php echo $templateParams->siteName ?></b></div>
       <div class="content">
          <div class="header">
             <img class="logo" style="float:left;" src="https://tools.pittsburghprecision.com/<?php echo $templateParams->logoSrc ?>"/>

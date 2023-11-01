@@ -2071,7 +2071,7 @@ $router->add("saveInspection", function($params) {
                   if ($newInspection && 
                       ($inspectionTemplate->inspectionType == InspectionType::FINAL))
                   {
-                     NotificationManager::onFinalInspectionCreated($inspection->inspectionId);
+                     NotificationManager::onFinalInspectionCreated($inspection->inspectionId, $inspection->isPriority);
                   }
                   else if (($inspectionTemplate->inspectionType == InspectionType::FIRST_PART) &&
                            (!$inspection->incomplete()))

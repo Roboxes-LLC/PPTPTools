@@ -18,12 +18,15 @@ class NotificationEmail
    
    private $notificationType;
    
+   private $priority;
+   
    // An object containing notification specific details.
    private $details;
    
-   public function __construct($notificationType, $details = null)
+   public function __construct($notificationType, $priority, $details = null)
    {
       $this->notificationType = $notificationType;
+      $this->priority = $priority;
       $this->details = $details;
    }
    
@@ -66,6 +69,8 @@ class NotificationEmail
    {
       global $IMAGES_DIR;
       
+      $alertDescriptions = ["", "An alert", "A priority alert", "A warning alert", "A critical alert"];
+      
       $templateParams = new stdClass();
       
       $path = $IMAGES_DIR.'/pptp-logo-192x192.png';
@@ -74,7 +79,11 @@ class NotificationEmail
       //$base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
       $templateParams->logoSrc = $path;
       
+      $templateParams->alertDescription = $alertDescriptions[$this->priority];
+      
       $templateParams->siteName = "Pittsburgh Precision Turned Products";
+      
+      $templateParams->priorityClass = NotificationPriority::getClass($this->priority);
       
       $templateParams->notificationTitle = NotificationEmail::getTitle();
       
@@ -121,6 +130,10 @@ class NotificationEmail
       }
          
       $params->subject = "PPTP Tools Alert";
+      if ($this->priority > NotificationPriority::INFORMATIONAL)
+      {
+         $params->subject .= "[" . NotificationPriority::getLabel($this->priority) . "]";
+      }
          
       $params->message = $this->getHtml();
       
@@ -163,6 +176,7 @@ class NotificationEmail
                $jobNumber = "";
                $link = "";
                $quantity = "";
+               $priorityInspection = "";
                $showQuantity = "hidden";
                
                $inspectionId = $this->details->inspectionId;
@@ -203,6 +217,12 @@ class NotificationEmail
                   }
                   
                   $quantity = $inspection->quantity;
+                  
+                  if ($inspection->isPriority)
+                  {
+                     $priorityInspection = "Priority inspection! Please complete at your earliest convenience.";
+                  }
+                  
 
                   $link = "https://tools.pittsburghprecision.com/inspection/viewInspection.php?inspectionId=$inspectionId";
                }
@@ -224,6 +244,9 @@ class NotificationEmail
                   tr.hidden {
                      display: none
                   }
+                  p.priority {
+                     color: #4287f5;
+                  }
                </style>
                <table>
                   <tr>
@@ -242,6 +265,8 @@ class NotificationEmail
                      <td>$quantity</td>
                   </tr>
                </table>
+
+               <p class="priority">$priorityInspection</p>
 
                <p>Visit to <a href="$link">tools.pittsburghprecision.com</a> for more details.</p> 
 HEREDOC;
