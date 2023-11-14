@@ -329,7 +329,7 @@ class QuotePage extends Page
           
           case "send_quote":
           {
-             if (Page::requireParams($params, ["quoteId", "toEmail", "ccEmails", "fromEmail", "emailNotes"]))
+             if (Page::requireParams($params, ["quoteId", "toEmail", "ccEmails", "emailNotes"]))
              {
                 $quoteId = $params->getInt("quoteId");
                 $quote = Quote::load($quoteId);
@@ -338,38 +338,41 @@ class QuotePage extends Page
                 {
                    $toEmail = $params->get("toEmail");
                    $ccEmails = !empty($params->get("ccEmails")) ? explode(";", $params->get("ccEmails")) : array();
-                   $fromEmail = $params->get("fromEmail");
                    $emailNotes = $params->get("emailNotes");
                    
-                   $result = 
-                      EmailManager::sendQuoteEmail(
-                         $quoteId, 
-                         Authentication::getAuthenticatedUser()->employeeNumber, 
-                         $ccEmails,
-                         $emailNotes);
-                   
-                   if ($result->status == true)
+                   if ($this->validateEmailAddresses($toEmail, $ccEmails))
                    {
-                      if ($quote->send(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $emailNotes))
-                      {
-                         $this->result->quoteId = $quote->quoteId;
-                         $this->result->quote = $quote;
-                         $this->result->success = true;
-                         
-                         ActivityLog::logComponentActivity(
+                      $result = 
+                         EmailManager::sendQuoteEmail(
+                            $quoteId, 
                             Authentication::getAuthenticatedUser()->employeeNumber,
-                            ActivityType::SEND_QUOTE,
-                            $quote->quoteId,
-                            $quote->getQuoteNumber());
+                            $toEmail,
+                            $ccEmails,
+                            $emailNotes);
+                      
+                      if ($result->status == true)
+                      {
+                         if ($quote->send(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $emailNotes))
+                         {
+                            $this->result->quoteId = $quote->quoteId;
+                            $this->result->quote = $quote;
+                            $this->result->success = true;
+                            
+                            ActivityLog::logComponentActivity(
+                               Authentication::getAuthenticatedUser()->employeeNumber,
+                               ActivityType::SEND_QUOTE,
+                               $quote->quoteId,
+                               $quote->getQuoteNumber());
+                         }
+                         else
+                         {
+                            $this->error("Database error");
+                         }
                       }
                       else
                       {
-                         $this->error("Database error");
+                         $this->error("Failed to send email: $result->message");
                       }
-                   }
-                   else
-                   {
-                      $this->error("Failed to send email: $result->message");
                    }
                 }
                 else
@@ -692,6 +695,31 @@ class QuotePage extends Page
        
        // quoteStatusLabel
        $quote->quoteStatusLabel = QuoteStatus::getLabel($quote->quoteStatus);
+   }
+   
+   private function validateEmailAddresses($toEmail, $ccEmails)
+   {
+      $isValid = true;
+      
+      if (!filter_var($toEmail, FILTER_VALIDATE_EMAIL))
+      {
+         $this->error("Invalid To: email address");
+         $isValid = false;
+      }
+      else
+      {
+         foreach ($ccEmails as $email)
+         {
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL))
+            {
+               $this->error("Invalid CC: email address");
+               $isValid = false;
+               break;
+            }
+         }
+      }
+      
+      return ($isValid);
    }
  }
  

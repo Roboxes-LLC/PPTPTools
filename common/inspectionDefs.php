@@ -346,7 +346,8 @@ abstract class Specification
    const PROFILOMETER = 10;
    const RINGS = 11;
    const VISUAL = 12;
-   const LAST = 123;
+   const PIPE_PLUG = 13;
+   const LAST = 14;
    const COUNT = Specification::LAST - Specification::FIRST;
    
    public static $values = [
@@ -358,6 +359,7 @@ abstract class Specification
       Specification::GAGE_PINS,
       Specification::MICS,
       Specification::OASIS,
+      Specification::PIPE_PLUG,
       Specification::PIPE_RING,
       Specification::PROFILOMETER,
       Specification::RINGS,
@@ -377,7 +379,8 @@ abstract class Specification
       "Pipe Ring",
       "Profilometer",
       "Rings",
-      "Visual"
+      "Visual",
+      "Pipe Plug"
    ];
    
    public static function getLabel($specification)

@@ -176,6 +176,7 @@ function isEditable($field)
    switch ($field)
    {
       case InputField::TOTAL_COST:
+      case InputField::FROM_EMAIL:
       {
          $isEditable = false;   
          break;

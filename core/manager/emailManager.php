@@ -137,12 +137,12 @@ class EmailManager
    // **************************************************************************
    //                                    Quote
    
-   public static function sendQuoteEmail($quoteId, $userId, $ccEmails, $notes)
+   public static function sendQuoteEmail($quoteId, $userId, $toEmail, $ccEmails, $notes)
    {
       $quoteEmail = new QuoteEmail($quoteId);
       $quoteEmail->setNotes($notes);
       
-      $result = $quoteEmail->send($userId, $ccEmails);
+      $result = $quoteEmail->send($userId, $toEmail, $ccEmails);
       
       return ($result);
    }

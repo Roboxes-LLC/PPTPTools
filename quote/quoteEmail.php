@@ -75,7 +75,7 @@ class QuoteEmail
       return ($html);
    }
    
-   public function send($fromUserId, $ccEmails = [])
+   public function send($fromUserId, $toEmail, $ccEmails = [])
    {
       $result = new EmailResult();
       
@@ -86,7 +86,7 @@ class QuoteEmail
       }
       else
       {
-         $result = EmailManager::sendEmail($this->getEmailParams($fromUserId, $ccEmails));
+         $result = EmailManager::sendEmail($this->getEmailParams($fromUserId, $toEmail, $ccEmails));
       }
       
       return ($result);
@@ -206,7 +206,7 @@ class QuoteEmail
       return ($templateParams);
    }
    
-   private function getEmailParams($userId, $ccEmails)
+   private function getEmailParams($userId, $toEmail, $ccEmails)
    {
       $params = new EmailParams();
       
@@ -223,19 +223,8 @@ class QuoteEmail
          
          // toEmail
          // toName
-         $contact = Contact::load($this->quote->contactId);
-         if ($contact)
-         {
-            // For testing
-            /*
-            $params->toEmail = $user->email;  // Send to self
-            $params->toName = $user->getFullName();
-            */
-            
-            // For production
-            $params->toEmail = $contact->email;
-            $params->toName = $contact->getFullName();
-         }
+         $params->toEmail = $toEmail;
+         $params->toName = $this->getContactName($toEmail);
          
          // bcc
          if (!empty($ccEmails))
@@ -293,6 +282,23 @@ class QuoteEmail
       }
       
       return ($pdfName);
+   }
+   
+   private function getContactName($email)
+   {
+      $contactName = $email;
+      
+      // If the provided email is that of the quote contact, use his/her name.
+      if ($this->quote)
+      {
+         $contact = Contact::load($this->quote->contactId);
+         if ($contact && ($contact->email == $email))
+         {
+            $contactName = $contact->getFullName();
+         }
+      }
+      
+      return ($contactName);
    }
 }
 

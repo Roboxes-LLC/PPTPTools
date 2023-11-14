@@ -145,7 +145,17 @@ class Quote
    
    public function getQuoteNumber()
    {
-      $dt = DateTime::createFromFormat("Y-m-d", Time::now("Y-m-d"));  // TODO: Requested date
+      $quoteAction = $this->getRequestedAction();
+      
+      $dt = null;
+      if ($quoteAction)
+      {
+         $dt = Time::dateTimeObject($quoteAction->dateTime);
+      }
+      else 
+      {
+         $dt = Time::dateTimeObject(Time::now());
+      }
       
       $quoteNumber = 
          Quote::QUOTE_NUMBER_PREFIX .

@@ -9,7 +9,7 @@ require_once ROOT.'/core/manager/emailManager.php';
 
 class NotificationEmail
 {
-   const FROM_EMAIL = "noreply@pittsburghprecision.com";
+   const FROM_EMAIL = "noreply@pptptools.com";
 
    const FROM_NAME = "PPTP Tools";
    
@@ -132,7 +132,7 @@ class NotificationEmail
       $params->subject = "PPTP Tools Alert";
       if ($this->priority > NotificationPriority::INFORMATIONAL)
       {
-         $params->subject .= "[" . NotificationPriority::getLabel($this->priority) . "]";
+         $params->subject .= " [" . NotificationPriority::getLabel($this->priority) . "]";
       }
          
       $params->message = $this->getHtml();

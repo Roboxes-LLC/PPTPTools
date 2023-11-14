@@ -24,6 +24,12 @@ class UserPage extends Page
                {
                   $this->result->confirmed = true;
                }
+               // Special case for longer employee numbers.
+               else if ((strlen($user->employeeNumber) > 3) &&  // MAX_SEQUENCE_LENGTH
+                        (substr($user->employeeNumber, 0, 3) == $pin))
+               {
+                  $this->result->confirmed = true;
+               }
             }
             break;
          }
