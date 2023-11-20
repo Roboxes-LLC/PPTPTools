@@ -151,3 +151,7 @@ input.nonApplicable:checked + label > div  {
 .optional-property-container.hidden {
 	display: none;
 }
+
+.approve-row {
+   font-size: 20px;
+}

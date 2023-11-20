@@ -373,6 +373,18 @@ function approveAll()
    }
 }
 
+function approveRow(propertyId)
+{
+   var inspectionInputs = 
+      document.querySelectorAll(`.inspection-table tr[data-property-id="${propertyId}"] .inspection-status-input`);
+   
+   for (var input of inspectionInputs)
+   {
+      input.value = InspectionStatus.PASS;
+      onInspectionStatusUpdate(input);
+   }
+}
+
 function formattedDate(date)
 {
    // Convert to Y-M-D format, per HTML5 Date control.

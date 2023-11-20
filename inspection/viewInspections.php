@@ -210,8 +210,8 @@ if (!Authentication::isAuthenticated())
                   return (cellValue);
                }
             },
-            {title:"Inspection Type", field:"inspectionTypeLabel", hozAlign:"left", responsive:1},
-            {title:"Name",            field:"name",                hozAlign:"left", responsive:2, headerFilter:true},
+            {title:"Inspection Type", field:"inspectionTypeLabel", hozAlign:"left", responsive:0},
+            {title:"Name",            field:"name",                hozAlign:"left", responsive:0, headerFilter:true},
             {title:"Inspection Date", field:"dateTime",            hozAlign:"left", responsive:0,
                formatter:"datetime",  // Requires moment.js 
                formatterParams:{
@@ -238,7 +238,25 @@ if (!Authentication::isAuthenticated())
             {title:"Operator",        field:"operatorName",        hozAlign:"left",   responsive:0, headerFilter:true},
             {title:"Job",             field:"jobNumber",           hozAlign:"left",   responsive:0, headerFilter:true},
             {title:"Work Center",     field:"wcLabel",             hozAlign:"left",   responsive:0, headerFilter:true},
-            {title:"Success Rate",    field:"successRate",         hozAlign:"left",   responsive:3,
+            {title:"In Process #",    field:"inspectionNumber",    hozAlign:"left",   responsive:0, headerFilter:true,
+              formatter:function(cell, formatterParams, onRendered){
+                  let cellValue = "";
+
+                  var value = parseInt(cell.getValue());
+                  
+                  if (value == 1)
+                  {
+                     cellValue = "First";
+                  }
+                  else if (value == 2)
+                  {
+                     cellValue = "Second";
+                  }
+   
+                  return (cellValue);
+               }
+            },
+            {title:"Success Rate",    field:"successRate",         hozAlign:"left",   responsive:0,
                formatter:function(cell, formatterParams, onRendered){
                   var count = cell.getRow().getData().samples;
                   var naCount = cell.getRow().getData().naCount;

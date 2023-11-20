@@ -19,7 +19,7 @@ class InspectionTable
          
          $header = InspectionTable::getHeader($inspection, $inspectionTemplate, $sampleSize, $allowQuickInspection);
          
-         $rows = InspectionTable::getRows($inspection, $inspectionTemplate, $sampleSize, $isEditable);
+         $rows = InspectionTable::getRows($inspection, $inspectionTemplate, $sampleSize, $isEditable, $allowQuickInspection);
    
          $html = 
 <<<HEREDOC
@@ -59,12 +59,13 @@ HEREDOC;
    {
       $html = "";
       
-      $quickInspection = InspectionTable::getQuickInspectionButton($allowQuickInspection);
+      $quickInspection = InspectionTable::getQuickInspectionButton($allowQuickInspection);  // approveAll
       
       $html .=
 <<<HEREDOC
       <tr>
          <td>$quickInspection</td>
+         <td></td>
          <td></td>
 HEREDOC;
       
@@ -109,7 +110,7 @@ HEREDOC;
       return ($html);
    }   
    
-   private static function getRows($inspection, $inspectionTemplate, $sampleSize, $isEditable)
+   private static function getRows($inspection, $inspectionTemplate, $sampleSize, $isEditable, $allowQuickInspection)
    {
       $html = "";
             
@@ -120,26 +121,29 @@ HEREDOC;
          $expandButtonDisplayStyle = $hasData ? "none" : "";
          $condenseButtonDisplayStyle = $hasData ? "" : "none";
          
-         $html .= InspectionTable::getRow($inspection, $inspectionProperty, $sampleSize, $isEditable);
+         $html .= InspectionTable::getRow($inspection, $inspectionProperty, $sampleSize, $isEditable, $allowQuickInspection);
       }
       
       return ($html);
    }
       
-   private static function getRow($inspection, $inspectionProperty, $sampleSize, $isEditable)
+   private static function getRow($inspection, $inspectionProperty, $sampleSize, $isEditable, $allowQuickInspection)
    {
       $html = "";
+      
+      $quickInspection = InspectionTable::getQuickInspectionButton($allowQuickInspection, $inspectionProperty->propertyId);  // approveRow
       
       $hasData = InspectionTable::hasData($inspection, $inspectionProperty->propertyId);
       $dataRowDisplayStyle = $hasData ? "" : "none";
       $expandButtonDisplayStyle = $hasData ? "none" : "";
       $condenseButtonDisplayStyle = $hasData ? "" : "none";
       
-      $html .= "<tr>";
+      $html .= "<tr data-property-id=\"$inspectionProperty->propertyId\">";
       
       $html .=
 <<<HEREDOC
          <td><div class="expand-button" style="display:$expandButtonDisplayStyle;" onclick="showData(this)">+</div><div class="condense-button" style="display:$condenseButtonDisplayStyle;" onclick="hideData(this)">-</div></td>
+         <td>$quickInspection</td>         
          <td>
             <div class="flex-vertical">
                <div class="inspection-property-name">$inspectionProperty->name</div>
@@ -171,7 +175,7 @@ HEREDOC;
       
       $html .= "</tr>";
       
-      $html .= "<tr style=\"display:$dataRowDisplayStyle;\"><td/><td/>";
+      $html .= "<tr style=\"display:$dataRowDisplayStyle;\"><td/><td/><td/>";
       
       for ($sampleIndex = 0; $sampleIndex < $sampleSize; $sampleIndex++)
       {
@@ -210,15 +214,19 @@ HEREDOC;
       return ($hasData);
    }
    
-   private static function getQuickInspectionButton($allowQuickInspection)
+   private static function getQuickInspectionButton($allowQuickInspection, $propertyId = 0)
    {
       $html = "";
       
       if ($allowQuickInspection)
       {
+         $approveAll = ($propertyId == 0);
+         $function = $approveAll ? "approveAll()" : "approveRow($propertyId)";
+         $class = $approveAll ? "approve-all" : "approve-row";
+         
          $html =
 <<<HEREDOC
-         <i class="material-icons" onclick="approveAll()">thumb_up</i>
+         <i class="material-icons $class" onclick="$function">thumb_up</i>
 HEREDOC;
       }
       
@@ -226,7 +234,7 @@ HEREDOC;
    }
    
    private static function getInspectionInput($inspectionProperty, $sampleIndex, $inspectionResult, $isEditable)
-   {
+   {  
       $html = "<td>";
       
       if ($inspectionProperty)
