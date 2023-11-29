@@ -1856,7 +1856,17 @@ $router->add("inspectionData", function($params) {
          }
          
          $row["dateTime"] = $inspection->dateTime;
-         $row["mfgDate"] = $inspection->mfgDate;
+         
+         $row["timeCardId"] = $inspection->timeCardId;
+         $row["jobNumber"] = $inspection->getJobNumber();
+         $row["wcNumber"] = $inspection->getWcNumber();
+         $row["wcLabel"] = JobInfo::getWcLabel($row["wcNumber"]);
+         $row["mfgDate"] = $inspection->getManufactureDate();
+         
+         if ($inspection->timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+         {
+            $row["panTicketCode"] = PanTicket::getPanTicketCode($inspection->timeCardId);
+         }
          
          $row["inspectionTypeLabel"] = InspectionType::getLabel(intval($row["inspectionType"]));
          
@@ -1877,13 +1887,11 @@ $router->add("inspectionData", function($params) {
             $row["inspectorName"] = $userInfo->getFullName();
          }
          
-         $userInfo = UserInfo::load($inspection->operator);
+         $userInfo = UserInfo::load($inspection->getOperator());
          if ($userInfo)
          {
             $row["operatorName"] = $userInfo->getFullName();
          }
-         
-         $row["wcLabel"] = JobInfo::getWcLabel($inspection->wcNumber);
          
          $row["count"] = $inspection->getCount(true);
          $row["naCount"] = $inspection->getCountByStatus(InspectionStatus::NON_APPLICABLE);
@@ -1952,25 +1960,32 @@ $router->add("saveInspection", function($params) {
          $inspectionTemplate = InspectionTemplate::load($inspection->templateId, true);  // Load properties. 
          
          if ($inspectionTemplate)
-         {            
-            if (isset($params["jobNumber"]))
+         {   
+            if (isset($params["timeCardId"]) && $params->get("timeCardId"))
             {
-               $inspection->jobNumber = $params->get("jobNumber");
+               $inspection->timeCardId = $params->get("timeCardId");
             }
-            
-            if (isset($params["wcNumber"]))
+            else
             {
-               $inspection->wcNumber = $params->get("wcNumber");
-            }
-
-            if (isset($params["operator"]))
-            {
-               $inspection->operator = $params->get("operator");
-            }
-            
-            if (isset($params["mfgDate"]))
-            {
-               $inspection->mfgDate = Time::startOfDay($params->get("mfgDate"));
+               if (isset($params["jobNumber"]))
+               {
+                  $inspection->jobNumber = $params->get("jobNumber");
+               }
+               
+               if (isset($params["wcNumber"]))
+               {
+                  $inspection->wcNumber = $params->get("wcNumber");
+               }
+   
+               if (isset($params["operator"]))
+               {
+                  $inspection->operator = $params->get("operator");
+               }
+               
+               if (isset($params["mfgDate"]))
+               {
+                  $inspection->mfgDate = Time::startOfDay($params->get("mfgDate"));
+               }
             }
             
             if (isset($params["inspectionNumber"]))
@@ -1984,13 +1999,6 @@ $router->add("saveInspection", function($params) {
             }
             
             $inspection->isPriority = $params->keyExists("isPriority");
-            
-            $jobId = JobInfo::getJobIdByComponents($params->get("jobNumber"), $params->getInt("wcNumber"));
-               
-            if ($jobId != JobInfo::UNKNOWN_JOB_ID)
-            {
-               $inspection->jobId = $jobId;
-            }
             
             foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
             {

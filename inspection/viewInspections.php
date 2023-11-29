@@ -192,12 +192,13 @@ if (!Authentication::isAuthenticated())
          //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
          layout:"fitData",
          responsiveLayout:"hide", // enable responsive layouts
+         cellVertAlign:"middle",
          ajaxURL:url,
          ajaxParams:params,
          //Define Table Columns
          columns:[
             {title:"Id",              field:"inspectionId",        hozAlign:"left", visible:false},
-            {title:"",                field:"isPriority",          hozAlign:"left", responsive:1, width: 25,
+            {title:"",                field:"isPriority",          hozAlign:"left", responsive:0, width: 25,
                formatter:function(cell, formatterParams, onRendered){
                   let cellValue = "";
                   let isPriority = (cell.getValue() != 0);
@@ -210,6 +211,23 @@ if (!Authentication::isAuthenticated())
                   return (cellValue);
                }
             },
+            {title:"Ticket",            field:"panTicketCode",     hozAlign:"left", responsive:0, headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = "";
+                  
+                  var timeCardId = cell.getRow().getData().timeCardId;
+                  
+                  if (timeCardId != 0)
+                  {
+                     cellValue = "<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().panTicketCode;
+                  }
+                  
+                  return (cellValue);
+               },
+               formatterPrint:function(cell, formatterParams, onRendered){
+                  return (cell.getValue());
+              }                 
+            },  
             {title:"Inspection Type", field:"inspectionTypeLabel", hozAlign:"left", responsive:0},
             {title:"Name",            field:"name",                hozAlign:"left", responsive:0, headerFilter:true},
             {title:"Inspection Date", field:"dateTime",            hozAlign:"left", responsive:0,
@@ -280,7 +298,12 @@ if (!Authentication::isAuthenticated())
          cellClick:function(e, cell){
             var inspectionId = parseInt(cell.getRow().getData().inspectionId);
             
-            if (cell.getColumn().getField() == "delete")
+            if ((cell.getColumn().getField() == "panTicketCode") &&
+                (cell.getRow().getData().timeCardId != 0))
+            {               
+               document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
+            }  
+            else if (cell.getColumn().getField() == "delete")
             {
                onDeleteInspection(inspectionId);
             }

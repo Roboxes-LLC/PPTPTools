@@ -1500,9 +1500,19 @@ class PPTPDatabase extends MySqlDatabase
          $typeClause = "inspectiontemplate.inspectionType = $inspectionType AND ";
       }
       
-      $query = "SELECT * FROM inspection " .
+      // Manufacture date can be specified by time card id, or explicitly.
+      $mySqlStartDate = Time::toMySqlDate($startDate);
+      $mySqlEndDate = Time::toMySqlDate($endDate);
+      $mfgDateClause =
+<<<HEREDOC
+         ((timecard.manufactureDate BETWEEN '$mySqlStartDate' AND '$mySqlEndDate') OR (inspection.mfgDate BETWEEN '$mySqlStartDate' AND '$mySqlEndDate'))
+HEREDOC;
+
+      $query = "SELECT inspection.*, inspectiontemplate.* FROM inspection " .
                "INNER JOIN inspectiontemplate ON inspection.templateId = inspectiontemplate.templateId " .
-               "WHERE $userClause $typeClause inspection.mfgDate BETWEEN '" . Time::toMySqlDate($startDate) . "' AND '" . Time::toMySqlDate($endDate) . "' ORDER BY inspection.dateTime DESC, inspectionId DESC;";
+               "LEFT JOIN timecard ON inspection.timeCardId = timecard.timeCardId " .
+               "WHERE $userClause $typeClause $mfgDateClause " .
+               "ORDER BY inspection.dateTime DESC, inspectionId DESC;";
       
       $result = $this->query($query);
       
@@ -1540,9 +1550,9 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "INSERT INTO inspection " .
-      "(templateId, dateTime, author, inspector, comments, jobId, jobNumber, wcNumber, operator, mfgDate, inspectionNumber, quantity, isPriority, samples, naCount, passCount, warningCount, failCount, dataFile) " .
+      "(templateId, dateTime, author, inspector, comments, timeCardId, jobNumber, wcNumber, operator, mfgDate, inspectionNumber, quantity, isPriority, samples, naCount, passCount, warningCount, failCount, dataFile) " .
       "VALUES " .
-      "('$inspection->templateId', '$dateTime', '$inspection->author', '$inspection->inspector', '$inspection->comments', '$inspection->jobId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', $mfgClause, '$inspection->inspectionNumber', '$inspection->quantity', '$isPriority', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->warningCount', '$inspection->failCount', '$inspection->dataFile');";
+      "('$inspection->templateId', '$dateTime', '$inspection->author', '$inspection->inspector', '$inspection->comments', '$inspection->timeCardId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', $mfgClause, '$inspection->inspectionNumber', '$inspection->quantity', '$isPriority', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->warningCount', '$inspection->failCount', '$inspection->dataFile');";
 
       $result = $this->query($query);
       
@@ -1585,7 +1595,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "UPDATE inspection " .
-      "SET dateTime = '$dateTime', author = '$inspection->author', inspector = '$inspection->inspector', comments = '$inspection->comments', jobId = '$inspection->jobId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', $mfgClause, inspectionNumber = '$inspection->inspectionNumber', quantity = '$inspection->quantity', isPriority = '$isPriority', samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', warningCount = '$inspection->warningCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
+      "SET dateTime = '$dateTime', author = '$inspection->author', inspector = '$inspection->inspector', comments = '$inspection->comments', timeCardId = '$inspection->timeCardId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', $mfgClause, inspectionNumber = '$inspection->inspectionNumber', quantity = '$inspection->quantity', isPriority = '$isPriority', samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', warningCount = '$inspection->warningCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
       "WHERE inspectionId = '$inspection->inspectionId';";
 
       $result = $this->query($query);

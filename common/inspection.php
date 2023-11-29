@@ -84,13 +84,11 @@ class Inspection
    public $comments;
    
    // Properties for job-based inspections (LINE, QCP, IN_PROCESS).
-   public $jobId;
-   public $operator;
-   public $mfgDate;
-   
-   // Optional properties for GENERIC inspections.
+   public $timeCardId;
    public $jobNumber;
    public $wcNumber;
+   public $operator;
+   public $mfgDate;
    
    // Properties for In Process inspections.
    public $inspectionNumber;  // 1 or 2
@@ -120,11 +118,11 @@ class Inspection
       $this->author = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->inspector = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->comments = "";
-      $this->jobId = JobInfo::UNKNOWN_JOB_ID;
-      $this->operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
-      $this->mfgDate = null;
+      $this->timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
       $this->jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
       $this->wcNumber = JobInfo::UNKNOWN_WC_NUMBER;
+      $this->operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->mfgDate = null;
       $this->inspectionNumber = 0;
       $this->quantity = 0;
       $this->isPriority = false;
@@ -136,38 +134,17 @@ class Inspection
       $this->dataFile = null;
       $this->inspectionResults = null;  // 2D array, indexed as [propertyId][sampleIndex]
    }
-   
-   /*
-   public function initialize($inspectionTemplate)
-   {
-      if ($inspectionTemplate)
-      {
-         $this->inspectionResults = array();
-         
-         foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
-         {
-            $this->inspectionResults[$inspectionProperty->propertyId] = array($inspectionTemplate->sampleSize);
-            
-            // TODO: This creates inspection results for FINAL inspections that are not needed.
-            for ($sampleSize = 0; $sampleSize < $inspectionTemplate->sampleSize; $sampleSize++)
-            {
-               $this->inspectionResults[$inspectionProperty->propertyId][$sampleSize] = null; 
-            }
-         }
-      }
-   }
-   */
-   
+      
    public function initializeFromOasisReport($oasisReport)
    {
       $this->templateId = InspectionTemplate::OASIS_TEMPLATE_ID;
       $this->author = $oasisReport->getEmployeeNumber();
       $this->inspector = $oasisReport->getEmployeeNumber();
       $this->comments = $oasisReport->getComments();
-      $this->jobId = JobInfo::UNKNOWN_JOB_ID;
-      $this->operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
       $this->jobNumber = $oasisReport->getPartNumber();
       $this->wcNumber = $oasisReport->getMachineNumber();
+      $this->operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->samples = $oasisReport->getPartInspectionCount();
       $this->naCount = 0;
       $this->warningCount = 0;
@@ -181,15 +158,15 @@ class Inspection
    {
       $this->inspectionId = intval($row['inspectionId']);
       $this->templateId = intval($row['templateId']);
-      $this->dateTime = Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
+      $this->dateTime = $row['dateTime'] ? Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s") : null;
       $this->author = intval($row['author']);
       $this->inspector = intval($row['inspector']);
       $this->comments = $row['comments'];
-      $this->jobId = $row['jobId'];
-      $this->operator = intval($row['operator']);
-      $this->mfgDate = $row['mfgDate'] ? Time::fromMySqlDate($row['mfgDate'], "Y-m-d") : null;
+      $this->timeCardId = $row["timeCardId"];
       $this->jobNumber = $row['jobNumber'];
       $this->wcNumber = intval($row['wcNumber']);
+      $this->operator = intval($row['operator']);
+      $this->mfgDate = $row['mfgDate'] ? Time::fromMySqlDate($row['mfgDate'], "Y-m-d") : null;
       $this->inspectionNumber = intval($row['inspectionNumber']);
       $this->quantity = intval($row['quantity']);
       $this->isPriority = filter_var($row["isPriority"], FILTER_VALIDATE_BOOLEAN);
@@ -257,6 +234,118 @@ class Inspection
             }
          }
       }
+   }
+   
+   public function getJobId()
+   {
+      $jobId = JobInfo::UNKNOWN_JOB_ID;
+      
+      // Specified by linked time card.
+      if ($this->timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+      {
+         $timeCardInfo = TimeCardInfo::load($this->timeCardId);
+         
+         $jobId = $timeCardInfo->jobId;
+      }
+      // Specified by components.
+      else
+      {
+         $jobId = JobInfo::getJobIdByComponents($this->jobNumber, $this->wcNumber);
+      }
+      
+      return ($jobId);
+   }
+   
+   public function getJobNumber()
+   {
+      $jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
+      
+      $jobId = $this->getJobId();
+      
+      if ($jobId != JobInfo::UNKNOWN_JOB_ID)
+      {
+         $jobInfo = JobInfo::load($jobId);
+         
+         if ($jobInfo)
+         {
+            $jobNumber = $jobInfo->jobNumber;
+         }
+      }
+      else
+      {
+         $jobNumber = $this->jobNumber;
+      }
+      
+      return ($jobNumber);
+   }
+   
+   public function getWcNumber()
+   {
+      $wcNumber = JobInfo::UNKNOWN_WC_NUMBER;
+      
+      $jobId = $this->getJobId();
+      
+      if ($jobId != JobInfo::UNKNOWN_JOB_ID)
+      {
+         $jobInfo = JobInfo::load($jobId);
+         
+         if ($jobInfo)
+         {
+            $wcNumber = $jobInfo->wcNumber;
+         }
+      }
+      else
+      {
+         $wcNumber = $this->wcNumber;
+      }
+      
+      return ($wcNumber);
+   }
+   
+   public function getOperator()
+   {
+      $employeeNumber = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      
+      // Specified by linked time card.
+      if ($this->timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+      {
+         $timeCardInfo = TimeCardInfo::load($this->timeCardId);
+         
+         if ($timeCardInfo)
+         {
+            $employeeNumber = $timeCardInfo->employeeNumber;
+         }
+      }
+      // Specified explicitly.
+      else
+      {
+         $employeeNumber = $this->operator;
+      }
+      
+      return ($employeeNumber);
+   }
+   
+   public function getManufactureDate()
+   {
+      $mfgDate = null;
+      
+      // Specified by linked time card.
+      if ($this->timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+      {
+         $timeCardInfo = TimeCardInfo::load($this->timeCardId);
+         
+         if ($timeCardInfo)
+         {
+            $mfgDate = $timeCardInfo->manufactureDate;
+         }
+      }
+      // Specified explicitly.
+      else
+      {
+         $mfgDate = $this->mfgDate;
+      }
+      
+      return ($mfgDate);
    }
    
    public function hasSummary()
@@ -505,7 +594,7 @@ if (isset($_GET["inspectionId"]))
       echo "templateId: " .   $inspection->templateId .   "<br/>";
       echo "dateTime: " .     $inspection->dateTime .     "<br/>";
       echo "inspector: " .    $inspection->inspector .    "<br/>";
-      echo "jobId: " .        $inspection->jobId .        "<br/>";
+      echo "timeCardId: " .   $inspection->timeCardId .   "<br/>";
       echo "operator: " .     $inspection->operator .     "<br/>";
       echo "jobNumber: " .    $inspection->jobNumber .    "<br/>";
       echo "wcNumber: " .     $inspection->wcNumber .     "<br/>";

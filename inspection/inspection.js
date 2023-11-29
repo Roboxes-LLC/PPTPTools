@@ -84,12 +84,12 @@ function onDeleteInspection(inspectionId)
 
 function isJobBasedInspection(inspectionType)
 {
-   return((inspectionType == OASIS) ||
-          (inspectionType == FIRST_PART) ||
-          (inspectionType == LINE) ||
-          (inspectionType == QCP) || 
-          (inspectionType == IN_PROCESS) ||
-          (inspectionType == FINAL));
+   return((inspectionType == InspectionType.OASIS) ||
+          (inspectionType == InspectionType.FIRST_PART) ||
+          (inspectionType == InspectionType.LINE) ||
+          (inspectionType == InspectionType.QCP) || 
+          (inspectionType == InspectionType.IN_PROCESS) ||
+          (inspectionType == InspectionType.FINAL));
 }
 
 function onInspectionTypeChange()
@@ -97,23 +97,31 @@ function onInspectionTypeChange()
    var inspectionType = document.getElementById("inspection-type-input").value;
    
    clear("job-number-input");
+   clear("pan-ticket-code-input");
    clear("wc-number-input");
+   clear("template-id-input");
+   
+   disable("job-number-input");
+   disable("wc-number-input");
+   disable("pan-ticket-code-input");
+   disable("template-id-input");
 
    if (isJobBasedInspection(inspectionType))
    {
-      show("job-number-input-container", "flex");
-      show("wc-number-input-container", "flex");
+      show("job-selection-container", "flex");
       
       enable("job-number-input");
-      enable("wc-number-input");
+      
+      if (inspectionType != InspectionType.FINAL)
+      {
+         enable("pan-ticket-code-input");
+      }
    }
    else
    {
-      hide("job-number-input-container");
-      hide("wc-number-input-container");
+      hide("job-selection-container", "flex");
       
-      disable("job-number-input");
-      disable("wc-number-input");
+      enable("template-id-input");
    }
 }
 
@@ -127,7 +135,11 @@ function onJobNumberChange()
    {
       disable("wc-number-input");
    }
-   else if (inspectionType != InspectionType.FINAL)
+   else if (inspectionType == InspectionType.FINAL)
+   {
+      enable("template-id-input");
+   }
+   else
    {
       enable("wc-number-input");
       
@@ -164,6 +176,75 @@ function onJobNumberChange()
       xhttp.open("GET", requestUrl, true);
       xhttp.send();  
    }
+}
+
+function onPanTicketCodeChange()
+{
+   var panTicketCode = document.getElementById("pan-ticket-code-input").value;
+   
+   // Clear fields.
+   clear("job-number-input");
+   clear("wc-number-input");
+   clear("template-id-input");
+   
+   if (panTicketCode == "")
+   {
+      enable("job-number-input");
+      
+      // Disable fields that are dependent on the job number.
+      disable("wc-number-input");
+      disable("template-id-input");
+      
+      // AJAX call to retrieve active jobs.
+      requestUrl = "../api/jobs/?onlyActive=true";
+      
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            updateJobOptions(response.jobs);
+            
+            updateTemplateId();
+         }
+         else
+         {
+            console.log("API call to retrieve jobs failed.");
+         }
+      });
+   }
+   else
+   {
+      disable("job-number-input");
+      disable("wc-number-input");
+      disable("template-id-input");
+      
+      // AJAX call to populate input fields based on pan ticket selection.
+      requestUrl = `../api/timeCardInfo/?panTicketCode=${panTicketCode}&expandedProperties=true`;
+      
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            updateJobOptions(new Array(response.jobNumber));
+            set("job-number-input", response.jobNumber);
+            
+            updateWcOptions(new Array({wcNumber: response.wcNumber, label:response.wcLabel}));
+            set("wc-number-input", response.wcNumber);
+            
+            updateTemplateId();
+            
+            enable("template-id-input");
+         }
+         else
+         {
+            // Invalidate time card input.
+            document.getElementById("pan-ticket-code-input").validator.color("#FF0000");
+         }
+      });
+   }
+}
+
+function onWcNumberChange()
+{
+   enable("template-id-input");
 }
 
 function updateTemplateId()
@@ -205,6 +286,26 @@ function updateTemplateId()
       xhttp.open("GET", requestUrl, true);
       xhttp.send();
    }
+}
+
+function updateJobOptions(jobNumbers)
+{
+   element = document.getElementById("job-number-input");
+   
+   while (element.firstChild)
+   {
+      element.removeChild(element.firstChild);
+   }
+
+   for (var jobNumber of jobNumbers)
+   {
+      var option = document.createElement('option');
+      option.innerHTML = jobNumber;
+      option.value = jobNumber;
+      element.appendChild(option);
+   }
+   
+   element.value = null;
 }
 
 function updateWcOptions(wcNumbers)
@@ -438,7 +539,6 @@ function onInspectionTypeChanged()
    else
    {
       enable("job-number-input");
-      enable ("wc-number-input");
    }
 }
 

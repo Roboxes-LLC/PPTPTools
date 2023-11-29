@@ -5,7 +5,9 @@ require_once ROOT.'/app/common/menu.php';
 require_once ROOT.'/common/header.php';
 require_once ROOT.'/common/inspection.php';
 require_once ROOT.'/common/isoInfo.php';
+require_once ROOT.'/common/panTicket.php';
 require_once ROOT.'/common/params.php';
+require_once ROOT.'/common/timeCardInfo.php';
 require_once ROOT.'/common/version.php';
 require_once ROOT.'/inspection/inspectionTable.php';
 
@@ -77,6 +79,10 @@ function isEditable($field)
    $isEditable = (($view == View::NEW_INSPECTION) ||
                   ($view == View::EDIT_INSPECTION));
    
+   // Disabled editing jobNumber, wcNumber, operator, and mfgDate if the inspection has
+   // a linked timecard.
+   $hasLinkedTimeCard = (getTimeCardId() != TimeCardInfo::UNKNOWN_TIME_CARD_ID);
+   
    switch ($field)
    {
       case InspectionInputField::INSPECTION_TYPE:
@@ -94,25 +100,33 @@ function isEditable($field)
       
       case InspectionInputField::JOB_NUMBER:
       {
-         $isEditable &= showOptionalProperty(OptionalInspectionProperties::JOB_NUMBER);
+         $isSpecified = ($hasLinkedTimeCard || (getJobNumber() != JobInfo::UNKNOWN_JOB_NUMBER));
+         
+         $isEditable &= (!$isSpecified && showOptionalProperty(OptionalInspectionProperties::JOB_NUMBER));
          break;
       }
       
       case InspectionInputField::WC_NUMBER:
       {
-         $isEditable &= showOptionalProperty(OptionalInspectionProperties::WC_NUMBER);
+         $isSpecified = ($hasLinkedTimeCard || (getWcNumber() != JobInfo::UNKNOWN_WC_NUMBER));
+         
+         $isEditable &= (!$isSpecified && showOptionalProperty(OptionalInspectionProperties::WC_NUMBER));
          break;
       }
       
       case InspectionInputField::OPERATOR:
       {
-         $isEditable &= showOptionalProperty(OptionalInspectionProperties::OPERATOR);
+         $isSpecified = ($hasLinkedTimeCard || (getOperator() != UserInfo::UNKNOWN_EMPLOYEE_NUMBER));
+         
+         $isEditable &= (!$isSpecified && showOptionalProperty(OptionalInspectionProperties::OPERATOR));
          break;
       }
       
       case InspectionInputField::MFG_DATE:
       {
-         $isEditable &= showOptionalProperty(OptionalInspectionProperties::MFG_DATE);
+         $isSpecified = ($hasLinkedTimeCard || (getMfgDate() != null));
+         
+         $isEditable &= (!$isSpecified && showOptionalProperty(OptionalInspectionProperties::MFG_DATE));
          break;
       }
       
@@ -198,13 +212,20 @@ function getNewInspection()
       $inspection->inspector = $userInfo->employeeNumber;
    }
    
-   $jobNumber =
-      ($params->keyExists("jobNumber") ? $params->get("jobNumber") : JobInfo::UNKNOWN_JOB_NUMBER);
+   $timeCardId = getTimeCardId();
    
-   $wcNumber =
-      ($params->keyExists("wcNumber") ? $params->get("wcNumber") : 0);
-   
-   $inspection->jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
+   if (getTimeCardId() != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+   {
+      $inspection->timeCardId = $timeCardId;
+   }
+   else
+   {
+      $jobNumber =
+         ($params->keyExists("jobNumber") ? $params->get("jobNumber") : JobInfo::UNKNOWN_JOB_NUMBER);
+      
+      $wcNumber =
+         ($params->keyExists("wcNumber") ? $params->get("wcNumber") : 0);
+   }
    
    if ($inspection->templateId != InspectionTemplate::UNKNOWN_TEMPLATE_ID)
    {
@@ -341,6 +362,22 @@ function getInspectionNumber()
    return ($inspectionNumber);
 }
 
+function getTimeCardId()
+{
+   $timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
+   
+   $params = getParams();
+   
+   if ($params->keyExists("panTicketCode"))
+   {
+      $panTicketCode = $params->get("panTicketCode");
+
+      $timeCardId = PanTicket::getPanTicketId($panTicketCode);
+   }
+   
+   return ($timeCardId);
+}
+
 function getJobNumber()
 {
    $jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
@@ -351,7 +388,7 @@ function getJobNumber()
 
       if ($inspection)
       {
-         $jobInfo = JobInfo::load($inspection->jobId);
+         $jobInfo = JobInfo::load($inspection->getJobId());
          
          if ($jobInfo)
          {
@@ -367,7 +404,29 @@ function getJobNumber()
    {
       $params = getParams();
       
-      $jobNumber = ($params->keyExists("jobNumber") ? $params->get("jobNumber") : JobInfo::UNKNOWN_JOB_NUMBER);
+      if ($params->keyExists("jobNumber"))
+      {
+         $jobNumber = $params->get("jobNumber");
+      }
+      else
+      {
+         $timeCardId = getTimeCardId();
+         
+         if ($timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+         {
+            $timeCardInfo = TimeCardInfo::load($timeCardId);
+            
+            if ($timeCardInfo)
+            {
+               $job = JobInfo::load($timeCardInfo->jobId);
+               
+               if ($job)
+               {
+                  $jobNumber = $job->jobNumber;
+               }
+            }
+         }
+      }
    }
    
    return ($jobNumber);
@@ -383,7 +442,7 @@ function getWcNumber()
       
       if ($inspection)
       {
-         $jobInfo = JobInfo::load($inspection->jobId);
+         $jobInfo = JobInfo::load($inspection->getJobId());
          
          if ($jobInfo)
          {
@@ -399,7 +458,29 @@ function getWcNumber()
    {
       $params = getParams();
       
-      $wcNumber = ($params->keyExists("wcNumber") ? $params->get("wcNumber") : JobInfo::UNKNOWN_WC_NUMBER);
+      if ($params->keyExists("wcNumber"))
+      {
+         $wcNumber = $params->get("wcNumber");
+      }
+      else
+      {
+         $timeCardId = getTimeCardId();
+         
+         if ($timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+         {
+            $timeCardInfo = TimeCardInfo::load($timeCardId);
+            
+            if ($timeCardInfo)
+            {
+               $job = JobInfo::load($timeCardInfo->jobId);
+               
+               if ($job)
+               {
+                  $wcNumber = $job->wcNumber;
+               }
+            }
+         }
+      }
    }
    
    return ($wcNumber);
@@ -413,10 +494,26 @@ function getMfgDate()
    {
       $inspection = getInspection();
       
-      if ($inspection && $inspection->mfgDate)
+      if ($inspection && $inspection->getManufactureDate())
       {
+         
          // Convert to Javascript date format.
-         $mfgDate = Time::dateTimeObject($inspection->mfgDate)->format(Time::$javascriptDateFormat);
+         $mfgDate = Time::dateTimeObject($inspection->getManufactureDate())->format(Time::$javascriptDateFormat);
+      }
+   }
+   else
+   {
+      $timeCardId = getTimeCardId();
+      
+      if ($timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+      {
+         $timeCardInfo = TimeCardInfo::load($timeCardId);
+         
+         if ($timeCardInfo)
+         {
+            // Convert to Javascript date format.
+            $mfgDate = Time::dateTimeObject($timeCardInfo->manufactureDate)->format(Time::$javascriptDateFormat);
+         }
       }
    }
    
@@ -441,7 +538,7 @@ function getCustomerPrint()
 {
    $customerPrint = "";
    
-   $jobId = getInspection()->jobId;
+   $jobId = getInspection()->getJobId();
    $jobNumber = getJobNumber();
    $wcNumber = getWcNumber();
    
@@ -497,10 +594,29 @@ function getOperator()
    $operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
    
    $inspection = getInspection();
-   
-   if ($inspection)
+
+   if (getInspectionId() != Inspection::UNKNOWN_INSPECTION_ID)
    {
-      $operator = $inspection->operator;      
+      $inspection = getInspection();
+      
+      if ($inspection)
+      {
+         $operator = $inspection->getOperator();
+      }
+   }
+   else
+   {
+      $timeCardId = getTimeCardId();
+      
+      if ($timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+      {
+         $timeCardInfo = TimeCardInfo::load($timeCardId);
+         
+         if ($timeCardInfo)
+         {
+            $operator = $timeCardInfo->employeeNumber;
+         }
+      }
    }
    
    return ($operator);
@@ -823,6 +939,7 @@ if (!Authentication::isAuthenticated())
       <!-- Hidden inputs make sure disabled fields below get posted. -->
       <input id="template-id-input" type="hidden" name="templateId" value="<?php echo getTemplateId(); ?>">
       <input type="hidden" name="author" value="<?php echo getInspection()->author; ?>">
+      <input type="hidden" name="timeCardId" value="<?php echo getTimeCardId(); ?>">
       <input type="hidden" name="jobNumber" value="<?php echo getJobNumber(); ?>">
       <input type="hidden" name="wcNumber" value="<?php echo getWcNumber(); ?>">
    </form>

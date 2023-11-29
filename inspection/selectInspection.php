@@ -107,6 +107,7 @@ if (!Authentication::isAuthenticated())
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
    <script src="/script/common/commonDefs.php<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script> 
    <script src="inspection.js<?php echo versionQuery();?>"></script>
 
@@ -134,38 +135,53 @@ if (!Authentication::isAuthenticated())
          
          <br>
          
-         <div class="flex-column">
+         <div class="flex-vertical">
          
-            <div class="flex-row" style="justify-content: space-evenly;">
+            <div class="flex-horizontal" style="justify-content: space-evenly;">
 
-               <div class="flex-column">
+               <div class="flex-vertical">
                
                   <div class="form-item">
                      <div class="form-label">Inspection Type</div>
-                     <select id="inspection-type-input" class="form-input-medium" name="inspectionType" form="input-form" oninput="onInspectionTypeChange(); updateTemplateId();" <?php echo !isEditable(InspectionInputField::INSPECTION_TYPE) ? "disabled" : ""; ?>>
+                     <select id="inspection-type-input" class="form-input-medium" name="inspectionType" form="input-form" oninput="onInspectionTypeChange(); updateTemplateId();">
                          <?php echo getInspectionTypeOptions(null, false, [InspectionType::OASIS]); ?>
                      </select>
                   </div>
-         
-                  <div id="job-number-input-container" class="form-item">
-                     <div class="form-label">Job Number</div>
-                     <select id="job-number-input" class="form-input-medium" name="jobNumber" form="input-form" oninput="this.validator.validate(); onJobNumberChange(); updateTemplateId();" <?php echo !isEditable(InspectionInputField::JOB_NUMBER) ? "disabled" : ""; ?>>
-                         <?php echo getJobNumberOptions(); ?>
-                     </select>
-                     &nbsp;&nbsp;
-                     <div id="customer-print-div"></div>
-                  </div>
-         
-                  <div id="wc-number-input-container" class="form-item">
-                     <div class="form-label">WC Number</div>
-                     <select id="wc-number-input" class="form-input-medium" name="wcNumber" form="input-form" oninput="updateTemplateId();" <?php echo !isEditable(InspectionInputField::WC_NUMBER) ? "disabled" : ""; ?>>
-                        <option style=\"display:none\">
-                     </select>
+                  
+                  <div id="job-selection-container" class="flex-horizontal flex-top">
+                  
+                     <div class="flex-vertical">
+                     
+                        <div class="form-item">
+                           <div class="form-label">Job Number</div>
+                           <select id="job-number-input" class="form-input-medium" name="jobNumber" form="input-form" oninput="this.validator.validate(); onJobNumberChange(); updateTemplateId();" disabled>
+                               <?php echo getJobNumberOptions(); ?>
+                           </select>
+                           &nbsp;&nbsp;
+                           <div id="customer-print-div"></div>
+                        </div>
+               
+                        <div class="form-item">
+                           <div class="form-label">WC Number</div>
+                           <select id="wc-number-input" class="form-input-medium" name="wcNumber" form="input-form" oninput="onWcNumberChange(); updateTemplateId();" disabled>
+                              <option style=\"display:none\">
+                           </select>
+                        </div>
+                     
+                     </div>
+                     
+                     <div style="height: 70px; margin-right: 15px; margin-left: 15px; border-right: solid 2px grey"></div>
+                     
+                     <div class="form-item" >
+                        <div class="form-label">Pan Ticket #</div>
+                        <input id="pan-ticket-code-input" type="text" style="width:50px;" name="panTicketCode" form="input-form" oninput="this.validator.validate(); onPanTicketCodeChange();" disabled>
+                     </div>               
+                     
                   </div>
                   
                   <div class="form-item">
                      <div class="form-label">Inspection Template</div>
-                     <select id="template-id-input" class="form-input-medium" name="templateId" form="input-form" <?php echo !isEditable(InspectionInputField::WC_NUMBER) ? "disabled" : ""; ?>>
+                     <select id="template-id-input" class="form-input-medium" name="templateId" form="input-form" disabled>
                         <?php echo getTemplateOptions(); ?>
                      </select>
                   </div>
@@ -194,10 +210,12 @@ if (!Authentication::isAuthenticated())
       preserveSession();
    
       var inspectionTypeValidator = new SelectValidator("inspection-type-input");
+      var panTicketCodeValidator = new HexValidator("pan-ticket-code-input", 4, 1, 65536, true);
       var jobNumberValidator = new SelectValidator("job-number-input");
       var wcNumberValidator = new SelectValidator("wc-number-input");
    
       inspectionTypeValidator.init();
+      panTicketCodeValidator.init();
       jobNumberValidator.init();
       wcNumberValidator.init();
 

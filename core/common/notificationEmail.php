@@ -197,9 +197,11 @@ class NotificationEmail
 
                   $creationDateTime = Time::dateTimeObject($inspection->dateTime)->format("n/j/Y g:i A");
                   
-                  if ($inspection->jobId != JobInfo::UNKNOWN_JOB_ID)
+                  $jobId = $inspection->getJobId();
+                  
+                  if ($jobId != JobInfo::UNKNOWN_JOB_ID)
                   {
-                     $job = JobInfo::load($inspection->jobId);
+                     $job = JobInfo::load($jobId);
                      if ($job)
                      {
                         $jobNumber = $job->jobNumber;
