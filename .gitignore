@@ -60,3 +60,7 @@ thirdParty/
 
 #sensitive files
 core/manager/emailKey.php
+
+#printerServer
+printerServer/package-lock.json
+printerServer/package.json
