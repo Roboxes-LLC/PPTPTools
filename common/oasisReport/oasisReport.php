@@ -1,12 +1,16 @@
 <?php
-require_once(__DIR__ . "/../userInfo.php");
-require_once(__DIR__ . "/../utils.php");
-require_once 'partInspection.php';
-require_once 'userFieldType.php';
-require_once 'userField.php';
+
+if (!defined('ROOT')) require_once '../../root.php';
+require_once ROOT.'/common/userInfo.php';
+require_once ROOT.'/common/utils.php';
+require_once ROOT.'/common/oasisReport/partInspection.php';
+require_once ROOT.'/common/oasisReport/userFieldType.php';
+require_once ROOT.'/common/oasisReport/userField.php';
 
 class OasisReport
 {
+   const OASIS_DATE_FORMAT = "m/d/Y";
+   
    public static function load($inspectionId)
    {
       global $UPLOADS;
@@ -143,9 +147,14 @@ class OasisReport
    {
       $date = null;
       
-      $inspection = $this->inspections[0];
-     
-      // TODO
+      if (isset($this->userFields[UserFieldType::DATE]))
+      {
+         $date = 
+            DateTime::createFromFormat(
+               OasisReport::OASIS_DATE_FORMAT, 
+               $this->userFields[UserFieldType::DATE]->getValue(),
+               new DateTimeZone(Time::DEFAULT_TIME_ZONE))->format(Time::STANDARD_FORMAT);
+      }
       
       return ($date);
    }

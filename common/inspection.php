@@ -1,7 +1,9 @@
 <?php
 
-require_once 'inspectionDefs.php';
-require_once 'inspectionTemplate.php';
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/common/inspectionDefs.php';
+require_once ROOT.'/common/inspectionTemplate.php';
+require_once ROOT.'/common/timeCardInfo.php';
 
 class InspectionResult
 {
@@ -137,6 +139,7 @@ class Inspection
       
    public function initializeFromOasisReport($oasisReport)
    {
+      $this->dateTime = $oasisReport->getDate();
       $this->templateId = InspectionTemplate::OASIS_TEMPLATE_ID;
       $this->author = $oasisReport->getEmployeeNumber();
       $this->inspector = $oasisReport->getEmployeeNumber();
@@ -144,6 +147,7 @@ class Inspection
       $this->timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
       $this->jobNumber = $oasisReport->getPartNumber();
       $this->wcNumber = $oasisReport->getMachineNumber();
+      $this->mfgDate = $this->dateTime;  // Assume same as creation date.
       $this->operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->samples = $oasisReport->getPartInspectionCount();
       $this->naCount = 0;

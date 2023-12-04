@@ -1,11 +1,16 @@
 <?php
-require_once '../common/inspection.php';
-require_once '../common/database.php';
-require_once '../common/oasisReport/oasisReport.php';
+
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/common/inspection.php';
+require_once ROOT.'/common/database.php';
+require_once ROOT.'/common/oasisReport/oasisReport.php';
+
+global $OASIS_REPORTS_DIR;
 
 if (isset($_POST["submit"]))
 {
-   $target_dir = "../uploads/oasisReports/";
+   $target_dir = ROOT.$OASIS_REPORTS_DIR;
+   
    $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
    
    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file))

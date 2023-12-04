@@ -2733,13 +2733,13 @@ $router->add("uploadOasisReport", function($params) {
    $result = new stdClass();
    $result->success = false;
    
-   global $UPLOADS;
+   global $OASIS_REPORTS_DIR;
    
    $database = PPTPDatabase::getInstance();
    
    if (isset($_FILES["reportFile"]))
    {
-      $target_dir = $UPLOADS . "oasisReports/";
+      $target_dir = ROOT.$OASIS_REPORTS_DIR;
       $target_file = $target_dir . basename($_FILES["reportFile"]["name"]);
       
       if (move_uploaded_file($_FILES["reportFile"]["tmp_name"], $target_file))

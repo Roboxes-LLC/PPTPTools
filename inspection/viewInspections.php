@@ -128,7 +128,7 @@ if (!Authentication::isAuthenticated())
             <div class="flex-horizontal">
                <div style="white-space: nowrap">Inspection type</div>
                &nbsp;
-               <select id="inspection-type-filter"><?php echo getInspectionTypeOptions(getFilterInspectionType(), true, [InspectionType::OASIS]); ?></select>
+               <select id="inspection-type-filter"><?php echo getInspectionTypeOptions(getFilterInspectionType(), true); ?></select>
             </div>
             &nbsp;&nbsp;
             <div class="flex-horizontal">
