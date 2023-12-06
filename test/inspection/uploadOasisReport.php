@@ -1,6 +1,6 @@
 <?php
 
-if (!defined('ROOT')) require_once '../root.php';
+if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/common/inspection.php';
 require_once ROOT.'/common/database.php';
 require_once ROOT.'/common/oasisReport/oasisReport.php';

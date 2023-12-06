@@ -13,7 +13,7 @@ class OasisReport
    
    public static function load($inspectionId)
    {
-      global $UPLOADS;
+      global $OASIS_REPORTS_DIR;
       
       $oasisReport = null;
       
@@ -25,7 +25,7 @@ class OasisReport
          
          if ($dataFile && ($dataFile != ""))
          {
-            $oasisReport = OasisReport::parseFile($UPLOADS . "oasisReports/" . $dataFile);
+            $oasisReport = OasisReport::parseFile(ROOT.$OASIS_REPORTS_DIR . $dataFile);
          }
       }
       

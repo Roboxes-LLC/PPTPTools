@@ -9,6 +9,6 @@ $IMAGES_DIR = "/images";
 $UPLOADS_DIR = "/uploads/";
 
 // Folder for Oasis report uploads.
-$OASIS_REPORTS_DIR = "/uploads/oasisReports";
+$OASIS_REPORTS_DIR = "/uploads/oasisReports/";
 
 ?>
