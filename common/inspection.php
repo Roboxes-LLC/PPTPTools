@@ -139,22 +139,30 @@ class Inspection
       
    public function initializeFromOasisReport($oasisReport)
    {
-      $this->dateTime = $oasisReport->getDate();
       $this->templateId = InspectionTemplate::OASIS_TEMPLATE_ID;
+      $this->dateTime = $oasisReport->getDate();
       $this->author = $oasisReport->getEmployeeNumber();
       $this->inspector = $oasisReport->getEmployeeNumber();
       $this->comments = $oasisReport->getComments();
       $this->timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
       $this->jobNumber = $oasisReport->getPartNumber();
       $this->wcNumber = $oasisReport->getMachineNumber();
-      $this->mfgDate = $this->dateTime;  // Assume same as creation date.
       $this->operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->mfgDate = $this->dateTime;  // Assume same as creation date.
+      $this->inspectionNumber = 0;
+      $this->quantity = 0;
+      $this->isPriority = false;
+      
+      // Inspection summary.
       $this->samples = $oasisReport->getPartInspectionCount();
       $this->naCount = 0;
-      $this->warningCount = 0;
-      $this->failCount = $oasisReport->getFailureCount();
-      $this->passCount = ($this->samples - $this->failCount);
+      $this->passCount = $oasisReport->getCountByStatus(InspectionStatus::PASS);
+      $this->warningCount = $oasisReport->getCountByStatus(InspectionStatus::WARNING);
+      $this->failCount = $oasisReport->getCountByStatus(InspectionStatus::FAIL);
+
+      // Source data file for Oasis reports.
       $this->dataFile = $oasisReport->getDataFile();
+      
       $this->inspectionResults = null;  // 2D array, indexed as [propertyId][sampleIndex]
    }
    

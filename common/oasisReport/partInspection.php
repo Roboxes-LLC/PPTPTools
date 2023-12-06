@@ -118,35 +118,83 @@ class PartInspection
       return ($this->date);
    }
    
-  public function setDate($date)
-  {
+   public function setDate($date)
+   {
      $this->$date = $date;
-  }
-  
-  public function getMeasurements()
-  {
+   }
+   
+   public function getMeasurements()
+   {
      return ($this->measurements);
-  }
-  
-  public function addMeasurement($measurement)
-  {
+   }
+   
+   public function addMeasurement($measurement)
+   {
      $this->measurements[] = $measurement;
-  }
+   }
   
-  public function getFailureCount()
-  {
-     $failureCount = 0;
+   public function getCountByStatus($inspectionStatus)
+   {
+      $count = 0;
      
-     foreach ($this->measurements as $measurement)
-     {
-        if (MeasurementResult::isFailed(MeasurementResult::valueOf($measurement->getResult())))
+      foreach ($this->measurements as $measurement)
+      {
+        switch ($inspectionStatus)
         {
-           $failureCount++;
-        }
-     }
+            case InspectionStatus::PASS:
+            {
+               if (MeasurementResult::isPassed($measurement->getResult()))
+               {
+                 $count++;
+               }
+               break;
+            }
+              
+            case InspectionStatus::WARNING:
+            {
+               if (MeasurementResult::isWarning($measurement->getResult()))
+               {
+                 $count++;
+               }
+               break;
+            }
+              
+            case InspectionStatus::FAIL:
+            {
+               if (MeasurementResult::isFailed($measurement->getResult()))
+               {
+                 $count++;
+               }
+               break;
+            }
+              
+            case InspectionStatus::NON_APPLICABLE:
+            default:
+            {
+              break;
+            }
+         }
+      }
      
-     return ($failureCount);
-  }
+      return ($count);
+   }
+   
+   public function pass()
+   {
+     return (!$this->fail() &&
+             !$this->warning() &&
+             ($this->getCountByStatus(InspectionStatus::PASS) > 0));
+   }
+   
+   public function warning()
+   {
+     return (!$this->fail() && ($this->getCountByStatus(InspectionStatus::WARNING) > 0));
+   }
+   
+   public function fail()
+   {
+     return ($this->getCountByStatus(InspectionStatus::FAIL) > 0);
+   }
    
    public function toHtml()
    {
