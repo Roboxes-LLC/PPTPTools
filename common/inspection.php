@@ -154,7 +154,7 @@ class Inspection
       $this->isPriority = false;
       
       // Inspection summary.
-      $this->samples = $oasisReport->getPartInspectionCount();
+      $this->samples = $oasisReport->getCount();
       $this->naCount = 0;
       $this->passCount = $oasisReport->getCountByStatus(InspectionStatus::PASS);
       $this->warningCount = $oasisReport->getCountByStatus(InspectionStatus::WARNING);
@@ -406,6 +406,13 @@ class Inspection
       return ($count);
    }
    
+   public function getMeasurementCount()
+   {
+      $count = ($this->getCount() - $this->getCountByStatus(InspectionStatus::NON_APPLICABLE));
+      
+      return ($count);
+   }
+   
    public function getCountByStatus($inspectionStatus, $forceCalculation = false)
    {
       $count = 0;
@@ -466,7 +473,7 @@ class Inspection
    {
       return (!$this->fail() && 
               !$this->warning() && 
-              ($this->getPassCount() > 0));
+              ($this->getCountByStatus(InspectionStatus::PASS) > 0));
    }
    
    public function warning()
@@ -482,20 +489,6 @@ class Inspection
    public function incomplete()
    {
       return (!$this->fail() && !$this->warning() && !$this->pass());
-   }
-   
-   public function getMeasurementCount()
-   {
-      $count = ($this->getCount() - $this->getCountByStatus(InspectionStatus::NON_APPLICABLE));
-      
-      return ($count);
-   }
-   
-   public function getPassCount()
-   {
-      $count = $this->getCountByStatus(InspectionStatus::PASS);
-      
-      return ($count);
    }
    
    public function getInspectionStatus()

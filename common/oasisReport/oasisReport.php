@@ -193,47 +193,25 @@ class OasisReport
       return ($efficiency);
    }
    
+   public function getCount()
+   {
+      $count = 0;
+      
+      foreach ($this->inspections as $inspection)
+      {
+         $count += count($inspection->getMeasurements());
+      }
+      
+      return ($count);
+   }
+   
    public function getCountByStatus($inspectionStatus)
    {
       $count = 0;
 
       foreach ($this->inspections as $inspection)
       {
-         switch ($inspectionStatus)
-         {
-            case InspectionStatus::PASS:
-            {
-               if ($inspection->pass())
-               {
-                  $count++;
-               }
-               break;
-            }
-            
-            case InspectionStatus::WARNING:
-            {
-               if ($inspection->warning())
-               {
-                  $count++;
-               }
-               break;
-            }
-            
-            case InspectionStatus::FAIL:
-            {
-               if ($inspection->fail())
-               {
-                  $count++;
-               }
-               break;
-            }
-            
-            case InspectionStatus::NON_APPLICABLE:
-            default:
-            {
-               break;
-            }
-         }
+         $count += $inspection->getCountByStatus($inspectionStatus);
       }
     
       return ($count);
@@ -243,7 +221,7 @@ class OasisReport
    {
       return (!$this->fail() &&
               !$this->warning() &&
-              ($this->getPassCount() > 0));
+              ($this->getCountByStatus(InspectionStatus::PASS) > 0));
    }
    
    public function warning()
