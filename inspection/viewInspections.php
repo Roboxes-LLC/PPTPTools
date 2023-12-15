@@ -191,14 +191,13 @@ if (!Authentication::isAuthenticated())
       var table = new Tabulator("#inspection-table", {
          //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
          layout:"fitData",
-         responsiveLayout:"hide", // enable responsive layouts
          cellVertAlign:"middle",
          ajaxURL:url,
          ajaxParams:params,
          //Define Table Columns
          columns:[
             {title:"Id",              field:"inspectionId",        hozAlign:"left", visible:false},
-            {title:"",                field:"isPriority",          hozAlign:"left", responsive:0, width: 25,
+            {title:"",                field:"isPriority",          hozAlign:"left", width: 25,
                formatter:function(cell, formatterParams, onRendered){
                   let cellValue = "";
                   let isPriority = (cell.getValue() != 0);
@@ -211,7 +210,7 @@ if (!Authentication::isAuthenticated())
                   return (cellValue);
                }
             },
-            {title:"Ticket",            field:"panTicketCode",     hozAlign:"left", responsive:0, headerFilter:true,
+            {title:"Ticket",            field:"panTicketCode",     hozAlign:"left", headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "";
                   
@@ -227,36 +226,43 @@ if (!Authentication::isAuthenticated())
                formatterPrint:function(cell, formatterParams, onRendered){
                   return (cell.getValue());
               }                 
+            },
+            {title:"Status",       field:"inspectionStatus",    hozAlign:"center", headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  var label = cell.getRow().getData().inspectionStatusLabel;
+                  var cssClass = cell.getRow().getData().inspectionStatusClass;
+                  return ("<div class=\"inspection-status " + cssClass + "\">" + label + "</div>");
+               }
             },  
-            {title:"Inspection Type", field:"inspectionTypeLabel", hozAlign:"left", responsive:0},
-            {title:"Name",            field:"name",                hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Inspection Date", field:"dateTime",            hozAlign:"left", responsive:0,
+            {title:"Inspection Type", field:"inspectionTypeLabel", hozAlign:"left"},
+            {title:"Name",            field:"name",                hozAlign:"left", headerFilter:true},
+            {title:"Inspection Date", field:"dateTime",            hozAlign:"left",
                formatter:"datetime",  // Requires moment.js 
                formatterParams:{
                   outputFormat:"MM/DD/YYYY",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Time",            field:"dateTime",            hozAlign:"left", responsive:0,
+            {title:"Time",            field:"dateTime",            hozAlign:"left",
                formatter:"datetime",  // Requires moment.js 
                formatterParams:{
                   outputFormat:"hh:mm A",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Created By",      field:"authorName",          hozAlign:"left",   responsive:0, headerFilter:true},
-            {title:"Inspector",       field:"inspectorName",       hozAlign:"left",   responsive:0, headerFilter:true},
-            {title:"Mfg Date",        field:"mfgDate",             hozAlign:"left",   responsive:0,
+            {title:"Created By",      field:"authorName",          hozAlign:"left",   headerFilter:true},
+            {title:"Inspector",       field:"inspectorName",       hozAlign:"left",   headerFilter:true},
+            {title:"Mfg Date",        field:"mfgDate",             hozAlign:"left",
                formatter:"datetime",  // Requires moment.js 
                formatterParams:{
                   outputFormat:"MM/DD/YYYY",
                   invalidPlaceholder:""
                }
             },         
-            {title:"Operator",        field:"operatorName",        hozAlign:"left",   responsive:0, headerFilter:true},
-            {title:"Job",             field:"jobNumber",           hozAlign:"left",   responsive:0, headerFilter:true},
-            {title:"Work Center",     field:"wcLabel",             hozAlign:"left",   responsive:0, headerFilter:true},
-            {title:"In Process #",    field:"inspectionNumber",    hozAlign:"left",   responsive:0, headerFilter:true,
+            {title:"Operator",        field:"operatorName",        hozAlign:"left",   headerFilter:true},
+            {title:"Job",             field:"jobNumber",           hozAlign:"left",   headerFilter:true},
+            {title:"Work Center",     field:"wcLabel",             hozAlign:"left",   headerFilter:true},
+            {title:"In Process #",    field:"inspectionNumber",    hozAlign:"left",   headerFilter:true,
               formatter:function(cell, formatterParams, onRendered){
                   let cellValue = "";
 
@@ -274,7 +280,7 @@ if (!Authentication::isAuthenticated())
                   return (cellValue);
                }
             },
-            {title:"Success Rate",    field:"successRate",         hozAlign:"left",   responsive:0,
+            {title:"Success Rate",    field:"successRate",         hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
                   var count = cell.getRow().getData().samples;
                   var naCount = cell.getRow().getData().naCount;
@@ -282,14 +288,7 @@ if (!Authentication::isAuthenticated())
                   return (passCount + "/" + (count - naCount));
                }
             },
-            {title:"Status",       field:"inspectionStatus",    hozAlign:"center", responsive:0, headerFilter:true,
-               formatter:function(cell, formatterParams, onRendered){
-                  var label = cell.getRow().getData().inspectionStatusLabel;
-                  var cssClass = cell.getRow().getData().inspectionStatusClass;
-                  return ("<div class=\"inspection-status " + cssClass + "\">" + label + "</div>");
-               }
-            },
-            {title:"",                field:"delete",                               responsive:0, <?php echo !Authentication::checkPermissions(Permission::DELETE_INSPECTION) ? "visible:false, " : "" ?>
+            {title:"",                field:"delete", <?php echo !Authentication::checkPermissions(Permission::DELETE_INSPECTION) ? "visible:false, " : "" ?>
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }

@@ -584,6 +584,23 @@ class Inspection
       
       return ($sampleSize);
    }
+   
+   public static function getInspectionsForTimeCard($timeCardId, $inspectionTypes = null)
+   {
+      $inspections = array();
+      
+      $result = PPTPDatabase::getInstance()->getInspectionsForTimeCard($timeCardId, $inspectionTypes);
+      
+      while ($result && ($row = $result->fetch_assoc()))
+      {
+         $inspection = new Inspection();
+         $inspection->initializeFromDatabaseRow($row);
+         
+         $inspections[] = $inspection;
+      }
+      
+      return ($inspections);
+   }
 }
 
 /*

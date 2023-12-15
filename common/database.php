@@ -1519,6 +1519,24 @@ HEREDOC;
       return ($result);
    }
    
+   public function getInspectionsForTimeCard($timeCardId, $inspectionTypes = null)
+   {
+      $typeClause = "TRUE";
+      if ($inspectionTypes && is_array($inspectionTypes) && (count($inspectionTypes) > 0))
+      {
+         $typeClause = "inspectiontemplate.inspectionType IN (" . implode(", ", $inspectionTypes) . ")";
+      }
+      
+      $query = "SELECT * FROM inspection " .
+               "INNER JOIN inspectiontemplate ON inspection.templateId = inspectiontemplate.templateId " .
+               "WHERE timeCardId = $timeCardId AND $typeClause " .
+               "ORDER BY inspection.dateTime DESC, inspectionId DESC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
    public function getInspection($inspectionId)
    {
       $query = "SELECT * FROM inspection WHERE inspectionId = $inspectionId;";
