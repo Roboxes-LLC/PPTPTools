@@ -515,7 +515,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             },
             {title:"Scrap Count",             field:"scrapCount",           hozAlign:"left", print:true},
             {title:"Quoted Net",              field:"netPartsPerHour",      hozAlign:"left", print:true},
-            {title:"Machine Hours Made",      field:"machineHoursMade",     hozAlign:"left", print:true}                      
+            {title:"Machine Hours<br>Made",   field:"machineHoursMade",     hozAlign:"left", print:true},
+            {title:"In Process<br>Inspections", field:"inProcessInspectionCount", hozAlign:"left", print:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = parseInt(cell.getValue());
+                  return ((cellValue > 0) ? cellValue : "");
+               }
+            }                 
          ],
          cellClick:function(e, cell){
             let timeCardId = cell.getRow().getData().timeCardId;

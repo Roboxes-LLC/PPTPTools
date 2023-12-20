@@ -337,7 +337,7 @@ class QuotePage extends Page
                 if ($quote)
                 {
                    $toEmail = $params->get("toEmail");
-                   $ccEmails = !empty($params->get("ccEmails")) ? explode(";", $params->get("ccEmails")) : array();
+                   $ccEmails = !empty($params->get("ccEmails")) ? array_map('trim', explode(';', $params->get("ccEmails"))) : array();
                    $emailNotes = $params->get("emailNotes");
                    
                    if ($this->validateEmailAddresses($toEmail, $ccEmails))
@@ -703,7 +703,7 @@ class QuotePage extends Page
       
       if (!filter_var($toEmail, FILTER_VALIDATE_EMAIL))
       {
-         $this->error("Invalid To: email address");
+         $this->error("Invalid To: email address: $toEmail");
          $isValid = false;
       }
       else
@@ -712,7 +712,7 @@ class QuotePage extends Page
          {
             if (!filter_var($email, FILTER_VALIDATE_EMAIL))
             {
-               $this->error("Invalid CC: email address");
+               $this->error("Invalid CC: email address: $email");
                $isValid = false;
                break;
             }

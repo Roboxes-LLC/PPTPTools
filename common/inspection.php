@@ -144,14 +144,7 @@ class Inspection
       $this->author = $oasisReport->getEmployeeNumber();
       $this->inspector = $oasisReport->getEmployeeNumber();
       $this->comments = $oasisReport->getComments();
-      $this->timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
-      $this->jobNumber = $oasisReport->getPartNumber();
-      $this->wcNumber = $oasisReport->getMachineNumber();
-      $this->operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
-      $this->mfgDate = $this->dateTime;  // Assume same as creation date.
-      $this->inspectionNumber = 0;
-      $this->quantity = 0;
-      $this->isPriority = false;
+      $this->timeCardId = $oasisReport->getTimeCardId();
       
       // Inspection summary.
       $this->samples = $oasisReport->getCount();
@@ -221,6 +214,24 @@ class Inspection
       }
       
       return ($inspection);
+   }
+   
+   public static function save($inspection)
+   {
+      if ($inspection->inspectionId == Inspection::UNKNOWN_INSPECTION_ID)
+      {
+         $newInspectionId = PPTPDatabase::getInstance()->newInspection($inspection);
+         $dbaseResult = ($newInspectionId != Inspection::UNKNOWN_INSPECTION_ID);
+         
+         if ($dbaseResult)
+         {
+            $inspection->inspectionId = $newInspectionId;
+         }
+      }
+      else
+      {
+         $dbaseResult = PPTPDatabase::getInstance()->updateInspection($inspection);
+      }
    }
    
    public function loadInspectionResults()

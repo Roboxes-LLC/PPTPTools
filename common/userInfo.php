@@ -8,6 +8,8 @@ class UserInfo
 {
    const UNKNOWN_EMPLOYEE_NUMBER = 0;
    
+   const SYSTEM_EMPLOYEE_NUMBER = 1000000;
+   
    public $employeeNumber;
    public $username;
    public $password;
@@ -38,11 +40,13 @@ class UserInfo
    {
       $userInfo = null;
       
-      $database = PPTPDatabase::getInstance();
-      
-      if ($database && $database->isConnected())
+      if ($employeeNumber == UserInfo::SYSTEM_EMPLOYEE_NUMBER)
       {
-         $result = $database->getUser($employeeNumber);
+         $userInfo = UserInfo::getSystemUser();
+      }
+      else
+      {
+         $result = PPTPDatabase::getInstance()->getUser($employeeNumber);
          
          if ($result && ($row = $result->fetch_assoc()))
          {
@@ -68,6 +72,24 @@ class UserInfo
       $this->authToken = $row['authToken'];
       $this->defaultShiftHours = intval($row['defaultShiftHours']);
       $this->notifications = intval($row['notifications']);
+   }
+   
+   public static function getSystemUser()
+   {
+      static $systemUser = null;
+      
+      if ($systemUser == null)
+      {
+         $systemUser = new UserInfo();
+         $systemUser->employeeNumber = UserInfo::SYSTEM_EMPLOYEE_NUMBER;
+         $systemUser->username = "System";
+         $systemUser->firstName = "System";
+         $systemUser->lastNme = "";
+         $systemUser->permissions = Permission::ALL_PERMISSIONS;
+         $systemUser->roles = Role::SUPER_USER;
+      }
+      
+      return ($systemUser);
    }
    
    static public function loadByName($username)
@@ -145,7 +167,23 @@ class UserInfo
    
    public static function getUsername($employeeeNumber)
    {
-      return (($userInfo = UserInfo::load($employeeeNumber)) ? $userInfo->username : "");
+      $username = "";
+      
+      if ($employeeeNumber == UserInfo::SYSTEM_EMPLOYEE_NUMBER)
+      {
+         $username = UserInfo::getSystemUser()->username;
+      }
+      else
+      {
+         $userInfo = UserInfo::load($employeeeNumber);
+         
+         if ($userInfo)
+         {
+            $username = $userInfo->username;
+         }
+      }
+      
+      return ($username);
    }
    
    public function getFullName()

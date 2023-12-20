@@ -41,13 +41,31 @@ if (isset($_POST["submit"]))
 
 <!DOCTYPE html>
 <html>
-<body>
-
-<form method="post" enctype="multipart/form-data">
-  Select report to upload:
-  <input type="file" name="fileToUpload" id="fileToUpload">
-  <input type="submit" value="Upload" name="submit">
-</form>
-
-</body>
+   <head>
+      <script src="../../script/common/common.js"></script>
+   </head>
+   <body>
+      <form id="input-form" method="post" enctype="multipart/form-data">
+         Select report to upload:
+         <input type="file" name="reportFile">
+         <input type="button" value="Upload" name="submit" onclick="onSubmit()">
+      </form>
+      <div id="status"></div>
+   </body>
+   <script>
+      function onSubmit()
+      {
+         console.log("onSubmit");
+         submitForm("input-form", "/api/uploadOasisReport/", function(response) {
+            if (response.success == true)
+            {
+               alert("Success");
+            }
+            else
+            {
+               alert(response.error);
+            }
+         });
+      }
+   </script>
 </html>
