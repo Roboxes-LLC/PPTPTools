@@ -1469,35 +1469,19 @@ class PPTPDatabase extends MySqlDatabase
    //                                Inspections
    // **************************************************************************
    
-   public function getInspections($inspectionType, $authorInspector, $operator, $startDate, $endDate)
+   public function getInspections($inspectionType, $authorInspectorOperator, $startDate, $endDate)
    {
-      $userClause = "";
-      if (($authorInspector != UserInfo::UNKNOWN_EMPLOYEE_NUMBER) || ($operator != UserInfo::UNKNOWN_EMPLOYEE_NUMBER))
+      $authorInspectorOperatorClause = "TRUE";
+      if ($authorInspectorOperator != UserInfo::UNKNOWN_EMPLOYEE_NUMBER)
       {
-         $userClause = "(";
-         
-         if ($authorInspector != UserInfo::UNKNOWN_EMPLOYEE_NUMBER)
-         {
-            $userClause .= "(author = $authorInspector) OR (inspector = $authorInspector)";
-         }
-         
-         if (($authorInspector != UserInfo::UNKNOWN_EMPLOYEE_NUMBER) && ($operator != UserInfo::UNKNOWN_EMPLOYEE_NUMBER))
-         {
-            $userClause .= " OR ";
-         }
-         
-         if ($operator != UserInfo::UNKNOWN_EMPLOYEE_NUMBER)
-         {
-            $userClause .= "operator = $operator";
-         }
-         
-         $userClause .= ") AND";
+         $authorInspectorOperatorClause = 
+            "((author = $authorInspectorOperator) OR (inspector = $authorInspectorOperator) OR (operator = $authorInspectorOperator) OR (timecard.employeeNumber = $authorInspectorOperator))";
       }
       
-      $typeClause = "";
+      $typeClause = "TRUE";
       if ($inspectionType != InspectionType::UNKNOWN)
       {
-         $typeClause = "inspectiontemplate.inspectionType = $inspectionType AND ";
+         $typeClause = "inspectiontemplate.inspectionType = $inspectionType";
       }
       
       // Manufacture date can be specified by time card id, or explicitly.
@@ -1511,7 +1495,25 @@ HEREDOC;
       $query = "SELECT inspection.*, inspectiontemplate.* FROM inspection " .
                "INNER JOIN inspectiontemplate ON inspection.templateId = inspectiontemplate.templateId " .
                "LEFT JOIN timecard ON inspection.timeCardId = timecard.timeCardId " .
-               "WHERE $userClause $typeClause $mfgDateClause " .
+               "WHERE $authorInspectorOperatorClause AND $typeClause AND $mfgDateClause " .
+               "ORDER BY inspection.dateTime DESC, inspectionId DESC;";
+
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getInspectionsForTimeCard($timeCardId, $inspectionTypes = null)
+   {
+      $typeClause = "TRUE";
+      if ($inspectionTypes && is_array($inspectionTypes) && (count($inspectionTypes) > 0))
+      {
+         $typeClause = "inspectiontemplate.inspectionType IN (" . implode(", ", $inspectionTypes) . ")";
+      }
+      
+      $query = "SELECT * FROM inspection " .
+               "INNER JOIN inspectiontemplate ON inspection.templateId = inspectiontemplate.templateId " .
+               "WHERE timeCardId = $timeCardId AND $typeClause " .
                "ORDER BY inspection.dateTime DESC, inspectionId DESC;";
       
       $result = $this->query($query);

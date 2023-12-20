@@ -26,6 +26,7 @@ require_once '../common/upload.php';
 require_once '../common/userInfo.php';
 require_once '../common/weeklySummaryReport.php';
 require_once '../core/job/jobManager.php';
+require_once '../core/manager/inspectionManager.php';
 require_once '../core/manager/notificationManager.php';
 require_once '../inspection/inspectionTable.php';
 require_once '../printer/printJob.php';
@@ -1830,20 +1831,18 @@ $router->add("inspectionData", function($params) {
       $inspectionType = intval($params["inspectionType"]);
    }
    
-   $authorInspector = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;  // Get inspections for all authors/inspectors.
-   $operator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;  // Get inspections for all operators.
+   $authorInspectorOperator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;  // Get inspections for all authors/inspectors/operators.
    if (Authentication::checkPermissions(Permission::VIEW_OTHER_USERS) == false)
    {
       // Limit to own inspections.
-      $authorInspector = Authentication::getAuthenticatedUser()->employeeNumber;
-      $operator = $authorInspector;
+      $authorInspectorOperator = Authentication::getAuthenticatedUser()->employeeNumber;
    }
    
    $database = PPTPDatabase::getInstance();
    
    if ($database && $database->isConnected())
    {
-      $databaseResult = $database->getInspections($inspectionType, $authorInspector, $operator, $startDate, $endDate);
+      $databaseResult = $database->getInspections($inspectionType, $authorInspectorOperator, $startDate, $endDate);
       
       // Populate data table.
       foreach ($databaseResult as $row)
@@ -2765,6 +2764,12 @@ $router->add("uploadOasisReport", function($params) {
             {
                $result->error = "Database error.";
                $result->sqlQuery = $database->lastQuery();
+            }
+            
+            // Auto-generate an In Process inspection from the Oasis inspection.
+            if ($result->success)
+            {
+               InspectionManager::generateInProcessFromOasis($inspection);
             }
          }
       }

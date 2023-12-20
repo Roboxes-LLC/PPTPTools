@@ -85,6 +85,32 @@ class OasisReport
       $this->userFields[$fieldType] = $userField;
    }
    
+   public function getPanTicketCode()
+   {
+      $panTicketCode = null;
+      
+      if (isset($this->userFields[UserFieldType::PAN_TICKET]))
+      {
+         $panTicketCode = $this->userFields[UserFieldType::PAN_TICKET]->getValue();
+      }
+      
+      return ($panTicketCode);
+   }
+   
+   public function getTimeCardId()
+   {
+      $timeCardId = TimeCardInfo::UNKNOWN_TIME_CARD_ID;
+      
+      $panTicketCode = $this->getPanTicketCode();
+      
+      if ($panTicketCode)
+      {
+         $timeCardId = PanTicket::getPanTicketId($panTicketCode);
+      }
+      
+      return ($timeCardId);
+   }
+   
    public function getEmployeeNumber()
    {
       $employeeNumber = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;

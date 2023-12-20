@@ -4,7 +4,7 @@ class UserFieldType
 {
    const UNKNOWN = 0;
    const FIRST = 1;
-   const INSPECTION_TYPE = UserFieldType::FIRST;
+   const PAN_TICKET = UserFieldType::FIRST;
    const EMPLOYEE_NUMBER = 2;
    const COMMENTS = 3;
    const PART_COUNT = 4;
@@ -17,7 +17,7 @@ class UserFieldType
    
    private static $LABELS = array(
       "UNKNOWN",
-      "Inpsection Type",
+      "Pan Ticket #",
       "Employee #",
       "Comments",
       "Part Count",
@@ -29,7 +29,7 @@ class UserFieldType
    );
    
    public static $VALUES = array(
-      UserFieldType::INSPECTION_TYPE,
+      UserFieldType::PAN_TICKET,
       UserFieldType::EMPLOYEE_NUMBER,
       UserFieldType::COMMENTS,
       UserFieldType::PART_COUNT,

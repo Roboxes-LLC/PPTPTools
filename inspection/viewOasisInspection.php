@@ -182,7 +182,7 @@ if (!Authentication::isAuthenticated())
          <!-- div>
             <div>
                <label>Insp. Type</label>
-               <input type="text" value="<?php echo getUserField(UserFieldType::INSPECTION_TYPE) ?>" disabed></input>
+               <input type="text" value="<?php echo getUserField(UserFieldType::PAN_TICKET) ?>" disabed></input>
             </div>
             
             <div>

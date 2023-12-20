@@ -153,7 +153,7 @@ class ReportEntry
    public $partWeightEntries;   
    public $partWasherEntries;
    
-   // Derrived values.
+   // Derived values.
    public $panCount;    // from all weight logs
    public $partWeight;  // from all weight logs
    public $runTime;     // approved hours
@@ -161,6 +161,7 @@ class ReportEntry
    public $partCountByWasherLog;  // compiled
    public $partCount;   // estimated
    public $grossParts;  // for run time
+   public $inProcessInspectionCount;
    public $statusFlags;
       
    // Calculated values.
@@ -178,15 +179,15 @@ class ReportEntry
       $this->partWasherEntries = array();
       $this->partWeightEntries = array();
       
-      // Derrived values.
+      // Derived values.
       $this->panCount = 0;
       $this->partWeight = 0;
       $this->runTime = 0;  // hours
       $this->partCount;
       $this->partCountByWeightLog = 0;
       $this->partCountByWasherLog = 0;
-      
-      $this->grossParts;
+      $this->grossParts = 0;
+      $this->inProcessInspectionCount = 0;
       $this->statusFlags = array();
       
       // Calculated values.
@@ -234,7 +235,7 @@ class ReportEntry
       }
       
       // 
-      // Copy derrived values.
+      // Copy derived values.
       //
       
       $entry->panCount = $entry->getPanCountByWeightLog();
@@ -253,6 +254,8 @@ class ReportEntry
                                                           $entry->getPartCountByWeightLog(), 
                                                           $entry->getPartCountByWasherLog(),
                                                           $entry->grossParts);
+      
+      $entry->inProcessInspectionCount = $entry->getInProcessInspectionCount();
       
       //
       // Validate data
@@ -357,15 +360,18 @@ class ReportEntry
    
    public function recalculate()
    {
-      $this->averagePanWeight = Calculations::calculateAveragePanWeight($this->getTotalPartWeight(), $this->getPanCountByWeightLog());
-      
-      $this->grossParts = Calculations::calculateGrossParts($this->runTime, $this->jobInfo->grossPartsPerHour);
-      
-      $this->efficiency = Calculations::calculateEfficiency($this->partCount, $this->grossParts);
-      
-      $this->machineHoursMade = Calculations::calculateMachineHoursMade($this->partCount, $this->jobInfo->netPartsPerHour);
-      
-      $this->pcOverG = Calculations::calculatePCOverG($this->partCount, $this->jobInfo->grossPartsPerHour);
+      if (!$this->timeCardInfo->maintenanceLogEntry)
+      {
+         $this->averagePanWeight = Calculations::calculateAveragePanWeight($this->getTotalPartWeight(), $this->getPanCountByWeightLog());
+         
+         $this->grossParts = Calculations::calculateGrossParts($this->runTime, $this->jobInfo->grossPartsPerHour);
+         
+         $this->efficiency = Calculations::calculateEfficiency($this->partCount, $this->grossParts);
+         
+         $this->machineHoursMade = Calculations::calculateMachineHoursMade($this->partCount, $this->jobInfo->netPartsPerHour);
+         
+         $this->pcOverG = Calculations::calculatePCOverG($this->partCount, $this->jobInfo->grossPartsPerHour);
+      }
       
       $this->reportStatus = ReportEntryStatus::getOverallStatus($this->statusFlags);
    }
@@ -474,6 +480,13 @@ class ReportEntry
       }
       
       return ($partCount);
+   }
+   
+   private function getInProcessInspectionCount()
+   {
+      return (count(Inspection::getInspectionsForTimeCard(
+                       $this->timeCardInfo->timeCardId, 
+                       [InspectionType::IN_PROCESS])));
    }
 }
 
@@ -1000,6 +1013,7 @@ class DailySummaryReport
        * Part count (by weight)
        * Part count (by wash log)
        * Part count (best estimate)
+       * In Process inspection count
        */
       
       $reportData = array();
@@ -1025,81 +1039,109 @@ class DailySummaryReport
             $row = new stdClass();
             
             // Source data.
-            $row->timeCardId =           $reportEntry->timeCardInfo->timeCardId;
-            $row->panTicketCode =        PanTicket::getPanTicketCode($reportEntry->timeCardInfo->timeCardId);
-            $row->manufactureDate =      $reportEntry->timeCardInfo->manufactureDate;
-            $row->operator =             $reportEntry->userInfo->getFullName();
-            $row->employeeNumber =       $reportEntry->userInfo->employeeNumber;
-            $row->jobNumber =            $reportEntry->jobInfo->jobNumber;
-            $row->wcNumber =             $reportEntry->jobInfo->wcNumber;
-            $row->wcLabel =              JobInfo::getWcLabel($reportEntry->jobInfo->wcNumber);
-            $row->materialNumber =       $reportEntry->timeCardInfo->materialNumber;
-            $row->shiftTime =            $reportEntry->timeCardInfo->shiftTime;
-            $row->runTime =              $reportEntry->timeCardInfo->runTime;
-            $row->setupTime =            $reportEntry->timeCardInfo->setupTime;
-            $row->panCount =             $reportEntry->timeCardInfo->panCount;
-            $row->sampleWeight =         $reportEntry->jobInfo->sampleWeight;
-            $row->partWeight =           $reportEntry->partWeight;
-            $row->grossPartsPerHour =    $reportEntry->jobInfo->grossPartsPerHour;
-            $row->netPartsPerHour =      $reportEntry->jobInfo->netPartsPerHour;
-            $row->partCountByTimeCard =  $reportEntry->timeCardInfo->partCount;
-            $row->partCountByWeightLog = $reportEntry->partCountByWeightLog;
-            $row->partCountByWasherLog = $reportEntry->partCountByWasherLog;
-            $row->partCount =            $reportEntry->partCount;
-            $row->scrapCount =           $reportEntry->timeCardInfo->scrapCount;
-            
-            $row->maintenanceLogEntry =  $reportEntry->timeCardInfo->maintenanceLogEntry;
-            $row->maintenanceEntryId =   $row->maintenanceLogEntry ? $reportEntry->timeCardInfo->maintenanceEntryId : MaintenanceEntry::UNKNOWN_ENTRY_ID; 
+            if ($reportEntry->timeCardInfo->maintenanceLogEntry)
+            {
+               $row->timeCardId =           $reportEntry->timeCardInfo->timeCardId;
+               $row->panTicketCode =        PanTicket::getPanTicketCode($reportEntry->timeCardInfo->timeCardId);
+               $row->jobNumber =            $reportEntry->jobInfo ? $reportEntry->jobInfo->jobNumber : JobInfo::UNKNOWN_JOB_NUMBER;
+               $row->wcNumber =             $reportEntry->jobInfo ? $reportEntry->jobInfo->wcNumber : JobInfo::UNKNOWN_WC_NUMBER;
+               $row->wcLabel =              $reportEntry->jobInfo ? JobInfo::getWcLabel($reportEntry->jobInfo->wcNumber) : "";
+               $row->runTime =              $reportEntry->timeCardInfo->runTime;
+               
+               $row->maintenanceLogEntry =  $reportEntry->timeCardInfo->maintenanceLogEntry;
+               $row->maintenanceEntryId =   $reportEntry->timeCardInfo->maintenanceEntryId;
+            }
+            else
+            {
+               $row->timeCardId =           $reportEntry->timeCardInfo->timeCardId;
+               $row->panTicketCode =        PanTicket::getPanTicketCode($reportEntry->timeCardInfo->timeCardId);
+               $row->manufactureDate =      $reportEntry->timeCardInfo->manufactureDate;
+               $row->operator =             $reportEntry->userInfo->getFullName();
+               $row->employeeNumber =       $reportEntry->userInfo->employeeNumber;
+               $row->jobNumber =            $reportEntry->jobInfo->jobNumber;
+               $row->wcNumber =             $reportEntry->jobInfo->wcNumber;
+               $row->wcLabel =              JobInfo::getWcLabel($reportEntry->jobInfo->wcNumber);
+               $row->materialNumber =       $reportEntry->timeCardInfo->materialNumber;
+               $row->shiftTime =            $reportEntry->timeCardInfo->shiftTime;
+               $row->runTime =              $reportEntry->timeCardInfo->runTime;
+               $row->setupTime =            $reportEntry->timeCardInfo->setupTime;
+               $row->panCount =             $reportEntry->timeCardInfo->panCount;
+               $row->sampleWeight =         $reportEntry->jobInfo->sampleWeight;
+               $row->partWeight =           $reportEntry->partWeight;
+               $row->grossPartsPerHour =    $reportEntry->jobInfo->grossPartsPerHour;
+               $row->netPartsPerHour =      $reportEntry->jobInfo->netPartsPerHour;
+               $row->partCountByTimeCard =  $reportEntry->timeCardInfo->partCount;
+               $row->partCountByWeightLog = $reportEntry->partCountByWeightLog;
+               $row->partCountByWasherLog = $reportEntry->partCountByWasherLog;
+               $row->partCount =            $reportEntry->partCount;
+               $row->scrapCount =           $reportEntry->timeCardInfo->scrapCount;
+               $row->inProcessInspectionCount = $reportEntry->inProcessInspectionCount;
+
+               $row->maintenanceLogEntry =  false;
+               $row->maintenanceEntryId =   MaintenanceEntry::UNKNOWN_ENTRY_ID;
+            }
    
             // Data validation.
-            $row->incompleteShiftTime =              $reportEntry->timeCardInfo->incompleteShiftTime();
-            $row->unapprovedRunTime =                !$reportEntry->timeCardInfo->isRunTimeApproved();
-            $row->unapprovedSetupTime =              !$reportEntry->timeCardInfo->isSetupTimeApproved();
-            $row->incompletePanCount =               $reportEntry->timeCardInfo->incompletePanCount();
-            $row->unreasonablePartWeight =           $reportEntry->checkStatusFlag(ReportEntryStatus::UNREASONABLE_PART_COUNT_BY_WEIGHT_LOG);
-            $row->unreasonablePartCountByTimeCard =  $reportEntry->checkStatusFlag(ReportEntryStatus::UNREASONABLE_PART_COUNT_BY_TIME_CARD);
-            $row->unreasonablePartCountByWeightLog = $reportEntry->checkStatusFlag(ReportEntryStatus::UNREASONABLE_PART_COUNT_BY_WEIGHT_LOG);
-            $row->unreasonablePartCountByWasherLog = $reportEntry->checkStatusFlag(ReportEntryStatus::UNREASONABLE_PART_COUNT_BY_WASHER_LOG);
-            $row->incompletePartCount =              $reportEntry->timeCardInfo->incompletePartCount();
-            $row->unreasonableEfficiency =           ($reportEntry->efficiency >= ReportEntry::UNREASONABLE_EFFICIENCY);
-            $row->reportStatus =                     $reportEntry->reportStatus;
-            $row->dataStatusLabel =                  ReportEntryStatus::getLabel($reportEntry->reportStatus);
-            $row->dataStatusClass =                  ReportEntryStatus::getClass($reportEntry->reportStatus);
-            
-            // Calculated values.
-            $row->averagePanWeight = $reportEntry->averagePanWeight;
-            $row->grossParts =       $reportEntry->grossParts;
-            $row->efficiency =       round(($reportEntry->efficiency * 100), 2);
-            $row->machineHoursMade = round($reportEntry->machineHoursMade, 2);
+            if ($reportEntry->timeCardInfo->maintenanceLogEntry)
+            {
+               $row->reportStatus =                     $reportEntry->reportStatus;
+               $row->dataStatusLabel =                  ReportEntryStatus::getLabel($reportEntry->reportStatus);
+               $row->dataStatusClass =                  ReportEntryStatus::getClass($reportEntry->reportStatus);
+            }
+            else
+            {
+               $row->incompleteShiftTime =              $reportEntry->timeCardInfo->incompleteShiftTime();
+               $row->unapprovedRunTime =                !$reportEntry->timeCardInfo->isRunTimeApproved();
+               $row->unapprovedSetupTime =              !$reportEntry->timeCardInfo->isSetupTimeApproved();
+               $row->incompletePanCount =               $reportEntry->timeCardInfo->incompletePanCount();
+               $row->unreasonablePartWeight =           $reportEntry->checkStatusFlag(ReportEntryStatus::UNREASONABLE_PART_COUNT_BY_WEIGHT_LOG);
+               $row->unreasonablePartCountByTimeCard =  $reportEntry->checkStatusFlag(ReportEntryStatus::UNREASONABLE_PART_COUNT_BY_TIME_CARD);
+               $row->unreasonablePartCountByWeightLog = $reportEntry->checkStatusFlag(ReportEntryStatus::UNREASONABLE_PART_COUNT_BY_WEIGHT_LOG);
+               $row->unreasonablePartCountByWasherLog = $reportEntry->checkStatusFlag(ReportEntryStatus::UNREASONABLE_PART_COUNT_BY_WASHER_LOG);
+               $row->incompletePartCount =              $reportEntry->timeCardInfo->incompletePartCount();
+               $row->unreasonableEfficiency =           ($reportEntry->efficiency >= ReportEntry::UNREASONABLE_EFFICIENCY);
+               $row->reportStatus =                     $reportEntry->reportStatus;
+               $row->dataStatusLabel =                  ReportEntryStatus::getLabel($reportEntry->reportStatus);
+               $row->dataStatusClass =                  ReportEntryStatus::getClass($reportEntry->reportStatus);
+               
+               // Calculated values.
+               $row->averagePanWeight = $reportEntry->averagePanWeight;
+               $row->grossParts =       $reportEntry->grossParts;
+               $row->efficiency =       round(($reportEntry->efficiency * 100), 2);
+               $row->machineHoursMade = round($reportEntry->machineHoursMade, 2);
+            }
             
             // *****************************************************************
             // Factory Stats integration
             
-            $row->factoryStats = new stdClass();
-            $row->factoryStats->count = 0;
-            $row->factoryStats->firstEntry = null;
-            $row->factoryStats->updateTime = null;
-            
-            if ($factoryStatsData)
+            if (!$reportEntry->timeCardInfo->maintenanceLogEntry)
             {
-               $stationId = $factoryStats->getStationId(strval($row->wcNumber));
-
-               if (($stationId != 0) &&
-                   isset($factoryStatsData->$stationId) &&
-                   isset($factoryStatsData->$stationId->$factoryStatsShiftId))
+               $row->factoryStats = new stdClass();
+               $row->factoryStats->count = 0;
+               $row->factoryStats->firstEntry = null;
+               $row->factoryStats->updateTime = null;
+               
+               if ($factoryStatsData)
                {
-                  $row->factoryStats->count = $factoryStatsData->$stationId->$factoryStatsShiftId->count;
-                  
-                  if ($factoryStatsData->$stationId->$factoryStatsShiftId->firstEntry)
+                  $stationId = $factoryStats->getStationId(strval($row->wcNumber));
+   
+                  if (($stationId != 0) &&
+                      isset($factoryStatsData->$stationId) &&
+                      isset($factoryStatsData->$stationId->$factoryStatsShiftId))
                   {
-                     $dt = new DateTime($factoryStatsData->$stationId->$factoryStatsShiftId->firstEntry);
-                     $row->factoryStats->firstEntry = $dt->format("g:i A");
-                  }
-                  
-                  if ($factoryStatsData->$stationId->$factoryStatsShiftId->updateTime)
-                  {
-                     $dt = new DateTime($factoryStatsData->$stationId->$factoryStatsShiftId->updateTime);
-                     $row->factoryStats->updateTime = $dt->format("g:i A");
+                     $row->factoryStats->count = $factoryStatsData->$stationId->$factoryStatsShiftId->count;
+                     
+                     if ($factoryStatsData->$stationId->$factoryStatsShiftId->firstEntry)
+                     {
+                        $dt = new DateTime($factoryStatsData->$stationId->$factoryStatsShiftId->firstEntry);
+                        $row->factoryStats->firstEntry = $dt->format("g:i A");
+                     }
+                     
+                     if ($factoryStatsData->$stationId->$factoryStatsShiftId->updateTime)
+                     {
+                        $dt = new DateTime($factoryStatsData->$stationId->$factoryStatsShiftId->updateTime);
+                        $row->factoryStats->updateTime = $dt->format("g:i A");
+                     }
                   }
                }
             }

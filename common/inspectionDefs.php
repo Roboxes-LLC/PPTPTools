@@ -347,11 +347,15 @@ abstract class Specification
    const RINGS = 11;
    const VISUAL = 12;
    const PIPE_PLUG = 13;
-   const LAST = 14;
+   const POP_UP_GAGE = 14;
+   const THREADED_PLUG_GAGE = 15;
+   const CHAMFER_GAGE = 16;
+   const LAST = 17;
    const COUNT = Specification::LAST - Specification::FIRST;
    
    public static $values = [
       Specification::CALIPERS,
+      Specification::CHAMFER_GAGE,
       Specification::COMPARATOR,
       Specification::CONCENTRICITY,
       Specification::DEPTH_CALIPER,
@@ -361,8 +365,10 @@ abstract class Specification
       Specification::OASIS,
       Specification::PIPE_PLUG,
       Specification::PIPE_RING,
+      Specification::POP_UP_GAGE,
       Specification::PROFILOMETER,
       Specification::RINGS,
+      Specification::THREADED_PLUG_GAGE,
       Specification::VISUAL
    ];
    
@@ -380,7 +386,10 @@ abstract class Specification
       "Profilometer",
       "Rings",
       "Visual",
-      "Pipe Plug"
+      "Pipe Plug",
+      "Pop Up Gage",
+      "Threaded Plug Gage",
+      "Chamfer Gage"
    ];
    
    public static function getLabel($specification)
