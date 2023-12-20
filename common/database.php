@@ -1475,7 +1475,7 @@ class PPTPDatabase extends MySqlDatabase
       if ($authorInspectorOperator != UserInfo::UNKNOWN_EMPLOYEE_NUMBER)
       {
          $authorInspectorOperatorClause = 
-            "((author = $authorInspectorOperator) OR (inspector = $authorInspectorOperator) OR (operator = $authorInspectorOperator))";
+            "((author = $authorInspectorOperator) OR (inspector = $authorInspectorOperator) OR (operator = $authorInspectorOperator) OR (timecard.employeeNumber = $authorInspectorOperator))";
       }
       
       $typeClause = "TRUE";
