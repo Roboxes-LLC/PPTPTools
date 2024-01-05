@@ -25,7 +25,7 @@ class InspectionManager
                $inProcessInspection = new Inspection();
                $inProcessInspection->dateTime = Time::now();
                $inProcessInspection->templateId = $templateIds[0];
-               $inProcessInspection->author = UserInfo::SYSTEM_USER_ID;
+               $inProcessInspection->author = UserInfo::SYSTEM_EMPLOYEE_NUMBER;
                $inProcessInspection->inspector = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
                $inProcessInspection->comments = "Auto-generated from Oasis inspection";
                
