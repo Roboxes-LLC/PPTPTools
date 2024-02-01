@@ -1,29 +1,102 @@
 <?php
 
- require_once 'database.php';
+require_once 'database.php';
+require_once 'materialDefs.php';
+
+class MaterialInfo
+{
+   public $partNumber;
+   public $type;
+   public $shape;
+   public $size;
+   public $length;
+   
+   public function __construct()
+   {
+      $this->partNumber = null;
+      $this->type = MaterialType::UNKNOWN;
+      $this->shape = MaterialShape::UNKNOWN;
+      $this->size = 0;
+      $this->length = 0;
+   }
+   
+   public function initialize($row)
+   {
+      $this->partNumber = $row['materialPartNumber'];
+      $this->type = intval($row['materialType']);
+      $this->shape = intval($row['materialShape']);
+      $this->size = floatval($row['materialSize']);
+      $this->length = intval($row['materialLength']);
+   }
+   
+   public function getMaterialLabel()
+   {
+      // Ex: 12L14 HEX .75 15FT
+      
+      $shape = MaterialShape::getLabel($this->shape);
+      
+      $label = 
+<<<HEREDOC
+      $this->partNumber $shape $this->size {$this->length}FT 
+HEREDOC;
+      
+      return ($label);
+   }
+   
+   public function getMaterialDescription()
+   {
+      // Ex: 3/4" HEX STEEL 15FT SS
+      
+      $material = MaterialType::getLabel($this->type);
+      $size = MaterialInfo::floatToRational($this->size);
+      $shape = MaterialShape::getLabel($this->shape);
+      
+      
+      $description =
+<<<HEREDOC
+      $size $shape $material {$this->length}FT
+HEREDOC;
+      
+      return ($description);
+   }
+   
+   // **************************************************************************
+   
+   // https://stackoverflow.com/questions/14330713/converting-float-decimal-to-fraction
+   private function floatToRational($n, $tolerance = 1.e-6)
+   {
+      $rationalString = "";
+      
+      if ($n != 0)
+      {
+         $h1=1; 
+         $h2=0;
+         $k1=0; 
+         $k2=1;
+         $b = 1 / $n;
+         
+         do 
+         {
+            $b = 1 / $b;
+            $a = floor($b);
+            $aux = $h1; 
+            $h1 = $a * $h1 + $h2;
+            $h2 = $aux;
+            $aux = $k1;
+            $k1 = $a * $k1 + $k2;
+            $k2 = $aux;
+            $b = $b - $a;
+         } while (abs($n-$h1/$k1) > ($n * $tolerance));
+         
+         $rationalString = "$h1/$k1";
+      }
+      
+      return ($rationalString);
+   }
+}
+
  
- abstract class MaterialType
- {
-    const FIRST = 0;
-    const UNKNOWN = MaterialType::FIRST;
-    const ALUMINUM = 1;
-    const BRASS = 2;
-    const STEEL = 3;
-    const STAINLESS_STEEL = 4;    
-    const BRONZE = 5;    
-    const LAST = 6;
-    const COUNT = MaterialType::LAST - MaterialType::FIRST;
-    
-    public static $VALUES = array(MaterialType::ALUMINUM, MaterialType::BRASS, MaterialType::STEEL, MaterialType::STAINLESS_STEEL, MaterialType::BRONZE);
-    
-    public static function getLabel($materialType)
-    {
-       $labels = array("---", "Aluminum", "Brass", "Steel", "Stainless Steel", "Bronze");
-       
-       return ($labels[$materialType]);
-    }
- }
- 
+/* 
  class MaterialInfo
  {
     const UNKNOWN_MATERIAL_ID = 0;
@@ -148,7 +221,8 @@
        $this->length = $row['length'];
     }
  }
- 
+ */
+
  /*
  $options = MaterialInfo::getOptions(MaterialInfo::UNKNOWN_MATERIAL_ID);
  echo "Materials <select>$options</select>";

@@ -38,7 +38,7 @@ require_once '../printer/printQueue.php';
 session_start();
 
 $router = new Router();
-$router->setLogging(false);
+$router->setLogging(true);
 
 $router->add("ping", function($params) {
    $result = new stdClass();
@@ -3515,22 +3515,13 @@ $router->add("materialData", function($params) {
          {
             $materialEntry->locationLabel = MaterialLocation::getLabel($materialEntry->location);
             
-            if ($materialEntry->materialInfo)
-            {
-               $materialEntry->materialPartNumber = $materialEntry->materialInfo->partNumber;
-               $materialEntry->materialDescription = $materialEntry->materialInfo->description;
-               $materialEntry->materialType = $materialEntry->materialInfo->materialType;
-               $materialEntry->materialTypeLabel = MaterialType::getLabel($materialEntry->materialType);
-               $materialEntry->size = $materialEntry->materialInfo->size;
-               $materialEntry->length = $materialEntry->materialInfo->length;
-               $materialEntry->quantity = $materialEntry->getQuantity();
-            }
-            
             if ($materialEntry->materialHeatInfo)
             {
                $materialEntry->vendorName = $vendors[$materialEntry->materialHeatInfo->vendorId];
+               $materialEntry->materialDescription = $materialEntry->materialHeatInfo->materialInfo->getMaterialDescription();
+               $materialEntry->materialHeatInfo->materialInfo->materialTypeLabel = MaterialType::getLabel($materialEntry->materialHeatInfo->materialInfo->type);
             }
-            
+                        
             $materialEntry->materialTicketCode = MaterialTicket::getMaterialTicketCode($materialEntry->materialEntryId);
             
             if ($materialEntry->isIssued())
@@ -3608,8 +3599,12 @@ $router->add("saveMaterialEntry", function($params) {
          // Material heat update (optional).
          if (isset($params["vendorHeatNumber"]) &&
              isset($params["internalHeatNumber"]) &&
-             isset($params["materialId"]) &&
-             isset($params["vendorId"]))
+             isset($params["vendorId"]) &&
+             (isset($params["materialPartNumber"]) || isset($params["newMaterialPartNumber"])) &&
+             isset($params["materialType"]) &&
+             isset($params["materialShape"]) &&
+             isset($params["materialSize"]) &&
+             isset($params["materialLength"]))
          {
             $vendorHeatNumber = $params["vendorHeatNumber"];
             
@@ -3624,8 +3619,25 @@ $router->add("saveMaterialEntry", function($params) {
             }
             
             $materialHeatInfo->internalHeatNumber = $params->getInt("internalHeatNumber");
-            $materialHeatInfo->materialId = $params->getInt("materialId");
             $materialHeatInfo->vendorId = $params->getInt("vendorId");
+            
+            // Material part number.
+            if (isset($params["newMaterialPartNumber"]))
+            {
+               $partNumber = $params->get("newMaterialPartNumber");
+               PPTPDatabase::getInstance()->newMaterialPartNumber($partNumber);
+               $materialHeatInfo->materialInfo->partNumber = $partNumber;
+            }
+            else
+            {
+               $materialHeatInfo->materialInfo->partNumber = $params->get("materialPartNumber");
+            }
+            
+            // Material info.
+            $materialHeatInfo->materialInfo->type = $params->getInt("materialType");
+            $materialHeatInfo->materialInfo->shape = $params->getInt("materialShape");
+            $materialHeatInfo->materialInfo->size = $params->getFloat("materialSize");
+            $materialHeatInfo->materialInfo->length = $params->getInt("materialLength");
             
             if ($newMaterialHeat)
             {

@@ -488,22 +488,55 @@ if (!Authentication::isAuthenticated())
                                  
                <div class="form-item">
                   <div class="form-label">Material type</div>
-                  <select id="material-id-input" name="materialId" form="input-form" oninput="this.validator.validate(); recalculateQuantity()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
-                     <?php echo MaterialInfo::getOptions(getMaterialId()); ?>
+                  <select id="material-type-input" name="materialType" form="input-form" oninput="this.validator.validate()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
+                     <?php echo MaterialType::getOptions(getMaterialEntry()->materialHeatInfo->materialInfo->type); ?>
                   </select>
                </div>
+               
+               <div class="form-item">
+                  <div class="form-label">Part #</div>
+                  <div class="flex-horizontal">
+                     <select id="material-part-number-input" name="materialPartNumber" form="input-form" oninput="this.validator.validate()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?> style="margin-right:20px">
+                        <?php echo MaterialPartNumber::getOptions(getMaterialEntry()->materialHeatInfo->materialInfo->partNumber); ?>
+                     </select>
+                     <input id="new-material-part-number-input" type="text" name="newPartNumber" form="input-form" oninput="this.validator.validate();" value="<?php echo getMaterialEntry()->materialHeatInfo->materialInfo->partNumber ?>" <?php echo getDisabled(MaterialInputField::TAG); ?> />
+                  </div>
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label">Shape</div>
+                  <select id="material-shape-input" name="materialShape" form="input-form" oninput="this.validator.validate()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
+                     <?php echo MaterialShape::getOptions(getMaterialEntry()->materialHeatInfo->materialInfo->shape); ?>
+                  </select>
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label">Size</div>
+                  <input id="material-size-input" type="number" style="width:50px;" name="materialSize" form="input-form" oninput="this.validator.validate()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->materialHeatInfo->materialInfo->size; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label">Length</div>
+                  <select id="material-length-input" name="materialLength" form="input-form" oninput="this.validator.validate(); recalculateQuantity()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?>>
+                     <?php echo MaterialLength::getOptions(getMaterialEntry()->materialHeatInfo->materialInfo->length); ?>
+                  </select>
+               </div>
+
+               <div class="form-section-header">Tracking</div>
                
                <div class="form-item">
                   <div class="form-label">Tag #</div>
                   <input id="tag-number-input" type="text" name="tagNumber" form="input-form" oninput="this.validator.validate();" value="<?php echo getMaterialEntry()->tagNumber; ?>" <?php echo getDisabled(MaterialInputField::TAG); ?> />
                </div>
-               
+                              
                <div class="form-item">
                   <div class="form-label">Location</div>
                   <select id="location-input" name="location" form="input-form" <?php echo getDisabled(MaterialInputField::LOCATION); ?>>
                      <?php echo MaterialLocation::getOptions(getMaterialEntry()->location); ?>
                   </select>
                </div>            
+               
+               <div class="form-section-header">Quantity</div>
                
                <div class="form-item">
                   <div class="form-label">Pieces</div>
@@ -591,7 +624,12 @@ if (!Authentication::isAuthenticated())
       var vendorHeatValidator = new RegExpressionValidator("vendor-heat-number-input", /^[a-zA-Z0-9-.]+$/, true, 16);
       var vendorValidator = new SelectValidator("vendor-id-input");
       var internalHeatValidator = new IntValidator("internal-heat-number-input", 5, 1, 99999, false);
-      var materialValidator = new SelectValidator("material-id-input");
+      var materialTypeValidator = new SelectValidator("material-type-input");
+      var materialPartNumberValidator = new SelectValidator("material-part-number-input");
+      var newMaterialPartNumberValidator = new RegExpressionValidator("new-material-part-number-input", /^[a-zA-Z0-9-]+$/, true, 16);  // Only letters, numbers, and "-".
+      var materialShapeValidator = new SelectValidator("material-shape-input");
+      var materialSizeValidator = new DecimalValidator("material-size-input", 6, 0.0001, 2.5, 4, false);
+      var materialLengthValidator = new SelectValidator("material-length-input");
       var tagNumberValidator = new RegExpressionValidator("tag-number-input", /^[a-zA-Z0-9-]+$/, true, 16);  // Only letters, numbers, and "-".
       var locationValidator = new SelectValidator("location-input");
       var piecesValidator = new IntValidator("pieces-input", 4, 1, 1000, false);
@@ -601,7 +639,12 @@ if (!Authentication::isAuthenticated())
       vendorHeatValidator.init();
       vendorValidator.init();
       internalHeatValidator.init();
-      materialValidator.init();
+      materialTypeValidator.init();
+      materialPartNumberValidator.init();
+      newMaterialPartNumberValidator.init();
+      materialShapeValidator.init();
+      materialSizeValidator.init();
+      materialLengthValidator.init();
       tagNumberValidator.init();
       locationValidator.init();
       piecesValidator.init();
@@ -615,9 +658,6 @@ if (!Authentication::isAuthenticated())
 
       // Store the initial state of the form, for change detection.
       setInitialFormState("input-form");
-      
-      // Store an array of material lengths.
-      var materialLengths = <?php echo MaterialInfo::getJavascriptLengthArray() ?>;
       
       var nextInternalHeatNumber = <?php echo MaterialHeatInfo::getNextInternalHeatNumber(); ?>;
       

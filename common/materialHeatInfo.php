@@ -9,15 +9,15 @@ class MaterialHeatInfo
    
    public $vendorHeatNumber;
    public $internalHeatNumber;
-   public $materialId;
    public $vendorId;
+   public $materialInfo;
    
    public function __construct()
    {
       $this->vendorHeatNumber = null;
       $this->internalHeatNumber = MaterialHeatInfo::UNKNOWN_INTERNAL_HEAT_NUMBER;
-      $this->materialId = MaterialInfo::UNKNOWN_MATERIAL_ID;
       $this->vendorId = MaterialVendor::UNKNOWN_MATERIAL_VENDOR_ID;
+      $this->materialInfo = new MaterialInfo();
    }
    
    public static function load($heatNumber, $useInternalHeatNumber = false)
@@ -59,8 +59,8 @@ class MaterialHeatInfo
    {
       $this->vendorHeatNumber = $row['vendorHeatNumber'];
       $this->internalHeatNumber = intval($row['internalHeatNumber']);
-      $this->materialId = intval($row['materialId']);
       $this->vendorId = intval($row['vendorId']);
+      $this->materialInfo->initialize($row);
    }
 }
 
