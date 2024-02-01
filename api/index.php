@@ -2767,7 +2767,8 @@ $router->add("uploadOasisReport", function($params) {
             }
             
             // Auto-generate an In Process inspection from the Oasis inspection.
-            if ($result->success)
+            if (($result->success) &&
+                (!$oasisReport->isBPartNumber())) // Don't generate In Process for "B" part inspections.
             {
                InspectionManager::generateInProcessFromOasis($inspection);
             }

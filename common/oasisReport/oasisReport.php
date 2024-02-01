@@ -1,6 +1,7 @@
 <?php
 
 if (!defined('ROOT')) require_once '../../root.php';
+require_once ROOT.'/common/inspection.php';
 require_once ROOT.'/common/userInfo.php';
 require_once ROOT.'/common/utils.php';
 require_once ROOT.'/common/oasisReport/partInspection.php';
@@ -199,6 +200,14 @@ class OasisReport
       }
       
       return ($partNumber);
+   }
+   
+   public function isBPartNumber()
+   {
+      // Part numbers have an A/B designation when they are too large to covered by a single Oasis inspection.
+      // Ex.  "M6730A Rev 15" vs "M6730B Rev 15"
+
+      return (preg_match("/^M.*B$/", $this->getPartNumber()));  // Start with M, ends with B.
    }
    
    public function getEfficiency()
