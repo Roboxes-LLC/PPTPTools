@@ -47,14 +47,14 @@ HEREDOC;
    {
       // Ex: 3/4" HEX STEEL 15FT SS
       
-      $material = MaterialType::getLabel($this->type);
+      $material = MaterialType::getAbbreviation($this->type);
       $size = MaterialInfo::floatToRational($this->size);
-      $shape = MaterialShape::getLabel($this->shape);
+      $shape = MaterialShape::getAbbreviation($this->shape);
       
       
       $description =
 <<<HEREDOC
-      $size $shape $material {$this->length}FT
+      {$size}" $shape $material {$this->length} FT
 HEREDOC;
       
       return ($description);

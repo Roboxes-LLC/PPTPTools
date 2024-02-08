@@ -165,6 +165,19 @@ function onVendorHeatNumberChange()
    }
 }
 
+function onNewMaterialPartNumberChange()
+{
+   if (document.getElementById("new-material-part-number-input").value != "")
+   {
+      clear("material-part-number-input");
+      disable("material-part-number-input");
+   }
+   else
+   {
+      enable("material-part-number-input");
+   }
+}
+
 function onWCNumberChange()
 {
    clear("job-number-input");

@@ -38,7 +38,7 @@ require_once '../printer/printQueue.php';
 session_start();
 
 $router = new Router();
-$router->setLogging(true);
+$router->setLogging(false);
 
 $router->add("ping", function($params) {
    $result = new stdClass();
@@ -3519,7 +3519,8 @@ $router->add("materialData", function($params) {
             {
                $materialEntry->vendorName = $vendors[$materialEntry->materialHeatInfo->vendorId];
                $materialEntry->materialDescription = $materialEntry->materialHeatInfo->materialInfo->getMaterialDescription();
-               $materialEntry->materialHeatInfo->materialInfo->materialTypeLabel = MaterialType::getLabel($materialEntry->materialHeatInfo->materialInfo->type);
+               $materialEntry->materialHeatInfo->materialInfo->typeLabel = MaterialType::getLabel($materialEntry->materialHeatInfo->materialInfo->type);
+               $materialEntry->quantity = $materialEntry->getQuantity();
             }
                         
             $materialEntry->materialTicketCode = MaterialTicket::getMaterialTicketCode($materialEntry->materialEntryId);
@@ -3624,9 +3625,7 @@ $router->add("saveMaterialEntry", function($params) {
             // Material part number.
             if (isset($params["newMaterialPartNumber"]))
             {
-               $partNumber = $params->get("newMaterialPartNumber");
-               PPTPDatabase::getInstance()->newMaterialPartNumber($partNumber);
-               $materialHeatInfo->materialInfo->partNumber = $partNumber;
+               $materialHeatInfo->materialInfo->partNumber = $params->get("newMaterialPartNumber");
             }
             else
             {

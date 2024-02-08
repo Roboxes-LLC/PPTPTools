@@ -21,6 +21,13 @@ abstract class MaterialType
       return ($labels[$materialType]);
    }
    
+   public static function getAbbreviation($materialType)
+   {
+      $labels = array("---", "ALUM", "BRASS", "STEEL", "STEEL SS", "BRONZE");
+      
+      return ($labels[$materialType]);
+   }
+   
    public static function getOptions($selectedMaterialType)
    {
       $html = "<option style=\"display:none\">";
@@ -169,7 +176,7 @@ abstract class MaterialPartNumber
       
       while ($result && ($row = $result->fetch_assoc()))
       {
-         $value = $row["partNumber"];
+         $value = $row["materialPartNumber"];
          $label = $value;
          $selected = ($selectedPartNumber == $value) ? "selected" : "";
          

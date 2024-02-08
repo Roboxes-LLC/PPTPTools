@@ -499,7 +499,7 @@ if (!Authentication::isAuthenticated())
                      <select id="material-part-number-input" name="materialPartNumber" form="input-form" oninput="this.validator.validate()" <?php echo getDisabled(MaterialInputField::MATERIAL); ?> style="margin-right:20px">
                         <?php echo MaterialPartNumber::getOptions(getMaterialEntry()->materialHeatInfo->materialInfo->partNumber); ?>
                      </select>
-                     <input id="new-material-part-number-input" type="text" name="newPartNumber" form="input-form" oninput="this.validator.validate();" value="<?php echo getMaterialEntry()->materialHeatInfo->materialInfo->partNumber ?>" <?php echo getDisabled(MaterialInputField::TAG); ?> />
+                     <input id="new-material-part-number-input" type="text" name="newMaterialPartNumber" form="input-form" oninput="this.validator.validate(); onNewMaterialPartNumberChange()" value="<?php echo getMaterialEntry()->materialHeatInfo->materialInfo->partNumber ?>" <?php echo getDisabled(MaterialInputField::TAG); ?> />
                   </div>
                </div>
                

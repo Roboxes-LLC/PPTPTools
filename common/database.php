@@ -2173,16 +2173,7 @@ HEREDOC;
    
    public function getMaterialPartNumbers()
    {
-      $query = "SELECT * FROM materialpartnumber ORDER BY partNumber ASC;";
-      
-      $result = $this->query($query);
-      
-      return ($result);
-   }
-   
-   public function newMaterialPartNumber($materialPartNumber)
-   {
-      $query = "INSERT INTO materialpartnumber (partNumber) VALUES ($materialPartNumber);";
+      $query = "SELECT DISTINCT materialPartNumber FROM materialheat ORDER BY materialPartNumber ASC;";
       
       $result = $this->query($query);
       
@@ -2271,7 +2262,7 @@ HEREDOC;
          "(vendorHeatNumber, internalHeatNumber, vendorId, materialPartNumber, materialType, materialShape, materialSize, materialLength) " .
          "VALUES " .
          "('$materialHeatInfo->vendorHeatNumber', '$materialHeatInfo->internalHeatNumber', '$materialHeatInfo->vendorId', '$materialInfo->partNumber', '$materialInfo->type', '$materialInfo->shape', '$materialInfo->size', '$materialInfo->length');";
-      
+
       $result = $this->query($query);
       
       return ($result);
@@ -2281,7 +2272,7 @@ HEREDOC;
    {
       $query =
          "UPDATE materialheat " .
-         "SET internalHeatNumber = $materialHeatInfo->internalHeatNumber, vendorId = $materialHeatInfo->vendorId, materialPartNumber = '$materialHeatInfo->materialInfo->partNumber', materialType =  $materialHeatInfo->materialInfo->materialType, materialShape =  $materialHeatInfo->materialInfo->materialShape, materialSize =  $materialHeatInfo->materialInfo->size, materialLength =  $materialHeatInfo->materialInfo->length " .
+         "SET internalHeatNumber = $materialHeatInfo->internalHeatNumber, vendorId = $materialHeatInfo->vendorId, materialPartNumber = '{$materialHeatInfo->materialInfo->partNumber}', materialType =  {$materialHeatInfo->materialInfo->type}, materialShape =  {$materialHeatInfo->materialInfo->shape}, materialSize = {$materialHeatInfo->materialInfo->size}, materialLength =  {$materialHeatInfo->materialInfo->length} " .
          "WHERE vendorHeatNumber = '$materialHeatInfo->vendorHeatNumber';";
 
       $result = $this->query($query);
