@@ -1,86 +1,9 @@
 <?php
 
 require_once 'jobInfo.php';
+require_once 'materialDefs.php';
 require_once 'materialHeatInfo.php';
-require_once 'materialInfo.php';
 require_once 'userInfo.php';
-
-abstract class MaterialEntryStatus
-{
-   const FIRST = 0;
-   const UNKNOWN = MaterialEntryStatus::FIRST;
-   const RECEIVED = 1;
-   const ISSUED = 2;
-   const ACKNOWLEDGED = 3;
-   const LAST = 4;
-   const COUNT = MaterialEntryStatus::LAST - MaterialEntryStatus::FIRST;
-   
-   public static $VALUES = array(MaterialEntryStatus::RECEIVED, MaterialEntryStatus::ISSUED, MaterialEntryStatus::ACKNOWLEDGED);
-   
-   public static function getLabel($materialEntryStatus)
-   {
-      $labels = array("---", "Received", "Issued", "Acknowledged");
-      
-      return ($labels[$materialEntryStatus]);
-   }
-   
-   public static function getOptions($selectedStatus, $includeAll = false)
-   {
-      $html = "<option style=\"display:none\">";
-      
-      if ($includeAll)
-      {
-         $all = MaterialEntryStatus::UNKNOWN;
-         $label = "All";
-         $selected = ($selectedStatus == $all) ? "selected" : "";
-         $html .= "<option value=\"$all\" $selected>$label</option>";
-      }
-      
-      foreach (MaterialEntryStatus::$VALUES as $materialEntryStatus)
-      {
-         $selected = ($materialEntryStatus == $selectedStatus) ? "selected" : "";
-         $label = MaterialEntryStatus::getLabel($materialEntryStatus);
-         
-         $html .= "<option value=\"$materialEntryStatus\" $selected>$label</option>";
-      }
-      
-      return ($html);
-   }
-}
-
-abstract class MaterialLocation
-{
-   const FIRST = 0;
-   const UNKNOWN = MaterialLocation::FIRST;
-   const ON_SITE = 1;
-   const OUTSIDE_VENDOR = 2;
-   const LAST = 3;
-   const COUNT = MaterialLocation::LAST - MaterialLocation::FIRST;
-   
-   public static $VALUES = array(MaterialLocation::ON_SITE, MaterialLocation::OUTSIDE_VENDOR);
-   
-   public static function getLabel($materialLocation)
-   {
-      $labels = array("", "On Site", "Outside Vendor");
-      
-      return ($labels[$materialLocation]);
-   }
-   
-   public static function getOptions($selectedLocation)
-   {
-      $html = "<option style=\"display:none\">";
-      
-      foreach (MaterialLocation::$VALUES as $materialLocation)
-      {
-         $selected = ($materialLocation == $selectedLocation) ? "selected" : "";
-         $label = MaterialLocation::getLabel($materialLocation);
-         
-         $html .= "<option value=\"$materialLocation\" $selected>$label</option>";
-      }
-      
-      return ($html);
-   }
-}
 
 class MaterialEntry
 {
@@ -103,7 +26,6 @@ class MaterialEntry
    public $acknowledgedDateTime;
  
    public $materialHeatInfo;
-   public $materialInfo;
    
    public function __construct()
    {
@@ -121,8 +43,7 @@ class MaterialEntry
       $this->acknowledgedUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->acknowledgedDateTime = null;
       
-      $this->materialHeatInfo = null;
-      $this->materialInfo = null;
+      $this->materialHeatInfo = new MaterialHeatInfo();
    }
       
    public static function load($materialEntryId)
@@ -236,10 +157,6 @@ class MaterialEntry
       $this->acknowledgedDateTime = $row['acknowledgedDateTime'] ? Time::fromMySqlDate($row['acknowledgedDateTime'], "Y-m-d H:i:s") : null;
    
       $this->materialHeatInfo = MaterialHeatInfo::load($this->vendorHeatNumber);
-      if ($this->materialHeatInfo)
-      {
-         $this->materialInfo = MaterialInfo::load($this->materialHeatInfo->materialId);
-      }
    }
    
    public function isIssued()
@@ -257,9 +174,9 @@ class MaterialEntry
    {
       $length = 0;
       
-      if ($this->materialInfo)
+      if ($this->materialHeatInfo)
       {
-         $length = ($this->pieces * $this->materialInfo->length);
+         $length = ($this->pieces * $this->materialHeatInfo->materialInfo->length);
       }
       
       return ($length);

@@ -232,18 +232,18 @@ if (!Authentication::isAuthenticated())
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Material",    field:"materialPartNumber",                  hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Vendor",      field:"vendorName",                          hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Vendor Heat", field:"vendorHeatNumber",                    hozAlign:"left", headerFilter:true, visible:true},            
-            {title:"PPTP Heat",   field:"materialHeatInfo.internalHeatNumber", hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Tag",         field:"tagNumber",                           hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Location",    field:"locationLabel",                       hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Type",        field:"materialTypeLabel",                   hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Size",        field:"size",                                hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Length",      field:"length",                              hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Pieces",      field:"pieces",                              hozAlign:"left", visible:true},            
-            {title:"Quantity",    field:"quantity",                            hozAlign:"left", visible:true},
-            {title:"",            field:"issue",                                                visible:hasIssuePermission, print:false,
+            {title:"Material",    field:"materialHeatInfo.materialInfo.partNumber", hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Vendor",      field:"vendorName",                               hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Vendor Heat", field:"vendorHeatNumber",                         hozAlign:"left", headerFilter:true, visible:true},            
+            {title:"PPTP Heat",   field:"materialHeatInfo.internalHeatNumber",      hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Tag",         field:"tagNumber",                                hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Location",    field:"locationLabel",                            hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Type",        field:"materialHeatInfo.materialInfo.typeLabel",  hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Size",        field:"materialHeatInfo.materialInfo.size",       hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Length",      field:"materialHeatInfo.materialInfo.length",     hozAlign:"left", headerFilter:true, visible:true},
+            {title:"Pieces",      field:"pieces",                                   hozAlign:"left", visible:true},            
+            {title:"Quantity",    field:"quantity",                                 hozAlign:"left", visible:true},
+            {title:"",            field:"issue",                                                     visible:hasIssuePermission, print:false,
                formatter:function(cell, formatterParams, onRendered){
                   let isIssued = cell.getRow().getData().isIssued;                  
                   let buttonText = isIssued ? "Revoke" : "Issue";

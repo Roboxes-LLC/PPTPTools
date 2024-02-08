@@ -2168,27 +2168,12 @@ HEREDOC;
    }
    
    // **************************************************************************
-   //                                 Material
+   //                             Material Part Number
    // **************************************************************************
    
-   public function getMaterials($materialType = MaterialType::UNKNOWN)
+   public function getMaterialPartNumbers()
    {
-      $materialTypeClause = "";
-      if ($materialType != MaterialType::UNKNOWN)
-      {
-         $materialTypeClause = "WHERE materialType = $materialType";
-      }
-      
-      $query = "SELECT * FROM material $materialTypeClause ORDER BY partNumber ASC;";
-
-      $result = $this->query($query);
-      
-      return ($result);
-   }
-   
-   public function getMaterial($materialId)
-   {
-      $query = "SELECT * FROM material WHERE materialId = $materialId;";
+      $query = "SELECT DISTINCT materialPartNumber FROM materialheat ORDER BY materialPartNumber ASC;";
       
       $result = $this->query($query);
       
@@ -2242,11 +2227,13 @@ HEREDOC;
    
    public function newMaterialHeat($materialHeatInfo)
    {
+      $materialInfo = $materialHeatInfo->materialInfo;
+      
       $query =
          "INSERT INTO materialheat " .
-         "(vendorHeatNumber, internalHeatNumber, materialId, vendorId) " .
+         "(vendorHeatNumber, internalHeatNumber, vendorId, materialPartNumber, materialType, materialShape, materialSize, materialLength) " .
          "VALUES " .
-         "('$materialHeatInfo->vendorHeatNumber', '$materialHeatInfo->internalHeatNumber', '$materialHeatInfo->materialId', '$materialHeatInfo->vendorId');";
+         "('$materialHeatInfo->vendorHeatNumber', '$materialHeatInfo->internalHeatNumber', '$materialHeatInfo->vendorId', '$materialInfo->partNumber', '$materialInfo->type', '$materialInfo->shape', '$materialInfo->size', '$materialInfo->length');";
 
       $result = $this->query($query);
       
@@ -2257,7 +2244,7 @@ HEREDOC;
    {
       $query =
          "UPDATE materialheat " .
-         "SET internalHeatNumber = $materialHeatInfo->internalHeatNumber, materialId = $materialHeatInfo->materialId, vendorId = $materialHeatInfo->vendorId " .
+         "SET internalHeatNumber = $materialHeatInfo->internalHeatNumber, vendorId = $materialHeatInfo->vendorId, materialPartNumber = '{$materialHeatInfo->materialInfo->partNumber}', materialType =  {$materialHeatInfo->materialInfo->type}, materialShape =  {$materialHeatInfo->materialInfo->shape}, materialSize = {$materialHeatInfo->materialInfo->size}, materialLength =  {$materialHeatInfo->materialInfo->length} " .
          "WHERE vendorHeatNumber = '$materialHeatInfo->vendorHeatNumber';";
 
       $result = $this->query($query);

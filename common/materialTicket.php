@@ -77,9 +77,9 @@ class MaterialTicket
          $materialTicketCode = MaterialTicket::getMaterialTicketCode($this->materialTicketId);
          
          $materialDescription = "";
-         if ($materialEntry->materialInfo)
+         if ($materialEntry->materialHeatInfo)
          {
-            $materialDescription = $materialEntry->materialInfo->description;
+            $materialDescription = $materialEntry->materialHeatInfo->materialInfo->getMaterialDescription();
          }
          
          $dateTime = new DateTime($materialEntry->receivedDateTime, new DateTimeZone('America/New_York'));
@@ -177,9 +177,9 @@ HEREDOC;
          $materialTicketCode = MaterialTicket::getMaterialTicketCode($materialEntryId);
          
          $materialDescription = "";
-         if ($materialEntry->materialInfo)
+         if ($materialEntry->materialHeatInfo)
          {
-            $materialDescription = $materialEntry->materialInfo->description;
+            $materialDescription = $materialEntry->materialHeatInfo->materialInfo->getMaterialDescription();
          }
          
          $dateTime = new DateTime($materialEntry->receivedDateTime, new DateTimeZone('America/New_York'));

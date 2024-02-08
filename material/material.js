@@ -165,6 +165,19 @@ function onVendorHeatNumberChange()
    }
 }
 
+function onNewMaterialPartNumberChange()
+{
+   if (document.getElementById("new-material-part-number-input").value != "")
+   {
+      clear("material-part-number-input");
+      disable("material-part-number-input");
+   }
+   else
+   {
+      enable("material-part-number-input");
+   }
+}
+
 function onWCNumberChange()
 {
    clear("job-number-input");
@@ -186,15 +199,9 @@ function onEditInternalHeatButton()
 
 function recalculateQuantity()
 {
-   let materialId = parseInt(document.querySelector('#material-id-input').value);
+   let length = parseInt(document.querySelector('#material-length-input').value);
    let pieces = parseInt(document.querySelector('#pieces-input').value);
-   let quantity = 0;
-
-   if (Number.isInteger(materialId) && Number.isInteger(pieces))
-   {
-      let length = materialLengths[materialId];
-      quantity = length * pieces;
-   }
+   let quantity = (length * pieces);
    
    document.querySelector('#quantity-input').value = quantity;
 }
@@ -328,24 +335,45 @@ function updateVendorHeatInfo(vendorHeatInfo)
    if (vendorHeatInfo)
    {
       document.getElementById("vendor-id-input").value = vendorHeatInfo.vendorId;
-      document.getElementById("material-id-input").value = vendorHeatInfo.materialId;
+      
+      document.getElementById("material-type-input").value = vendorHeatInfo.materialInfo.type;
+      document.getElementById("material-part-number-input").value = vendorHeatInfo.materialInfo.partNumber;
+      document.getElementById("material-shape-input").value = vendorHeatInfo.materialInfo.shape;
+      document.getElementById("material-size-input").value = vendorHeatInfo.materialInfo.size;
+      document.getElementById("material-length-input").value = vendorHeatInfo.materialInfo.length;
+      
       document.getElementById("internal-heat-number-input").value = vendorHeatInfo.internalHeatNumber;
       document.getElementById("hidden-internal-heat-number-input").value = vendorHeatInfo.internalHeatNumber;
       
       disable("vendor-id-input");
-      disable("material-id-input");
+      disable("material-type-input");
+      disable("material-part-number-input");
+      disable("new-material-part-number-input");
+      disable("material-shape-input");
+      disable("material-size-input");
+      disable("material-length-input");
       disable("internal-heat-number-input");
       hide("edit-internal-heat-number-button");
    }
    else
    {
       clear("vendor-id-input");
-      clear("material-id-input");      
+      clear("material-type-input");
+      clear("material-part-number-input");
+      clear("new-material-part-number-input");
+      clear("material-shape-input");
+      clear("material-size-input");
+      clear("material-length-input");  
       document.getElementById("internal-heat-number-input").value = nextInternalHeatNumber;
       document.getElementById("hidden-internal-heat-number-input").value = nextInternalHeatNumber;
             
       enable("vendor-id-input");
-      enable("material-id-input");
+      enable("material-type-input");
+      enable("material-part-number-input");
+      enable("new-material-part-number-input");
+      enable("material-shape-input");
+      enable("material-size-input");
+      enable("material-length-input");
       disable("internal-heat-number-input");
       show("edit-internal-heat-number-button", "block");
    }
@@ -411,9 +439,26 @@ function validateMaterialEntry()
    {
       alert("Internal heat number is invalid.");    
    }
-   else if (!(document.getElementById("material-id-input").validator.validate()))
+   else if (!(document.getElementById("material-type-input").validator.validate()))
    {
       alert("Please select a material type.");    
+   }
+   else if (!((document.getElementById("material-part-number-input").validator.validate()) || 
+              (document.getElementById("new-material-part-number-input").validator.validate())))
+   {
+      alert("Please enter a material part number.");    
+   }
+   else if (!(document.getElementById("material-shape-input").validator.validate()))
+   {
+      alert("Please select a material shape.");    
+   }
+   else if (!(document.getElementById("material-size-input").validator.validate()))
+   {
+      alert("Please enter a valid material size.");    
+   }
+   else if (!(document.getElementById("material-length-input").validator.validate()))
+   {
+      alert("Please select a material length.");    
    }
    else if (!(document.getElementById("tag-number-input").validator.validate()))
    {
