@@ -2181,34 +2181,6 @@ HEREDOC;
    }
    
    // **************************************************************************
-   //                                 Material
-   // **************************************************************************
-   
-   public function getMaterials($materialType = MaterialType::UNKNOWN)
-   {
-      $materialTypeClause = "";
-      if ($materialType != MaterialType::UNKNOWN)
-      {
-         $materialTypeClause = "WHERE materialType = $materialType";
-      }
-      
-      $query = "SELECT * FROM material $materialTypeClause ORDER BY partNumber ASC;";
-
-      $result = $this->query($query);
-      
-      return ($result);
-   }
-   
-   public function getMaterial($materialId)
-   {
-      $query = "SELECT * FROM material WHERE materialId = $materialId;";
-      
-      $result = $this->query($query);
-      
-      return ($result);
-   }
-   
-   // **************************************************************************
    //                             Material Vendor
    // **************************************************************************
    

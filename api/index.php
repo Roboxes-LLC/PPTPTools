@@ -3623,7 +3623,7 @@ $router->add("saveMaterialEntry", function($params) {
             $materialHeatInfo->vendorId = $params->getInt("vendorId");
             
             // Material part number.
-            if (isset($params["newMaterialPartNumber"]))
+            if (isset($params["newMaterialPartNumber"]) && !empty($params["newMaterialPartNumber"]))
             {
                $materialHeatInfo->materialInfo->partNumber = $params->get("newMaterialPartNumber");
             }

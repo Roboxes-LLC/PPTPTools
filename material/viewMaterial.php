@@ -512,7 +512,7 @@ if (!Authentication::isAuthenticated())
                
                <div class="form-item">
                   <div class="form-label">Size</div>
-                  <input id="material-size-input" type="number" style="width:50px;" name="materialSize" form="input-form" oninput="this.validator.validate()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->materialHeatInfo->materialInfo->size; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
+                  <input id="material-size-input" type="number" style="width:75px;" name="materialSize" form="input-form" oninput="this.validator.validate()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->materialHeatInfo->materialInfo->size; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
                </div>
                
                <div class="form-item">
