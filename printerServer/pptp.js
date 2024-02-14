@@ -65,6 +65,7 @@ class PPTP
       // https://tools.pittsburghprecision.com/api/registerPrinter/
       
       let success = true;
+      let responseText = "";
       
       for (const printer of printers)
       {
@@ -79,7 +80,8 @@ class PPTP
                    'Content-Type': 'application/x-www-form-urlencoded'
                }
             });
-            let responseText = await response.text();
+            
+            responseText = await response.text();
             
             if (response.status == "200")
             {            
