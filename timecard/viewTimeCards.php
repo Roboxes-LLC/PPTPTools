@@ -452,6 +452,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (parseFloat(cell.getValue()).toFixed(2) + "%");
                 }
             },
+            {title:"Parts Taken<br>Early", field:"partsTakenEarly", hozAlign:"center", responsive:5, print:true, formatter:"tickCross", formatterParams:{crossElement:""}},
             {title:"", field:"delete", responsive:0, width:75, print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");

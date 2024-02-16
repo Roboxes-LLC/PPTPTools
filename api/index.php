@@ -153,43 +153,45 @@ $router->add("timeCardData", function($params) {
          {
             $timeCard["panTicketCode"] = PanTicket::getPanTicketCode($timeCardInfo->timeCardId);            
             $timeCard["efficiency"] = round(($timeCardInfo->getEfficiency() * 100), 2);
-         }
          
-         $userInfo = UserInfo::load($timeCard["employeeNumber"]);
-         if ($userInfo)
-         {
-            $timeCard["operator"] = $userInfo->getFullName() . " (" . $timeCard["employeeNumber"] . ")";
+            $userInfo = UserInfo::load($timeCard["employeeNumber"]);
+            if ($userInfo)
+            {
+               $timeCard["operator"] = $userInfo->getFullName() . " (" . $timeCard["employeeNumber"] . ")";
+            }
+            
+            $jobInfo = JobInfo::load($timeCard["jobId"]);
+            if ($jobInfo)
+            {
+               $timeCard["jobNumber"] = $jobInfo->jobNumber;
+               $timeCard["wcNumber"] = $jobInfo->wcNumber;
+               $timeCard["wcLabel"] = JobInfo::getWcLabel($jobInfo->wcNumber);            
+            }
+            
+            $timeCard["isNew"] = Time::isNew($timeCardInfo->dateTime, Time::NEW_THRESHOLD);
+            $timeCard["incompleteShiftTime"] = $timeCardInfo->incompleteShiftTime();
+            $timeCard["incompleteRunTime"] = $timeCardInfo->incompleteRunTime();
+            $timeCard["incompletePanCount"] = $timeCardInfo->incompletePanCount();
+            $timeCard["incompletePartCount"] = $timeCardInfo->incompletePartCount();
+            
+            $timeCard["runTimeRequiresApproval"] = $timeCardInfo->requiresRunTimeApproval();
+            $userInfo = UserInfo::load($timeCardInfo->runTimeApprovedBy);
+            if ($userInfo)
+            {
+               $timeCard["runTimeApprovedByName"] = $userInfo->getFullName();
+            }
+            
+            $timeCard["setupTimeRequiresApproval"] = $timeCardInfo->requiresSetupTimeApproval();
+            $userInfo = UserInfo::load($timeCardInfo->setupTimeApprovedBy);
+            if ($userInfo)
+            {
+               $timeCard["setupTimeApprovedByName"] = $userInfo->getFullName();
+            }
+            
+            $timeCard["partsTakenEarly"] = $timeCardInfo->hasCommentCode(CommentCode::PARTS_TAKEN_EARLY_CODE_ID);
+                     
+            $result[] = $timeCard;
          }
-         
-         $jobInfo = JobInfo::load($timeCard["jobId"]);
-         if ($jobInfo)
-         {
-            $timeCard["jobNumber"] = $jobInfo->jobNumber;
-            $timeCard["wcNumber"] = $jobInfo->wcNumber;
-            $timeCard["wcLabel"] = JobInfo::getWcLabel($jobInfo->wcNumber);            
-         }
-         
-         $timeCard["isNew"] = Time::isNew($timeCardInfo->dateTime, Time::NEW_THRESHOLD);
-         $timeCard["incompleteShiftTime"] = $timeCardInfo->incompleteShiftTime();
-         $timeCard["incompleteRunTime"] = $timeCardInfo->incompleteRunTime();
-         $timeCard["incompletePanCount"] = $timeCardInfo->incompletePanCount();
-         $timeCard["incompletePartCount"] = $timeCardInfo->incompletePartCount();
-         
-         $timeCard["runTimeRequiresApproval"] = $timeCardInfo->requiresRunTimeApproval();
-         $userInfo = UserInfo::load($timeCardInfo->runTimeApprovedBy);
-         if ($userInfo)
-         {
-            $timeCard["runTimeApprovedByName"] = $userInfo->getFullName();
-         }
-         
-         $timeCard["setupTimeRequiresApproval"] = $timeCardInfo->requiresSetupTimeApproval();
-         $userInfo = UserInfo::load($timeCardInfo->setupTimeApprovedBy);
-         if ($userInfo)
-         {
-            $timeCard["setupTimeApprovedByName"] = $userInfo->getFullName();
-         }
-                  
-         $result[] = $timeCard;
       }
    }
 

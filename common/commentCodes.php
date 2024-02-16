@@ -10,6 +10,8 @@ class CommentCode
    
    const ALL_CODES = 0xFFFF;
    
+   const PARTS_TAKEN_EARLY_CODE_ID = 9;
+   
    public $code;
    
    public $description;
