@@ -1544,17 +1544,19 @@ HEREDOC;
    public function newInspection($inspection)
    {
       $dateTime = Time::toMySqlDate($inspection->dateTime);      
+      $completedDateTime = $inspection->completedDateTime ? Time::toMySqlDate($inspection->completedDateTime) : null;  
       $mfgDate = $inspection->mfgDate ? Time::toMySqlDate($inspection->mfgDate) : null;
       
+      $completedClause = ($completedDateTime ? "'$completedDateTime'" : "NULL");
       $mfgClause = ($mfgDate ? "'$mfgDate'" : "NULL");
       
       $isPriority = $inspection->isPriority ? 1 : 0;
       
       $query =
       "INSERT INTO inspection " .
-      "(templateId, dateTime, author, inspector, comments, timeCardId, jobNumber, wcNumber, operator, mfgDate, inspectionNumber, quantity, isPriority, samples, naCount, passCount, warningCount, failCount, dataFile) " .
+      "(templateId, dateTime, completedDateTime, author, inspector, comments, timeCardId, jobNumber, wcNumber, operator, mfgDate, inspectionNumber, quantity, isPriority, samples, naCount, passCount, warningCount, failCount, dataFile) " .
       "VALUES " .
-      "('$inspection->templateId', '$dateTime', '$inspection->author', '$inspection->inspector', '$inspection->comments', '$inspection->timeCardId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', $mfgClause, '$inspection->inspectionNumber', '$inspection->quantity', '$isPriority', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->warningCount', '$inspection->failCount', '$inspection->dataFile');";
+      "('$inspection->templateId', '$dateTime', $completedClause, '$inspection->author', '$inspection->inspector', '$inspection->comments', '$inspection->timeCardId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', $mfgClause, '$inspection->inspectionNumber', '$inspection->quantity', '$isPriority', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->warningCount', '$inspection->failCount', '$inspection->dataFile');";
 
       $result = $this->query($query);
       
@@ -1589,15 +1591,17 @@ HEREDOC;
    public function updateInspection($inspection)
    {
       $dateTime = Time::toMySqlDate($inspection->dateTime);
+      $completedDateTime = $inspection->completedDateTime ? Time::toMySqlDate($inspection->completedDateTime) : null;  
       $mfgDate = $inspection->mfgDate ? Time::toMySqlDate($inspection->mfgDate) : null;
       
+      $completedClause = ($completedDateTime ? "'$completedDateTime'" : "NULL");
       $mfgClause = "mfgDate = " . ($mfgDate ? "'$mfgDate'" : "NULL");  
       
       $isPriority = $inspection->isPriority ? 1 : 0;
       
       $query =
       "UPDATE inspection " .
-      "SET dateTime = '$dateTime', author = '$inspection->author', inspector = '$inspection->inspector', comments = '$inspection->comments', timeCardId = '$inspection->timeCardId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', $mfgClause, inspectionNumber = '$inspection->inspectionNumber', quantity = '$inspection->quantity', isPriority = '$isPriority', samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', warningCount = '$inspection->warningCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
+      "SET dateTime = '$dateTime', completedDateTime = $completedClause, author = '$inspection->author', inspector = '$inspection->inspector', comments = '$inspection->comments', timeCardId = '$inspection->timeCardId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', $mfgClause, inspectionNumber = '$inspection->inspectionNumber', quantity = '$inspection->quantity', isPriority = '$isPriority', samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', warningCount = '$inspection->warningCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
       "WHERE inspectionId = '$inspection->inspectionId';";
 
       $result = $this->query($query);

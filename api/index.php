@@ -1857,6 +1857,7 @@ $router->add("inspectionData", function($params) {
          }
          
          $row["dateTime"] = $inspection->dateTime;
+         $row["completedDateTime"] = $inspection->completedDateTime;
          
          $row["timeCardId"] = $inspection->timeCardId;
          $row["jobNumber"] = $inspection->getJobNumber();
@@ -1929,11 +1930,6 @@ $router->add("saveInspection", function($params) {
       {
          $result->success = false;
          $result->error = "No existing inspection found.";
-      }
-      else
-      {
-         // Use current date/time as the updated entry time.
-         $inspection->dateTime = Time::now("Y-m-d h:i:s A");
       }
    }
    else
@@ -2056,6 +2052,12 @@ $router->add("saveInspection", function($params) {
             if ($result->success)
             {
                $inspection->updateSummary();
+               
+               // Updated completed date/time.
+               if (!$inspection->incomplete())
+               {
+                  $inspection->completedDateTime = Time::now("Y-m-d h:i:s A");
+               }
                
                if ($newInspection)
                {

@@ -236,18 +236,11 @@ if (!Authentication::isAuthenticated())
             },  
             {title:"Inspection Type", field:"inspectionTypeLabel", hozAlign:"left"},
             {title:"Name",            field:"name",                hozAlign:"left", headerFilter:true},
-            {title:"Inspection Date", field:"dateTime",            hozAlign:"left",
+            {title:"Created ",        field:"dateTime",            hozAlign:"left",
                formatter:"datetime",  // Requires moment.js 
                formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
-                  invalidPlaceholder:"---"
-               }
-            },
-            {title:"Time",            field:"dateTime",            hozAlign:"left",
-               formatter:"datetime",  // Requires moment.js 
-               formatterParams:{
-                  outputFormat:"hh:mm A",
-                  invalidPlaceholder:"---"
+                  outputFormat:"MM/DD/YYYY h:mm A",
+                  invalidPlaceholder:""
                }
             },
             {title:"Created By",      field:"authorName",          hozAlign:"left",   headerFilter:true},
@@ -278,6 +271,13 @@ if (!Authentication::isAuthenticated())
                   }
    
                   return (cellValue);
+               }
+            },
+            {title:"Completed ",      field:"completedDateTime",   hozAlign:"left",
+               formatter:"datetime",  // Requires moment.js 
+               formatterParams:{
+                  outputFormat:"MM/DD/YYYY h:mm A",
+                  invalidPlaceholder:""
                }
             },
             {title:"Success Rate",    field:"successRate",         hozAlign:"left",
