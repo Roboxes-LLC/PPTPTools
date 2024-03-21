@@ -15,10 +15,18 @@ class NotificationManager
          (object)array("inspectionId" => $inspectionId));
    }
    
+   public static function onFirstPartInspectionCreated($inspectionId)
+   {
+      NotificationManager::sendNotification(
+            Notification::FIRST_PART_INSPECTION,
+            NotificationPriority::INFORMATIONAL,
+            (object)array("inspectionId" => $inspectionId));
+   }
+   
    public static function onFirstPartInspectionComplete($inspectionId)
    {
       NotificationManager::sendNotification(
-         Notification::FIRST_PART_INSPECTION,
+         Notification::FIRST_PART_INSPECTION_COMPLETE,
          NotificationPriority::INFORMATIONAL,
          (object)array("inspectionId" => $inspectionId));
    }

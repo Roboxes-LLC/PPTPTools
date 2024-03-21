@@ -14,7 +14,7 @@ class NotificationEmail
    const FROM_NAME = "PPTP Tools";
    
    // Notification types supported by this class.
-   public static $supportedNotificationTypes = [Notification::FINAL_INSPECTION, Notification::FIRST_PART_INSPECTION];
+   public static $supportedNotificationTypes = [Notification::FINAL_INSPECTION, Notification::FIRST_PART_INSPECTION, Notification::FIRST_PART_INSPECTION_COMPLETE];
    
    private $notificationType;
    
@@ -149,7 +149,8 @@ class NotificationEmail
         "",  // QUOTE_REQUESTED
         "",  // QUOTE_SENT
         "A new final inspection has been created",         // FINAL_INSPECTION
-        "A new first piece inspection has been completed"  // FIRST_PART_INSPECTION
+        "A new first piece inspection has been created",   // FIRST_PART_INSPECTION
+        "A new first piece inspection has been completed"  // FIRST_PART_INSPECTION_COMPLETE
       ];
       
       return ($titles[$this->notificationType]);
@@ -163,10 +164,13 @@ class NotificationEmail
       {
          case Notification::FINAL_INSPECTION:
          case Notification::FIRST_PART_INSPECTION:
+         case Notification::FIRST_PART_INSPECTION_COMPLETE:
          {
             if ($this->details && isset($this->details->inspectionId))
             {
                $inspectionTypeLabels = array("", "Oasis", "line", "QCP", "in process", "generic", "first piece", "final");
+               
+               $action = ($this->notificationType == Notification::FIRST_PART_INSPECTION_COMPLETE) ? "completed" : "generated";
                
                // Template variables.
                $inspectionId = "[unknown]";
@@ -231,7 +235,7 @@ class NotificationEmail
                
                $html =
 <<<HEREDOC
-               <p>A new $inspectionType inspection has been generated for job <b>$jobNumber</b>.</p>
+               <p>A new $inspectionType inspection has been $action for job <b>$jobNumber</b>.</p>
  
                <style>
                   th {

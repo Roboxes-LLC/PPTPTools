@@ -78,7 +78,7 @@ HEREDOC;
          {
             $timeStr = "";
             
-            $dateTime = $inspection->getSampleDateTime($sampleIndex, false);
+            $dateTime = $inspection->getSampleDateTime($sampleIndex, true);  // Use update time.
             if ($dateTime != null)
             {
                $timeStr = Time::dateTimeObject($dateTime)->format("g:i a");

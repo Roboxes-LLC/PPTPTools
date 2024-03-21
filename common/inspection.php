@@ -80,7 +80,7 @@ class Inspection
    
    public $inspectionId;
    public $dateTime;
-   public $completedDateTime;
+   public $updatedDateTime;
    public $templateId;
    public $author;
    public $inspector;
@@ -118,7 +118,7 @@ class Inspection
    {
       $this->inspectionId = Inspection::UNKNOWN_INSPECTION_ID;
       $this->dateTime = null;
-      $this->completedDateTime = null;
+      $this->updatedDateTime = null;
       $this->templateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
       $this->author = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->inspector = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
@@ -144,7 +144,7 @@ class Inspection
    {
       $this->templateId = InspectionTemplate::OASIS_TEMPLATE_ID;
       $this->dateTime = $oasisReport->getDate();
-      $this->completedDateTime = $oasisReport->getDate();
+      $this->updatedDateTime = $oasisReport->getDate();
       $this->author = $oasisReport->getEmployeeNumber();
       $this->inspector = $oasisReport->getEmployeeNumber();
       $this->comments = $oasisReport->getComments();
@@ -168,7 +168,7 @@ class Inspection
       $this->inspectionId = intval($row['inspectionId']);
       $this->templateId = intval($row['templateId']);
       $this->dateTime = $row['dateTime'] ? Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s") : null;
-      $this->completedDateTime = $row['completedDateTime'] ? Time::fromMySqlDate($row['completedDateTime'], "Y-m-d H:i:s") : null;
+      $this->updatedDateTime = $row['updatedDateTime'] ? Time::fromMySqlDate($row['updatedDateTime'], "Y-m-d H:i:s") : null;
       $this->author = intval($row['author']);
       $this->inspector = intval($row['inspector']);
       $this->comments = $row['comments'];
@@ -529,6 +529,11 @@ class Inspection
       }
       
       return ($inspectionStatus);
+   }
+   
+   public function getCompletedDateTime()
+   {
+      return (!$this->incomplete() ? $this->updatedDateTime : null); 
    }
    
    public function getSampleDateTime($sampleIndex, $useUpdateTime)

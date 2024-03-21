@@ -30,11 +30,12 @@ class PPTP
       // https://tools.pittsburghprecision.com/api/printerData/
       
       let printers = [];
+      let responseText = "";
       
       try
       {
          let response = await fetch(this.getApiUrl("printerData"));
-         let responseText = await response.text();
+         responseText = await response.text();
          
          if (response.status == "200")
          {
@@ -125,11 +126,12 @@ class PPTP
       // https://tools.pittsburghprecision.com/api/printQueueData/
       
       let printQueue = [];
+      let responseText = "";
       
       try
       {
          let response = await fetch(this.getApiUrl("printQueueData"));
-         let responseText = await response.text();
+         responseText = await response.text();
          
          if (response.status == "200")
          {            
@@ -160,6 +162,7 @@ class PPTP
       // https://tools.pittsburghprecision.com/api/setPrintJobStatus/
       
       let success = false;
+      let responseText = "";
       
       try
       {
@@ -172,7 +175,7 @@ class PPTP
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
          });
-         let responseText = await response.text();
+         responseText = await response.text();
          
          if (response.status == "200")
          {            
@@ -208,6 +211,7 @@ class PPTP
       // https://tools.pittsburghprecision.com/api/cancelPrintJob/
       
       let success = false;
+      let responseText = "";
             
       try
       {
@@ -220,7 +224,7 @@ class PPTP
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
          });
-         let responseText = await response.text();
+         responseText = await response.text();
          
          if (response.status == "200")
          {            

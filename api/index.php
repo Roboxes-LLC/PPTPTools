@@ -1857,7 +1857,7 @@ $router->add("inspectionData", function($params) {
          }
          
          $row["dateTime"] = $inspection->dateTime;
-         $row["completedDateTime"] = $inspection->completedDateTime;
+         $row["completedDateTime"] = $inspection->getCompletedDateTime();
          
          $row["timeCardId"] = $inspection->timeCardId;
          $row["jobNumber"] = $inspection->getJobNumber();
@@ -2053,11 +2053,8 @@ $router->add("saveInspection", function($params) {
             {
                $inspection->updateSummary();
                
-               // Updated completed date/time.
-               if (!$inspection->incomplete())
-               {
-                  $inspection->completedDateTime = Time::now("Y-m-d h:i:s A");
-               }
+               // Updated date/time.
+               $inspection->updatedDateTime = Time::now("Y-m-d h:i:s A");
                
                if ($newInspection)
                {
@@ -2083,6 +2080,11 @@ $router->add("saveInspection", function($params) {
                       ($inspectionTemplate->inspectionType == InspectionType::FINAL))
                   {
                      NotificationManager::onFinalInspectionCreated($inspection->inspectionId, $inspection->isPriority);
+                  }
+                  else if ($newInspection &&
+                           ($inspectionTemplate->inspectionType == InspectionType::FIRST_PART))
+                  {
+                     NotificationManager::onFirstPartInspectionCreated($inspection->inspectionId);
                   }
                   else if (($inspectionTemplate->inspectionType == InspectionType::FIRST_PART) &&
                            (!$inspection->incomplete()))
