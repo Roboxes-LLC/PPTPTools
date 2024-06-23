@@ -9,21 +9,22 @@ abstract class MaterialType
    const STEEL = 3;
    const STAINLESS_STEEL = 4;
    const BRONZE = 5;
+   const COPPER_NICKEL = 6;
    const LAST = 6;
    const COUNT = MaterialType::LAST - MaterialType::FIRST;
    
-   public static $VALUES = array(MaterialType::ALUMINUM, MaterialType::BRASS, MaterialType::STEEL, MaterialType::STAINLESS_STEEL, MaterialType::BRONZE);
+   public static $VALUES = array(MaterialType::ALUMINUM, MaterialType::BRASS, MaterialType::STEEL, MaterialType::STAINLESS_STEEL, MaterialType::BRONZE, MaterialType::COPPER_NICKEL);
    
    public static function getLabel($materialType)
    {
-      $labels = array("---", "Aluminum", "Brass", "Steel", "Stainless Steel", "Bronze");
+      $labels = array("---", "Aluminum", "Brass", "Steel", "Stainless Steel", "Bronze", "Copper Nickel");
       
       return ($labels[$materialType]);
    }
    
    public static function getAbbreviation($materialType)
    {
-      $labels = array("---", "ALUM", "BRASS", "STEEL", "STEEL SS", "BRONZE");
+      $labels = array("---", "ALUM", "BRASS", "STEEL", "STEEL SS", "BRONZE", "COP/NICK");
       
       return ($labels[$materialType]);
    }
