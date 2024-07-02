@@ -12,6 +12,8 @@ class Session
    const QUOTE_ACTIVE_QUOTES = "quote.activeQuotes";
    const QUOTE_START_DATE = "quote.startDate";
    const QUOTE_END_DATE = "quote.endDate";   
+   const SCHEDULE_START_DATE = "schedule.startDate";   
+   const SCHEDULE_END_DATE = "schedule.endDate";   
    
    public static function isset($key)
    {

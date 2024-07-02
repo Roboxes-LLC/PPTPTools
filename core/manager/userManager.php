@@ -30,4 +30,21 @@ class UserManager
       
       return ($users);
    }
+   
+   public static function getOperators()
+   {
+      $users = array();
+      
+      $result = PPTPDatabase::getInstance()->getUsersByRoles([Role::OPERATOR]);
+         
+      while ($result && ($row = $result->fetch_assoc()))
+      {
+         $user = new UserInfo();
+         $user->initialize($row);
+
+         $users[] = $user;
+      }
+      
+      return ($users);
+   }
 }

@@ -657,4 +657,8 @@ button.hidden,
 .priority-icon {
 	color: red;
 }
+
+.tabulator .editable {
+   background: #cddef8;
+}
    

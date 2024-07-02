@@ -42,7 +42,9 @@ class Permission
    const EDIT_QUOTE               = 36;
    const APPROVE_QUOTE            = 37;
    const DELETE_INSPECTION        = 38;
-   const LAST                     = Permission::DELETE_INSPECTION;
+   const VIEW_SCHEDULE            = 39;
+   const EDIT_SCHEDULE            = 40;
+   const LAST                     = Permission::EDIT_SCHEDULE;
    
    const NO_PERMISSIONS = 0x0000000000000000;
    const ALL_PERMISSIONS = 0xFFFFFFFFFFFFFFFF;
@@ -96,6 +98,8 @@ class Permission
                   new Permission(Permission::EDIT_QUOTE,               "Edit quote"),
                   new Permission(Permission::APPROVE_QUOTE,            "Approve quote"),
                   new Permission(Permission::DELETE_INSPECTION,        "Delete inspection"),
+                  new Permission(Permission::VIEW_SCHEDULE,            "View Schedule"),
+                  new Permission(Permission::EDIT_SCHEDULE,            "Edit schedule")
             );
       }
       

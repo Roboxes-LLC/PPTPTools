@@ -691,6 +691,103 @@ class PPTPDatabaseAlt extends PDODatabase
       
       return ($result);
    }
+   
+   // **************************************************************************
+   //                             Schedule Entry
+   
+   public function getScheduleEntry($entryId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM schedule WHERE entryId = ?;");
+      
+      $result = $statement->execute([$entryId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getSchedule($startDate, $endDate = null)
+   {
+      $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
+      $endDate = $endDate ? Time::toMySqlDate(Time::endOfDay($endDate)) : null;
+      
+      if ($endDate == null)
+      {
+         $endDate = Time::endOfDay($startDate);
+      }
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM schedule WHERE (mfgDate BETWEEN ? AND ?);");
+      
+      $result = $statement->execute([$startDate, $endDate]) ? $statement->fetchAll() : null;
+            
+      return ($result);
+   }
+   
+   public function getScheduleForJob($jobId, $startDate, $endDate = null)
+   {
+      $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
+      $endDate = $endDate ? Time::toMySqlDate(Time::endOfDay($endDate)) : null;
+      
+      if ($endDate == null)
+      {
+         $endDate = Time::endOfDay($startDate);
+      }
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM schedule WHERE jobId = ? AND mfgDate BETWEEN ? AND ?;");
+      
+      $result = $statement->execute([$jobId, $startDate, $endDate]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addScheduleEntry($scheduleEntry)
+   {
+      $mfgDate = $scheduleEntry->mfgDate ? Time::toMySqlDate(Time::startOfDay($scheduleEntry->mfgDate)) : null;
+      
+      $statement = $this->pdo->prepare(
+         "INSERT INTO schedule " .
+         "(jobId, employeeNumber, mfgDate) " .
+         "VALUES (?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $scheduleEntry->jobId,
+            $scheduleEntry->employeeNumber,
+            $mfgDate
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateScheduleEntry($scheduleEntry)
+   {
+      $mfgDate = $scheduleEntry->mfgDate ? Time::toMySqlDate(Time::startOfDay($scheduleEntry->mfgDate)) : null;
+      
+      $statement = $this->pdo->prepare(
+         "UPDATE schedule " .
+         "SET jobId = ?, employeeNumber = ?, mfgDate = ? " .
+         "WHERE entryId = ?");
+      
+      $result = $statement->execute(
+         [
+            $scheduleEntry->jobId,
+            $scheduleEntry->employeeNumber,
+            $mfgDate,
+            $scheduleEntry->entryId
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteScheduleEntry($entryId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM schedule WHERE entryId = ?");
+      
+      $result = $statement->execute([$entryId]);
+      
+      return ($result);
+   }
       
    // **************************************************************************
    

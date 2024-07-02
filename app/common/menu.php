@@ -29,6 +29,10 @@ $jsonMenu =
       },
       {
          "type":"menu-item",
+         "pageId": 20
+      },
+      {
+         "type":"menu-item",
          "pageId": 3
       },
       {

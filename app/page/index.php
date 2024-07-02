@@ -4,6 +4,7 @@ if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/core/common/router.php';
 require_once ROOT.'/app/page/customerPage.php';
 require_once ROOT.'/app/page/quotePage.php';
+require_once ROOT.'/app/page/schedulePage.php';
 require_once ROOT.'/app/page/userPage.php';
 
 // *****************************************************************************
@@ -24,6 +25,10 @@ $router->add("user", function($params) {
 
 $router->add("quote", function($params) {
    (new QuotePage())->handleRequest($params);
+});
+
+$router->add("schedule", function($params) {
+   (new SchedulePage())->handleRequest($params);
 });
    
 $router->route();
