@@ -691,6 +691,27 @@ class PPTPDatabaseAlt extends PDODatabase
       
       return ($result);
    }
+   
+   // **************************************************************************
+   //                                 Part
+   
+   public function getCustomerPartNumber($pptpPartNumber)
+   {
+      $statement = $this->pdo->prepare("SELECT * from part WHERE pptpNumber = ? LIMIT 1");
+      
+      $result = $statement->execute([$pptpPartNumber]) ? $statement->fetch()["customerNumber"] : null;
+      
+      return ($result);
+   }
+   
+   public function saveCustomerPartNumber($pptpPartNumber, $customerPartNumber)
+   {
+      $statement = $this->pdo->prepare("INSERT INTO part (pptpNumber, customerNumber) VALUES(?, ?) ON DUPLICATE KEY UPDATE pptpNumber = ?, customerNumber = ?");
+      
+      $result = $statement->execute([$pptpPartNumber, $customerPartNumber, $pptpPartNumber, $customerPartNumber]);
+      
+      return ($result);
+   }
       
    // **************************************************************************
    

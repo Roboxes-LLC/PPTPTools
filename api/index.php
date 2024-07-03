@@ -25,8 +25,9 @@ require_once '../common/timeCardInfo.php';
 require_once '../common/upload.php';
 require_once '../common/userInfo.php';
 require_once '../common/weeklySummaryReport.php';
-require_once '../core/job/jobManager.php';
+require_once '../core/job/cronJobManager.php';
 require_once '../core/manager/inspectionManager.php';
+require_once '../core/manager/jobManager.php';
 require_once '../core/manager/notificationManager.php';
 require_once '../inspection/inspectionTable.php';
 require_once '../printer/printJob.php';
@@ -362,6 +363,7 @@ $router->add("jobData", function($params) {
          
          if ($jobInfo)
          {
+            $jobInfo->customerPartNumber = JobManager::getCustomerPartNumber($jobInfo->partNumber);
             $jobInfo->wcLabel = JobInfo::getWcLabel($jobInfo->wcNumber);
             $jobInfo->statusLabel = JobStatus::getName($jobInfo->status);
             $jobInfo->cycleTime = $jobInfo->getCycleTime();
@@ -465,6 +467,12 @@ $router->add("saveJob", function($params) {
                $result->success = false;
                $result->error = "Database query failed.";
             }
+         }
+         
+         // Process updated customer part #.
+         if ($result->success && isset($params["customerPartNumber"]))
+         {
+            JobManager::saveCustomerPartNumber($jobInfo->partNumber, $params["customerPartNumber"]);
          }
          
          //
@@ -4297,7 +4305,7 @@ $router->add("runCronJobs", function($params) {
    $result = new stdClass();
    $result->success = true;
 
-   JobManager::update();
+   CronJobManager::update();
    
    echo json_encode($result);
 });

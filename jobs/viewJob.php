@@ -2,9 +2,10 @@
 
 if (!defined('ROOT')) require_once '../root.php';
 require_once ROOT.'/app/common/menu.php';
-require_once '../common/header.php';
-require_once '../common/jobInfo.php';
-require_once '../common/params.php';
+require_once ROOT.'/core/manager/jobManager.php';
+require_once ROOT.'/common/header.php';
+require_once ROOT.'/common/jobInfo.php';
+require_once ROOT.'/common/params.php';
 
 abstract class JobInputField
 {
@@ -26,7 +27,8 @@ abstract class JobInputField
    const QCP_TEMPLATE = 14;
    const FINAL_TEMPLATE = 15;
    const CUSTOMER_PRINT = 16;
-   const LAST = 17;
+   const CUSTOMER_PART_NUMBER = 17;
+   const LAST = 18;
    const COUNT = JobInputField::LAST - JobInputField::FIRST;
 }
 
@@ -87,6 +89,12 @@ function isEditable($field)
       case JobInputField::JOB_NUMBER:
       {
          $isEditable = ($view == View::NEW_JOB);
+         break;
+      }
+      
+      case JobInputField::CUSTOMER_PART_NUMBER:
+      {
+         $isEditable = !hasCustomerPartNumber();
          break;
       }
 
@@ -331,6 +339,11 @@ HEREDOC;
    return ($customerPrintInput);
 }
 
+function hasCustomerPartNumber()
+{
+   return (JobManager::getCustomerPartNumber(getJobInfo()->partNumber) != null);
+}
+
 // ********************************** BEGIN ************************************
 
 Time::init();
@@ -359,6 +372,7 @@ if (!Authentication::isAuthenticated())
    
    <script src="/common/common.js"></script>
    <script src="/common/validate.js"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
    <script src="jobs.js"></script>
 
@@ -411,15 +425,22 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label-long">Job #</div>
                   <div class="flex-horizontal flex-v-center flex-left">
-                     <input id="job-number-prefix-input" type="text" name="jobNumberPrefix" form="input-form" style="width:150px;" value="<?php echo JobInfo::getJobPrefix(getJobInfo()->jobNumber); ?>" oninput="{this.validator.validate(); autoFillPartNumber();}" autocomplete="off" <?php echo getDisabled(JobInputField::JOB_NUMBER); ?> />
+                     <input id="job-number-prefix-input" type="text" name="jobNumberPrefix" form="input-form" style="width:150px;" value="<?php echo JobInfo::getJobPrefix(getJobInfo()->jobNumber); ?>" oninput="{this.validator.validate(); autoFillPartNumber(); autoFillCustomerPartNumber();}" autocomplete="off" <?php echo getDisabled(JobInputField::JOB_NUMBER); ?> />
                      <div>&nbsp-&nbsp</div>
                      <input id="job-number-suffix-input" type="text" name="jobNumberSuffix" form="input-form" style="width:150px;" value="<?php echo JobInfo::getJobSuffix(getJobInfo()->jobNumber); ?>" oninput="{this.validator.validate(); autoFillJobNumber();}" autocomplete="off" <?php echo getDisabled(JobInputField::JOB_NUMBER); ?> />
                   </div>
                </div>
          
                <div class="form-item">
-                  <div class="form-label-long">Part #</div>
+                  <div class="form-label-long">PPTP Part #</div>
                   <input id="part-number-display-input" type="text" style="width:150px;" value="<?php echo getJobInfo()->partNumber; ?>" <?php echo getDisabled(JobInputField::PART_NUMBER); ?> />
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label-long">Customer Part #</div>
+                  <input id="customer-part-number-input" type="text" name="customerPartNumber" form="input-form" style="width:150px;" value="<?php echo JobManager::getCustomerPartNumber(getJobInfo()->partNumber); ?>" <?php echo getDisabled(JobInputField::CUSTOMER_PART_NUMBER); ?> />
+                  &nbsp;
+                  <i id="customer-part-number-edit-button" class="material-icons icon-button" style="visibility:<?php echo isEditable(JobInputField::CUSTOMER_PART_NUMBER) ? "hidden" : "visible" ?>" onclick="onEditCustomerPartNumber()">edit</i>
                </div>
          
                <div class="form-item">
@@ -545,6 +566,12 @@ if (!Authentication::isAuthenticated())
          }
       
          return (valid);
+      }
+      
+      function onEditCustomerPartNumber()
+      {
+         document.getElementById("customer-part-number-input").disabled = false;
+         hide("customer-part-number-edit-button");
       }
 
       jobNumberPrefixValidator.init();

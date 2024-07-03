@@ -199,8 +199,9 @@ if (!Authentication::isAuthenticated())
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Part #",         field:"partNumber",    hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Work Center",    field:"wcLabel",       hozAlign:"left", responsive:2, headerFilter:true},
+            {title:"Part #",         field:"partNumber",         hozAlign:"left", responsive:0, headerFilter:true},
+            {title:"Cust. Part #",   field:"customerPartNumber", hozAlign:"left", responsive:2, headerFilter:true},
+            {title:"Work Center",    field:"wcLabel",            hozAlign:"left", responsive:2, headerFilter:true},
             // Temporary
             {title:"Cycle Time",     field:"cycleTime",  hozAlign:"left", responsive:2 },
             {title:"Sample Weight",  field:"sampleWeight",  hozAlign:"left", responsive:2,
