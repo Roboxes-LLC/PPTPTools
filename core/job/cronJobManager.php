@@ -5,7 +5,7 @@ require_once ROOT.'/common/database.php';
 require_once ROOT.'/core/job/job.php';
 require_once ROOT.'/core/job/printerMonitorJob.php';
 
-class JobManager
+class CronJobManager
 {
    public static function getJobs()
    {
@@ -35,7 +35,7 @@ class JobManager
    
    public static function update()
    {
-      $jobs = JobManager::getJobs();
+      $jobs = CronJobManager::getJobs();
       
       foreach ($jobs as $job)
       {

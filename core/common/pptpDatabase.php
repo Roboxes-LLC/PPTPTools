@@ -693,18 +693,39 @@ class PPTPDatabaseAlt extends PDODatabase
    }
    
    // **************************************************************************
-   //                             Schedule Entry
+   //                                 Part
    
-   public function getScheduleEntry($entryId)
+   public function getCustomerPartNumber($pptpPartNumber)
    {
-      $statement = $this->pdo->prepare(
-         "SELECT * FROM schedule WHERE entryId = ?;");
+      $statement = $this->pdo->prepare("SELECT * from part WHERE pptpNumber = ? LIMIT 1");
       
-      $result = $statement->execute([$entryId]) ? $statement->fetchAll() : null;
-      
+      $result = $statement->execute([$pptpPartNumber]) ? $statement->fetch()["customerNumber"] : null;
+
       return ($result);
    }
    
+   public function saveCustomerPartNumber($pptpPartNumber, $customerPartNumber)
+   {
+      $statement = $this->pdo->prepare("INSERT INTO part (pptpNumber, customerNumber) VALUES(?, ?) ON DUPLICATE KEY UPDATE pptpNumber = ?, customerNumber = ?");
+      
+      $result = $statement->execute([$pptpPartNumber, $customerPartNumber, $pptpPartNumber, $customerPartNumber]);
+      
+      return ($result);
+   }      
+   
+   // **************************************************************************
+   //                             Schedule Entry
+
+   public function getScheduleEntry($entryId)
+   {
+      $statement = $this->pdo->prepare(
+            "SELECT * FROM schedule WHERE entryId = ?;");
+      
+      $result = $statement->execute([$entryId]) ? $statement->fetchAll() : null;
+   
+      return ($result);
+   }
+
    public function getSchedule($startDate, $endDate = null)
    {
       $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;

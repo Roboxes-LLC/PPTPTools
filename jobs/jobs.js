@@ -153,6 +153,31 @@ function autoFillJobNumber()
    }
 }
 
+function autoFillCustomerPartNumber()
+{
+   if (document.getElementById('job-number-prefix-input').validator.isValid())
+   {
+         let pptpPartNumber = document.getElementById('job-number-prefix-input').value;
+         
+         ajaxRequest(`/app/page/job/?request=get_customer_number&pptpPartNumber=${pptpPartNumber}`, function(response) {
+            let input = document.getElementById('customer-part-number-input');
+            
+            if (response.success)
+            {
+               input.value = response.customerPartNumber;
+               input.disabled = true;
+               document.getElementById("customer-part-number-edit-button").style.visibility = "visible";
+            }
+            else
+            {
+               input.value = null;
+               input.disabled = false;
+               document.getElementById("customer-part-number-edit-button").style.visibility = "hidden";
+            }
+         })
+   }
+}
+
 function autoFillPartStats()
 {
    var grossPartsPerHourInput = document.getElementById('gross-parts-per-hour-input');
