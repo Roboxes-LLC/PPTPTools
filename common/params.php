@@ -1,44 +1,82 @@
 <?php
+
 class Params extends ArrayObject
 {
    public static function parse()
    {
-      $params = new Params(array());
-      
-      if (isset($_SESSION))
+      if (!Params::$params)
       {
-         foreach ($_SESSION as $key => $value)
+         $params = new Params(array());
+         
+         if (isset($_SESSION))
          {
-            $params[$key] = filter_var($_SESSION[$key], FILTER_SANITIZE_SPECIAL_CHARS);
+            foreach ($_SESSION as $key => $value)
+            {
+               $params[$key] = $value;
+            }
          }
+         
+         if ($_SERVER["REQUEST_METHOD"] === "GET")
+         {
+            foreach ($_GET as $key => $value)
+            {
+               if (is_array($_GET[$key]))
+               {
+                  $params[$key] = $_GET[$key];
+               }
+               else
+               {
+                  $params[$key] = $value;
+               }
+            }
+         }
+         else if ($_SERVER["REQUEST_METHOD"] === "POST")
+         {
+            if ($_SERVER["CONTENT_TYPE"] == "application/json")
+            {
+               $json = file_get_contents('php://input');
+               
+               if ($data = json_decode($json))
+               {
+                  foreach ($data as $key => $value)
+                  {
+                     $params[$key] = $value;
+                  }
+               }
+            }
+            else
+            {
+               foreach ($_POST as $key => $value)
+               {
+                  $params[$key] = $value;
+               }
+            }
+         }
+         
+         Params::$params = $params;
       }
       
-      if ($_SERVER["REQUEST_METHOD"] === "GET")
-      {
-         foreach ($_GET as $key => $value)
-         {
-            $params[$key] = filter_input(INPUT_GET, $key, FILTER_SANITIZE_SPECIAL_CHARS);
-         }
-      }
-      else if ($_SERVER["REQUEST_METHOD"] === "POST")
-      {
-         foreach ($_POST as $key => $value)
-         {
-            $params[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);
-         }
-      }
-      
-      return $params;
+      return (Params::$params);
+   }
+   
+   public static function reset()
+   {
+      Params::$params = null;
    }
    
    public function keyExists($key)
    {
-       return (isset($this[$key]));
+      return (isset($this[$key]));
    }
    
    public function get($key)
    {
       return (isset($this[$key]) ? $this[$key] : "");
+   }
+   
+   public function getBool($key)
+   {
+      return (isset($this[$key]) && filter_var($this[$key], FILTER_VALIDATE_BOOLEAN));
    }
    
    public function getInt($key)
@@ -51,8 +89,12 @@ class Params extends ArrayObject
       return (floatval($this->get($key)));
    }
    
-   public function getBool($key)
+   public function getDouble($key)
    {
-      return (filter_var($this->get($key), FILTER_VALIDATE_BOOLEAN));
+      return (doubleval($this->get($key)));
    }
+   
+   private static $params = null;
 }
+
+?>

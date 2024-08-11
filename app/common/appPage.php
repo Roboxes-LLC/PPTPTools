@@ -27,7 +27,8 @@ class AppPage
    const CONTACT = 18;
    const QUOTE = 19;
    const SCHEDULE = 20;
-   const LAST = 21;
+   const NOTIFICATION = 21;
+   const LAST = 22;
    
    public $pageId;
    public $label;
@@ -65,6 +66,7 @@ class AppPage
       AppPage::CONTACT,
       AppPage::QUOTE,
       AppPage::SCHEDULE,
+      AppPage::NOTIFICATION,
    );
    
    private static $pages = null;
@@ -93,7 +95,8 @@ class AppPage
             AppPage::CUSTOMER =>            new AppPage(AppPage::CUSTOMER,            "Customers",            null,                   Permission::VIEW_CUSTOMER,            "/customer/customers.php"),
             AppPage::CONTACT =>             new AppPage(AppPage::CONTACT,             "Contacts",             null,                   Permission::VIEW_CUSTOMER,            "/customer/contacts.php"),
             AppPage::QUOTE =>               new AppPage(AppPage::QUOTE,               "Quotes",               null,                   Permission::VIEW_QUOTE,               "/quote/quotes.php"),
-            AppPage::SCHEDULE =>            new AppPage(AppPage::SCHEDULE,            "Schedule",             "calendar_month",       Permission::VIEW_SCHEDULE,            "/schedule/schedule.php")
+            AppPage::SCHEDULE =>            new AppPage(AppPage::SCHEDULE,            "Schedule",             "calendar_month",       Permission::VIEW_SCHEDULE,            "/schedule/schedule.php"),
+            AppPage::NOTIFICATION =>        new AppPage(AppPage::NOTIFICATION,        "Messages",             "notifications",        Permission::NOTIFICATIONS,            "/notification/notifications.php")
          );
       }
       

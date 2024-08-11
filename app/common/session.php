@@ -14,6 +14,9 @@ class Session
    const QUOTE_END_DATE = "quote.endDate";   
    const SCHEDULE_START_DATE = "schedule.startDate";   
    const SCHEDULE_END_DATE = "schedule.endDate";   
+   const NOTIFICATION_START_DATE = "notification.startDate";   
+   const NOTIFICATION_END_DATE = "notification.endDate";
+   const NOTIFICATION_SHOW_ALL_UNACKNOWLEDGED = "notification.showAllUnacknowledged";
    
    public static function isset($key)
    {

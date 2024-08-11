@@ -3,6 +3,7 @@
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/core/common/router.php';
 require_once ROOT.'/app/page/customerPage.php';
+require_once ROOT.'/app/page/notificationPage.php';
 require_once ROOT.'/app/page/quotePage.php';
 require_once ROOT.'/app/page/schedulePage.php';
 require_once ROOT.'/app/page/userPage.php';
@@ -17,6 +18,10 @@ $router->setLogging(false);
 
 $router->add("customer", function($params) {
    (new CustomerPage())->handleRequest($params);
+});
+
+$router->add("notification", function($params) {
+   (new NotificationPage())->handleRequest($params);
 });
 
 $router->add("user", function($params) {

@@ -788,6 +788,152 @@ class PPTPDatabaseAlt extends PDODatabase
       
       return ($result);
    }
+   
+   // **************************************************************************
+   //                             App Notification
+   
+   public function getAppNotification($notificationId)
+   {
+      $statement = $this->pdo->prepare("SELECT * FROM appnotification WHERE notificationId = ?;");
+      
+      $result = $statement->execute([$notificationId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getAppNotificationsForUser($employeeNumber, $startDateTime, $endDateTime)
+   {
+      $startDate = Time::toMySqlDate(Time::startOfDay($startDateTime));
+      $endDate = Time::toMySqlDate(Time::endOfDay($endDateTime));
+      
+      $statement = $this->pdo->prepare(
+         "SELECT appnotification.* FROM appnotification " .
+         "INNER JOIN appnotification_user ON appnotification.notificationId = appnotification_user.notificationId " .
+         "WHERE appnotification_user.employeeNumber = ? AND (appnotification.dateTime BETWEEN ? AND ?)");
+      
+      $result = $statement->execute([$employeeNumber, $startDate, $endDate]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getUnacknowledgedAppNotificationsForUser($employeeNumber)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT appnotification.* FROM appnotification " .
+         "INNER JOIN appnotification_user ON appnotification.notificationId = appnotification_user.notificationId " .
+         "WHERE appnotification_user.employeeNumber = ? AND appnotification_user.acknowledged = FALSE");
+      
+      $result = $statement->execute([$employeeNumber]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addAppNotification($appNotification)
+   {
+      $dateTime = $appNotification->dateTime ? Time::toMySqlDate($appNotification->dateTime) : null;
+      
+      $statement = $this->pdo->prepare(
+         "INSERT INTO appnotification " .
+         "(dateTime, author, priority, subject, message) " .
+         "VALUES (?, ?, ?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $dateTime,
+            $appNotification->author,
+            $appNotification->priority,
+            $appNotification->subject,
+            $appNotification->message
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateAppNotification($appNotification)
+   {
+      $dateTime = $appNotification->dateTime ? Time::toMySqlDate($appNotification->dateTime) : null;
+      
+      $statement = $this->pdo->prepare(
+         "UPDATE appnotification " .
+         "SET dateTime = ?, author = ?, priority = ?, subject = ?, message = ? " .
+         "WHERE notificationId = ?");
+      
+      $result = $statement->execute(
+         [
+            $dateTime,
+            $appNotification->author,
+            $appNotification->priority,
+            $appNotification->subject,
+            $appNotification->message,
+            $appNotification->notificationId
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteAppNotification($notificationId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM appnotification WHERE notificationId = ?");
+      
+      $result = $statement->execute([$notificationId]);
+      
+      return ($result);
+   }   
+   
+   public function addUserToAppNotification($employeeNumber, $notificationId)
+   {
+      $statement = $this->pdo->prepare(
+         "INSERT INTO appnotification_user " .
+         "(notificationId, employeeNumber) " .
+         "VALUES (?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $notificationId,
+            $employeeNumber
+         ]);
+   
+      return ($result);
+   }
+   
+   public function removeUserFromAppNotification($employeeNumber, $notificationId)
+   {
+      $statement = $this->pdo->prepare(
+         "DELETE FROM appnotification_user WHERE notificationId = ? AND employeeNumber = ?");
+      
+      $result = $statement->execute([$notificationId, $employeeNumber]);
+      
+      return ($result);
+   }
+   
+   public function acknowledgeAppNotification($notificationId, $employeeNumber, $acknowledged)
+   {
+      $dateTime = $acknowledged ? Time::toMySqlDate(Time::now()) : null;
+      
+      $statement = $this->pdo->prepare(
+         "UPDATE appnotification_user " .
+         "SET acknowledged = ?, dateTime = ? " .
+         "WHERE notificationId = ? AND employeeNumber = ?");
+      
+      $result = $statement->execute(
+         [
+            $acknowledged ? 1 : 0,
+            $dateTime,
+            $notificationId,
+            $employeeNumber,
+         ]);
+      
+      return ($result);
+   }
+   
+   public function getAppNotificationAcknowledgement($notificationId, $employeeNumber)
+   {
+      $statement = $this->pdo->prepare("SELECT * FROM appnotification_user WHERE notificationId = ? && employeeNumber = ?;");
+      
+      $result = $statement->execute([$notificationId, $employeeNumber]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
       
    // **************************************************************************
    

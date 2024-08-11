@@ -8,6 +8,7 @@ Required PHP variables:
    $formId
    $form
    $appPageId
+   $saveButtonLabel
  -->
 
 <html>
@@ -24,7 +25,8 @@ Required PHP variables:
    <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
    <script src="../thirdParty/moment/moment.min.js"></script>
    
-   <script src="/common/common.js"></script>
+   <script src="/common/common.js<?php echo $versionQuery ?>"></script>
+   <script src="/common/validate.js<?php echo $versionQuery ?>"></script>
    <script src="/script/common/common.js<?php echo $versionQuery ?>"></script>
    <script src="/script/common/commonDefs.php<?php echo $versionQuery ?>"></script>
    <script src="/script/common/menu.js<?php echo $versionQuery ?>"></script>   
@@ -57,7 +59,7 @@ Required PHP variables:
          
          <div class="flex-horizontal flex-h-center">
             <button id="cancel-button">Cancel</button>&nbsp;&nbsp;&nbsp;
-            <button id="save-button" class="accent-button">Save</button>            
+            <button id="save-button" class="accent-button"><?php echo isset($saveButtonLabel) ? $saveButtonLabel : "Save" ?></button>            
          </div>
          
       </div> <!-- content -->
