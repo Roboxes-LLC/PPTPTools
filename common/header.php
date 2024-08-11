@@ -1,6 +1,8 @@
 <?php
-require_once 'authentication.php';
-require_once 'root.php';
+
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/common/authentication.php';
+require_once ROOT.'/core/manager/notificationManager.php';
 
 class Header
 {
@@ -22,9 +24,15 @@ HEREDOC;
       {
          $username = Authentication::getAuthenticatedUser()->username;
          
+         $notificationCount = NotificationManager::getUnacknowledgedAppNotificationCount(Authentication::getAuthenticatedUser()->employeeNumber);
+         
          echo
 <<<HEREDOC
             <div class="flex-horizontal flex-v-center">
+               <div class="notification-indicator" data-count="$notificationCount" style="position:relative">
+                  <i class="material-icons-outlined" style="margin-right:5px; color: #ffffff; font-size: 24px;">notifications</i>
+                  <div class="flex-horizontal flex-v-center flex-h-center notification-count-indicator">$notificationCount</div>
+               </div>
                <i class="material-icons" style="margin-right:5px; color: #ffffff; font-size: 24px;">person</i>
                <div class="nav-username">$username&nbsp | &nbsp</div>
                <a class="nav-link" href="$ROOT/login.php?action=logout">Logout</a>

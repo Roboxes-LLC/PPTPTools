@@ -75,6 +75,26 @@ class JobInfo
    public $finalTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
    public $customerPrint = null;
    
+   public function initialize($row)
+   {
+      $this->jobId =               intval($row['jobId']);
+      $this->jobNumber =           $row['jobNumber'];
+      $this->creator =             $row['creator'];
+      $this->dateTime =            Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
+      $this->partNumber =          $row['partNumber'];
+      $this->sampleWeight =        doubleval($row['sampleWeight']);
+      $this->wcNumber =            $row['wcNumber'];
+      $this->grossPartsPerHour =   intval($row['grossPartsPerHour']);
+      $this->netPartsPerHour =     intval($row['netPartsPerHour']);
+      $this->status =              $row['status'];
+      $this->firstPartTemplateId = intval($row['firstPartTemplateId']);
+      $this->inProcessTemplateId = intval($row['inProcessTemplateId']);
+      $this->lineTemplateId =      intval($row['lineTemplateId']);
+      $this->qcpTemplateId =       intval($row['qcpTemplateId']);
+      $this->finalTemplateId =     intval($row['finalTemplateId']);
+      $this->customerPrint =       $row['customerPrint'];
+   }
+   
    public function isActive()
    {
       return ($this->status = JobStatus::ACTIVE);
@@ -98,23 +118,7 @@ class JobInfo
          if ($result && ($row = $result->fetch_assoc()))
          {
             $jobInfo = new JobInfo();
-            
-            $jobInfo->jobId =               intval($row['jobId']);
-            $jobInfo->jobNumber =           $row['jobNumber'];
-            $jobInfo->creator =             $row['creator'];
-            $jobInfo->dateTime =            Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
-            $jobInfo->partNumber =          $row['partNumber'];
-            $jobInfo->sampleWeight =        doubleval($row['sampleWeight']);
-            $jobInfo->wcNumber =            $row['wcNumber'];
-            $jobInfo->grossPartsPerHour =   intval($row['grossPartsPerHour']);
-            $jobInfo->netPartsPerHour =     intval($row['netPartsPerHour']);
-            $jobInfo->status =              $row['status'];
-            $jobInfo->firstPartTemplateId = intval($row['firstPartTemplateId']);
-            $jobInfo->inProcessTemplateId = intval($row['inProcessTemplateId']);
-            $jobInfo->lineTemplateId =      intval($row['lineTemplateId']);
-            $jobInfo->qcpTemplateId =       intval($row['qcpTemplateId']);
-            $jobInfo->finalTemplateId =     intval($row['finalTemplateId']);
-            $jobInfo->customerPrint =       $row['customerPrint'];
+            $jobInfo->initialize($row);
          }
       }
       

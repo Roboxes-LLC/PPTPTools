@@ -1,5 +1,8 @@
 @CHARSET "ISO-8859-1";
 
+/* Material Design icons, from Google */
+@import url(https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined);
+
 /* ***** CSS variables ***** */
 
 :root {
@@ -657,4 +660,52 @@ button.hidden,
 .priority-icon {
 	color: red;
 }
-   
+
+.tabulator .editable {
+   background: #cddef8;
+}
+
+/* ********************************* App Notification Priority ******************************** */
+
+.app-notification-priority {
+	color: white;
+   font-weight: bold;
+   padding: 3px;
+   width: 100px;
+}
+
+.app-notification-priority.info {
+   background: var(--gray-dark);
+}
+
+.app-notification-priority.priority {
+   background: #4287f5;
+}
+
+.app-notification-priority.warning {
+   background: orange;
+}
+
+.app-notification-priority.critical {
+   background: red;
+}   
+
+.notification-count-indicator {
+	width: 20px;
+	height: 20px;
+   background: red;
+   color: white;
+   border-radius: 20%;
+   position: absolute;
+   top: -7px;
+   left: 14px;
+   margin-right: 25px;
+}
+
+.notification-indicator {
+	margin-right: 25px;
+}
+
+.notification-indicator[data-count="0"] {
+   visibility: hidden;
+}

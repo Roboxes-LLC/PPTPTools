@@ -3,12 +3,8 @@ Required PHP variables:
    $versionQuery
    $javascriptFile
    $javascriptClass
-   $heading
-   $description
-   $formId
-   $form
    $appPageId
-   $saveButtonLabel
+   $operatorOptions
  -->
 
 <html>
@@ -18,6 +14,7 @@ Required PHP variables:
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css"/>
    
    <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
@@ -25,8 +22,7 @@ Required PHP variables:
    <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
    <script src="../thirdParty/moment/moment.min.js"></script>
    
-   <script src="/common/common.js<?php echo $versionQuery ?>"></script>
-   <script src="/common/validate.js<?php echo $versionQuery ?>"></script>
+   <script src="/common/common.js"></script>
    <script src="/script/common/common.js<?php echo $versionQuery ?>"></script>
    <script src="/script/common/commonDefs.php<?php echo $versionQuery ?>"></script>
    <script src="/script/common/menu.js<?php echo $versionQuery ?>"></script>   
@@ -50,17 +46,26 @@ Required PHP variables:
          </div>
          
          <div id="description" class="description"><?php echo $description ?></div>
+
+         <br>
+         
+         <?php if (isset($filterTemplate)) include $root."/templates/filter/$filterTemplate" ?>
         
          <br>
+         
+         <div class="table-header">Scheduled Jobs</div>
+
+         <br>
         
-         <?php echo $form ?>
+         <div id="scheduled-table"></div>
          
          <br>
          
-         <div class="flex-horizontal flex-h-center">
-            <button id="cancel-button">Cancel</button>&nbsp;&nbsp;&nbsp;
-            <button id="save-button" class="accent-button"><?php echo isset($saveButtonLabel) ? $saveButtonLabel : "Save" ?></button>            
-         </div>
+         <div class="table-header">Unscheduled Jobs</div>
+         
+         <br>
+         
+         <div id="unscheduled-table"></div>
          
       </div> <!-- content -->
       
@@ -72,13 +77,10 @@ Required PHP variables:
       var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
       menu.setMenuItemSelected(<?php echo $appPageId ?>);  
          
-      var PAGE = new <?php echo $javascriptClass ?>();
+      var PAGE = new <?php echo $javascriptClass ?>(<?php echo $operatorOptions ?>);
 
       // Setup event handling on all DOM elements.
-      document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-
-      // Store the initial state of the form, for change detection.
-      setInitialFormState("<?php echo $formId ?>");
+      //document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
    </script>
    
 </body>

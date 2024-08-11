@@ -6,6 +6,23 @@ require_once ROOT.'/common/userInfo.php';
 
 class UserManager
 {
+   public static function getUsers()
+   {
+      $users = array();
+
+      $result = PPTPDatabase::getInstance()->getUsers();
+      
+      while ($result && ($row = $result->fetch_assoc()))
+      {
+         $user = new UserInfo();
+         $user->initialize($row);
+
+         $users[] = $user;
+      }
+
+      return ($users);
+   }
+   
    public static function getUsersForNotification($notificationId)
    {
       $users = array();
@@ -26,6 +43,23 @@ class UserManager
                $users[] = $user;
             }
          }
+      }
+      
+      return ($users);
+   }
+   
+   public static function getOperators()
+   {
+      $users = array();
+      
+      $result = PPTPDatabase::getInstance()->getUsersByRoles([Role::OPERATOR]);
+         
+      while ($result && ($row = $result->fetch_assoc()))
+      {
+         $user = new UserInfo();
+         $user->initialize($row);
+
+         $users[] = $user;
       }
       
       return ($users);
