@@ -2,7 +2,7 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/core/common/address.php';
-require_once ROOT.'/core/common/pptpdatabase.php';
+require_once ROOT.'/core/common/pptpDatabase.php';
 require_once ROOT.'/core/component/contact.php';
 
 class Customer

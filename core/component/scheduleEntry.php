@@ -3,7 +3,7 @@
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/common/jobInfo.php';
 require_once ROOT.'/common/userInfo.php';
-require_once ROOT.'/core/common/pptpdatabase.php';
+require_once ROOT.'/core/common/pptpDatabase.php';
 
 class ScheduleEntry
 {

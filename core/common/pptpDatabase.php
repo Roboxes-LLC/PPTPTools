@@ -3,7 +3,6 @@
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/common/time.php';
 require_once ROOT.'/core/common/database.php';
-require_once ROOT.'/core/component/customer.php';
 
 class PPTPDatabaseAlt extends PDODatabase
 {

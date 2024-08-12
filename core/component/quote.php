@@ -2,7 +2,7 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/core/common/chargeCode.php';
-require_once ROOT.'/core/common/pptpdatabase.php';
+require_once ROOT.'/core/common/pptpDatabase.php';
 require_once ROOT.'/core/common/quoteDefs.php';
 require_once ROOT.'/core/common/quoteStatus.php';
 require_once ROOT.'/core/component/contact.php';

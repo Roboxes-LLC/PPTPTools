@@ -2,6 +2,7 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/core/common/notificationDefs.php';
+require_once ROOT.'/core/common/pptpDatabase.php';
 
 class AppNotification
 {

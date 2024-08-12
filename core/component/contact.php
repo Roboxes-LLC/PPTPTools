@@ -1,7 +1,7 @@
 <?php
 
 if (!defined('ROOT')) require_once '../../root.php';
-require_once ROOT.'/core/common/pptpdatabase.php';
+require_once ROOT.'/core/common/pptpDatabase.php';
 
 class Contact
 {
