@@ -725,56 +725,46 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
 
-   public function getSchedule($startDate, $endDate = null)
+   public function getSchedule($mfgDate)
    {
-      $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
-      $endDate = $endDate ? Time::toMySqlDate(Time::endOfDay($endDate)) : null;
-      
-      if ($endDate == null)
-      {
-         $endDate = Time::endOfDay($startDate);
-      }
+      $mfgDate = $mfgDate ? Time::toMySqlDate(Time::startOfDay($mfgDate)) : null;
       
       $statement = $this->pdo->prepare(
-         "SELECT * FROM schedule WHERE (mfgDate BETWEEN ? AND ?);");
+         "SELECT * FROM schedule WHERE ((endDate IS NULL) AND (? >= startDate)) OR (? BETWEEN startDate AND endDate);");
       
-      $result = $statement->execute([$startDate, $endDate]) ? $statement->fetchAll() : null;
+      $result = $statement->execute([$mfgDate, $mfgDate]) ? $statement->fetchAll() : null;
             
       return ($result);
    }
    
-   public function getScheduleForJob($jobId, $startDate, $endDate = null)
+   public function getScheduleForJob($jobId, $mfgDate)
    {
-      $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
-      $endDate = $endDate ? Time::toMySqlDate(Time::endOfDay($endDate)) : null;
-      
-      if ($endDate == null)
-      {
-         $endDate = Time::endOfDay($startDate);
-      }
+      $mfgDate = $mfgDate ? Time::toMySqlDate(Time::startOfDay($mfgDate)) : null;
       
       $statement = $this->pdo->prepare(
-         "SELECT * FROM schedule WHERE jobId = ? AND mfgDate BETWEEN ? AND ?;");
+         "SELECT * FROM schedule WHERE jobId = ? AND ? BETWEEN startDate AND endDate;");
       
-      $result = $statement->execute([$jobId, $startDate, $endDate]) ? $statement->fetchAll() : null;
+      $result = $statement->execute([$jobId, $mfgDate]) ? $statement->fetchAll() : null;
       
       return ($result);
    }
    
    public function addScheduleEntry($scheduleEntry)
    {
-      $mfgDate = $scheduleEntry->mfgDate ? Time::toMySqlDate(Time::startOfDay($scheduleEntry->mfgDate)) : null;
+      $startDate = $scheduleEntry->startDate ? Time::toMySqlDate(Time::startOfDay($scheduleEntry->startDate)) : null;
+      $endDate = $scheduleEntry->endDate ? Time::toMySqlDate(Time::startOfDay($scheduleEntry->endDate)) : null;
       
       $statement = $this->pdo->prepare(
          "INSERT INTO schedule " .
-         "(jobId, employeeNumber, mfgDate) " .
-         "VALUES (?, ?, ?)");
+         "(jobId, employeeNumber, startDate, endDate) " .
+         "VALUES (?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
             $scheduleEntry->jobId,
             $scheduleEntry->employeeNumber,
-            $mfgDate
+            $startDate,
+            $endDate
          ]);
       
       return ($result);
@@ -782,18 +772,20 @@ class PPTPDatabaseAlt extends PDODatabase
    
    public function updateScheduleEntry($scheduleEntry)
    {
-      $mfgDate = $scheduleEntry->mfgDate ? Time::toMySqlDate(Time::startOfDay($scheduleEntry->mfgDate)) : null;
+      $startDate = $scheduleEntry->startDate ? Time::toMySqlDate(Time::startOfDay($scheduleEntry->startDate)) : null;
+      $endDate = $scheduleEntry->endDate ? Time::toMySqlDate(Time::startOfDay($scheduleEntry->endDate)) : null;
       
       $statement = $this->pdo->prepare(
          "UPDATE schedule " .
-         "SET jobId = ?, employeeNumber = ?, mfgDate = ? " .
+         "SET jobId = ?, employeeNumber = ?, startDate = ?, endDate = ? " .
          "WHERE entryId = ?");
       
       $result = $statement->execute(
          [
             $scheduleEntry->jobId,
             $scheduleEntry->employeeNumber,
-            $mfgDate,
+            $startDate,
+            $endDate,
             $scheduleEntry->entryId
          ]);
       

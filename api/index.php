@@ -978,38 +978,29 @@ $router->add("saveTimeCard", function($params) {
                   $timeCardInfo->clearCommentCode($code);
                }
             }
-            
-            if ($timeCardInfo->timeCardId == TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+
+            // Check for unique time card.
+            if (($timeCardInfo->timeCardId == TimeCardInfo::UNKNOWN_TIME_CARD_ID) &&
+                (!TimeCardInfo::isUniqueTimeCard(
+                     $timeCardInfo->jobId, 
+                     $timeCardInfo->employeeNumber, 
+                     $timeCardInfo->manufactureDate)))
             {
-               // Check for unique time card.
-               if (!TimeCardInfo::isUniqueTimeCard(
-                       $timeCardInfo->jobId, 
-                       $timeCardInfo->employeeNumber, 
-                       $timeCardInfo->manufactureDate))
-               {
-                  $result->success = false;
-                  $result->error = "Duplicate time card.";
-               }
-               else 
-               {
-                  $dbaseResult = $database->newTimeCard($timeCardInfo);
-                  
-                  if ($dbaseResult)
-                  {
-                     $result->timeCardId = $database->lastInsertId();
-                  }
-               }
+               $result->success = false;
+               $result->error = "Duplicate time card.";
             }
             else
             {
-               $dbaseResult = $database->updateTimeCard($timeCardInfo);
-               $result->timeCardId = $timeCardInfo->timeCardId;
-            }
-            
-            if ($result->success && !$dbaseResult)
-            {
-               $result->success = false;
-               $result->error = "Database query failed.";
+               $result->success = TimeCardInfo::save($timeCardInfo);
+               
+               if ($result->success)
+               {
+                  $result->timeCardId = $timeCardInfo->timeCardId;
+               }
+               else
+               {
+                  $result->error = "Database query failed.";
+               }
             }
          }
          else
