@@ -29,7 +29,7 @@ HEREDOC;
          echo
 <<<HEREDOC
             <div class="flex-horizontal flex-v-center">
-               <div id="notification-count-container" class="notification-indicator" data-count="$notificationCount" style="position:relative">
+               <div id="notification-count-container" class="notification-indicator clickable" data-count="$notificationCount" style="position:relative" onclick="">
                   <i class="material-icons-outlined" style="margin-right:5px; color: #ffffff; font-size: 24px;">notifications</i>
                   <div id="notification-count-indicator" class="flex-horizontal flex-v-center flex-h-center notification-count-indicator">$notificationCount</div>
                </div>
@@ -47,6 +47,10 @@ HEREDOC;
       <script>
          document.getElementById("menu-button").addEventListener('click', function() {
             menu.toggle(menu.menuElement);
+         });
+
+         document.getElementById("notification-count-container").addEventListener('click', function() {
+            document.location = "/notification/notifications.php";
          });
 
          setInterval(function() {
