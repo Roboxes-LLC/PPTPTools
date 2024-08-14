@@ -279,7 +279,7 @@ class Schedule
    {
       let mfgInput = document.getElementById(Schedule.PageElements.MFG_DATE_INPUT);
       
-      var updatedDate = new Date(mfgInput.value);
+      let updatedDate = new Date(mfgInput.value + " 12:00 am");
       updatedDate.setDate(updatedDate.getDate() - 7);
       
       mfgInput.value = this.formattedDate(updatedDate); 
@@ -290,7 +290,7 @@ class Schedule
    {
       let mfgInput = document.getElementById(Schedule.PageElements.MFG_DATE_INPUT);
       
-      var updatedDate = new Date(mfgInput.value);
+      let updatedDate = new Date(mfgInput.value + " 12:00 am");
       updatedDate.setDate(updatedDate.getDate() - 1);
       
       mfgInput.value = this.formattedDate(updatedDate); 
@@ -301,7 +301,7 @@ class Schedule
    {
       let mfgInput = document.getElementById(Schedule.PageElements.MFG_DATE_INPUT);
       
-      var updatedDate = new Date(mfgInput.value);
+      let updatedDate = new Date(mfgInput.value + " 12:00 am");
       updatedDate.setDate(updatedDate.getDate() + 1);
       
       mfgInput.value = this.formattedDate(updatedDate); 
@@ -312,7 +312,7 @@ class Schedule
    {
       let mfgInput = document.getElementById(Schedule.PageElements.MFG_DATE_INPUT);
       
-      var updatedDate = new Date(mfgInput.value);
+      let updatedDate = new Date(mfgInput.value + " 12:00 am");
       updatedDate.setDate(updatedDate.getDate() + 7);
       
       mfgInput.value = this.formattedDate(updatedDate); 
