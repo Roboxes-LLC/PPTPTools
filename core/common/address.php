@@ -39,6 +39,14 @@ class Address
          ((!empty($this->city) && !empty($this->state)) ? ", " : "") . 
          UsaStates::getStateAbbreviation($this->state));
    }
+   
+   public function isEmpty()
+   {
+      return (empty($this->addressLine1) &&
+              empty($this->city) &&
+              empty($this->state) &&
+              empty($this->zipcode));
+   }
 }
 
 ?>

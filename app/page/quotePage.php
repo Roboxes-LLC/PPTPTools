@@ -14,7 +14,7 @@ class QuotePage extends Page
        {
           case "save_quote":
           {
-             if (Page::requireParams($params, ["quoteId", "customerId", "contactId", "customerPartNumber", "pptpPartNumber", "quantity"]))
+             if (Page::requireParams($params, ["quoteId", "customerId", "customerPartNumber", "pptpPartNumber", "quantity"]))
              {
                 $quoteId = $params->getInt("quoteId");
                 $newQuote = ($quoteId == Quote::UNKNOWN_QUOTE_ID);
@@ -610,12 +610,14 @@ class QuotePage extends Page
     private static function getQuoteParams(&$quote, $params)
     {
        $quote->customerId = $params->getInt("customerId");
-       $quote->contactId = $params->getInt("contactId");
        $quote->customerPartNumber = $params->get("customerPartNumber");
        $quote->pptpPartNumber = $params->get("pptpPartNumber");
        $quote->partDescription = $params->get("partDescription");
        $quote->quantity = $params->getInt("quantity");
        $quote->emailNotes = $params->get("emailNotes");
+       
+       // Optional.
+       $quote->contactId = $params->keyExists("contactId") ? $params->getInt("contactId") : Contact::UNKNOWN_CONTACT_ID;
     }
     
     private static function getEstimateParams(&$quote, $params)
