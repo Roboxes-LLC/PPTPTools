@@ -116,6 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    <script src="/common/barcodeScanner.js<?php echo versionQuery();?>"></script>   
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>  
    <script src="timeCard.js<?php echo versionQuery();?>"></script>
       

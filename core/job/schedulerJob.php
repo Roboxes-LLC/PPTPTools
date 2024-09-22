@@ -62,6 +62,6 @@ class SchedulerJob extends Job
 }
 
 // Testing
-SchedulerJob::test();
+//SchedulerJob::test();
 
 ?>

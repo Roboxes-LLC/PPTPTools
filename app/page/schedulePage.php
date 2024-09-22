@@ -2,6 +2,7 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/app/page/page.php';
+require_once ROOT.'/core/manager/jobManager.php';
 require_once ROOT.'/core/manager/scheduleManager.php';
 
 class SchedulePage extends Page
@@ -101,6 +102,12 @@ class SchedulePage extends Page
             {
                $this->result->success = true;
                $this->result->unscheduled = ScheduleManager::getUnscheduledJobs($params["mfgDate"]);
+               
+               // Augment job.
+               foreach ($this->result->unscheduled as $jobInfo)
+               {
+                  $jobInfo->customerPartNumber = JobManager::getCustomerPartNumber($jobInfo->partNumber);
+               }
             }
             break;
          }
@@ -159,7 +166,7 @@ class SchedulePage extends Page
    {
       $scheduleEntry->formattedStartDate = Time::dateTimeObject($scheduleEntry->startDate)->format("n-j-Y");
       $scheduleEntry->formattedEndDate = $scheduleEntry->endDate ? Time::dateTimeObject($scheduleEntry->endDate)->format("n-j-Y") : null;
-      
+      $scheduleEntry->jobInfo->customerPartNumber = JobManager::getCustomerPartNumber($scheduleEntry->jobInfo->partNumber);
    }
 }
 

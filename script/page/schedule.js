@@ -90,10 +90,11 @@ class Schedule
          },
          //Define Table Columns
          columns:[
-            {                           field:"entryId",                 visible:false},
-            {title:"WC #",              field:"jobInfo.wcNumber",        headerFilter:true},
-            {title:"Job #",             field:"jobInfo.jobNumber",       headerFilter:true},
-            {title:"Assigned Operator", field:"userInfo.employeeNumber", headerFilter:true,  editor:"select", cssClass:"editable",
+            {                           field:"entryId",                    visible:false},
+            {title:"WC #",              field:"jobInfo.wcNumber",           headerFilter:true},
+            {title:"Job #",             field:"jobInfo.jobNumber",          headerFilter:true},
+            {title:"Customer Part #",   field:"jobInfo.customerPartNumber", headerFilter:true},
+            {title:"Assigned Operator", field:"userInfo.employeeNumber",    headerFilter:true,  editor:"select", cssClass:"editable",
                editorParams:{
                   values:this.operatorOptions
                },
@@ -166,9 +167,10 @@ class Schedule
          },
          //Define Table Columns
          columns:[
-            {                           field:"jobId",           visible:false},
-            {title:"WC #",              field:"wcNumber",        headerFilter:true},
-            {title:"Job #",             field:"jobNumber",       headerFilter:true},
+            {                           field:"jobId",              visible:false},
+            {title:"WC #",              field:"wcNumber",           headerFilter:true},
+            {title:"Job #",             field:"jobNumber",          headerFilter:true},
+            {title:"Customer Part #",   field:"customerPartNumber", headerFilter:true},
             {title:"",                  field:"add",
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">add</i>");
