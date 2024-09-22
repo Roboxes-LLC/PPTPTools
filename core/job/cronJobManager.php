@@ -4,6 +4,7 @@ if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/common/database.php';
 require_once ROOT.'/core/job/job.php';
 require_once ROOT.'/core/job/printerMonitorJob.php';
+require_once ROOT.'/core/job/schedulerJob.php';
 
 class CronJobManager
 {

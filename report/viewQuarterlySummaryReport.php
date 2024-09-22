@@ -14,6 +14,11 @@ require_once '../common/timeCardInfo.php';
 require_once '../common/userInfo.php';
 require_once '../common/version.php';
 
+function getCurrentYear()
+{
+   return (Time::now("Y"));
+}
+
 function getQuarter()
 {
    $quarter = Quarter::FIRST;
@@ -28,7 +33,7 @@ function getQuarter()
 
 function getYear()
 {
-   $year = 2023;  // TODO: Current year
+   $year = getCurrentYear();
    
    if (isset($_SESSION["quarterlySummaryReport.filter.year"]))
    {
@@ -42,7 +47,7 @@ function getYearOptions($selectedYear)
 {
    $html = "<option style=\"display:none\">";
    
-   for ($year = 2020; $year <= 2023; $year++)  // TODO
+   for ($year = 2020; $year <= getCurrentYear(); $year++)
    {
       $selected = ($year == $selectedYear) ? "selected" : "";
       
@@ -134,6 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
       
 </head>
@@ -614,7 +620,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       document.getElementById("maintenance-log-filter").addEventListener("change", updateFilter);
       document.getElementById("download-operator-summary-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].download("csv", "<?php echo getReportFilename(QuarterlySummaryReportTable::OPERATOR_SUMMARY) ?>", {delimiter:","})};
       document.getElementById("print-operator-summary-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].print(false, true);};
-      document.getElementById("download-shop-summary-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].download("csv", "<?php echo getReportFilename(QuarterlySummaryReportTable::SHOP_SUMMARY) ?>", {delimiter:","})};
+      document.getElementById("download-shop-summary-link").onclick = function(){tables[SHOP_SUMMARY_TABLE].download("csv", "<?php echo getReportFilename(QuarterlySummaryReportTable::SHOP_SUMMARY) ?>", {delimiter:","})};
       document.getElementById("print-shop-summary-link").onclick = function(){tables[SHOP_SUMMARY_TABLE].print(false, true);};
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};

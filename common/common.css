@@ -709,3 +709,7 @@ button.hidden,
 .notification-indicator[data-count="0"] {
    visibility: hidden;
 }
+
+.clickable {
+   cursor: pointer;
+}

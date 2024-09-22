@@ -85,6 +85,16 @@ class NotificationPage extends Page
             break;
          }
          
+         case "fetch_app_notifcations_count":
+         {
+            if ($this->authenticate([Permission::NOTIFICATIONS]))
+            {
+               $this->result->success = true;
+               $this->result->count = NotificationManager::getUnacknowledgedAppNotificationCount(Authentication::getAuthenticatedUser()->employeeNumber);
+            }
+            break;
+         }
+         
          case "fetch_app_notfications":
          {
             if ($this->authenticate([Permission::NOTIFICATIONS]))

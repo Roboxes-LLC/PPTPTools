@@ -2,6 +2,7 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/app/page/page.php';
+require_once ROOT.'/core/manager/jobManager.php';
 require_once ROOT.'/core/manager/scheduleManager.php';
 
 class SchedulePage extends Page
@@ -14,14 +15,17 @@ class SchedulePage extends Page
          {
             if ($this->authenticate([Permission::EDIT_SCHEDULE]))
             {
-               if (Page::requireParams($params, ["jobId", "mfgDate"]))
+               if (Page::requireParams($params, ["jobId", "startDate"]))
                {
                   $jobId = $params->getInt("jobId");
-                  $mfgDate = $params->get("mfgDate");
+                  $startDate = $params->get("startDate");
+                  $endDate = $params->keyExists("endDate") ? $params->get("endDate") : null;
+
                   
                   $scheduleEntry = new ScheduleEntry();
                   $scheduleEntry->jobId = $jobId;
-                  $scheduleEntry->mfgDate = $mfgDate;
+                  $scheduleEntry->startDate = $startDate;
+                  $scheduleEntry->endDate = $endDate;
                   $scheduleEntry->employeeNumber = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
                   
                   if (ScheduleEntry::save($scheduleEntry))
@@ -94,10 +98,16 @@ class SchedulePage extends Page
          case "fetchUnassigned":
          {
             if ($this->authenticate([Permission::VIEW_SCHEDULE]) &&
-                Page::requireParams($params, ["startDate"]))
+                Page::requireParams($params, ["mfgDate"]))
             {
                $this->result->success = true;
-               $this->result->unscheduled = ScheduleManager::getUnscheduledJobs($params["startDate"]);
+               $this->result->unscheduled = ScheduleManager::getUnscheduledJobs($params["mfgDate"]);
+               
+               // Augment job.
+               foreach ($this->result->unscheduled as $jobInfo)
+               {
+                  $jobInfo->customerPartNumber = JobManager::getCustomerPartNumber($jobInfo->partNumber);
+               }
             }
             break;
          }
@@ -115,6 +125,9 @@ class SchedulePage extends Page
                   
                   if ($scheduleEntry)
                   {
+                     // Augment schedule entry.
+                     SchedulePage::augmentScheduleEntry($scheduleEntry);
+                     
                      $this->result->scheduleEntry = $scheduleEntry;
                      $this->result->success = true;
                   }
@@ -124,10 +137,16 @@ class SchedulePage extends Page
                   }
                }
                // Fetch all components.
-               else if (Page::requireParams($params, ["startDate"]))
+               else if (Page::requireParams($params, ["mfgDate"]))
                {
                   $this->result->success = true;
-                  $this->result->schedule = ScheduleManager::getScheduledJobs($params["startDate"]);
+                  $this->result->schedule = ScheduleManager::getScheduledJobs($params["mfgDate"]);
+                  
+                  // Augment schedule entry.
+                  foreach ($this->result->schedule as $scheduleEntry)
+                  {
+                     SchedulePage::augmentScheduleEntry($scheduleEntry);
+                  }
                }
             }
             break;
@@ -141,6 +160,13 @@ class SchedulePage extends Page
       }
       
       echo json_encode($this->result);
+   }
+   
+   private static function augmentScheduleEntry(&$scheduleEntry)
+   {
+      $scheduleEntry->formattedStartDate = Time::dateTimeObject($scheduleEntry->startDate)->format("n-j-Y");
+      $scheduleEntry->formattedEndDate = $scheduleEntry->endDate ? Time::dateTimeObject($scheduleEntry->endDate)->format("n-j-Y") : null;
+      $scheduleEntry->jobInfo->customerPartNumber = JobManager::getCustomerPartNumber($scheduleEntry->jobInfo->partNumber);
    }
 }
 

@@ -57,8 +57,7 @@ $appPageId = AppPage::SCHEDULE;
 $heading = "Production Schedule";
 $description = "Nom nom nom";
 $filterTemplate = "scheduleFilter.php";
-$filterStartDate = getFilterDate(Session::SCHEDULE_START_DATE);
-$filterEndDate = getFilterDate(Session::SCHEDULE_END_DATE);
+$filterMfgDate = getFilterDate(Session::SCHEDULE_MFG_DATE);
 $operatorOptions = json_encode(getOperatorOptions());
 
 include ROOT.'/templates/schedulePageTemplate.php'

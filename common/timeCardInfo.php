@@ -228,6 +228,24 @@ class TimeCardInfo
       return ($timeCardInfo);
    }
    
+   public static function save($timeCardInfo)
+   {
+      $success = false;
+      
+      if ($timeCardInfo->timeCardId == TimeCardInfo::UNKNOWN_TIME_CARD_ID)
+      {
+         $success = PPTPDatabase::getInstance()->newTimeCard($timeCardInfo);
+         
+         $timeCardInfo->customerId = intval(PPTPDatabaseAlt::getInstance()->lastInsertId());
+      }
+      else
+      {
+         $success = PPTPDatabase::getInstance()->updateTimeCard($timeCardInfo);
+      }
+      
+      return ($success);
+   }
+   
    public static function matchTimeCard(
       $jobId,
       $employeeNumber,

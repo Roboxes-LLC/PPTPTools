@@ -91,7 +91,12 @@ class Contact
    
    public static function getOptions($selectedContactId = null, $customerId = Customer::UNKNOWN_CUSTOMER_ID)
    {
-      $html = "<option style=\"display:none\">";
+      $html = "";
+      
+      $label = "";
+      $value = Customer::UNKNOWN_CUSTOMER_ID;
+      $selected = ($selectedContactId == Customer::UNKNOWN_CUSTOMER_ID) ? "selected" : "";
+      $html .= "<option value=\"$value\" $selected>$label</option>";
       
       $result = PPTPDatabaseAlt::getInstance()->getContactsForCustomer($customerId);
       

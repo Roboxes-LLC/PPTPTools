@@ -409,11 +409,12 @@ function getWcNumber()
 
 function getMaterialNumber()
 {
-   $materialNumber = 0;
+   $materialNumber = null;
    
    $timeCardInfo = getTimeCardInfo();
    
-   if ($timeCardInfo)
+   if ($timeCardInfo && 
+       ($timeCardInfo->materialNumber != MaterialHeatInfo::UNKNOWN_INTERNAL_HEAT_NUMBER))
    {
       $materialNumber = $timeCardInfo->materialNumber;
    }

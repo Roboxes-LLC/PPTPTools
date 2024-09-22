@@ -12,7 +12,8 @@ class ScheduleEntry
    public $entryId;
    public $jobId;
    public $employeeNumber;
-   public $mfgDate;
+   public $startDate;
+   public $endDate;
    
    public $jobInfo;
    public $userInfo;
@@ -33,10 +34,13 @@ class ScheduleEntry
       $this->entryId = intval($row["entryId"]);
       $this->jobId = intval($row["jobId"]);
       $this->employeeNumber = intval($row["employeeNumber"]);
-      $this->mfgDate = $row["mfgDate"] ?
-                            Time::fromMySqlDate($row["mfgDate"]) :
+      $this->startDate = $row["startDate"] ?
+                            Time::fromMySqlDate($row["startDate"]) :
                             null;
-      
+      $this->endDate = $row["endDate"] ?
+                          Time::fromMySqlDate($row["endDate"]) :
+                          null;
+                            
       $this->jobInfo = null;
       $this->userInfo = null;
    }

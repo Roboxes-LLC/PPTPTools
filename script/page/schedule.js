@@ -3,11 +3,15 @@ class Schedule
    // HTML elements
    static PageElements = {
       // Filters
-      "START_DATE_INPUT":       "start-date-input",
+      "MFG_DATE_INPUT":      "mfg-date-input",
       // Tables
-      "SCHEDULED_TABLE":       "scheduled-table",
-      "UNSCHEDULED_TABLE":     "unscheduled-table",
+      "SCHEDULED_TABLE":     "scheduled-table",
+      "UNSCHEDULED_TABLE":   "unscheduled-table",
       // Buttons
+      "PREV_WEEK_BUTTON":    "prev-week-button",
+      "PREV_DAY_BUTTON":     "prev-day-button",
+      "NEXT_DAY_BUTTON":     "next-day-button",
+      "NEXT_WEEK_BUTTON":    "next-week-button",
       // Input fields
    };
 
@@ -25,10 +29,38 @@ class Schedule
       this.createScheduledTable(Schedule.PageElements.SCHEDULED_TABLE);
       this.createUnscheduledTable(Schedule.PageElements.UNSCHEDULED_TABLE);
       
-      if (document.getElementById(Schedule.PageElements.START_DATE_INPUT) != null)
+      if (document.getElementById(Schedule.PageElements.MFG_DATE_INPUT) != null)
       {
-         document.getElementById(Schedule.PageElements.START_DATE_INPUT).addEventListener('change', function() {
+         document.getElementById(Schedule.PageElements.MFG_DATE_INPUT).addEventListener('change', function() {
             this.onStartDateChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Schedule.PageElements.PREV_WEEK_BUTTON) != null)
+      {
+         document.getElementById(Schedule.PageElements.PREV_WEEK_BUTTON).addEventListener('click', function() {
+            this.onPrevWeekButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Schedule.PageElements.NEXT_DAY_BUTTON) != null)
+      {
+         document.getElementById(Schedule.PageElements.NEXT_DAY_BUTTON).addEventListener('click', function() {
+            this.onNextDayButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Schedule.PageElements.NEXT_WEEK_BUTTON) != null)
+      {
+         document.getElementById(Schedule.PageElements.NEXT_WEEK_BUTTON).addEventListener('click', function() {
+            this.onNextWeekButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Schedule.PageElements.PREV_DAY_BUTTON) != null)
+      {
+         document.getElementById(Schedule.PageElements.PREV_DAY_BUTTON).addEventListener('click', function() {
+            this.onPrevDayButton();
          }.bind(this));
       }
    }      
@@ -38,7 +70,7 @@ class Schedule
       let url = "/app/page/schedule/";
       let params = new Object();
       params.request = "fetch";
-      params.startDate =  document.getElementById(Schedule.PageElements.START_DATE_INPUT).value;
+      params.mfgDate =  document.getElementById(Schedule.PageElements.MFG_DATE_INPUT).value;
       
       let tableElementQuery = "#" + tableElementId;
    
@@ -58,10 +90,11 @@ class Schedule
          },
          //Define Table Columns
          columns:[
-            {                           field:"entryId",                 visible:false},
-            {title:"WC #",              field:"jobInfo.wcNumber",        headerFilter:true},
-            {title:"Job #",             field:"jobInfo.jobNumber",       headerFilter:true},
-            {title:"Assigned Operator", field:"userInfo.employeeNumber", headerFilter:true,  editor:"select", cssClass:"editable",
+            {                           field:"entryId",                    visible:false},
+            {title:"WC #",              field:"jobInfo.wcNumber",           headerFilter:true},
+            {title:"Job #",             field:"jobInfo.jobNumber",          headerFilter:true},
+            {title:"Customer Part #",   field:"jobInfo.customerPartNumber", headerFilter:true},
+            {title:"Assigned Operator", field:"userInfo.employeeNumber",    headerFilter:true,  editor:"select", cssClass:"editable",
                editorParams:{
                   values:this.operatorOptions
                },
@@ -72,6 +105,8 @@ class Schedule
                   return (cellValue);
                }.bind(this)
             },
+            {title:"Start",             field:"formattedStartDate",      headerFilter:true},
+            {title:"End",               field:"formattedEndDate",        headerFilter:true},
             {title:"",                  field:"delete",
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
@@ -112,7 +147,7 @@ class Schedule
       
       let params = new Object();
       params.request = "fetchUnassigned";
-      params.startDate =  document.getElementById(Schedule.PageElements.START_DATE_INPUT).value;
+      params.mfgDate =  document.getElementById(Schedule.PageElements.MFG_DATE_INPUT).value;
 
       let tableElementQuery = "#" + tableElementId;
    
@@ -132,9 +167,10 @@ class Schedule
          },
          //Define Table Columns
          columns:[
-            {                           field:"jobId",           visible:false},
-            {title:"WC #",              field:"wcNumber",        headerFilter:true},
-            {title:"Job #",             field:"jobNumber",       headerFilter:true},
+            {                           field:"jobId",              visible:false},
+            {title:"WC #",              field:"wcNumber",           headerFilter:true},
+            {title:"Job #",             field:"jobNumber",          headerFilter:true},
+            {title:"Customer Part #",   field:"customerPartNumber", headerFilter:true},
             {title:"",                  field:"add",
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">add</i>");
@@ -163,19 +199,19 @@ class Schedule
       if (!this.validateFilterDates())
       {
          document.getElementById(Schedule.PageElements.END_DATE_INPUT).value = 
-            document.getElementById(Schedule.PageElements.START_DATE_INPUT).value
+            document.getElementById(Schedule.PageElements.MFG_DATE_INPUT).value
       }
       
       this.onFilterUpdate();
       
-      setSession("schedule.startDate", document.getElementById(Schedule.PageElements.START_DATE_INPUT).value);
+      setSession("schedule.mfgDate", document.getElementById(Schedule.PageElements.MFG_DATE_INPUT).value);
    }
    
    onEndDateChanged()
    {
       if (!this.validateFilterDates())
       {
-         document.getElementById(Schedule.PageElements.START_DATE_INPUT).value = 
+         document.getElementById(Schedule.PageElements.MFG_DATE_INPUT).value = 
             document.getElementById(Schedule.PageElements.END_DATE_INPUT).value
       }
 
@@ -186,10 +222,10 @@ class Schedule
    
    onAddButton(jobId)
    {
-      let mfgDate = document.getElementById(Schedule.PageElements.START_DATE_INPUT).value;
+      let startDate = document.getElementById(Schedule.PageElements.MFG_DATE_INPUT).value;
       
       // AJAX call to delete the component.
-      let requestUrl = `/app/page/schedule/?request=save_entry&jobId=${jobId}&mfgDate=${mfgDate}&employeeNumber=0`;
+      let requestUrl = `/app/page/schedule/?request=save_entry&jobId=${jobId}&startDate=${startDate}&employeeNumber=0`;
       
       ajaxRequest(requestUrl, function(response) {
          if (response.success == true)
@@ -240,16 +276,55 @@ class Schedule
       }.bind(this));
 
    }
+   
+   onPrevWeekButton()
+   {
+      let mfgInput = document.getElementById(Schedule.PageElements.MFG_DATE_INPUT);
+      
+      let updatedDate = new Date(mfgInput.value + " 12:00 am");
+      updatedDate.setDate(updatedDate.getDate() - 7);
+      
+      mfgInput.value = this.formattedDate(updatedDate); 
+      mfgInput.dispatchEvent(new Event('change'));
+   }
+   
+   onPrevDayButton()
+   {
+      let mfgInput = document.getElementById(Schedule.PageElements.MFG_DATE_INPUT);
+      
+      let updatedDate = new Date(mfgInput.value + " 12:00 am");
+      updatedDate.setDate(updatedDate.getDate() - 1);
+      
+      mfgInput.value = this.formattedDate(updatedDate); 
+      mfgInput.dispatchEvent(new Event('change'));
+   }
+   
+   onNextDayButton()
+   {
+      let mfgInput = document.getElementById(Schedule.PageElements.MFG_DATE_INPUT);
+      
+      let updatedDate = new Date(mfgInput.value + " 12:00 am");
+      updatedDate.setDate(updatedDate.getDate() + 1);
+      
+      mfgInput.value = this.formattedDate(updatedDate); 
+      mfgInput.dispatchEvent(new Event('change'));
+   }
+   
+   onNextWeekButton()
+   {
+      let mfgInput = document.getElementById(Schedule.PageElements.MFG_DATE_INPUT);
+      
+      let updatedDate = new Date(mfgInput.value + " 12:00 am");
+      updatedDate.setDate(updatedDate.getDate() + 7);
+      
+      mfgInput.value = this.formattedDate(updatedDate); 
+      mfgInput.dispatchEvent(new Event('change')); 
+   }
       
    // **************************************************************************
    
    validateFilterDates()
    {
-      /*
-      let startDate = document.getElementById(Schedule.PageElements.START_DATE_INPUT).value;
-      let endDate = document.getElementById(Schedule.PageElements.END_DATE_INPUT).value;
-      */
-      
       return (true);
    }
    
@@ -267,7 +342,7 @@ class Schedule
          
       let params = new Object();
       params.request = "fetch";
-      params.startDate =  document.getElementById(Schedule.PageElements.START_DATE_INPUT).value;
+      params.mfgDate =  document.getElementById(Schedule.PageElements.MFG_DATE_INPUT).value;
 
       this.scheduledTable.setData(url, params)
       .then(function(){
@@ -286,6 +361,18 @@ class Schedule
       .catch(function(error){
          // Handle error loading data
       });
+   }
+   
+   formattedDate(date)
+   {
+      // Convert to Y-M-D format, per HTML5 Date control.
+      // https://stackoverflow.com/questions/12346381/set-date-in-input-type-date
+      var day = ("0" + date.getDate()).slice(-2);
+      var month = ("0" + (date.getMonth() + 1)).slice(-2);
+      
+      var formattedDate = date.getFullYear() + "-" + (month) + "-" + (day);
+
+      return (formattedDate);
    }
    
    // **************************************************************************

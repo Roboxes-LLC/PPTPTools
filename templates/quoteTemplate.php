@@ -11,6 +11,60 @@ Required PHP variables:
    $preface
    $notes
  -->
+ 
+ <?php  
+ function getContactName($templateParams)
+ {
+    return (isset($templateParams->contact) ? $templateParams->contact->getFullName() : "");
+ }
+ 
+ function getContactAddressLine($templateParams, $addressLine)
+ {
+    $line = "";
+    
+    if (!$templateParams->customer->address->isEmpty())
+    {
+       switch ($addressLine)
+       {
+          case 1:
+          {
+             $line = $templateParams->customer->address->addressLine1;
+             break;
+          }
+          
+          case 2:
+          {
+             $line = $templateParams->customer->address->addressLine2;
+             break;
+          }
+          
+          case 3:
+          {
+             $line = "{$templateParams->customer->address->city}, {$templateParams->customer->address->stateAbbreviation} {$templateParams->customer->address->zipcode}";
+             break;
+          }
+       }
+    }
+       
+    return ($line);
+ }
+ 
+ function getSalutation($templateParams)
+ {
+    $salutation = "";
+    
+    if (isset($templateParams->contact))
+    {
+       $salutation = "Dear {$templateParams->contact->getFormalName()},";
+    }
+    else
+    {
+       $salutation = "To Whom it May Concern:";
+    }
+    
+    return ($salutation);
+ }
+ ?>
 
 <html>
    <head>
@@ -150,18 +204,18 @@ Required PHP variables:
             <td class="label">Quotation For:</td>
             <td>
                <div>
-                  <div class="bold"><?php echo $templateParams->contact->getFullName() ?></div>
-                  <div><?php echo $templateParams->customer->customerName ?></div>
-                  <div><?php echo $templateParams->customer->address->addressLine1 ?></div>
-                  <div><?php echo $templateParams->customer->address->addressLine2?></div>
-                  <div><?php echo "{$templateParams->customer->address->city}, {$templateParams->customer->address->stateAbbreviation} {$templateParams->customer->address->zipcode}" ?></div>
+                  <div class="bold"><?php echo $templateParams->customer->customerName ?></div>
+                  <div><?php echo getContactName($templateParams) ?></div>
+                  <div><?php echo getContactAddressLine($templateParams, 1) ?></div>
+                  <div><?php echo getContactAddressLine($templateParams, 2) ?></div>
+                  <div><?php echo getContactAddressLine($templateParams, 3) ?></div>
                </div>
             </td>
          </tr>         
       </table>
 
       <div id="preface">
-         <p id="salutation">Dear <?php echo $templateParams->contact->getFormalName() ?>,</p>
+         <p id="salutation"><?php echo getSalutation($templateParams) ?></p>
          <?php echo $templateParams->preface ?>
       </div>
       <table id="quote-table">
