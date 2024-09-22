@@ -11,6 +11,15 @@ class JobManager
       return (PPTPDatabaseAlt::getInstance()->getCustomerPartNumber($pptpPartNumber));
    }
    
+   public static function getCustomer($jobId)
+   {
+      $customerId = 16;
+      
+      $customer = Customer::load($customerId);
+      
+      return ($customer);
+   }
+   
    public static function saveCustomerPartNumber($pptpPartNumber, $customerPartNumber)
    {
       return (PPTPDatabaseAlt::getInstance()->saveCustomerPartNumber($pptpPartNumber, $customerPartNumber));

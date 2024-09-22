@@ -32,8 +32,21 @@ $jsonMenu =
          "pageId": 20
       },
       {
-         "type":"menu-item",
-         "pageId": 3
+         "type":"submenu",
+         "menuId":"inspection",
+         "label":"Time Cards",
+         "icon":"schedule",
+         "permissions":18,
+         "menuItems": [
+            {
+               "type":"menu-item",
+               "pageId": 3
+            },
+            {
+               "type":"menu-item",
+               "pageId": 16
+            }
+         ]
       },
       {
          "type":"menu-item",
@@ -91,7 +104,7 @@ $jsonMenu =
       },
       {
          "type":"menu-item",
-         "pageId": 16
+         "pageId": 22
       },
       {
          "type":"submenu",

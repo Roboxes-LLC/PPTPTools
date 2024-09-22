@@ -7,6 +7,7 @@ require_once ROOT.'/app/page/jobPage.php';
 require_once ROOT.'/app/page/notificationPage.php';
 require_once ROOT.'/app/page/quotePage.php';
 require_once ROOT.'/app/page/schedulePage.php';
+require_once ROOT.'/app/page/shipmentPage.php';
 require_once ROOT.'/app/page/userPage.php';
 
 // *****************************************************************************
@@ -39,6 +40,10 @@ $router->add("quote", function($params) {
 
 $router->add("schedule", function($params) {
    (new SchedulePage())->handleRequest($params);
+});
+
+$router->add("shipment", function($params) {
+   (new ShipmentPage())->handleRequest($params);
 });
    
 $router->route();

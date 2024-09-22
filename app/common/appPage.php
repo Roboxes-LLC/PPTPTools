@@ -28,6 +28,7 @@ class AppPage
    const QUOTE = 19;
    const SCHEDULE = 20;
    const NOTIFICATION = 21;
+   const SHIPMENT = 22;
    const LAST = 22;
    
    public $pageId;
@@ -67,6 +68,7 @@ class AppPage
       AppPage::QUOTE,
       AppPage::SCHEDULE,
       AppPage::NOTIFICATION,
+      AppPage::SHIPMENT,
    );
    
    private static $pages = null;
@@ -79,7 +81,7 @@ class AppPage
             AppPage::USER =>                new AppPage(AppPage::USER,                "Users",                "group",                Permission::VIEW_USER,                "/user/viewUsers.php"),
             AppPage::JOBS =>                new AppPage(AppPage::JOBS,                "Jobs",                 "assignment",           Permission::VIEW_JOB,                 "/jobs/viewJobs.php"),
             AppPage::MATERIAL =>            new AppPage(AppPage::MATERIAL,            "Material",             "widgets",              Permission::VIEW_MATERIAL,            "/material/viewMaterials.php"),
-            AppPage::TIME_CARD =>           new AppPage(AppPage::TIME_CARD,           "Time Cards",           "schedule",             Permission::VIEW_TIME_CARD,           "/timecard/viewTimeCards.php"),
+            AppPage::TIME_CARD =>           new AppPage(AppPage::TIME_CARD,           "Operator Cards",       "",                     Permission::VIEW_TIME_CARD,           "/timecard/viewTimeCards.php"),
             AppPage::PART_WEIGHT =>         new AppPage(AppPage::PART_WEIGHT,         "Part Weight Log",      "balance",              Permission::VIEW_PART_WEIGHT_LOG,     "/partWeightLog/partWeightLog.php"),
             AppPage::PART_WASH =>           new AppPage(AppPage::PART_WASH,           "Parts Washer Log",     "opacity",              Permission::VIEW_PART_WASHER_LOG,     "/partWasherLog/partWasherLog.php"),
             AppPage::INSPECTION_TEMPLATE => new AppPage(AppPage::INSPECTION_TEMPLATE, "Templates",            null,                   Permission::VIEW_INSPECTION_TEMPLATE, "/inspectionTemplate/viewInspectionTemplates.php"),
@@ -91,12 +93,13 @@ class AppPage
             AppPage::WEEKLY_REPORT =>       new AppPage(AppPage::WEEKLY_REPORT,       "Weekly",               null,                   Permission::VIEW_REPORT,              "/report/viewWeeklySummaryReport.php"),
             AppPage::QUARTERLY_REPORT =>    new AppPage(AppPage::QUARTERLY_REPORT,    "Quarterly",            null,                   Permission::VIEW_REPORT,              "/report/viewQuarterlySummaryReport.php"),
             AppPage::MAINTENANCE_LOG =>     new AppPage(AppPage::MAINTENANCE_LOG,     "Maintenance Log",      "build",                Permission::VIEW_MAINTENANCE_LOG,     "/maintenanceLog/maintenanceLog.php"),
-            AppPage::SHIPPING_CARD =>       new AppPage(AppPage::SHIPPING_CARD,       "Shipping Cards",       "local_shipping",       Permission::VIEW_SHIPPING_CARD,       "/shippingCard/viewShippingCards.php"),
+            AppPage::SHIPPING_CARD =>       new AppPage(AppPage::SHIPPING_CARD,       "Shipping Cards",       "",                     Permission::VIEW_SHIPPING_CARD,       "/shippingCard/viewShippingCards.php"),
             AppPage::CUSTOMER =>            new AppPage(AppPage::CUSTOMER,            "Customers",            null,                   Permission::VIEW_CUSTOMER,            "/customer/customers.php"),
             AppPage::CONTACT =>             new AppPage(AppPage::CONTACT,             "Contacts",             null,                   Permission::VIEW_CUSTOMER,            "/customer/contacts.php"),
             AppPage::QUOTE =>               new AppPage(AppPage::QUOTE,               "Quotes",               null,                   Permission::VIEW_QUOTE,               "/quote/quotes.php"),
             AppPage::SCHEDULE =>            new AppPage(AppPage::SCHEDULE,            "Schedule",             "calendar_month",       Permission::VIEW_SCHEDULE,            "/schedule/schedule.php"),
-            AppPage::NOTIFICATION =>        new AppPage(AppPage::NOTIFICATION,        "Messages",             "notifications",        Permission::NOTIFICATIONS,            "/notification/notifications.php")
+            AppPage::NOTIFICATION =>        new AppPage(AppPage::NOTIFICATION,        "Messages",             "notifications",        Permission::NOTIFICATIONS,            "/notification/notifications.php"),
+            AppPage::SHIPMENT =>            new AppPage(AppPage::SHIPMENT,            "Shipments",            "local_shipping",       Permission::VIEW_SHIPMENT,           "/shipment/shipments.php")
          );
       }
       

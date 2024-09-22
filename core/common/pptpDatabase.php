@@ -698,7 +698,13 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare("SELECT * from part WHERE pptpNumber = ? LIMIT 1");
       
-      $result = $statement->execute([$pptpPartNumber]) ? $statement->fetch()["customerNumber"] : null;
+      $result = $statement->execute([$pptpPartNumber]) ? $statement->fetchAll() : null;
+      
+      if ($result)
+      {
+         // Return the customerNumber from the first (and only) entry.
+         $result = (count($result) > 0) ? $result[0]["customerNumber"] : null;
+      }
 
       return ($result);
    }
@@ -943,6 +949,83 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare("SELECT * FROM appnotification_user WHERE notificationId = ? && employeeNumber = ?;");
       
       $result = $statement->execute([$notificationId, $employeeNumber]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                 Shipment
+   
+   public function getShipment($shipmentId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM shipment WHERE shipmentId = ?;");
+      
+      $result = $statement->execute([$shipmentId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getShipments()
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM shipment ORDER BY shipmentId ASC;");
+      
+      $result = $statement->execute() ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addShipment($shipment)
+   {
+      $dateTime = $shipment->dateTime ? Time::toMySqlDate($shipment->dateTime) : null;
+      
+      $statement = $this->pdo->prepare(
+         "INSERT INTO shipment " .
+         "(jobId, dateTime, author, inspectionId, quantity, packingListNumber) " .
+         "VALUES (?, ?, ?, ?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $shipment->jobId,
+            $dateTime,      
+            $shipment->author,
+            $shipment->inspectionId,
+            $shipment->quantity,
+            $shipment->packingListNumber
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateShipment($shipment)
+   {
+      $dateTime = $shipment->dateTime ? Time::toMySqlDate($shipment->dateTime) : null;
+      
+      $statement = $this->pdo->prepare(
+         "UPDATE shipment " .
+         "SET jobId = ?, $dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ? " .
+         "WHERE shipmentId = ?");
+      
+      $result = $statement->execute(
+         [
+            $shipment->jobId,
+            $dateTime,      
+            $shipment->author,
+            $shipment->inspectionId,
+            $shipment->quantity,
+            $shipment->packingListNumber,
+            $shipment->shipmentId
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteShipment($shipmentId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM shipment WHERE shipmentId = ?");
+      
+      $result = $statement->execute([$shipmentId]);
       
       return ($result);
    }
