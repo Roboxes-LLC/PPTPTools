@@ -6,6 +6,7 @@ require_once '../common/authentication.php';
 require_once '../common/database.php';
 require_once '../common/filterDateType.php';
 require_once '../common/header.php';
+require_once '../common/isoInfo.php';
 require_once '../common/materialEntry.php';
 require_once '../common/version.php';
 
@@ -112,6 +113,7 @@ if (!Authentication::isAuthenticated())
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>  
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>  
    <script src="material.js<?php echo versionQuery();?>"></script>
       
@@ -128,11 +130,13 @@ if (!Authentication::isAuthenticated())
       <div class="content flex-vertical flex-top flex-left">
       
          <div class="flex-horizontal flex-v-center flex-h-center">
-            <div class="heading">Materials</div>&nbsp;&nbsp;
+            <div class="heading-with-iso">Materials</div>&nbsp;&nbsp;
             <i id="help-icon" class="material-icons icon-button">help</i>
          </div>
          
          <div id="description" class="description">Something something something.</div>
+         
+         <div class="iso-number">ISO <?php echo IsoInfo::getIsoNumber(IsoDoc::MATERIAL_LOG); ?></div>
          
          <br>
          
@@ -213,7 +217,9 @@ if (!Authentication::isAuthenticated())
          cellVertAlign:"middle",
          ajaxURL:url,
          ajaxParams:params,
-         //printAsHtml:true,
+         printAsHtml:true,          //enable HTML table printing
+         printRowRange:"all",       // print all rows 
+         printHeader:"<h1>Material Log<h1>",
          //Define Table Columns
          columns:[
             {title:"Id",          field:"materialEntryId",       hozAlign:"left", visible:false},
@@ -243,6 +249,31 @@ if (!Authentication::isAuthenticated())
             {title:"Length",      field:"materialHeatInfo.materialInfo.length",     hozAlign:"left", headerFilter:true, visible:true},
             {title:"Pieces",      field:"pieces",                                   hozAlign:"left", visible:true},            
             {title:"Quantity",    field:"quantity",                                 hozAlign:"left", visible:true},
+            {
+               title:"Inspection",
+               columns:[
+                  {title:"Accepted", field:"acceptedPieces",                        hozAlign:"left",
+                     formatter:function(cell, formatterParams, onRendered){
+                        let received = parseInt(cell.getRow().getData().pieces);
+                        let accepted = parseInt(cell.getRow().getData().acceptedPieces);
+                        
+                        cellValue = "";
+                        if (accepted <= received)
+                        {
+                           cellValue = `${accepted}/${received}`;
+                        }
+                        
+                        return (cellValue);
+                     },
+                     formatterPrint:function(cell, formatterParams, onRendered){  
+                        return (cell.getValue());
+                     }
+                  },
+                  {title:"Stamp",       field:"materialStampLabel",              hozAlign:"left", headerFilter:true, visible:true},
+                  {title:"PO #",        field:"poNumber",                        hozAlign:"left", headerFilter:true, visible:true}
+               ]
+            },
+            /*
             {title:"",            field:"issue",                                                     visible:hasIssuePermission, print:false,
                formatter:function(cell, formatterParams, onRendered){
                   let isIssued = cell.getRow().getData().isIssued;                  
@@ -287,6 +318,7 @@ if (!Authentication::isAuthenticated())
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
+            */
          ],
          cellClick:function(e, cell){
             var entryId = parseInt(cell.getRow().getData().materialEntryId);            

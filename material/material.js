@@ -131,7 +131,7 @@ function onDeleteMaterialEntry(materialEntryId)
    }
 }
 
-function onVendorHeatNumberChange()
+function onVendorHeatNumberChange(isInitialUpdate)
 {
    let heatNumber = document.getElementById("vendor-heat-number-input").value;
    
@@ -152,6 +152,13 @@ function onVendorHeatNumberChange()
             if (json.success == true)
             {
                updateVendorHeatInfo(json.materialHeatInfo);
+               
+               if (!isInitialUpdate)
+               {
+                  onSizeChanged();
+                  
+                  onPiecesChanged();
+               }
             }
             else
             {
@@ -195,6 +202,40 @@ function onEditInternalHeatButton()
       hide("edit-internal-heat-number-button");
       enable("internal-heat-number-input");
    }
+}
+
+function onSizeChanged()
+{
+   document.getElementById("inspected-size-input").value = document.getElementById("material-size-input").value;
+}
+
+function onPiecesChanged()
+{
+   recalculateQuantity();
+   
+   document.getElementById("received-pieces-input").value = document.getElementById("pieces-input").value;   
+   document.getElementById("accepted-pieces-input").value = null;
+   document.getElementById("rejected-pieces-input").value = null;
+}
+
+function onAcceptedPiecesChanged()
+{
+   let receivedPieces = parseInt(document.getElementById("received-pieces-input").value);
+   let acceptedPieces = parseInt(document.getElementById("accepted-pieces-input").value);
+   
+   let rejectedPieces = (acceptedPieces <= receivedPieces) ? (receivedPieces - acceptedPieces) : null;
+   
+   document.getElementById("rejected-pieces-input").value = rejectedPieces;
+}
+
+function onRejectedPiecesChanged()
+{
+   let receivedPieces = parseInt(document.getElementById("received-pieces-input").value);
+   let rejectedPieces = parseInt(document.getElementById("rejected-pieces-input").value);
+   
+   let acceptedPieces = (rejectedPieces <= receivedPieces) ? (receivedPieces - rejectedPieces) : null;
+   
+   document.getElementById("accepted-pieces-input").value = acceptedPieces;
 }
 
 function recalculateQuantity()
@@ -334,6 +375,7 @@ function updateVendorHeatInfo(vendorHeatInfo)
 {
    if (vendorHeatInfo)
    {
+      console.log("here");
       document.getElementById("vendor-id-input").value = vendorHeatInfo.vendorId;
       
       document.getElementById("material-type-input").value = vendorHeatInfo.materialInfo.type;
@@ -344,6 +386,10 @@ function updateVendorHeatInfo(vendorHeatInfo)
       
       document.getElementById("internal-heat-number-input").value = vendorHeatInfo.internalHeatNumber;
       document.getElementById("hidden-internal-heat-number-input").value = vendorHeatInfo.internalHeatNumber;
+      
+      document.getElementById("material-cert-file-link").innerHTML = vendorHeatInfo.certFile;
+      document.getElementById("material-cert-file-link").href = vendorHeatInfo.certPath;
+      show("material-cert-file-link", "block");
       
       disable("vendor-id-input");
       disable("material-type-input");
@@ -366,6 +412,10 @@ function updateVendorHeatInfo(vendorHeatInfo)
       clear("material-length-input");  
       document.getElementById("internal-heat-number-input").value = nextInternalHeatNumber;
       document.getElementById("hidden-internal-heat-number-input").value = nextInternalHeatNumber;
+            
+      document.getElementById("material-cert-file-link").innerHTML = null;
+      document.getElementById("material-cert-file-link").href = null;
+      hide("material-cert-file-link");
             
       enable("vendor-id-input");
       enable("material-type-input");

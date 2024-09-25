@@ -10,6 +10,7 @@ class MaterialHeatInfo
    public $vendorHeatNumber;
    public $internalHeatNumber;
    public $vendorId;
+   public $certFile;
    public $materialInfo;
    
    public function __construct()
@@ -17,6 +18,7 @@ class MaterialHeatInfo
       $this->vendorHeatNumber = null;
       $this->internalHeatNumber = MaterialHeatInfo::UNKNOWN_INTERNAL_HEAT_NUMBER;
       $this->vendorId = MaterialVendor::UNKNOWN_MATERIAL_VENDOR_ID;
+      $this->certFile = null;
       $this->materialInfo = new MaterialInfo();
    }
    
@@ -41,6 +43,24 @@ class MaterialHeatInfo
       return ($materialHeatInfo);
    }
    
+   public static function save($materialHeatInfo)
+   {
+      $success = false;
+      
+      $heatExists = (MaterialHeatInfo::load($materialHeatInfo->internalHeatNumber, true) != null);
+      
+      if (!$heatExists)
+      {
+         $success = PPTPDatabase::getInstance()->newMaterialHeat($materialHeatInfo);
+      }
+      else
+      {
+         $success = PPTPDatabase::getInstance()->updateMaterialHeat($materialHeatInfo);
+      }
+      
+      return ($success);
+   }
+   
    public static function getNextInternalHeatNumber()
    {
       $internalHeatNumber = MaterialHeatInfo::UNKNOWN_INTERNAL_HEAT_NUMBER;
@@ -60,6 +80,7 @@ class MaterialHeatInfo
       $this->vendorHeatNumber = $row['vendorHeatNumber'];
       $this->internalHeatNumber = intval($row['internalHeatNumber']);
       $this->vendorId = intval($row['vendorId']);
+      $this->certFile = $row['certFile'];
       $this->materialInfo->initialize($row);
    }
 }

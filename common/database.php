@@ -2233,9 +2233,9 @@ HEREDOC;
       
       $query =
          "INSERT INTO materialheat " .
-         "(vendorHeatNumber, internalHeatNumber, vendorId, materialPartNumber, materialType, materialShape, materialSize, materialLength) " .
+         "(vendorHeatNumber, internalHeatNumber, vendorId, materialPartNumber, materialType, materialShape, materialSize, materialLength, certFile) " .
          "VALUES " .
-         "('$materialHeatInfo->vendorHeatNumber', '$materialHeatInfo->internalHeatNumber', '$materialHeatInfo->vendorId', '$materialInfo->partNumber', '$materialInfo->type', '$materialInfo->shape', '$materialInfo->size', '$materialInfo->length');";
+         "('$materialHeatInfo->vendorHeatNumber', '$materialHeatInfo->internalHeatNumber', '$materialHeatInfo->vendorId', '$materialInfo->partNumber', '$materialInfo->type', '$materialInfo->shape', '$materialInfo->size', '$materialInfo->length', '$materialHeatInfo->certFile');";
 
       $result = $this->query($query);
       
@@ -2246,7 +2246,7 @@ HEREDOC;
    {
       $query =
          "UPDATE materialheat " .
-         "SET internalHeatNumber = $materialHeatInfo->internalHeatNumber, vendorId = $materialHeatInfo->vendorId, materialPartNumber = '{$materialHeatInfo->materialInfo->partNumber}', materialType =  {$materialHeatInfo->materialInfo->type}, materialShape =  {$materialHeatInfo->materialInfo->shape}, materialSize = {$materialHeatInfo->materialInfo->size}, materialLength =  {$materialHeatInfo->materialInfo->length} " .
+         "SET internalHeatNumber = $materialHeatInfo->internalHeatNumber, vendorId = $materialHeatInfo->vendorId, materialPartNumber = '{$materialHeatInfo->materialInfo->partNumber}', materialType =  {$materialHeatInfo->materialInfo->type}, materialShape =  {$materialHeatInfo->materialInfo->shape}, materialSize = {$materialHeatInfo->materialInfo->size}, materialLength =  {$materialHeatInfo->materialInfo->length}, certFile = '{$materialHeatInfo->certFile}' " .
          "WHERE vendorHeatNumber = '$materialHeatInfo->vendorHeatNumber';";
 
       $result = $this->query($query);
@@ -2336,9 +2336,9 @@ HEREDOC;
       
       $query =
          "INSERT INTO materiallog " .
-         "(vendorHeatNumber, tagNumber, location, pieces, enteredUserId, enteredDateTime, receivedDateTime) " .
+         "(vendorHeatNumber, tagNumber, location, pieces, enteredUserId, enteredDateTime, receivedDateTime, acceptedPieces, inspectedSize, materialStamp, poNumber) " .
          "VALUES " .
-         "('$materialEntry->vendorHeatNumber', '$materialEntry->tagNumber', '$materialEntry->location', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime', '$receivedDateTime');";
+         "('$materialEntry->vendorHeatNumber', '$materialEntry->tagNumber', '$materialEntry->location', '$materialEntry->pieces', '$materialEntry->enteredUserId', '$enteredDateTime', '$receivedDateTime', $materialEntry->acceptedPieces, $materialEntry->inspectedSize, $materialEntry->materialStamp, \"$materialEntry->poNumber\");";
 
       $result = $this->query($query);
       
@@ -2353,9 +2353,18 @@ HEREDOC;
       
       $query =
          "UPDATE materiallog " .
-         "SET vendorHeatNumber = '$materialEntry->vendorHeatNumber', tagNumber = '$materialEntry->tagNumber', location = $materialEntry->location, pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', receivedDateTime = '$receivedDateTime' " .
+         "SET vendorHeatNumber = '$materialEntry->vendorHeatNumber', tagNumber = '$materialEntry->tagNumber', location = $materialEntry->location, pieces = $materialEntry->pieces, enteredUserId = $materialEntry->enteredUserId, enteredDateTime = '$enteredDateTime', receivedDateTime = '$receivedDateTime', acceptedPieces = $materialEntry->acceptedPieces, inspectedSize = $materialEntry->inspectedSize, materialStamp = $materialEntry->materialStamp, poNumber = \"$materialEntry->poNumber\" " .
          "WHERE materialEntryId = $materialEntry->materialEntryId;";
 
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function setMaterialCert($internalHeatNumber, $filename)
+   {
+      $query = "UPDATE materialheat SET certFile = '$filename' WHERE internalHeatNumber = '$internalHeatNumber';";
+      
       $result = $this->query($query);
       
       return ($result);

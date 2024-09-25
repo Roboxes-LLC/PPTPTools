@@ -136,15 +136,19 @@ abstract class MaterialLocation
    const FIRST = 0;
    const UNKNOWN = MaterialLocation::FIRST;
    const ON_SITE = 1;
-   const OUTSIDE_VENDOR = 2;
-   const LAST = 3;
+   const OTHER_VENDOR = 2;
+   const BURNS = 3;
+   const HOLDEN = 4;
+   const IND_SOLUTIONS = 5;   
+   const KEY = 6;
+   const LAST = 7;
    const COUNT = MaterialLocation::LAST - MaterialLocation::FIRST;
    
-   public static $VALUES = array(MaterialLocation::ON_SITE, MaterialLocation::OUTSIDE_VENDOR);
+   public static $VALUES = array(MaterialLocation::ON_SITE, MaterialLocation::BURNS, MaterialLocation::HOLDEN, MaterialLocation::IND_SOLUTIONS, MaterialLocation::KEY, MaterialLocation::OTHER_VENDOR);
    
    public static function getLabel($materialLocation)
    {
-      $labels = array("", "On Site", "Outside Vendor");
+      $labels = array("", "On Site", "Other Vendor", "Burns", "Holden", "Ind. Solutions", "Key");
       
       return ($labels[$materialLocation]);
    }
@@ -205,6 +209,41 @@ abstract class MaterialLength
          $value = $length;
          $label = $length . " feet";
          $selected = ($selectedMaterialLength == $value) ? "selected" : "";
+         
+         $html .= "<option value=\"$value\" $selected>$label</option>";
+      }
+      
+      return ($html);
+   }
+}
+
+abstract class MaterialStamp
+{
+   const UNKNOWN = 0;
+   const FIRST = 1;
+   const NO_STAMP = MaterialStamp::FIRST;
+   const A9_SS = 2;
+   const LAST = 3;
+   const COUNT = MaterialStamp::LAST - MaterialStamp::FIRST;
+   
+   public static $values = array(MaterialStamp::NO_STAMP, MaterialStamp::A9_SS);
+   
+   public static function getLabel($stamp)
+   {
+      $labels = array("", "No Stamp", "A9/SS");
+      
+      return ($labels[$stamp]);
+   }
+   
+   public static function getOptions($selectedMaterialStamp)
+   {
+      $html = "<option style=\"display:none\">";
+      
+      foreach (MaterialStamp::$values as $stamp)
+      {
+         $value = $stamp;
+         $label = MaterialStamp::getLabel($stamp);
+         $selected = ($selectedMaterialStamp == $value) ? "selected" : "";
          
          $html .= "<option value=\"$value\" $selected>$label</option>";
       }
