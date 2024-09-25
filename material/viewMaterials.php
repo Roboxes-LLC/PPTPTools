@@ -66,6 +66,19 @@ function getFilterEndDate()
    return ($startDate);
 }
 
+function getFilterAllUnissued()
+{
+   $allUnissued = false;
+   
+   if (isset($_SESSION["material.filter.allUnissued"]))
+   {
+      $allUnissued = filter_var($_SESSION["material.filter.allUnissued"], FILTER_VALIDATE_BOOLEAN);
+   }
+   
+   return ($allUnissued);
+   
+}
+
 function getReportFilename()
 {
    $startDate = getFilterStartDate();
@@ -159,6 +172,7 @@ if (!Authentication::isAuthenticated())
             &nbsp;&nbsp;
             <button id="yesterday-button" class="small-button">Yesterday</button>
             &nbsp;&nbsp;
+            <input id="all-unissued-filter" type="checkbox" <?php echo getFilterAllUnissued() ? "checked" : "" ?>>&nbsp;All Unissued
          </div>
          
          <br>
@@ -191,13 +205,19 @@ if (!Authentication::isAuthenticated())
       }
 
       function getTableQueryParams()
-      {
-         
+      {         
          var params = new Object();
-         params.status =  document.getElementById("status-filter").value;
-         params.dateType =  document.getElementById("date-type-filter").value;
-         params.startDate =  document.getElementById("start-date-filter").value;
-         params.endDate =  document.getElementById("end-date-filter").value;
+         if (document.getElementById("all-unissued-filter").checked)
+         {
+            params.allUnissued = true;
+         }
+         else
+         {
+            params.status =  document.getElementById("status-filter").value;
+            params.dateType =  document.getElementById("date-type-filter").value;
+            params.startDate =  document.getElementById("start-date-filter").value;
+            params.endDate =  document.getElementById("end-date-filter").value;
+         }
 
          return (params);
       }
@@ -273,7 +293,6 @@ if (!Authentication::isAuthenticated())
                   {title:"PO #",        field:"poNumber",                        hozAlign:"left", headerFilter:true, visible:true}
                ]
             },
-            /*
             {title:"",            field:"issue",                                                     visible:hasIssuePermission, print:false,
                formatter:function(cell, formatterParams, onRendered){
                   let isIssued = cell.getRow().getData().isIssued;                  
@@ -318,7 +337,6 @@ if (!Authentication::isAuthenticated())
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-            */
          ],
          cellClick:function(e, cell){
             var entryId = parseInt(cell.getRow().getData().materialEntryId);            
@@ -377,7 +395,8 @@ if (!Authentication::isAuthenticated())
             if ((filterId == "status-filter") ||
                 (filterId == "date-type-filter") ||
                 (filterId == "start-date-filter") ||
-                (filterId == "end-date-filter"))
+                (filterId == "end-date-filter") ||
+                (filterId == "all-unissued-filter"))
             {
                var url = getTableQuery();
                var params = getTableQueryParams();
@@ -406,6 +425,10 @@ if (!Authentication::isAuthenticated())
                {
                   setSession("material.filter.endDate", document.getElementById("end-date-filter").value);
                }
+               else if (filterId == "all-unissued-filter")
+               {
+                  setSession("material.filter.allUnissued", document.getElementById("all-unissued-filter").checked);
+               }               
             }
          }
       }
@@ -457,12 +480,36 @@ if (!Authentication::isAuthenticated())
             endDateFilter.dispatchEvent(new Event('change'));  // TODO: Avoid calling this!  "An active ajax request was blocked ..."
          }      
       }
+      
+      function onAllUnissuedFilterChanged()
+      {
+         let allUnissued = document.getElementById("all-unissued-filter").checked;
+         
+         if (allUnissued)
+         {
+            disable("status-filter");
+            disable("date-type-filter");
+            disable("start-date-filter");
+            disable("end-date-filter");
+         }
+         else
+         {
+            enable("status-filter");
+            enable("date-type-filter");
+            enable("start-date-filter");
+            enable("end-date-filter");
+         }
+      }
 
       // Setup event handling on all DOM elements.
       document.getElementById("status-filter").addEventListener("change", updateFilter);
       document.getElementById("date-type-filter").addEventListener("change", updateFilter);  
       document.getElementById("start-date-filter").addEventListener("change", updateFilter);      
       document.getElementById("end-date-filter").addEventListener("change", updateFilter);
+      document.getElementById("all-unissued-filter").addEventListener("change", function() {
+         onAllUnissuedFilterChanged();
+         updateFilter(event);
+      });
       document.getElementById("today-button").onclick = filterToday;
       document.getElementById("yesterday-button").onclick = filterYesterday;
       document.getElementById("new-material-button").onclick = function(){location.href = 'viewMaterial.php';};

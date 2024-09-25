@@ -3512,6 +3512,14 @@ $router->add("materialData", function($params) {
       $endDate = Time::endOfDay($params["endDate"]);
    }
    
+   if (isset($params["allUnissued"]))
+   {      
+      $materialEntryStatus = MaterialEntryStatus::RECEIVED;
+      $startDate = null;
+      $endDate = null;
+      $dateType = null;
+   }   
+   
    $database = PPTPDatabase::getInstance();
    
    if ($database && $database->isConnected())
