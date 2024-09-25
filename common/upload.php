@@ -52,6 +52,31 @@ class Upload
       return ($returnStatus);
    }
    
+   static function uploadMaterialCert($file)
+   {
+      global $UPLOAD_PATH;
+      global $MATERIAL_CERTS_DIR;
+      
+      $returnStatus = UploadStatus::UPLOADED;
+      
+      $target = $UPLOAD_PATH . $MATERIAL_CERTS_DIR . basename($file["name"]);
+      
+      if (!Upload::validateFileFormat($file, array("pdf")))
+      {
+         $returnStatus = UploadStatus::BAD_FILE_TYPE;
+      }
+      else if (!Upload::validateFileSize($file, 2000000))  // 2MB
+      {
+         $returnStatus = UploadStatus::BAD_FILE_SIZE;
+      }
+      else if (!move_uploaded_file($file["tmp_name"], $target))
+      {
+         $returnStatus = UploadStatus::FILE_ERROR;
+      }
+      
+      return ($returnStatus);
+   }
+   
    static function uploadQuoteAttachment($file, &$storedFilename)
    {
       global $UPLOADS;

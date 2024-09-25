@@ -32,7 +32,14 @@ abstract class MaterialInputField
    const JOB_NUMBER = 14;
    const ACKNOWLEDGED_USER = 15;
    const ACKNOWLEDGED_DATE = 16;
-   const LAST = 17;
+   const RECEIVED_PIECES = 17;
+   const ACCEPTED_PIECES = 18;
+   const REJECTED_PIECES = 19;
+   const INSPECTED_SIZE = 20;
+   const MATERIAL_STAMP = 21;
+   const PO_NUMBER = 22;
+   const MATERIAL_CERT_FILE = 23;
+   const LAST = 24;
    const COUNT = MaterialInputField::LAST - MaterialInputField::FIRST;
 }
 
@@ -147,6 +154,7 @@ function isEditable($field)
       case MaterialInputField::ACKNOWLEDGED_USER:
       case MaterialInputField::INTERNAL_HEAT:
       case MaterialInputField::QUANTITY:         
+      case MaterialInputField::RECEIVED_PIECES:
       {
          $isEditable = false;
          break;
@@ -159,6 +167,12 @@ function isEditable($field)
       case MaterialInputField::VENDOR_HEAT:
       case MaterialInputField::PIECES:
       case MaterialInputField::RECEIVED_DATE:
+      case MaterialInputField::ACCEPTED_PIECES:
+      case MaterialInputField::REJECTED_PIECES:
+      case MaterialInputField::INSPECTED_SIZE:
+      case MaterialInputField::MATERIAL_STAMP:
+      case MaterialInputField::PO_NUMBER:
+      case MaterialInputField::MATERIAL_CERT_FILE:
       {
          $isEditable = (($view == View::NEW_MATERIAL) ||
                         ($view == View::EDIT_MATERIAL));
@@ -317,6 +331,29 @@ function getReceivedDate()
    return ($receivedDate);
 }
 
+function getMaterialCertFileInput()
+{
+   global $MATERIAL_CERTS_DIR;
+   
+   $materialCertFileInput = "";
+   
+   $materialCertFile = getMaterialEntry()->materialHeatInfo->certFile;
+   
+   $disabled = getDisabled(MaterialInputField::MATERIAL_CERT_FILE);
+   
+   $hidden = ($materialCertFile == "") ? "hidden" : "";
+   
+   $materialCertFileInput =
+<<<HEREDOC
+      <div class="flex-vertical flex-top">
+         <a id="material-cert-file-link" href="$MATERIAL_CERTS_DIR/$materialCertFile" class="$hidden" style="margin-bottom: 10px;" target="_blank">$materialCertFile</a>
+         <input id="material-cert-file-button" type="file" name="materialCertFile" form="input-form" $disabled>
+      </div>
+HEREDOC;
+   
+   return ($materialCertFileInput);
+}
+
 function getIssuedDate()
 {
    $issuedDate = null;
@@ -413,6 +450,7 @@ if (!Authentication::isAuthenticated())
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>  
    <script src="material.js<?php echo versionQuery();?>"></script>
 
@@ -512,7 +550,7 @@ if (!Authentication::isAuthenticated())
                
                <div class="form-item">
                   <div class="form-label">Size</div>
-                  <input id="material-size-input" type="number" style="width:75px;" name="materialSize" form="input-form" oninput="this.validator.validate()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->materialHeatInfo->materialInfo->size; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
+                  <input id="material-size-input" type="number" style="width:75px;" name="materialSize" form="input-form" oninput="this.validator.validate(); onSizeChanged()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->materialHeatInfo->materialInfo->size; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
                </div>
                
                <div class="form-item">
@@ -540,7 +578,7 @@ if (!Authentication::isAuthenticated())
                
                <div class="form-item">
                   <div class="form-label">Pieces</div>
-                  <input id="pieces-input" type="number" style="width:50px;" name="pieces" form="input-form" oninput="this.validator.validate(); recalculateQuantity()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
+                  <input id="pieces-input" type="number" style="width:50px;" name="pieces" form="input-form" oninput="this.validator.validate(); onPiecesChanged()" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::PIECES); ?> />
                </div>
                
                <div class="form-item">
@@ -558,7 +596,57 @@ if (!Authentication::isAuthenticated())
                   <div class="form-label">Received Date</div>
                   <input id="received-date-input" type="date" name="receivedDate" form="input-form" oninput="" value="<?php echo getReceivedDate(); ?>" <?php echo getDisabled(MaterialInputField::RECEIVED_DATE); ?>>
                </div>            
+                           
+               <div class="form-section-header">Inspection</div>
+               
+               <div class="form-item">
+                  <div class="form-label-long">Received Pieces</div>
+                  <input id="received-pieces-input" type="number" style="width:50px;" form="input-form" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->pieces; ?>" <?php echo getDisabled(MaterialInputField::RECEIVED_PIECES); ?> />
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label-long">Accepted Pieces</div>
+                  <input id="accepted-pieces-input" type="number" style="width:50px;" form="input-form" name="acceptedPieces" value="<?php echo (getMaterialEntry()->acceptedPieces === null) ? "" :  getMaterialEntry()->acceptedPieces ?>" oninput="onAcceptedPiecesChanged()" <?php echo getDisabled(MaterialInputField::ACCEPTED_PIECES); ?> />
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label-long">Rejected Pieces</div>
+                  <input id="rejected-pieces-input" type="number" style="width:50px;" form="input-form" value="<?php echo getMaterialEntry()->getRejectedPieces() ?>" oninput="onRejectedPiecesChanged()" <?php echo getDisabled(MaterialInputField::REJECTED_PIECES); ?> />
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label-long">Inspected Size</div>
+                  <input id="inspected-size-input" type="number" style="width:75px;" name="inspectedSize" form="input-form" value="<?php echo (getView() == View::NEW_MATERIAL) ? "" : getMaterialEntry()->inspectedSize; ?>" <?php echo getDisabled(MaterialInputField::INSPECTED_SIZE); ?> />
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label-long">Stamp</div>
+                  <select id="material-stamp-input" form="input-form" name="materialStamp" <?php echo getDisabled(MaterialInputField::MATERIAL_STAMP); ?>>
+                     <?php echo MaterialStamp::getOptions(getMaterialEntry()->materialStamp) ?>
+                  </select>
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label-long">PO#</div>
+                  <input id="po-number-input" type="text" form="input-form" name="poNumber" value="<?php echo getMaterialEntry()->poNumber ?>" <?php echo getDisabled(MaterialInputField::PO_NUMBER); ?> />
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label-long">Material Certification</div>
+                  <?php echo getMaterialCertFileInput() ?>
+               </div>
+               
+               <!--
+               <div class="form-item">
+                  <a href="$ROOT/uploads/$customerPrint" style="margin-bottom: 10px;" target="_blank"></a>
+                  <input type="file" name="customerPrint" form="input-form" $disabled>
+               </div>
+               -->
             
+            </div>
+            
+            <div class="content flex-vertical flex-top flex-left" style="margin-right: 50px;">
+                        
                <div class="form-section-header">Issued</div>
                            
                <div class="form-item" style="padding-right: 25px;">
@@ -661,7 +749,7 @@ if (!Authentication::isAuthenticated())
       
       var nextInternalHeatNumber = <?php echo MaterialHeatInfo::getNextInternalHeatNumber(); ?>;
       
-      onVendorHeatNumberChange();
+      onVendorHeatNumberChange(true);  // isInitialUpdate
 
    </script>
 

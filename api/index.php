@@ -3458,6 +3458,8 @@ $router->add("maintenanceSubcategories", function($params) {
 });
 
 $router->add("materialHeat", function($params) {
+   global $MATERIAL_CERTS_DIR;
+   
    $result = new stdClass();
    $result->success = true;
    
@@ -3467,6 +3469,11 @@ $router->add("materialHeat", function($params) {
       $result->heatNumber = $heatNumber;
       
       $result->materialHeatInfo = MaterialHeatInfo::load($heatNumber);
+      
+      if ($result->materialHeatInfo)
+      {
+         $result->materialHeatInfo->certPath = "$MATERIAL_CERTS_DIR/{$result->materialHeatInfo->certFile}";
+      }
    }
    else
    {
@@ -3520,6 +3527,7 @@ $router->add("materialData", function($params) {
          if ($materialEntry)
          {
             $materialEntry->locationLabel = MaterialLocation::getLabel($materialEntry->location);
+            $materialEntry->materialStampLabel = MaterialStamp::getLabel($materialEntry->materialStamp);
             
             if ($materialEntry->materialHeatInfo)
             {
@@ -3660,6 +3668,18 @@ $router->add("saveMaterialEntry", function($params) {
             }
          }
 
+         // Material inspection (optional?)
+         if (isset($params["acceptedPieces"]) &&
+             isset($params["inspectedSize"]) &&
+             isset($params["materialStamp"]) &&
+             isset($params["poNumber"]))
+         {
+            $materialEntry->acceptedPieces = ($params["acceptedPieces"] === null) ? null : $params->getInt("acceptedPieces");
+            $materialEntry->inspectedSize = ($params["inspectedSize"] === null) ? null : $params->getFloat("inspectedSize");
+            $materialEntry->materialStamp = ($params["materialStamp"] === null) ? null : $params->getInt("materialStamp");
+            $materialEntry->poNumber = ($params["poNumber"] === null) ? null : $params->get("poNumber");
+         }
+
          if ($result->success)
          {
             if ($materialEntry->materialEntryId == MaterialEntry::UNKNOWN_ENTRY_ID)
@@ -3681,6 +3701,29 @@ $router->add("saveMaterialEntry", function($params) {
             {
                $result->success = false;
                $result->error = "Database query failed.";
+            }
+            else
+            {
+               //
+               // Process uploaded material certification.
+               //
+               
+               if (isset($_FILES["materialCertFile"]) && ($_FILES["materialCertFile"]["name"] != ""))
+               {
+                  $uploadStatus = Upload::uploadMaterialCert($_FILES["materialCertFile"]);
+                  
+                  if ($uploadStatus == UploadStatus::UPLOADED)
+                  {
+                     $filename = basename($_FILES["materialCertFile"]["name"]);
+                     
+                     $database->setMaterialCert($materialEntry->materialHeatInfo->internalHeatNumber, $filename);
+                  }
+                  else
+                  {
+                     $result->success = false;
+                     $result->error = "File upload failed! " . UploadStatus::toString($uploadStatus);
+                  }
+               }
             }
          }
       }

@@ -19,9 +19,16 @@ class MaterialEntry
    public $enteredUserId;
    public $enteredDateTime;
    public $receivedDateTime;
+   // Inspection
+   public $acceptedPieces;
+   public $inspectedSize;
+   public $materialStamp;
+   public $poNumber;
+   // Issued
    public $issuedUserId;
    public $issuedDateTime;
    public $issuedJobId;
+   // Acknowledged
    public $acknowledgedUserId;
    public $acknowledgedDateTime;
  
@@ -37,9 +44,16 @@ class MaterialEntry
       $this->enteredUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->enteredDateTime = null;
       $this->receivedDateTime = null;
+      // Inspection
+      $this->acceptedPieces = null;
+      $this->inspectedSize = 0;
+      $this->materialStamp = MaterialStamp::UNKNOWN;
+      $this->poNumber = null;
+      // Issued
       $this->issuedUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->issuedDateTime = null;
       $this->issuedJobId = JobInfo::UNKNOWN_JOB_ID;
+      // Acknowledged
       $this->acknowledgedUserId = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->acknowledgedDateTime = null;
       
@@ -65,6 +79,24 @@ class MaterialEntry
       }
       
       return ($materialEntry);
+   }
+   
+   public static function save($materialEntry)
+   {
+      $success = false;
+      
+      if ($materialEntry->materialEntryId == MaterialEntry::UNKNOWN_ENTRY_ID)
+      {
+         $success = PPTPDatabase::getInstance()->newMaterialEntry($materialEntry);
+         
+         $materialEntry->materialEntryId = PPTPDatabase::getInstance()->lastInsertId();
+      }
+      else
+      {
+         $success = PPTPDatabase::getInstance()->updateMaterialEntry($materialEntry);
+      }
+      
+      return ($success);
    }
    
    public function issueMaterial($jobId, $userId)
@@ -150,13 +182,25 @@ class MaterialEntry
       $this->enteredUserId = intval($row['enteredUserId']);
       $this->enteredDateTime = $row['enteredDateTime'] ? Time::fromMySqlDate($row['enteredDateTime'], "Y-m-d H:i:s") : null;
       $this->receivedDateTime = $row['receivedDateTime'] ? Time::fromMySqlDate($row['receivedDateTime'], "Y-m-d H:i:s") : null;
+      // Inspection
+      $this->acceptedPieces = ($row['acceptedPieces'] === null) ? null : intval($row['acceptedPieces']);
+      $this->inspectedSize = floatval($row['inspectedSize']);
+      $this->materialStamp = intval($row['materialStamp']);
+      $this->poNumber = $row['poNumber'];
+      // Issued
       $this->issuedUserId = intval($row['issuedUserId']);
       $this->issuedDateTime = $row['issuedDateTime'] ? Time::fromMySqlDate($row['issuedDateTime'], "Y-m-d H:i:s") : null;
       $this->issuedJobId = intval($row['issuedJobId']);
+      // Acknowledged
       $this->acknowledgedUserId = intval($row['acknowledgedUserId']);
       $this->acknowledgedDateTime = $row['acknowledgedDateTime'] ? Time::fromMySqlDate($row['acknowledgedDateTime'], "Y-m-d H:i:s") : null;
    
       $this->materialHeatInfo = MaterialHeatInfo::load($this->vendorHeatNumber);
+   }
+   
+   public function isInspected()
+   {
+      return ($this->acceptedPieces !== null);
    }
    
    public function isIssued()
@@ -168,6 +212,20 @@ class MaterialEntry
    {
       return ($this->isIssued() && ($this->acknowledgedUserId != UserInfo::UNKNOWN_EMPLOYEE_NUMBER));
       
+   }
+   
+   public function getRejectedPieces()
+   {
+      $rejectedPieces = null;
+      
+      if (($this->pieces > 0) &&
+          ($this->acceptedPieces !== null) &&
+          ($this->acceptedPieces <= $this->pieces))
+      {
+         $rejectedPieces = ($this->pieces - $this->acceptedPieces);
+      }
+
+      return ($rejectedPieces);      
    }
    
    public function getQuantity()
