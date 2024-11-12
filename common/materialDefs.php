@@ -141,14 +141,15 @@ abstract class MaterialLocation
    const HOLDEN = 4;
    const IND_SOLUTIONS = 5;   
    const KEY = 6;
-   const LAST = 7;
+   const GREENDALE = 7;
+   const LAST = 8;
    const COUNT = MaterialLocation::LAST - MaterialLocation::FIRST;
    
-   public static $VALUES = array(MaterialLocation::ON_SITE, MaterialLocation::BURNS, MaterialLocation::HOLDEN, MaterialLocation::IND_SOLUTIONS, MaterialLocation::KEY, MaterialLocation::OTHER_VENDOR);
+   public static $VALUES = array(MaterialLocation::ON_SITE, MaterialLocation::BURNS, MaterialLocation::GREENDALE, MaterialLocation::HOLDEN, MaterialLocation::IND_SOLUTIONS, MaterialLocation::KEY, MaterialLocation::OTHER_VENDOR);
    
    public static function getLabel($materialLocation)
    {
-      $labels = array("", "On Site", "Other Vendor", "Burns", "Holden", "Ind. Solutions", "Key");
+      $labels = array("", "On Site", "Other Vendor", "Burns", "Holden", "Ind. Solutions", "Key", "Greendale");
       
       return ($labels[$materialLocation]);
    }
