@@ -92,9 +92,9 @@ class ShipmentManager
       {
          $inspection = Inspection::load($shipment->inspectionId, false);
          
-         if ($inspection)
+         if ($inspection && $inspection->startMfgDate)
          {
-            $startDate = Time::startOfDay($inspection->mfgDate);
+            $startDate = Time::startOfDay($inspection->startMfgDate);
             $endDate = Time::endOfDay($inspection->dateTime);
             
             $result = PPTPDatabase::getInstance()->getTimeCardsForJob($shipment->jobNumber, $startDate, $endDate);

@@ -23,11 +23,12 @@ abstract class InspectionInputField
    const OPERATOR = 6;
    const INSPECTION = 7;
    const COMMENTS = 8;
-   const MFG_DATE = 9;
-   const QUANTITY = 10;
-   const AUTHOR = 11;
-   const IS_PRIORITY = 12;
-   const LAST = 13;
+   const START_MFG_DATE = 9;
+   const MFG_DATE = 10;
+   const QUANTITY = 11;
+   const AUTHOR = 12;
+   const IS_PRIORITY = 13;
+   const LAST = 14;
    const COUNT = InspectionInputField::LAST - InspectionInputField::FIRST;
 }
 
@@ -119,6 +120,14 @@ function isEditable($field)
          $isSpecified = ($hasLinkedTimeCard || (getOperator() != UserInfo::UNKNOWN_EMPLOYEE_NUMBER));
          
          $isEditable &= (!$isSpecified && showOptionalProperty(OptionalInspectionProperties::OPERATOR));
+         break;
+      }
+      
+      case InspectionInputField::START_MFG_DATE:
+      {
+         $isSpecified = (getStartMfgDate() != null);
+         
+         $isEditable &= (!$isSpecified && showOptionalProperty(OptionalInspectionProperties::START_MFG_DATE));
          break;
       }
       
@@ -484,6 +493,22 @@ function getWcNumber()
    }
    
    return ($wcNumber);
+}
+
+function getStartMfgDate()
+{
+   $startMfgDate = null;
+   
+   $inspection = getInspection();
+   
+   if ($inspection && $inspection->startMfgDate)
+   {
+      
+      // Convert to Javascript date format.
+      $startMfgDate = Time::dateTimeObject($inspection->startMfgDate)->format(Time::$javascriptDateFormat);
+   }
+   
+   return ($startMfgDate);
 }
 
 function getMfgDate()
@@ -1032,8 +1057,17 @@ if (!Authentication::isAuthenticated())
                      </select>
                   </div>
                   
+                  <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::START_MFG_DATE) ?>">
+                     <div class="form-label">Start Mfg Date</div>
+                     <input id="start-mfg-date-input" type="date" name="startMfgDate" form="input-form" value="<?php echo getStartMfgDate() ?>" <?php echo getDisabled(InspectionInputField::START_MFG_DATE) ?>>
+                     &nbsp;&nbsp;
+                     <button id="today-button" class="small-button">Today</button>
+                     &nbsp;&nbsp;
+                     <button id="yesterday-button" class="small-button">Yesterday</button>
+                  </div>
+                  
                   <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::MFG_DATE) ?>">
-                     <div class="form-label"><?php echo getInspectionType() == InspectionType::FINAL ? "Start Mfg Date" : "Mfg Date" ?></div>
+                     <div class="form-label"><?php echo getInspectionType() == InspectionType::FINAL ? "End Mfg Date" : "Mfg Date" ?></div>
                      <input id="mfg-date-input" type="date" name="mfgDate" form="input-form" value="<?php echo getMfgDate() ?>" <?php echo getDisabled(InspectionInputField::MFG_DATE) ?>>
                      &nbsp;&nbsp;
                      <button id="today-button" class="small-button">Today</button>
@@ -1090,6 +1124,7 @@ if (!Authentication::isAuthenticated())
       var wcNumberValidator = new SelectValidator("wc-number-input");
       var operatorValidator = new SelectValidator("operator-input");
       var mfgDateValidator = new DateValidator("mfg-date-input");
+      var startMfgDateValidator = new DateValidator("start-mfg-date-input");
       var quantityValidator = new IntValidator("quantity-input", 6, 1, 999999, false);
       var inspectionNumberValidator = new SelectValidator("inspection-number-input");
 
@@ -1097,6 +1132,7 @@ if (!Authentication::isAuthenticated())
       wcNumberValidator.init();
       operatorValidator.init();
       mfgDateValidator.init();
+      startMfgDateValidator.init();
       quantityValidator.init();
       inspectionNumberValidator.init();
 

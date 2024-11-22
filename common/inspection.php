@@ -99,6 +99,7 @@ class Inspection
    // Properties for Final inspections.
    public $quantity;
    public $isPriority;
+   public $startMfgDate;
    
    // Inspection results summary properties.
    // Note: By storing these directly in the database, we can more quickly build the inspection table.
@@ -131,6 +132,7 @@ class Inspection
       $this->inspectionNumber = 0;
       $this->quantity = 0;
       $this->isPriority = false;
+      $this->startMfgDate = null;
       $this->samples = 0;
       $this->naCount = 0;
       $this->passCount = 0;
@@ -180,6 +182,7 @@ class Inspection
       $this->inspectionNumber = intval($row['inspectionNumber']);
       $this->quantity = intval($row['quantity']);
       $this->isPriority = filter_var($row["isPriority"], FILTER_VALIDATE_BOOLEAN);
+      $this->startMfgDate = $row['startMfgDate'] ? Time::fromMySqlDate($row['startMfgDate'], "Y-m-d") : null;
       
       // Inspection summary.
       $this->samples = intval($row['samples']);

@@ -1869,6 +1869,7 @@ $router->add("inspectionData", function($params) {
                   
          // Ticket code
          // Could be pan ticket code, or shipment ticket code (for Final inspections).
+         $row["shipmentId"] = Shipment::UNKNOWN_SHIPMENT_ID;
          if ($inspection->timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
          {
             $row["ticketCode"] = PanTicket::getPanTicketCode($inspection->timeCardId);
@@ -1880,10 +1881,6 @@ $router->add("inspectionData", function($params) {
             {
                $row["shipmentId"] = $shipment->shipmentId;
                $row["ticketCode"] = ShipmentTicket::getShipmentTicketCode($shipment->shipmentId);
-            }
-            else
-            {
-               $row["shipmentId"] = Shipment::UNKNOWN_SHIPMENT_ID;
             }
          }
          
@@ -2020,6 +2017,11 @@ $router->add("saveInspection", function($params) {
             
             $inspection->isPriority = $params->keyExists("isPriority");
             
+            if (isset($params["startMfgDate"]))
+            {
+               $inspection->startMfgDate = Time::startOfDay($params->get("startMfgDate"));
+            }
+            
             foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
             {
                for ($sampleIndex = 0; $sampleIndex < $inspection->getSampleSize(); $sampleIndex++)
@@ -2102,7 +2104,7 @@ $router->add("saveInspection", function($params) {
                   if ($newInspection && 
                       ($inspectionTemplate->inspectionType == InspectionType::FINAL))
                   {
-                     //NotificationManager::onFinalInspectionCreated($inspection->inspectionId, $inspection->isPriority);
+                     NotificationManager::onFinalInspectionCreated($inspection->inspectionId, $inspection->isPriority);
                   }
                   else if ($newInspection &&
                            ($inspectionTemplate->inspectionType == InspectionType::FIRST_PART))

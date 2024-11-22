@@ -116,16 +116,17 @@ abstract class InspectionType
       // 5 = INSPECTION_NUMBER
       // 6 = QUANTITY
       // 7 = IS_PRIORITY
+      // 8 = START_MFG_DATE
       
       $optionalProperties = [
-         0b00000000,  // UNKNOWN
-         0b00001110,  // OASIS
-         0b00011110,  // LINE
-         0b00011110,  // QCP
-         0b00111110,  // IN_PROCESS
-         0b00000000,  // GENERIC (configurable)
-         0b00011110,  // FIRST_PART
-         0b11010010   // FINAL              
+         0b000000000,  // UNKNOWN
+         0b000001110,  // OASIS
+         0b000011110,  // LINE
+         0b000011110,  // QCP
+         0b000111110,  // IN_PROCESS
+         0b000000000,  // GENERIC (configurable)
+         0b000011110,  // FIRST_PART
+         0b111010010   // FINAL              
       ];
          
       return ($optionalProperties[$inspectionType]);
@@ -268,7 +269,8 @@ abstract class OptionalInspectionProperties
    const INSPECTION_NUMBER = 5;
    const QUANTITY = 6;
    const IS_PRIORITY = 7;
-   const LAST = 8;
+   const START_MFG_DATE = 8;
+   const LAST = 9;
    const COUNT = OptionalInspectionProperties::LAST - OptionalInspectionProperties::FIRST;
    
    // Optional inspection properties that are valid for Generic inspections.
@@ -281,7 +283,7 @@ abstract class OptionalInspectionProperties
    
    public static function getLabel($optionalProperty)
    {
-      $labels = array("", "Job Number", "WC Number", "Operator", "Mfg Date", "Inspection #", "Quantity", "Priority");
+      $labels = array("", "Job Number", "WC Number", "Operator", "Mfg Date", "Inspection #", "Quantity", "Priority", "Start Mfg Date");
       
       return ($labels[$optionalProperty]);
    }
