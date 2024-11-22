@@ -23,9 +23,9 @@ $versionQuery = versionQuery();
 $javascriptFile = "shipment.js";
 $javascriptClass = "Shipment";
 $appPageId = AppPage::SHIPMENT;
-$heading = "Shipments";
+$heading = "Parts Inventory";
 $description = "Nom nom nom";
-$newButtonLabel = "Start shipment";
+$newButtonLabel = "Add parts";
 $reportFileName = "shipments.csv";
 
 include ROOT.'/templates/tablePageTemplate.php'

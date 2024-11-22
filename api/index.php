@@ -21,6 +21,7 @@ require_once '../common/quarterlySummaryReport.php';
 require_once '../common/root.php';
 require_once '../common/signInfo.php';
 require_once '../common/shippingCardInfo.php';
+require_once '../common/shipmentTicket.php';
 require_once '../common/timeCardInfo.php';
 require_once '../common/upload.php';
 require_once '../common/userInfo.php';
@@ -29,6 +30,7 @@ require_once '../core/job/cronJobManager.php';
 require_once '../core/manager/inspectionManager.php';
 require_once '../core/manager/jobManager.php';
 require_once '../core/manager/notificationManager.php';
+require_once '../core/manager/shipmentManager.php';
 require_once '../inspection/inspectionTable.php';
 require_once '../printer/printJob.php';
 require_once '../printer/printQueue.php';
@@ -1854,6 +1856,7 @@ $router->add("inspectionData", function($params) {
          {
             $inspection->loadInspectionResults();
          }
+         $inspectionType = intval($row["inspectionType"]);
          
          $row["dateTime"] = $inspection->dateTime;
          $row["completedDateTime"] = $inspection->getCompletedDateTime();
@@ -1863,13 +1866,28 @@ $router->add("inspectionData", function($params) {
          $row["wcNumber"] = $inspection->getWcNumber();
          $row["wcLabel"] = JobInfo::getWcLabel($row["wcNumber"]);
          $row["mfgDate"] = $inspection->getManufactureDate();
-         
+                  
+         // Ticket code
+         // Could be pan ticket code, or shipment ticket code (for Final inspections).
          if ($inspection->timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
          {
-            $row["panTicketCode"] = PanTicket::getPanTicketCode($inspection->timeCardId);
+            $row["ticketCode"] = PanTicket::getPanTicketCode($inspection->timeCardId);
+         }
+         else if ($inspectionType == InspectionType::FINAL)
+         {
+            $shipment = ShipmentManager::getShipmentFromInspection($inspection->inspectionId);
+            if ($shipment)
+            {
+               $row["shipmentId"] = $shipment->shipmentId;
+               $row["ticketCode"] = ShipmentTicket::getShipmentTicketCode($shipment->shipmentId);
+            }
+            else
+            {
+               $row["shipmentId"] = Shipment::UNKNOWN_SHIPMENT_ID;
+            }
          }
          
-         $row["inspectionTypeLabel"] = InspectionType::getLabel(intval($row["inspectionType"]));
+         $row["inspectionTypeLabel"] = InspectionType::getLabel($inspectionType);
          
          $inspectionStatus = $inspection->getInspectionStatus();
          $row["inspectionStatus"] = $inspectionStatus;
@@ -1916,6 +1934,7 @@ $router->add("saveInspection", function($params) {
    
    $inspection = null;
    $newInspection = false;
+   $wasComplete = false;
    
    if (isset($params["inspectionId"]) &&
        is_numeric($params["inspectionId"]) &&
@@ -1929,6 +1948,11 @@ $router->add("saveInspection", function($params) {
       {
          $result->success = false;
          $result->error = "No existing inspection found.";
+      }
+      else
+      {
+         // Remember if this existing inspection was complete, prior to this save.
+         $wasComplete = $inspection->complete();
       }
    }
    else
@@ -2078,7 +2102,7 @@ $router->add("saveInspection", function($params) {
                   if ($newInspection && 
                       ($inspectionTemplate->inspectionType == InspectionType::FINAL))
                   {
-                     NotificationManager::onFinalInspectionCreated($inspection->inspectionId, $inspection->isPriority);
+                     //NotificationManager::onFinalInspectionCreated($inspection->inspectionId, $inspection->isPriority);
                   }
                   else if ($newInspection &&
                            ($inspectionTemplate->inspectionType == InspectionType::FIRST_PART))
@@ -2089,6 +2113,14 @@ $router->add("saveInspection", function($params) {
                            (!$inspection->incomplete()))
                   {
                      NotificationManager::onFirstPartInspectionComplete($inspection->inspectionId);
+                  }
+                  
+                  // React to a complete FINAL inspection by creating a new shipment.
+                  if (($inspectionTemplate->inspectionType == InspectionType::FINAL) &&
+                      !$wasComplete && 
+                      $inspection->complete())
+                  {
+                     ShipmentManager::onFinalInspectionCompleted($inspection->inspectionId);
                   }
                }
                else

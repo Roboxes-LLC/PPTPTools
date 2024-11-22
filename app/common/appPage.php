@@ -99,7 +99,7 @@ class AppPage
             AppPage::QUOTE =>               new AppPage(AppPage::QUOTE,               "Quotes",               null,                   Permission::VIEW_QUOTE,               "/quote/quotes.php"),
             AppPage::SCHEDULE =>            new AppPage(AppPage::SCHEDULE,            "Schedule",             "calendar_month",       Permission::VIEW_SCHEDULE,            "/schedule/schedule.php"),
             AppPage::NOTIFICATION =>        new AppPage(AppPage::NOTIFICATION,        "Messages",             "notifications",        Permission::NOTIFICATIONS,            "/notification/notifications.php"),
-            AppPage::SHIPMENT =>            new AppPage(AppPage::SHIPMENT,            "Shipments",            "local_shipping",       Permission::VIEW_SHIPMENT,           "/shipment/shipments.php")
+            AppPage::SHIPMENT =>            new AppPage(AppPage::SHIPMENT,            "Parts Inventory",      "inventory",            Permission::VIEW_SHIPMENT,            "/shipment/shipments.php")
          );
       }
       

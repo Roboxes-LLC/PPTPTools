@@ -260,6 +260,21 @@ class PPTPDatabase extends MySqlDatabase
 
       return ($result);
    }
+   
+   public function getTimeCardsForJob(
+      $jobNumber,
+      $mfgStartDate,
+      $mfgEndDate)
+   {
+      $query = 
+         "SELECT * FROM timecard " .
+         "LEFT JOIN job ON timecard.jobId = job.jobId " .
+         "WHERE job.jobNumber = \"$jobNumber\" AND manufactureDate BETWEEN '" . Time::toMySqlDate($mfgStartDate) . "' AND '" . Time::toMySqlDate($mfgEndDate) . "' ORDER BY manufactureDate DESC, timeCardId DESC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
 
    public function newTimeCard(
       $timeCardInfo)

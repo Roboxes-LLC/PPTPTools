@@ -1,12 +1,13 @@
 <?php
 
-require_once 'isoInfo.php';
-require_once 'jobInfo.php';
-require_once 'qrCode.php';
-require_once 'timeCardInfo.php';
-require_once 'userInfo.php';
-require_once '../printer/printJob.php';
-require_once '../thirdParty/phpqrcode/phpqrcode.php';
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/common/isoInfo.php';
+require_once ROOT.'/common/jobInfo.php';
+require_once ROOT.'/common/qrCode.php';
+require_once ROOT.'/common/timeCardInfo.php';
+require_once ROOT.'/common/userInfo.php';
+require_once ROOT.'/printer/printJob.php';
+require_once ROOT.'/thirdParty/phpqrcode/phpqrcode.php';
 
 abstract class PanTicketLabelFields
 {

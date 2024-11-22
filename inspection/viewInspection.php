@@ -1033,7 +1033,7 @@ if (!Authentication::isAuthenticated())
                   </div>
                   
                   <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::MFG_DATE) ?>">
-                     <div class="form-label">Mfg Date</div>
+                     <div class="form-label"><?php echo getInspectionType() == InspectionType::FINAL ? "Start Mfg Date" : "Mfg Date" ?></div>
                      <input id="mfg-date-input" type="date" name="mfgDate" form="input-form" value="<?php echo getMfgDate() ?>" <?php echo getDisabled(InspectionInputField::MFG_DATE) ?>>
                      &nbsp;&nbsp;
                      <button id="today-button" class="small-button">Today</button>

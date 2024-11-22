@@ -192,16 +192,22 @@ function getForm()
    $shipmentId = getShipmentId();
    $shipment = getShipment();
    $authorName = getAuthorName();
+   $entryDate = getShipment()->dateTime ? Time::dateTimeObject(getShipment()->dateTime)->format("n/j/Y h:i A") : null;
    
    $html = 
 <<< HEREDOC
    <form id="input-form" style="display: block">
-      <input type="hidden" name="shipmentId" value="$shipmentId"/>
+      <input id="shipment-id-input" type="hidden" name="shipmentId" value="$shipmentId"/>
       <input type="hidden" name="request" value="save_shipment"/>
    
       <div class="form-item">
          <div class="form-label">Author</div>
          <input type="text" name="author" style="width:200px;" value="$authorName" {$getDisabled(InputField::AUTHOR)} />
+      </div>
+
+      <div class="form-item">
+         <div class="form-label">Entry Date</div>
+         <input type="text" style="width:200px;" value="$entryDate" disabled/>
       </div>
 
       <div class="form-item">
@@ -241,6 +247,6 @@ $description = getDescription();
 $formId = "input-form";
 $form = getForm();
 
-include ROOT.'/templates/formPageTemplate.php'
+include ROOT.'/templates/shipmentPageTemplate.php'
       
 ?>

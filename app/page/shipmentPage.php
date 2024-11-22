@@ -2,6 +2,7 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/app/page/page.php';
+require_once ROOT.'/common/panTicket.php';
 require_once ROOT.'/common/shipmentTicket.php';
 require_once ROOT.'/core/manager/shipmentManager.php';
 
@@ -86,7 +87,7 @@ class ShipmentPage extends Page
                   }
                   else
                   {
-                     $this->error("Invalid entry id [$shipmentId]");
+                     $this->error("Invalid shipment id [$shipmentId]");
                   }
                }
                // Fetch all components.
@@ -158,6 +159,68 @@ class ShipmentPage extends Page
             }
             break;
          }
+         
+         case "fetch_time_cards":
+         {
+            if ($this->authenticate([Permission::VIEW_SHIPMENT]))
+            {
+               if (Page::requireParams($params, ["shipmentId"]))
+               {
+                  $shipmentId = $params->getInt("shipmentId");
+                  
+                  $shipment = Shipment::load($shipmentId);
+                  
+                  if ($shipment)
+                  {
+                     $this->result->success = true;
+                     $this->result->shipmentId = $shipmentId;
+                     $this->result->timeCards = ShipmentManager::getTimeCardsForShipment($shipmentId);
+                     
+                     // Augment data.
+                     foreach ($this->result->timeCards as $timeCardInfo)
+                     {
+                        ShipmentPage::augmentTimeCard($timeCardInfo);
+                     }
+                  }
+                  else
+                  {
+                     $this->error("Invalid shipment id [$shipmentId]");
+                  }
+               }
+            }
+            break;
+         }
+         
+         case "fetch_heats":
+         {
+            if ($this->authenticate([Permission::VIEW_SHIPMENT]))
+            {
+               if (Page::requireParams($params, ["shipmentId"]))
+               {
+                  $shipmentId = $params->getInt("shipmentId");
+                  
+                  $shipment = Shipment::load($shipmentId);
+                  
+                  if ($shipment)
+                  {
+                     $this->result->success = true;
+                     $this->result->shipmentId = $shipmentId;
+                     $this->result->heats = ShipmentManager::getHeatsForShipment($shipmentId);
+                     
+                     // Augment data.
+                     foreach ($this->result->heats as $materialHeatInfo)
+                     {
+                        ShipmentPage::augmentHeat($materialHeatInfo);
+                     }
+                  }
+                  else
+                  {
+                     $this->error("Invalid shipment id [$shipmentId]");
+                  }
+               }
+            }
+            break;
+         }
       
          default:
          {
@@ -172,7 +235,42 @@ class ShipmentPage extends Page
    private static function augmentShipment(&$shipment)
    {
       $shipment->shipmentTicketCode = ShipmentTicket::getShipmentTicketCode($shipment->shipmentId);
-      $shipment->formattedDateTime = ($shipment->dateTime) ? Time::dateTimeObject($shipment->dateTime)->format("n-j-Y") : null;
+      $shipment->locationLabel = ShipmentLocation::getLabel($shipment->location);
+      $shipment->formattedDateTime = ($shipment->dateTime) ? Time::dateTimeObject($shipment->dateTime)->format("n/j/Y h:i A") : null;
+   }
+   
+   private static function augmentTimeCard(&$timeCardInfo)
+   {
+      $timeCardInfo->panTicketCode = PanTicket::getPanTicketCode($timeCardInfo->timeCardId);
+      
+      $userInfo = UserInfo::load($timeCardInfo->employeeNumber);
+      if ($userInfo)
+      {
+         $timeCardInfo->operator = $userInfo->getFullName() . " (" . $timeCardInfo->employeeNumber . ")";
+      }
+      
+      $jobInfo = JobInfo::load($timeCardInfo->jobId);
+      if ($jobInfo)
+      {
+         $timeCardInfo->jobNumber = $jobInfo->jobNumber;
+         $timeCardInfo->wcNumber = $jobInfo->wcNumber;
+         $timeCardInfo->wcLabel = JobInfo::getWcLabel($jobInfo->wcNumber);
+      }
+      $timeCardInfo->formattedMfgDate = ($timeCardInfo->manufactureDate) ? Time::dateTimeObject($timeCardInfo->manufactureDate)->format("n/j/Y") : null;
+   }
+   
+   private static function augmentHeat(&$materialHeatInfo)
+   {
+      if ($materialHeatInfo->materialInfo)
+      {
+         $vendors = MaterialVendor::getMaterialVendors();
+         
+         $materialHeatInfo->vendorName = $vendors[$materialHeatInfo->vendorId];
+         $materialHeatInfo->materialInfo->typeLabel = MaterialType::getLabel($materialHeatInfo->materialInfo->type);
+      }
+      
+      $materialHeatInfo->materialTicketCode = "???";  // TODO: Should these be material entries?
+      
    }
 }
 

@@ -164,10 +164,15 @@ HEREDOC;
       if ($shipment)
       {
          $shipmentTicketCode = ShipmentTicket::getShipmentTicketCode($shipmentId);
-         
-         $jobInfo = JobInfo::load($shipment->jobId);
-         $partNumber = JobManager::getCustomerPartNumber($jobInfo->partNumber);
-         $customer = JobManager::getCustomer($shipment->jobId);
+
+         $partNumber = "";
+         $customer = null;
+         $jobInfo = JobManager::getMostRecentJob($shipment->jobNumber);
+         if ($jobInfo)
+         {
+            $partNumber = JobManager::getCustomerPartNumber($jobInfo->partNumber);
+            $customer = JobManager::getCustomer($jobInfo->jobId);
+         }
          
          $date = Time::dateTimeObject($shipment->dateTime)->format("n-j-Y");
          
@@ -179,9 +184,9 @@ HEREDOC;
 
          $partNumber = JobManager::getCustomerPartNumber($jobInfo->partNumber);
          
-         $jobNumber = $jobInfo->jobNumber;
+         $jobNumber = $shipment->jobNumber;
          
-         $heatNumber = "";  //  How to link heat?
+         $heatNumber = ShipmentTicket::getHeatNumbers($shipmentId);
          
          $quantity = $shipment->quantity;
          
@@ -250,6 +255,20 @@ HEREDOC;
       }
       
       return ($xml);
+   }
+   
+   private static function getHeatNumbers($shipmentId)
+   {
+      $heatNumbers = [];
+      
+      $heatEntries = ShipmentManager::getHeatsForShipment($shipmentId);
+      
+      foreach ($heatEntries as $materialHeatInfo)
+      {
+         $heatNumbers[] = $materialHeatInfo->internalHeatNumber;
+      }
+      
+      return (implode(', ', $heatNumbers));
    }
 }
 

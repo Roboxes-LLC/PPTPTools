@@ -966,6 +966,16 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
+   public function getShipmentFromInspection($inspectionId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM shipment WHERE inspectionId = ?;");
+      
+      $result = $statement->execute([$inspectionId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
    public function getShipments()
    {
       $statement = $this->pdo->prepare(
@@ -982,17 +992,18 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "INSERT INTO shipment " .
-         "(jobId, dateTime, author, inspectionId, quantity, packingListNumber) " .
-         "VALUES (?, ?, ?, ?, ?, ?)");
+         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, location) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
-            $shipment->jobId,
+            $shipment->jobNumber,
             $dateTime,      
             $shipment->author,
             $shipment->inspectionId,
             $shipment->quantity,
-            $shipment->packingListNumber
+            $shipment->packingListNumber,
+            $shipment->location
          ]);
       
       return ($result);
@@ -1004,17 +1015,18 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "UPDATE shipment " .
-         "SET jobId = ?, $dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ? " .
+         "SET jobNumber = ?, $dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, location = ? " .
          "WHERE shipmentId = ?");
       
       $result = $statement->execute(
          [
-            $shipment->jobId,
+            $shipment->jobNumber,
             $dateTime,      
             $shipment->author,
             $shipment->inspectionId,
             $shipment->quantity,
             $shipment->packingListNumber,
+            $shipment->location,
             $shipment->shipmentId
          ]);
       

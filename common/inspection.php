@@ -91,7 +91,7 @@ class Inspection
    public $jobNumber;
    public $wcNumber;
    public $operator;
-   public $mfgDate;
+   public $mfgDate;  // Note: Used as $mfgStartDate for Final inspections.
    
    // Properties for In Process inspections.
    public $inspectionNumber;  // 1 or 2
@@ -505,6 +505,11 @@ class Inspection
    public function incomplete()
    {
       return (!$this->fail() && !$this->warning() && !$this->pass());
+   }
+   
+   public function complete()
+   {
+      return (!$this->incomplete());
    }
    
    public function getInspectionStatus()
