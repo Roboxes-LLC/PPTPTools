@@ -130,7 +130,7 @@ abstract class Job
    {
       $isTime = false;
       
-      $thisPeriod = Job::getThisPeriod($currentTime);
+      $thisPeriod = $this->getThisPeriod($currentTime);
       
       $lastRun = $this->lastRun ?
                     Time::dateTimeObject($this->lastRun) :
@@ -175,8 +175,15 @@ abstract class Job
          
          case JobPeriod::DAILY:
          {
-            $thisPeriod = Time::dateTimeObject($currentTime);
+            // Algorithm:  Set this period to the start of $this->hour.  If the current time is less than that time, decrement by a day.
+            $now = Time::dateTimeObject($currentTime);
+            $currentHour = intval($now->format("H"));
+            $thisPeriod = $now;
             $thisPeriod->setTime($this->hour, 0, 0);
+            if ($currentHour < $this->hour)
+            {
+               $thisPeriod->sub(new DateInterval("P1D"));
+            }
             break;
          }
 
