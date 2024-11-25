@@ -423,6 +423,10 @@ function validateInspection()
    {
       alert("Please enter a manufacture date.");
    }
+   else if (isEnabled("start-mfg-date-input") && !validate("start-mfg-date-input"))
+   {
+      alert("Please enter a starting manufacture date.");
+   }
    else if (isEnabled("quantity-input") && !validate("quantity-input"))
    {
       alert("Please enter a final inspection quantity.");

@@ -130,7 +130,7 @@ abstract class Job
    {
       $isTime = false;
       
-      $thisPeriod = Job::getThisPeriod($currentTime);
+      $thisPeriod = $this->getThisPeriod($currentTime);
       
       $lastRun = $this->lastRun ?
                     Time::dateTimeObject($this->lastRun) :
@@ -160,7 +160,7 @@ abstract class Job
       
    // **************************************************************************
    
-   private function getThisPeriod($currentTime)
+   public function getThisPeriod($currentTime)
    {
       $thisPeriod = null;
       
@@ -172,41 +172,46 @@ abstract class Job
             $thisPeriod->setTime($thisPeriod->format("H"), 0, 0);  // Clear minutes, seconds
             break;
          }
+         
+         case JobPeriod::DAILY:
+         {
+            // Algorithm:  Set this period to the start of $this->hour.  If the current time is less than that time, decrement by a day.
+            $now = Time::dateTimeObject($currentTime);
+            $currentHour = intval($now->format("H"));
+            $thisPeriod = $now;
+            $thisPeriod->setTime($this->hour, 0, 0);
+            if ($currentHour < $this->hour)
+            {
+               $thisPeriod->sub(new DateInterval("P1D"));
+            }
+            break;
+         }
 
          case JobPeriod::WEEKLY:
          {
             $thisPeriod = Time::dateTimeObject($currentTime);
-
-            $hour = intval($thisPeriod->format("H"));  // Retrieve current hour
-            $dayOfTheWeek = intval($thisPeriod->format("w"));  // Retrieve current day the week
-            
-            // Calculate the number of days since our last period.
-            $adjustDays = 0;
-            
-            if (($dayOfTheWeek > $this->day) ||
-                (($dayOfTheWeek == $this->day) && ($hour >= $this->hour)))
-            {
-               $adjustDays = (($dayOfTheWeek - $this->day) * -1);
-            }
-            else
-            {
-               $adjustDays = (($dayOfTheWeek + (Job::SATURDAY - $this->day)) * -1);
-            }
-            
-            $thisPeriod->modify($adjustDays . ' days');
-            
-            // Set the target hour.
-            $thisPeriod->setTime($this->hour, 0, 0);
+            $dayOfTheWeek = intval($thisPeriod->format("w"));
+            $diff = (($this->day - 1) - $dayOfTheWeek);  // Note: Subtract 1 as PHP day-of-the-week is zero based.
+            $dateInterval = new DateInterval("P" . abs($diff) . "D");
+            $dateInterval->invert = ($diff < 0);
+            $thisPeriod->add($dateInterval);
+            $thisPeriod->setTime($this->hour, 0, 0);  // Clear minutes, seconds
             break;
          }
          
          case JobPeriod::MONTHLY:
          {
+            $thisPeriod = Time::dateTimeObject($currentTime);
+            $thisPeriod->setDate($thisPeriod->format("Y"), $thisPeriod->format("m"), $this->day);
+            $thisPeriod->setTime($this->hour, 0, 0);
             break;
          }
          
          case JobPeriod::ANNUALLY:
          {
+            $thisPeriod = Time::dateTimeObject($currentTime);
+            $thisPeriod->setDate($thisPeriod->format("Y"), $this->month, $this->day);
+            $thisPeriod->setTime($this->hour, 0, 0);
             break;
          }
             

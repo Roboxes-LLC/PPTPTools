@@ -100,6 +100,7 @@ if (!Authentication::isAuthenticated())
    <script src="../thirdParty/moment/moment.min.js"></script>
    
    <script src="/common/common.js"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>   
    <script src="inspection.js"></script>
       
@@ -210,15 +211,20 @@ if (!Authentication::isAuthenticated())
                   return (cellValue);
                }
             },
-            {title:"Ticket",            field:"panTicketCode",     hozAlign:"left", headerFilter:true,
+            {title:"Ticket",            field:"ticketCode",     hozAlign:"left", headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "";
                   
                   var timeCardId = cell.getRow().getData().timeCardId;
+                  var shipmentId = cell.getRow().getData().shipmentId;
                   
                   if (timeCardId != 0)
                   {
-                     cellValue = "<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().panTicketCode;
+                     cellValue = "<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().ticketCode;
+                  }
+                  else if (shipmentId != 0)
+                  {
+                     cellValue = "<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().ticketCode;
                   }
                   
                   return (cellValue);
@@ -297,10 +303,17 @@ if (!Authentication::isAuthenticated())
          cellClick:function(e, cell){
             var inspectionId = parseInt(cell.getRow().getData().inspectionId);
             
-            if ((cell.getColumn().getField() == "panTicketCode") &&
+            if ((cell.getColumn().getField() == "ticketCode") &&
                 (cell.getRow().getData().timeCardId != 0))
             {               
+               timeCardId = parseInt(cell.getRow().getData().timeCardId);
                document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
+            }  
+            else if ((cell.getColumn().getField() == "ticketCode") &&
+                     (cell.getRow().getData().shipmentId != 0))
+            {               
+               shipmentId = parseInt(cell.getRow().getData().shipmentId);
+               document.location = "<?php echo $ROOT?>/shipment/printShipmentTicket.php?shipmentTicketId=" + shipmentId;
             }  
             else if (cell.getColumn().getField() == "delete")
             {

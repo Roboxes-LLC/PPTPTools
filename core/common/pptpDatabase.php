@@ -698,7 +698,13 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare("SELECT * from part WHERE pptpNumber = ? LIMIT 1");
       
-      $result = $statement->execute([$pptpPartNumber]) ? $statement->fetch()["customerNumber"] : null;
+      $result = $statement->execute([$pptpPartNumber]) ? $statement->fetchAll() : null;
+      
+      if ($result)
+      {
+         // Return the customerNumber from the first (and only) entry.
+         $result = (count($result) > 0) ? $result[0]["customerNumber"] : null;
+      }
 
       return ($result);
    }
@@ -943,6 +949,182 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare("SELECT * FROM appnotification_user WHERE notificationId = ? && employeeNumber = ?;");
       
       $result = $statement->execute([$notificationId, $employeeNumber]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                 Shipment
+   
+   public function getShipment($shipmentId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM shipment WHERE shipmentId = ?;");
+      
+      $result = $statement->execute([$shipmentId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getShipmentFromInspection($inspectionId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM shipment WHERE inspectionId = ?;");
+      
+      $result = $statement->execute([$inspectionId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getShipments()
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM shipment ORDER BY shipmentId ASC;");
+      
+      $result = $statement->execute() ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addShipment($shipment)
+   {
+      $dateTime = $shipment->dateTime ? Time::toMySqlDate($shipment->dateTime) : null;
+      
+      $statement = $this->pdo->prepare(
+         "INSERT INTO shipment " .
+         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, location) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $shipment->jobNumber,
+            $dateTime,      
+            $shipment->author,
+            $shipment->inspectionId,
+            $shipment->quantity,
+            $shipment->packingListNumber,
+            $shipment->location
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateShipment($shipment)
+   {
+      $dateTime = $shipment->dateTime ? Time::toMySqlDate($shipment->dateTime) : null;
+      
+      $statement = $this->pdo->prepare(
+         "UPDATE shipment " .
+         "SET jobNumber = ?, $dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, location = ? " .
+         "WHERE shipmentId = ?");
+      
+      $result = $statement->execute(
+         [
+            $shipment->jobNumber,
+            $dateTime,      
+            $shipment->author,
+            $shipment->inspectionId,
+            $shipment->quantity,
+            $shipment->packingListNumber,
+            $shipment->location,
+            $shipment->shipmentId
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteShipment($shipmentId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM shipment WHERE shipmentId = ?");
+      
+      $result = $statement->execute([$shipmentId]);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                 Sales order
+   
+   public function getSalesOrder($shipmentId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM salesOrder WHERE salesOrderId = ?;");
+      
+      $result = $statement->execute([$shipmentId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getSalesOrders($startDate, $endDate, $allActive)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM salesorder ORDER BY salesOrderId ASC;");
+      
+      $result = $statement->execute() ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addSalesOrder($salesOrder)
+   {
+      $orderDate = $salesOrder->entryDate ? Time::toMySqlDate($salesOrder->orderDate) : null;
+      $dueDate = $salesOrder->dueDate ? Time::toMySqlDate($salesOrder->dueDate) : null;
+      
+      $statement = $this->pdo->prepare(
+         "INSERT INTO salesorder " .
+         "(orderNumber, customerId, customerPartNumber, poNumber, orderDate, quantity, unitPrice, dueDate, orderStatus, comments) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $salesOrder->orderNumber,
+            $salesOrder->customerId,
+            $salesOrder->customerPartNumber,
+            $salesOrder->poNumber,
+            $orderDate,
+            $salesOrder->quantity,
+            $salesOrder->unitPrice,
+            $dueDate,
+            $salesOrder->orderStatus,
+            $salesOrder->comments
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateSalesOrder($salesOrder)
+   {
+      $orderDate = $salesOrder->entryDate ? Time::toMySqlDate($salesOrder->orderDate) : null;
+      $dueDate = $salesOrder->dueDate ? Time::toMySqlDate($salesOrder->dueDate) : null;
+      
+      $statement = $this->pdo->prepare(
+         "UPDATE salesorder " .
+         "SET orderNumber = ?, customerId = ?,customerPartNumber = ?, poNumber = ?, orderDate = ?, quantity = ?, unitPrice = ?, dueDate = ?, orderStatus = ?, comments = ? " .
+         "WHERE salesOrderId = ?");
+      
+      $result = $statement->execute(
+         [
+            $salesOrder->orderNumber,
+            $salesOrder->customerId,
+            $salesOrder->customerPartNumber,
+            $salesOrder->poNumber,
+            $orderDate,
+            $salesOrder->quantity,
+            $salesOrder->unitPrice,
+            $dueDate,
+            $salesOrder->orderStatus,
+            $salesOrder->comments,
+            $salesOrder->salesOrderId
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteSalesOrder($salesOrderId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM salesorder WHERE salesOrderId = ?");
+      
+      $result = $statement->execute([$salesOrderId]);
       
       return ($result);
    }

@@ -260,6 +260,21 @@ class PPTPDatabase extends MySqlDatabase
 
       return ($result);
    }
+   
+   public function getTimeCardsForJob(
+      $jobNumber,
+      $mfgStartDate,
+      $mfgEndDate)
+   {
+      $query = 
+         "SELECT * FROM timecard " .
+         "LEFT JOIN job ON timecard.jobId = job.jobId " .
+         "WHERE job.jobNumber = \"$jobNumber\" AND manufactureDate BETWEEN '" . Time::toMySqlDate($mfgStartDate) . "' AND '" . Time::toMySqlDate($mfgEndDate) . "' ORDER BY manufactureDate DESC, timeCardId DESC;";
+      
+      $result = $this->query($query);
+      
+      return ($result);
+   }
 
    public function newTimeCard(
       $timeCardInfo)
@@ -1546,17 +1561,19 @@ HEREDOC;
       $dateTime = Time::toMySqlDate($inspection->dateTime);      
       $updatedDateTime = Time::toMySqlDate($inspection->updatedDateTime);  
       $mfgDate = $inspection->mfgDate ? Time::toMySqlDate($inspection->mfgDate) : null;
+      $startMfgDate = $inspection->startMfgDate ? Time::toMySqlDate($inspection->startMfgDate) : null;
       
       $updatedClause = ($updatedDateTime ? "'$updatedDateTime'" : "NULL");
       $mfgClause = ($mfgDate ? "'$mfgDate'" : "NULL");
+      $startMfgClause = ($startMfgDate ? "'$startMfgDate'" : "NULL");
       
       $isPriority = $inspection->isPriority ? 1 : 0;
       
       $query =
       "INSERT INTO inspection " .
-      "(templateId, dateTime, updatedDateTime, author, inspector, comments, timeCardId, jobNumber, wcNumber, operator, mfgDate, inspectionNumber, quantity, isPriority, samples, naCount, passCount, warningCount, failCount, dataFile) " .
+      "(templateId, dateTime, updatedDateTime, author, inspector, comments, timeCardId, jobNumber, wcNumber, operator, mfgDate, inspectionNumber, quantity, isPriority, startMfgDate, samples, naCount, passCount, warningCount, failCount, dataFile) " .
       "VALUES " .
-      "('$inspection->templateId', '$dateTime', $updatedClause, '$inspection->author', '$inspection->inspector', '$inspection->comments', '$inspection->timeCardId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', $mfgClause, '$inspection->inspectionNumber', '$inspection->quantity', '$isPriority', '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->warningCount', '$inspection->failCount', '$inspection->dataFile');";
+      "('$inspection->templateId', '$dateTime', $updatedClause, '$inspection->author', '$inspection->inspector', '$inspection->comments', '$inspection->timeCardId', '$inspection->jobNumber', '$inspection->wcNumber', '$inspection->operator', $mfgClause, '$inspection->inspectionNumber', '$inspection->quantity', '$isPriority', $startMfgClause, '$inspection->samples', '$inspection->naCount', '$inspection->passCount', '$inspection->warningCount', '$inspection->failCount', '$inspection->dataFile');";
 
       $result = $this->query($query);
       
@@ -1593,15 +1610,17 @@ HEREDOC;
       $dateTime = Time::toMySqlDate($inspection->dateTime);
       $updatedDateTime = Time::toMySqlDate($inspection->updatedDateTime);  
       $mfgDate = $inspection->mfgDate ? Time::toMySqlDate($inspection->mfgDate) : null;
+      $startMfgDate = $inspection->startMfgDate ? Time::toMySqlDate($inspection->startMfgDate) : null;
       
       $updatedClause = ($updatedDateTime ? "'$updatedDateTime'" : "NULL");
       $mfgClause = "mfgDate = " . ($mfgDate ? "'$mfgDate'" : "NULL");  
+      $startMfgClause = "startMfgDate = " . ($startMfgDate ? "'$startMfgDate'" : "NULL");
       
       $isPriority = $inspection->isPriority ? 1 : 0;
       
       $query =
       "UPDATE inspection " .
-      "SET dateTime = '$dateTime', updatedDateTime = $updatedClause, author = '$inspection->author', inspector = '$inspection->inspector', comments = '$inspection->comments', timeCardId = '$inspection->timeCardId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', $mfgClause, inspectionNumber = '$inspection->inspectionNumber', quantity = '$inspection->quantity', isPriority = '$isPriority', samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', warningCount = '$inspection->warningCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
+      "SET dateTime = '$dateTime', updatedDateTime = $updatedClause, author = '$inspection->author', inspector = '$inspection->inspector', comments = '$inspection->comments', timeCardId = '$inspection->timeCardId', jobNumber = '$inspection->jobNumber', wcNumber = '$inspection->wcNumber', operator = '$inspection->operator', $mfgClause, inspectionNumber = '$inspection->inspectionNumber', quantity = '$inspection->quantity', isPriority = '$isPriority', $startMfgClause, samples = '$inspection->samples', naCount = '$inspection->naCount', passCount = '$inspection->passCount', warningCount = '$inspection->warningCount', failCount = '$inspection->failCount', dataFile = '$inspection->dataFile'  " .
       "WHERE inspectionId = '$inspection->inspectionId';";
 
       $result = $this->query($query);

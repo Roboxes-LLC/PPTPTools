@@ -344,6 +344,13 @@ function hasCustomerPartNumber()
    return (JobManager::getCustomerPartNumber(getJobInfo()->partNumber) != null);
 }
 
+function getCustomerPartNumber()
+{
+   $customerPartNumber = JobManager::getCustomerPartNumber(getJobInfo()->partNumber);
+   
+   return ($customerPartNumber ? $customerPartNumber : "");
+}
+
 // ********************************** BEGIN ************************************
 
 Time::init();
@@ -438,7 +445,7 @@ if (!Authentication::isAuthenticated())
                
                <div class="form-item">
                   <div class="form-label-long">Customer Part #</div>
-                  <input id="customer-part-number-input" type="text" name="customerPartNumber" form="input-form" style="width:150px;" value="<?php echo JobManager::getCustomerPartNumber(getJobInfo()->partNumber); ?>" <?php echo getDisabled(JobInputField::CUSTOMER_PART_NUMBER); ?> />
+                  <input id="customer-part-number-input" type="text" name="customerPartNumber" form="input-form" style="width:150px;" value="<?php echo getCustomerPartNumber() ?>" <?php echo getDisabled(JobInputField::CUSTOMER_PART_NUMBER); ?> />
                   &nbsp;
                   <i id="customer-part-number-edit-button" class="material-icons icon-button" style="visibility:<?php echo isEditable(JobInputField::CUSTOMER_PART_NUMBER) ? "hidden" : "visible" ?>" onclick="onEditCustomerPartNumber()">edit</i>
                </div>

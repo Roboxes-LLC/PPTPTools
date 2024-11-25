@@ -36,6 +36,8 @@ class JobInfo
    
    const PLACEHOLDER_JOB_NUMBER = "M0001";
    
+   const UNKNOWN_PART_NUMBER = "";
+   
    const MAINTENANCE_JOB_ID = "9999";
    
    const UNKNOWN_WC_NUMBER = 0;
@@ -62,7 +64,7 @@ class JobInfo
    public $jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
    public $creator;
    public $dateTime;
-   public $partNumber;
+   public $partNumber = JobInfo::UNKNOWN_PART_NUMBER;
    public $sampleWeight = JobInfo::UNKNOWN_SAMPLE_WEIGHT;
    public $wcNumber;
    public $grossPartsPerHour;
