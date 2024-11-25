@@ -22,7 +22,7 @@ abstract class ShipmentLocation
    public static function getOptions($selectedLocation)
    {
       $label = "";
-      $value = LeadTime::UNKNOWN;
+      $value = ShipmentLocation::UNKNOWN;
       $html = "<option value=\"$value\">$label</option>";
       
       foreach (ShipmentLocation::$values as $location)

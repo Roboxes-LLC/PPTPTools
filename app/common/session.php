@@ -16,6 +16,10 @@ class Session
    const NOTIFICATION_START_DATE = "notification.startDate";   
    const NOTIFICATION_END_DATE = "notification.endDate";
    const NOTIFICATION_SHOW_ALL_UNACKNOWLEDGED = "notification.showAllUnacknowledged";
+   const SALES_ORDER_ACTIVE_ORDERS = "salesOrder.activeOrders";
+   const SALES_ORDER_START_DATE = "salesOrder.startDate";
+   const SALES_ORDER_END_DATE = "salesOrder.endDate";
+   
    
    public static function isset($key)
    {

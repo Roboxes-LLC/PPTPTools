@@ -108,8 +108,8 @@ $jsonMenu =
       },
       {
          "type":"submenu",
-         "menuId":"quotes",
-         "label":"Quotes",
+         "menuId":"sales",
+         "label":"Sales",
          "icon":"store",
          "permissions":33,
          "menuItems": [
@@ -124,6 +124,10 @@ $jsonMenu =
             {
                "type":"menu-item",
                "pageId": 19
+            },
+            {
+               "type":"menu-item",
+               "pageId": 23
             }
          ]
       },
