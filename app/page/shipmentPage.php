@@ -90,6 +90,28 @@ class ShipmentPage extends Page
                      $this->error("Invalid shipment id [$shipmentId]");
                   }
                }
+               // Fetch active shipments for part.
+               else if (isset($params["pptpNumber"]) || isset($params["customerNumber"]))
+               {
+                  $partNumber = null;
+                  if (isset($params["pptpNumber"]))
+                  {
+                     $partNumber = $params["pptpNumber"];
+                  }
+                  else
+                  {
+                     $partNumber = PartManager::getPPTPPartNumber($params["customerNumber"]);
+                  }
+
+                  $this->result->success = true;
+                  $this->result->shipments = ShipmentManager::getActiveShipmentsByPart($partNumber);
+                  
+                  // Augment shipment.
+                  foreach ($this->result->shipments as $shipment)
+                  {
+                     ShipmentPage::augmentShipment($shipment);
+                  }
+               }
                // Fetch all components.
                else
                {

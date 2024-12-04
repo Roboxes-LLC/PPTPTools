@@ -30,7 +30,8 @@ class AppPage
    const NOTIFICATION = 21;
    const SHIPMENT = 22;
    const SALES_ORDER = 23;
-   const LAST = 24;
+   const PART = 24;
+   const LAST = 25;
    
    public $pageId;
    public $label;
@@ -71,6 +72,7 @@ class AppPage
       AppPage::NOTIFICATION,
       AppPage::SHIPMENT,
       AppPage::SALES_ORDER,
+      AppPage::PART,
    );
    
    private static $pages = null;
@@ -81,7 +83,7 @@ class AppPage
       {
          AppPage::$pages = array(
             AppPage::USER =>                new AppPage(AppPage::USER,                "Users",                "group",                Permission::VIEW_USER,                "/user/viewUsers.php"),
-            AppPage::JOBS =>                new AppPage(AppPage::JOBS,                "Jobs",                 "assignment",           Permission::VIEW_JOB,                 "/jobs/viewJobs.php"),
+            AppPage::JOBS =>                new AppPage(AppPage::JOBS,                "Jobs",                 null,                   Permission::VIEW_JOB,                 "/jobs/viewJobs.php"),
             AppPage::MATERIAL =>            new AppPage(AppPage::MATERIAL,            "Material",             "widgets",              Permission::VIEW_MATERIAL,            "/material/viewMaterials.php"),
             AppPage::TIME_CARD =>           new AppPage(AppPage::TIME_CARD,           "Operator Cards",       "",                     Permission::VIEW_TIME_CARD,           "/timecard/viewTimeCards.php"),
             AppPage::PART_WEIGHT =>         new AppPage(AppPage::PART_WEIGHT,         "Part Weight Log",      "balance",              Permission::VIEW_PART_WEIGHT_LOG,     "/partWeightLog/partWeightLog.php"),
@@ -99,10 +101,11 @@ class AppPage
             AppPage::CUSTOMER =>            new AppPage(AppPage::CUSTOMER,            "Customers",            null,                   Permission::VIEW_CUSTOMER,            "/customer/customers.php"),
             AppPage::CONTACT =>             new AppPage(AppPage::CONTACT,             "Contacts",             null,                   Permission::VIEW_CUSTOMER,            "/customer/contacts.php"),
             AppPage::QUOTE =>               new AppPage(AppPage::QUOTE,               "Quotes",               null,                   Permission::VIEW_QUOTE,               "/quote/quotes.php"),
-            AppPage::SCHEDULE =>            new AppPage(AppPage::SCHEDULE,            "Schedule",             "calendar_month",       Permission::VIEW_SCHEDULE,            "/schedule/schedule.php"),
+            AppPage::SCHEDULE =>            new AppPage(AppPage::SCHEDULE,            "Schedule",             null,                   Permission::VIEW_SCHEDULE,            "/schedule/schedule.php"),
             AppPage::NOTIFICATION =>        new AppPage(AppPage::NOTIFICATION,        "Messages",             "notifications",        Permission::NOTIFICATIONS,            "/notification/notifications.php"),
             AppPage::SHIPMENT =>            new AppPage(AppPage::SHIPMENT,            "Parts Inventory",      "inventory",            Permission::VIEW_SHIPMENT,            "/shipment/shipments.php"),
-            AppPage::SALES_ORDER =>         new AppPage(AppPage::SALES_ORDER,         "Orders",               null,                   Permission::VIEW_SALES_ORDER,         "/salesOrder/salesOrders.php")
+            AppPage::SALES_ORDER =>         new AppPage(AppPage::SALES_ORDER,         "Orders",               null,                   Permission::VIEW_SALES_ORDER,         "/salesOrder/salesOrders.php"),
+            AppPage::PART =>                new AppPage(AppPage::PART,                "Parts",                null,                   Permission::VIEW_JOB,                 "/part/parts.php")
          );
       }
       

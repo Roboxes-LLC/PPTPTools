@@ -20,16 +20,29 @@ $jsonMenu =
          "pageId": 2
       },
       {
+         "type":"submenu",
+         "menuId":"inspection",
+         "label":"Jobs",
+         "icon":"assignment",
+         "permissions":18,
+         "menuItems": [
+            {
+               "type":"menu-item",
+               "pageId": 24
+            },
+            {
+               "type":"menu-item",
+               "pageId": 1
+            },
+            {
+               "type":"menu-item",
+               "pageId": 20
+            }
+         ]
+      },
+      {
          "type":"menu-item",
          "pageId": 15
-      },
-      {
-         "type":"menu-item",
-         "pageId": 1
-      },
-      {
-         "type":"menu-item",
-         "pageId": 20
       },
       {
          "type":"submenu",

@@ -713,3 +713,10 @@ button.hidden,
 .clickable {
    cursor: pointer;
 }
+
+/* Color border on invalid */
+form.show-invalid input:invalid,
+form.show-invalid select:invalid
+{
+   outline: solid 2px red;
+}

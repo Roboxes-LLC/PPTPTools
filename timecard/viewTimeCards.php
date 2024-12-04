@@ -37,26 +37,24 @@ function getFilterStartDate()
    }
 
    // Convert to Javascript date format.
-   $dateTime = new DateTime($startDate, new DateTimeZone('America/New_York'));  // TODO: Replace
-   $startDate = $dateTime->format(Time::$javascriptDateFormat);
+   $startDate = Time::toJavascriptDate($startDate);
    
    return ($startDate);
 }
 
 function getFilterEndDate()
 {
-   $startDate = Time::now("Y-m-d");
+   $endDate = Time::now("Y-m-d");
    
    if (isset($_SESSION["timeCard.filter.endDate"]))
    {
-      $startDate = $_SESSION["timeCard.filter.endDate"];
+      $endDate = $_SESSION["timeCard.filter.endDate"];
    }
    
    // Convert to Javascript date format.
-   $dateTime = new DateTime($startDate, new DateTimeZone('America/New_York'));  // TODO: Replace
-   $startDate = $dateTime->format(Time::$javascriptDateFormat);
+   $endDate = Time::toJavascriptDate($endDate);
    
-   return ($startDate);
+   return ($endDate);
 }
 
 function getReportFilename()

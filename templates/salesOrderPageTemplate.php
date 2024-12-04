@@ -18,6 +18,7 @@ Required PHP variables:
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css"/>
    
    <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
@@ -53,7 +54,15 @@ Required PHP variables:
         
          <br>
         
-         <?php echo $form ?>
+         <div class="flex-horizontal" style="width: 100%">
+            <div style="margin-right: 50px">
+               <?php echo $form ?>
+            </div>
+            <div>
+               <div class="form-section-header">Parts Inventory</div>
+               <div id="parts-inventory-table"></div>
+            </div>
+         </div>
          
          <br>
          
@@ -73,6 +82,8 @@ Required PHP variables:
       menu.setMenuItemSelected(<?php echo $appPageId ?>);  
          
       var PAGE = new <?php echo $javascriptClass ?>();
+      
+      PAGE.createPartsInventoryTable("parts-inventory-table");
 
       // Setup event handling on all DOM elements.
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};

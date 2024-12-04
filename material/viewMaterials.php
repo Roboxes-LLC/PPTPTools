@@ -36,34 +36,32 @@ function getFilterDateType()
 
 function getFilterStartDate()
 {
-   $startDate = Time::now("Y-m-d");
+   $startDate = Time::now(Time::JAVASCRIPT_DATE_FORMAT);
    
    if (isset($_SESSION["material.filter.startDate"]))
    {
       $startDate = $_SESSION["material.filter.startDate"];
    }
-
+   
    // Convert to Javascript date format.
-   $dateTime = new DateTime($startDate, new DateTimeZone('America/New_York'));  // TODO: Replace
-   $startDate = $dateTime->format(Time::$javascriptDateFormat);
+   $startDate = Time::dateTimeObject($startDate)->format(Time::JAVASCRIPT_DATE_FORMAT);
    
    return ($startDate);
 }
 
 function getFilterEndDate()
 {
-   $startDate = Time::now("Y-m-d");
+   $endDate = Time::now(Time::JAVASCRIPT_DATE_FORMAT);
    
    if (isset($_SESSION["material.filter.endDate"]))
    {
-      $startDate = $_SESSION["material.filter.endDate"];
+      $endDate = $_SESSION["material.filter.endDate"];
    }
    
    // Convert to Javascript date format.
-   $dateTime = new DateTime($startDate, new DateTimeZone('America/New_York'));  // TODO: Replace
-   $startDate = $dateTime->format(Time::$javascriptDateFormat);
+   $endDate = Time::dateTimeObject($endDate)->format(Time::JAVASCRIPT_DATE_FORMAT);
    
-   return ($startDate);
+   return ($endDate);
 }
 
 function getFilterAllUnissued()

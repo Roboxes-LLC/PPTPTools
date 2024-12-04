@@ -750,7 +750,6 @@ class Quote
 
    getTableQueryParams()
    {
-      
       let params = new Object();
       
       params.request = "fetch";

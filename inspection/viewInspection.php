@@ -505,7 +505,7 @@ function getStartMfgDate()
    {
       
       // Convert to Javascript date format.
-      $startMfgDate = Time::dateTimeObject($inspection->startMfgDate)->format(Time::$javascriptDateFormat);
+      $startMfgDate = Time::toJavascriptDate($inspection->startMfgDate);
    }
    
    return ($startMfgDate);

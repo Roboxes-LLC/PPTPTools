@@ -97,3 +97,13 @@ function submitForm(formId, requestUrl, callback)
    // The data sent is what the user provided in the form
    xhttp.send(formData);      
 }
+
+function showInvalid(formId)
+{
+   document.getElementById(formId).classList.add("show-invalid");
+}
+
+function hideInvalid(formId)
+{
+   document.getElementById(formId).classList.remove("show-invalid");
+}

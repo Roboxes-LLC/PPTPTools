@@ -303,14 +303,13 @@ function getInternalHeatNumber()
 
 function getEntryDate()
 {
-   $entryDate = Time::now(Time::$javascriptDateFormat);
+   $entryDate = Time::now(Time::JAVASCRIPT_DATE_FORMAT);
    
    $materialEntry = getMaterialEntry();
    
    if ($materialEntry)
    {
-      $dateTime = new DateTime($materialEntry->enteredDateTime, new DateTimeZone('America/New_York'));
-      $entryDate = $dateTime->format(Time::$javascriptDateFormat);
+      $entryDate = Time::toJavascriptDate($materialEntry->enteredDateTime);
    }
    
    return ($entryDate);
@@ -318,14 +317,13 @@ function getEntryDate()
 
 function getReceivedDate()
 {
-   $receivedDate = Time::now(Time::$javascriptDateFormat);
+   $receivedDate = Time::toJavascriptDate(Time::now());
    
    $materialEntry = getMaterialEntry();
    
    if ($materialEntry)
    {
-      $dateTime = new DateTime($materialEntry->receivedDateTime, new DateTimeZone('America/New_York'));
-      $receivedDate = $dateTime->format(Time::$javascriptDateFormat);
+      $receivedDate = Time::toJavascriptDate($materialEntry->receivedDateTime);
    }
    
    return ($receivedDate);
@@ -362,8 +360,7 @@ function getIssuedDate()
    
    if ($materialEntry && $materialEntry->issuedDateTime)
    {
-      $dateTime = new DateTime($materialEntry->issuedDateTime, new DateTimeZone('America/New_York'));
-      $issuedDate = $dateTime->format(Time::$javascriptDateFormat);
+      $issuedDate = Time::toJavascriptDate($materialEntry->issuedDateTime);
    }
    
    return ($issuedDate);
@@ -415,8 +412,7 @@ function getAcknowledgedDate()
    
    if ($materialEntry && $materialEntry->acknowledgedDateTime)
    {
-      $dateTime = new DateTime($materialEntry->acknowledgedDateTime, new DateTimeZone('America/New_York'));
-      $acknowledgedDate = $dateTime->format(Time::$javascriptDateFormat);
+      $acknowledgedDate = Time::toJavascriptDate($materialEntry->acknowledgedDateTime);
    }
    
    return ($acknowledgedDate);

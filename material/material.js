@@ -375,7 +375,6 @@ function updateVendorHeatInfo(vendorHeatInfo)
 {
    if (vendorHeatInfo)
    {
-      console.log("here");
       document.getElementById("vendor-id-input").value = vendorHeatInfo.vendorId;
       
       document.getElementById("material-type-input").value = vendorHeatInfo.materialInfo.type;

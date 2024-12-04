@@ -17,9 +17,9 @@ Required PHP variables:
    </div>
    &nbsp;&nbsp;&nbsp;
    <div class="input-group flex-horizontal flex-v-center">
-      <input id="active-orderse-input" type="checkbox" <?php echo $filterActiveOrders ? "checked" : "" ?>>
+      <input id="active-orders-input" type="checkbox" <?php echo $filterActiveOrders ? "checked" : "" ?>>
       &nbsp;   
-      <label>All active orders</label>
+      <label>All open orders</label>
    </div>
    
 </div>

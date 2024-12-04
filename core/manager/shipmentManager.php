@@ -137,6 +137,23 @@ class ShipmentManager
       
       return (array_values($heats));  // Simple trick to use a PHP map as a set.
    }
+   
+   public static function getActiveShipmentsByPart($partNumber)
+   {
+      $shipments = [];
+      
+      $result = PPTPDatabaseAlt::getInstance()->getActiveShipmentsByPart($partNumber);
+      
+      foreach ($result as $row)
+      {
+         $shipment = new Shipment();
+         $shipment->initialize($row);
+         
+         $shipments[] = $shipment;
+      }
+      
+      return ($shipments);
+   }
 }
 
 ?>

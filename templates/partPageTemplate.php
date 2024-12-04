@@ -9,6 +9,7 @@ Required PHP variables:
    $form
    $appPageId
    $saveButtonLabel
+   $customerPrintLink
  -->
 
 <html>
@@ -53,7 +54,20 @@ Required PHP variables:
         
          <br>
         
-         <?php echo $form ?>
+         <div class="flex-horizontal">
+            <div style="margin-right: 50px">
+               <?php echo $form ?>
+            </div>
+            <div>
+               <embed src="<?php echo $customerPrintLink ?>" 
+                      type="application/pdf"
+                      frameBorder="0"
+                      scrolling="auto"
+                      height="600px"
+                      width="500px"
+                      <?php echo ($customerPrintLink == null) ? "hidden" : "" ?>/>
+            </div>
+         </div>
          
          <br>
          
@@ -79,13 +93,6 @@ Required PHP variables:
 
       // Store the initial state of the form, for change detection.
       setInitialFormState("<?php echo $formId ?>");
-      
-      <?php 
-      if (isset($customScript))
-      {
-         echo $customScript;
-      }
-      ?>
    </script>
    
 </body>

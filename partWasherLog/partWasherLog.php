@@ -50,8 +50,7 @@ function getFilterStartDate()
    }
 
    // Convert to Javascript date format.
-   $dateTime = new DateTime($startDate, new DateTimeZone('America/New_York'));  // TODO: Replace
-   $startDate = $dateTime->format(Time::$javascriptDateFormat);
+   $startDate = Time::toJavascriptDate($startDate);
    
    return ($startDate);
 }
@@ -81,8 +80,7 @@ function getFilterEndDate()
    }
    
    // Convert to Javascript date format.
-   $dateTime = new DateTime($endDate, new DateTimeZone('America/New_York'));  // TODO: Replace
-   $endDate = $dateTime->format(Time::$javascriptDateFormat);
+   $endDate = Time::toJavascriptDate($endDate);
    
    return ($endDate);
 }

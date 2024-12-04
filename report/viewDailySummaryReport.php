@@ -31,8 +31,7 @@ function getFilterMfgDate()
    $mfgDate = getMfgDate();
 
    // Convert to Javascript date format.
-   $dateTime = new DateTime($mfgDate, new DateTimeZone('America/New_York'));  // TODO: Replace
-   $mfgDate = $dateTime->format(Time::$javascriptDateFormat);
+   $mfgDate = Time::toJavascriptDate($mfgDate);
    
    return ($mfgDate);
 }

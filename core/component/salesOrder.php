@@ -25,9 +25,7 @@ abstract class SalesOrderStatus
    
    public static function getOptions($selectedStatus)
    {
-      $label = "";
-      $value = SalesOrderStatus::UNKNOWN;
-      $html = "<option value=\"$value\">$label</option>";
+      $html = "<option style=\"display:none\">";
       
       foreach (SalesOrderStatus::$values as $status)
       {
@@ -48,6 +46,7 @@ class SalesOrder
    
    public $salesOrderId;
    public $author;
+   public $dateTime;
    public $orderNumber;
    public $customerId;
    public $customerPartNumber;
@@ -63,6 +62,7 @@ class SalesOrder
    {
       $this->salesOrderId = SalesOrder::UNKNOWN_SALES_ORDER_ID;
       $this->author = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->dateTime = null;
       $this->orderNumber = null;
       $this->customerId = Customer::UNKNOWN_CUSTOMER_ID;
       $this->customerPartNumber;
@@ -80,6 +80,9 @@ class SalesOrder
    {
       $this->salesOrderId = intval($row["salesOrderId"]);
       $this->author = intval($row["author"]);
+      $this->dateTime = $row["dateTime"] ?
+                           Time::fromMySqlDate($row["dateTime"]) :
+                            null;
       $this->orderNumber = $row["orderNumber"];
       $this->customerId = intval($row["customerId"]);
       $this->customerPartNumber = $row["customerPartNumber"];

@@ -56,4 +56,22 @@ class CustomerManager
       
       return ($contacts);
    }
+   
+   public static function getCustomerOptions($selectedCustomerId)
+   {
+      $html = "<option style=\"display:none\">";
+      
+      $customers = CustomerManager::getCustomers();
+      
+      foreach ($customers as $customer)
+      {
+         $label = $customer->customerName;
+         $value = $customer->customerId;
+         $selected = ($customer->customerId == $selectedCustomerId) ? "selected" : "";
+         
+         $html .= "<option value=\"$value\" $selected>$label</option>";
+      }
+      
+      return ($html);
+   }
 }

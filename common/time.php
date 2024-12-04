@@ -6,10 +6,10 @@ class Time
    public const STANDARD_FORMAT = "Y-m-d H:i:s";
    
    // Date format required for initializing date inputs.
-   static public $javascriptDateFormat = "Y-m-d";
+   public const JAVASCRIPT_DATE_FORMAT = "Y-m-d";
    
    // Date format required for initializing time inputs.
-   static public $javascriptTimeFormat = "H:i";
+   public const JAVASCRIPT_TIME_FORMAT = "H:i";
    
    static public function init()
    {
@@ -49,7 +49,14 @@ class Time
    {
       $dateTime = new DateTime($dateString, new DateTimeZone(Time::DEFAULT_TIME_ZONE));
       
-      return ($dateTime->format("Y-m-d"));
+      return ($dateTime->format(Time::JAVASCRIPT_DATE_FORMAT));
+   }
+   
+   static public function toJavascriptDateTime($dateString)
+   {
+      $dateTime = new DateTime($dateString, new DateTimeZone(Time::DEFAULT_TIME_ZONE));
+      
+      return ($dateTime->format(Time::JAVASCRIPT_DATE_FORMAT) . "T" . $dateTime->format(Time::JAVASCRIPT_TIME_FORMAT));
    }
    
    static public function startOfDay($dateTime)

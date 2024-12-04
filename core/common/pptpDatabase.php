@@ -694,6 +694,35 @@ class PPTPDatabaseAlt extends PDODatabase
    // **************************************************************************
    //                                 Part
    
+   public function getPart($partNumber, $useCustomerNumber)
+   {
+      $partNumberColumn = $useCustomerNumber ? "customerNumber" : "pptpNumber";
+      
+      $statement = $this->pdo->prepare("SELECT * from part WHERE $partNumberColumn = ? LIMIT 1");
+      
+      $result = $statement->execute([$partNumber]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getParts()
+   {
+      $statement = $this->pdo->prepare("SELECT * from part");
+      
+      $result = $statement->execute() ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getPartsForCustomer($customerId)
+   {
+      $statement = $this->pdo->prepare("SELECT * from part WHERE customerId = ?");
+      
+      $result = $statement->execute([$customerId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
    public function getCustomerPartNumber($pptpPartNumber)
    {
       $statement = $this->pdo->prepare("SELECT * from part WHERE pptpNumber = ? LIMIT 1");
@@ -709,14 +738,64 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
-   public function saveCustomerPartNumber($pptpPartNumber, $customerPartNumber)
+   public function addPart($part)
    {
-      $statement = $this->pdo->prepare("INSERT INTO part (pptpNumber, customerNumber) VALUES(?, ?) ON DUPLICATE KEY UPDATE pptpNumber = ?, customerNumber = ?");
+      $statement = $this->pdo->prepare(
+         "INSERT INTO part " .
+         "(pptpNumber, customerNumber, customerId, sampleWeight, firstPartTemplateId, lineTemplateId, qcpTemplateId, inProcessTemplateId, finalTemplateId, customerPrint) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
-      $result = $statement->execute([$pptpPartNumber, $customerPartNumber, $pptpPartNumber, $customerPartNumber]);
+      $result = $statement->execute(
+         [
+            $part->pptpNumber,
+            $part->customerNumber,
+            $part->customerId,
+            $part->sampleWeight,
+            $part->inspectionTemplateIds[InspectionType::FIRST_PART],
+            $part->inspectionTemplateIds[InspectionType::LINE],
+            $part->inspectionTemplateIds[InspectionType::QCP],
+            $part->inspectionTemplateIds[InspectionType::IN_PROCESS],
+            $part->inspectionTemplateIds[InspectionType::FINAL],
+            $part->customerPrint
+         ]);
       
       return ($result);
-   }      
+   }
+   
+   public function updatePart($part)
+   {
+      $statement = $this->pdo->prepare(
+         "UPDATE part " .
+         "SET customerNumber = ?, customerId = ?, sampleWeight = ?, firstPartTemplateId = ?, lineTemplateId = ?, qcpTemplateId = ?, inProcessTemplateId = ?, finalTemplateId = ?, customerPrint = ? " .
+         "WHERE pptpNumber = ?");
+      
+      $result = $statement->execute(
+         [
+            $part->customerNumber,
+            $part->customerId,
+            $part->sampleWeight,
+            $part->inspectionTemplateIds[InspectionType::FIRST_PART],
+            $part->inspectionTemplateIds[InspectionType::LINE],
+            $part->inspectionTemplateIds[InspectionType::QCP],
+            $part->inspectionTemplateIds[InspectionType::IN_PROCESS],
+            $part->inspectionTemplateIds[InspectionType::FINAL],
+            $part->customerPrint,
+            $part->pptpNumber
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deletePart($pptpNumber)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM part WHERE pptpNumber = ?");
+      
+      $result = $statement->execute([$pptpNumber]);
+      
+      // TODO: Delete jobs, inspections, time cards, etc.
+      
+      return ($result);
+   }
    
    // **************************************************************************
    //                             Schedule Entry
@@ -986,6 +1065,28 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
+   public function getActiveShipmentsByPart($partNumber)
+   {
+      $questionMarks = array();
+      for ($i = 0; $i < count(ShipmentLocation::$activeLocations); $i++)
+      {
+         $questionMarks[] = "?";
+      }
+      $locationList = "(" . implode(", ", $questionMarks) . ")";
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM shipment " .
+         "INNER JOIN job ON job.jobNumber = shipment.jobNumber " .
+         "WHERE job.partNumber = ? AND location IN $locationList ORDER BY shipmentId ASC;");
+
+      $params = [$partNumber];
+      $params = array_merge($params, ShipmentLocation::$activeLocations);
+      
+      $result = $statement->execute($params) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
    public function addShipment($shipment)
    {
       $dateTime = $shipment->dateTime ? Time::toMySqlDate($shipment->dateTime) : null;
@@ -1057,8 +1158,14 @@ class PPTPDatabaseAlt extends PDODatabase
    
    public function getSalesOrders($startDate, $endDate, $allActive)
    {
+      $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
+      $endDate = $endDate ? Time::toMySqlDate(Time::startOfDay($endDate)) : null;
+      
+      $dateClause = ($startDate && $endDate && !$allActive) ? "(dateTime BETWEEN '$startDate' AND '$endDate')" : "TRUE";
+      $statusClause = (!$allActive) ? "TRUE" : "(orderStatus != " . SalesOrderStatus::SHIPPED . ")";
+            
       $statement = $this->pdo->prepare(
-         "SELECT * FROM salesorder ORDER BY salesOrderId ASC;");
+         "SELECT * FROM salesorder WHERE $dateClause AND $statusClause ORDER BY salesOrderId ASC;");
       
       $result = $statement->execute() ? $statement->fetchAll() : null;
       
@@ -1067,16 +1174,19 @@ class PPTPDatabaseAlt extends PDODatabase
    
    public function addSalesOrder($salesOrder)
    {
-      $orderDate = $salesOrder->entryDate ? Time::toMySqlDate($salesOrder->orderDate) : null;
+      $dateTime = $salesOrder->dateTime ? Time::toMySqlDate($salesOrder->dateTime) : null;
+      $orderDate = $salesOrder->orderDate ? Time::toMySqlDate($salesOrder->orderDate) : null;
       $dueDate = $salesOrder->dueDate ? Time::toMySqlDate($salesOrder->dueDate) : null;
       
       $statement = $this->pdo->prepare(
          "INSERT INTO salesorder " .
-         "(orderNumber, customerId, customerPartNumber, poNumber, orderDate, quantity, unitPrice, dueDate, orderStatus, comments) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(author, dateTime, orderNumber, customerId, customerPartNumber, poNumber, orderDate, quantity, unitPrice, dueDate, orderStatus, comments) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
+            $salesOrder->author,
+            $dateTime,
             $salesOrder->orderNumber,
             $salesOrder->customerId,
             $salesOrder->customerPartNumber,
@@ -1094,16 +1204,19 @@ class PPTPDatabaseAlt extends PDODatabase
    
    public function updateSalesOrder($salesOrder)
    {
-      $orderDate = $salesOrder->entryDate ? Time::toMySqlDate($salesOrder->orderDate) : null;
+      $dateTime = $salesOrder->dateTime ? Time::toMySqlDate($salesOrder->dateTime) : null;
+      $orderDate = $salesOrder->orderDate ? Time::toMySqlDate($salesOrder->orderDate) : null;
       $dueDate = $salesOrder->dueDate ? Time::toMySqlDate($salesOrder->dueDate) : null;
       
       $statement = $this->pdo->prepare(
          "UPDATE salesorder " .
-         "SET orderNumber = ?, customerId = ?,customerPartNumber = ?, poNumber = ?, orderDate = ?, quantity = ?, unitPrice = ?, dueDate = ?, orderStatus = ?, comments = ? " .
+         "SET author = ?, dateTime = ?, orderNumber = ?, customerId = ?, customerPartNumber = ?, poNumber = ?, orderDate = ?, quantity = ?, unitPrice = ?, dueDate = ?, orderStatus = ?, comments = ? " .
          "WHERE salesOrderId = ?");
-      
+
       $result = $statement->execute(
          [
+            $salesOrder->author,
+            $dateTime,
             $salesOrder->orderNumber,
             $salesOrder->customerId,
             $salesOrder->customerPartNumber,

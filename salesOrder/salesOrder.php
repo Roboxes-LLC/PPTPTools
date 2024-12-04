@@ -4,6 +4,7 @@ if (!defined('ROOT')) require_once '../root.php';
 require_once ROOT.'/app/common/appPage.php';
 require_once ROOT.'/app/common/menu.php';
 require_once ROOT.'/core/component/salesOrder.php';
+require_once ROOT.'/core/manager/partManager.php';
 require_once ROOT.'/common/authentication.php';
 require_once ROOT.'/common/header.php';
 require_once ROOT.'/common/version.php';
@@ -11,13 +12,19 @@ require_once ROOT.'/common/version.php';
 abstract class InputField
 {
    const FIRST = 0;
-   const DATE = InputField::FIRST;
-   const AUTHOR = 1;
-   const JOB_ID = 2;
-   const CUSTOMER_PART_NUMBER = 3;
-   const QUANTITY = 4;
+   const AUTHOR = InputField::FIRST;
+   const DATE = 1;
+   const ORDER_NUMBER = 2;
+   const CUSTOMER_ID = 3;
+   const CUSTOMER_PART_NUMBER = 4;
    const PO_NUMBER = 5;
-   const LAST = 6;
+   const ORDER_DATE = 6;
+   const QUANTITY = 7;
+   const UNIT_PRICE = 8;
+   const DUE_DATE = 9;
+   const ORDER_STATUS = 10;
+   const COMMENTS = 11;
+   const LAST = 12;
    const COUNT = InputField::LAST - InputField::FIRST;
 }
 
@@ -85,8 +92,9 @@ function getSalesOrder()
       else
       {
          $salesOrder = new SalesOrder();
-         $salesOrder->orderDate = Time::now();
+         $salesOrder->dateTime = Time::now();
          $salesOrder->author = Authentication::getAuthenticatedUser()->employeeNumber;
+         $salesOrder->orderStatus = SalesOrderStatus::OPEN;
       }
    }
    
@@ -191,14 +199,20 @@ function getForm()
    $salesOrderId = getSalesOrderId();
    $salesOrder = getSalesOrder();
    $authorName = getAuthorName();
-   $orderDate = $salesOrder->orderDate ? Time::dateTimeObject($salesOrder->orderDate)->format("n/j/Y h:i A") : null;
-   $dueDate = $salesOrder->dueDate ? Time::dateTimeObject($salesOrder->dueDate)->format("n/j/Y h:i A") : null;
+   $enteredDate = $salesOrder->dateTime ? Time::toJavascriptDateTime($salesOrder->dateTime) : null;
+   $orderDate = $salesOrder->orderDate ? Time::toJavascriptDate($salesOrder->orderDate) : null;
+   $dueDate = $salesOrder->dueDate ? Time::toJavascriptDate($salesOrder->dueDate) : null;
+   $customerOptions = Customer::getOptions($salesOrder->customerId);
+   $orderStatusOptions = SalesOrderStatus::getOptions($salesOrder->orderStatus);
+   $unitPrice = ($salesOrder->unitPrice > 0) ? number_format($salesOrder->unitPrice, 4) : null;
+   $quantity = ($salesOrder->quantity > 0) ? $salesOrder->quantity : null;
    
    $html =
 <<< HEREDOC
    <form id="input-form" style="display: block">
       <input id="sales-order-id-input" type="hidden" name="salesOrderId" value="$salesOrderId"/>
       <input type="hidden" name="request" value="save_sales_order"/>
+      <input id="pptp-number" type="hidden" name="pptp-number" value="save_sales_order"/>
       
       <div class="form-item">
          <div class="form-label">Author</div>
@@ -206,18 +220,84 @@ function getForm()
       </div>
       
       <div class="form-item">
-         <div class="form-label">Order Date</div>
-         <input type="text" style="width:200px;" value="$orderDate" disabled/>
+         <div class="form-label">Entered</div>
+         <input type="datetime-local" style="width:200px;" value="$enteredDate" {$getDisabled(InputField::DATE)}/>
       </div>
+
+      <div class="flex-horizontal">
+
+         <div class="flex-vertical" style="margin-right: 50px">
+
+            <div class="form-section-header">Tracking</div>
+            
+            <div class="form-item">
+               <div class="form-label">Order #</div>
+               <input type="text" name="orderNumber" form="input-form" value="$salesOrder->orderNumber" {$getDisabled(InputField::ORDER_NUMBER)}/>
+            </div>
       
-      <div class="form-item">
-         <div class="form-label">Quantity</div>
-         <input id="quantity-input" type="number" name="quantity" style="width:100px;" value="{$salesOrder->quantity}" {$getDisabled(InputField::QUANTITY)} />
+            <div class="form-item">
+               <div class="form-label">PO #</div>
+               <input type="text" name="poNumber" form="input-form" value="$salesOrder->poNumber" {$getDisabled(InputField::PO_NUMBER)}/>
+            </div>
+      
+            <div class="form-item">
+               <div class="form-label">Order Date</div>
+               <input type="date" name="orderDate" value="$orderDate" {$getDisabled(InputField::ORDER_DATE)}/>
+            </div>
+      
+            <div class="form-item">
+               <div class="form-label">Due Date</div>
+               <input type="date" name="dueDate" value="$dueDate" {$getDisabled(InputField::DUE_DATE)}/>
+            </div>
+
+         </div>
+
+         <div class="flex-vertical">
+
+            <div class="form-section-header">Part Info</div>
+
+            <div class="form-item">
+               <div class="form-label-long">Customer</div>
+               <div class="flex-horizontal">
+                  <select name="customerId" {$getDisabled(InputField::CUSTOMER_ID)}>
+                     $customerOptions
+                  </select>
+               </div>
+            </div>
+      
+            <div class="form-item">
+               <div class="form-label-long">Customer Part #</div>
+               <input id="customer-part-number-input" type="text" name="customerPartNumber" form="input-form" value="$salesOrder->customerPartNumber" {$getDisabled(InputField::CUSTOMER_PART_NUMBER)}/>
+            </div>
+
+            <div class="form-item">
+               <div class="form-label-long">Unit Price</div>
+               <input type="number" name="unitPrice" form="input-form" value="$unitPrice" {$getDisabled(InputField::UNIT_PRICE)}/>
+            </div>
+      
+            <div class="form-item">
+               <div class="form-label-long">Quantity</div>
+               <input type="number" name="quantity" form="input-form" value="$quantity" {$getDisabled(InputField::QUANTITY)}/>
+            </div>
+
+         </div>
+
       </div>
-      
+
+      <div class="form-section-header">Order Status</div>
+
       <div class="form-item">
-         <div class="form-label">PO #</div>
-         <input id="po-number-input" type="text" name="poNumber" maxlength="32" style="width:150px;" value="{$salesOrder->poNumber}" {$getDisabled(InputField::PO_NUMBER)} />
+         <div class="form-label">Status</div>
+         <div class="flex-horizontal">
+            <select name="orderStatus" {$getDisabled(InputField::ORDER_STATUS)}>
+               $orderStatusOptions
+            </select>
+         </div>
+      </div>
+
+      <div class="form-item">
+         <div class="form-label">Comments</div>
+         <textarea class="comments-input" type="text" name="comments" rows="6" maxlength="256" style="width:500px" {$getDisabled(InputField::COMMENTS)}></textarea>
       </div>
       
    </form>
@@ -247,6 +327,6 @@ $description = getDescription();
 $formId = "input-form";
 $form = getForm();
 
-include ROOT.'/templates/formPageTemplate.php'
+include ROOT.'/templates/salesOrderPageTemplate.php'
       
 ?>

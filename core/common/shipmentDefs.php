@@ -12,6 +12,8 @@ abstract class ShipmentLocation
    
    public static $values = array(ShipmentLocation::PPTP, ShipmentLocation::PLATER, ShipmentLocation::CUSTOMER);
    
+   public static $activeLocations = [ShipmentLocation::PPTP, ShipmentLocation::PLATER];
+   
    public static function getLabel($location)
    {
       $labels = array("", "Pittsburgh Precision", "Plater", "Customer");
