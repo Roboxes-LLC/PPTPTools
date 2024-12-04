@@ -53,4 +53,22 @@ class PartManager
       
       return ($part ? $part->pptpNumber : null);
    }
+   
+   public static function getCustomerPartNumberOptions($customerId, $selectedCustomerPartNumber)
+   {
+      $html = "<option style=\"display:none\">";
+      
+      $parts = PartManager::getPartsForCustomer($customerId);
+      
+      foreach ($parts as $part)
+      {
+         $value = $part->customerNumber;
+         $label = $part->customerNumber;
+         $selected = ($part->customerNumber == $selectedCustomerPartNumber) ? "selected" : "";
+         
+         $html .= "<option value=\"$value\" $selected>$label</option>";
+      }
+   
+      return ($html);
+   }
 }

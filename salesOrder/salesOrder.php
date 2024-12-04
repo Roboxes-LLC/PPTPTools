@@ -24,7 +24,8 @@ abstract class InputField
    const DUE_DATE = 9;
    const ORDER_STATUS = 10;
    const COMMENTS = 11;
-   const LAST = 12;
+   const PPTP_PART_NUMBER = 12;
+   const LAST = 13;
    const COUNT = InputField::LAST - InputField::FIRST;
 }
 
@@ -127,6 +128,7 @@ function isEditable($field)
    {
       case InputField::DATE:
       case InputField::AUTHOR:
+      case InputField::PPTP_PART_NUMBER:
       {
          $isEditable = false;
          break;
@@ -206,6 +208,8 @@ function getForm()
    $orderStatusOptions = SalesOrderStatus::getOptions($salesOrder->orderStatus);
    $unitPrice = ($salesOrder->unitPrice > 0) ? number_format($salesOrder->unitPrice, 4) : null;
    $quantity = ($salesOrder->quantity > 0) ? $salesOrder->quantity : null;
+   $customerPartNumberOptions = PartManager::getCustomerPartNumberOptions($salesOrder->customerId, $salesOrder->customerPartNumber);
+   $pptpPartNumber = PartManager::getPPTPPartNumber($salesOrder->customerPartNumber);
    
    $html =
 <<< HEREDOC
@@ -259,7 +263,7 @@ function getForm()
             <div class="form-item">
                <div class="form-label-long">Customer</div>
                <div class="flex-horizontal">
-                  <select name="customerId" {$getDisabled(InputField::CUSTOMER_ID)}>
+                  <select id="customer-id-input" name="customerId" {$getDisabled(InputField::CUSTOMER_ID)}>
                      $customerOptions
                   </select>
                </div>
@@ -267,7 +271,14 @@ function getForm()
       
             <div class="form-item">
                <div class="form-label-long">Customer Part #</div>
-               <input id="customer-part-number-input" type="text" name="customerPartNumber" form="input-form" value="$salesOrder->customerPartNumber" {$getDisabled(InputField::CUSTOMER_PART_NUMBER)}/>
+               <select id="customer-part-number-input" name="customerPartNumber" {$getDisabled(InputField::CUSTOMER_PART_NUMBER)}>
+                  $customerPartNumberOptions
+               </select>
+            </div>
+
+            <div class="form-item">
+               <div class="form-label-long">PPTP Part #</div>
+               <input id="pptp-part-number-input" type="text" value="$pptpPartNumber" {$getDisabled(InputField::PPTP_PART_NUMBER)}/>            
             </div>
 
             <div class="form-item">

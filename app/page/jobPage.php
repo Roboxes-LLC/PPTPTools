@@ -3,6 +3,7 @@
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/app/page/page.php';
 require_once ROOT.'/common/jobInfo.php';
+require_once ROOT.'/core/manager/partManager.php';
 
 class JobPage extends Page
 {
@@ -31,6 +32,27 @@ class JobPage extends Page
                   else
                   {
                      $this->error("Invalid part [$pptpPartNumber]");
+                  }
+               }
+               break;
+            }
+            
+            case "fetch_parts":
+            {
+               if (Page::requireParams($params, ["customerId"]))
+               {
+                  $customerId = $params->getInt("customerId");
+                  
+                  $customer = Customer::load($customerId);
+                  
+                  if ($customer)
+                  {
+                     $this->result->success = true;
+                     $this->result->parts = PartManager::getPartsForCustomer($customerId);
+                  }
+                  else
+                  {
+                     $this->error("Invalid customer id [$customerId]");
                   }
                }
                break;

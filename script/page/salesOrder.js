@@ -8,7 +8,9 @@ class SalesOrder
       "START_DATE_INPUT": "start-date-input",
       "END_DATE_INPUT": "end-date-input",
       "ACTIVE_ORDERS_INPUT": "active-orders-input",
+      "CUSTOMER_ID_INPUT": "customer-id-input",
       "CUSTOMER_PART_NUMBER_INPUT": "customer-part-number-input",
+      "PPTP_PART_NUMBER_INPUT": "pptp-part-number-input",
       // Buttons
       "ADD_BUTTON":    "add-button",
       "SAVE_BUTTON":   "save-button",
@@ -76,6 +78,20 @@ class SalesOrder
             this.onCancelButton();
          }.bind(this));
       }      
+      
+      if (document.getElementById(SalesOrder.PageElements.CUSTOMER_ID_INPUT) != null)
+      {
+         document.getElementById(SalesOrder.PageElements.CUSTOMER_ID_INPUT).addEventListener('change', function() {
+            this.onCustomerIdChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT) != null)
+      {
+         document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT).addEventListener('change', function() {
+            this.onCustomerPartNumberChanged();
+         }.bind(this));
+      }
    }      
    
    createTable(tableElementId)
@@ -147,7 +163,7 @@ class SalesOrder
       let url = "/app/page/shipment/";
       let params = new Object();
       params.request = "fetch";
-      params.customerNumber = this.getPartNumber();
+      params.customerNumber = this.getCustomerPartNumber();
       
       let tableElementQuery = "#" + tableElementId;
    
@@ -244,6 +260,42 @@ class SalesOrder
       this.onFilterUpdate();
       
       setSession("salesOrder.activeOrders", (activeQuotes ? "true" : "false"));
+   }
+   
+   onCustomerIdChanged()
+   {
+      var customerId = document.getElementById(SalesOrder.PageElements.CUSTOMER_ID_INPUT).value;
+      
+      var requestUrl = `/app/page/job/?request=fetch_parts&customerId=${customerId}`;
+      console.log(requestUrl);
+
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            this.updateCustomerPartNumberOptions(response.parts);
+            document.getElementById(SalesOrder.PageElements.PPTP_PART_NUMBER_INPUT).value = null;
+         }
+         else
+         {
+            console.log("Call to fetch items failed.");
+         }
+      }.bind(this));
+   }
+   
+   onCustomerPartNumberChanged()
+   {
+      let element = document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT);
+      
+      for (let option of element.options)
+      {
+         if (option.selected)
+         {
+            let pptpNumber = option.dataset["pptpnumber"];
+            
+            document.getElementById(SalesOrder.PageElements.PPTP_PART_NUMBER_INPUT).value = pptpNumber;
+            break;
+         }
+      }
    }
    
    validateFilterDates()
@@ -350,8 +402,29 @@ class SalesOrder
       return (true);
    }
    
-   getPartNumber()
+   getCustomerPartNumber()
    {
       return (document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT).value);
+   }
+   
+   updateCustomerPartNumberOptions(parts)
+   {
+      var element = document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT);
+      
+      while (element.firstChild)
+      {
+         element.removeChild(element.firstChild);
+      }
+
+      for (var part of parts)
+      {
+         var option = document.createElement('option');
+         option.innerHTML = part.customerNumber;
+         option.value = part.customerNumber;
+         option.dataset["pptpnumber"] = part.pptpNumber;
+         element.appendChild(option);
+      }
+   
+      element.value = null;
    }
 }

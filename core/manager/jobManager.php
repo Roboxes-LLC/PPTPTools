@@ -14,9 +14,19 @@ class JobManager
    
    public static function getCustomer($jobId)
    {
-      $customerId = 16;
+      $customer = null;
       
-      $customer = Customer::load($customerId);
+      $job = JobInfo::load($jobId);
+      
+      if ($job)
+      {
+         $part = Part::load($job->partNumber, Part::USE_PPTP_NUMBER);
+         
+         if ($part)
+         {
+            $customer = Customer::load($part->customerId);
+         }
+      }
       
       return ($customer);
    }
