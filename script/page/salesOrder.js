@@ -8,20 +8,30 @@ class SalesOrder
       "START_DATE_INPUT": "start-date-input",
       "END_DATE_INPUT": "end-date-input",
       "ACTIVE_ORDERS_INPUT": "active-orders-input",
-      "CUSTOMER_ID_INPUT": "customer-id-input",
+      "CUSTOMER_NAME_INPUT": "customer-name-input",
       "CUSTOMER_PART_NUMBER_INPUT": "customer-part-number-input",
       "PPTP_PART_NUMBER_INPUT": "pptp-part-number-input",
+      "UNIT_PRICE_INPUT": "unit-price-input",
+      "QUANTITY_INPUT": "quantity-input",
+      "TOTAL_INPUT": "total-input",
       // Buttons
       "ADD_BUTTON":    "add-button",
       "SAVE_BUTTON":   "save-button",
       "CANCEL_BUTTON": "cancel-button"
    };
+   
+   static NOTES_LENGTH_MAX = 16;
 
    constructor()
    {      
       this.table = null;
       
       this.setup();
+      
+      if (document.getElementById(SalesOrder.PageElements.UNIT_PRICE_INPUT) != null)
+      {
+         this.updateTotal();
+      }
    }
    
    setup()
@@ -86,10 +96,24 @@ class SalesOrder
          }.bind(this));
       }
       
-      if (document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT) != null)
+      if (document.getElementById(SalesOrder.PageElements.PPTP_PART_NUMBER_INPUT) != null)
       {
-         document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT).addEventListener('change', function() {
-            this.onCustomerPartNumberChanged();
+         document.getElementById(SalesOrder.PageElements.PPTP_PART_NUMBER_INPUT).addEventListener('change', function() {
+            this.onPptpPartNumberChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(SalesOrder.PageElements.UNIT_PRICE_INPUT) != null)
+      {
+         document.getElementById(SalesOrder.PageElements.UNIT_PRICE_INPUT).addEventListener('input', function() {
+            this.updateTotal();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(SalesOrder.PageElements.QUANTITY_INPUT) != null)
+      {
+         document.getElementById(SalesOrder.PageElements.QUANTITY_INPUT).addEventListener('input', function() {
+            this.updateTotal();
          }.bind(this));
       }
    }      
@@ -120,17 +144,70 @@ class SalesOrder
             {                         field:"salesOrderId",            visible:false},
             {title:"Order",           field:"orderNumber",             headerFilter:true},
             {title:"Author",          field:"authorFullName",          headerFilter:true},                   
-            {title:"Entered",         field:"formattedDateTime",       headerFilter:true},
+            {title:"Entered",         field:"dateTime",                headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered) {
+                  return (cell.getRow().getData().formattedDateTime);
+               }
+            },
             {title:"Customer",        field:"customerName",            headerFilter:true},
             {title:"Part #",          field:"customerPartNumber",      headerFilter:true},
             {title:"PO #",            field:"poNumber",                headerFilter:true},
             {title:"Ordered",         field:"formattedOrderDate",      headerFilter:true},
             {title:"Quantity",        field:"quantity",                headerFilter:false},
-            {title:"Unit Price",      field:"formattedUnitPrice",      headerFilter:false},
-            {title:"Due",             field:"formattedDueDate",        headerFilter:true},
+            {title:"Unit Price",      field:"formattedUnitPrice",      headerFilter:false,
+               formatter:function(cell, formatterParams, onRendered) {
+                  let cellValue = cell.getValue();
+                  
+                  return ((cellValue == null) ? "---" : cellValue);
+               }
+            },
+            {title:"Total",           field:"formattedTotal",          headerFilter:false,
+               formatter:function(cell, formatterParams, onRendered) {
+                  let cellValue = cell.getValue();
+                  
+                  return ((cellValue == null) ? "---" : cellValue);
+               }
+            },            
+            {title:"Due",             field:"dueDate",                 headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered) {
+                  return (cell.getRow().getData().formattedDueDate);
+               }
+            },
             {title:"Status",          field:"orderStatus",             headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   return (cell.getRow().getData().orderStatusLabel);
+               }
+            },
+            {title:"Packing List",   field:"packingList", hozAlign:"left",
+               formatter:function(cell, formatterParams, onRendered){
+                  let cellValue = "";
+                  
+                  let filename = cell.getValue();
+                  let url = cell.getRow().getData().packingListUrl;
+                  
+                  if (filename != null)
+                  {
+                     var truncatedFilename = (filename.length > 20) ? filename.substr(0, 20) + "..." : filename; 
+                     cellValue = `<a href="${url}" target="_blank">${truncatedFilename}</a>`;
+                  }
+                  
+                  return (cellValue);
+                }
+            },
+            {title:"Comments",        field:"comments",  tooltip:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  let comments = cell.getValue();
+                  
+                  let abridgedComments = comments;
+                  if (abridgedComments != null)
+                  {
+                     abridgedComments = 
+                        (abridgedComments.length > SalesOrder.NOTES_LENGTH_MAX) ? 
+                           abridgedComments.substring(0, (SalesOrder.NOTES_LENGTH_MAX - 3)) + "..." :
+                           abridgedComments;
+                  } 
+                        
+                  return (abridgedComments);
                }
             },
             {title:"",                field:"delete",
@@ -140,11 +217,15 @@ class SalesOrder
             }
          ],
          initialSort:[
-            {column:"salesOrderId", dir:"desc"}
+            {column:"dueDate", dir:"asc"}
          ],
          cellClick:function(e, cell){
             let salesOrderId = parseInt(cell.getRow().getData().salesOrderId);
             
+            if (cell.getColumn().getField() == "packingList")
+            {
+               e.stopPropagation();
+            }
             if (cell.getColumn().getField() == "delete")
             {
                this.onDeleteButton(salesOrderId);
@@ -262,40 +343,22 @@ class SalesOrder
       setSession("salesOrder.activeOrders", (activeQuotes ? "true" : "false"));
    }
    
-   onCustomerIdChanged()
+   onPptpPartNumberChanged()
    {
-      var customerId = document.getElementById(SalesOrder.PageElements.CUSTOMER_ID_INPUT).value;
+      let pptpPartNumber = document.getElementById(SalesOrder.PageElements.PPTP_PART_NUMBER_INPUT).value;
       
-      var requestUrl = `/app/page/job/?request=fetch_parts&customerId=${customerId}`;
-      console.log(requestUrl);
-
+      let requestUrl = `/app/page/part/?request=fetch&partNumber=${pptpPartNumber}`;
+      
       ajaxRequest(requestUrl, function(response) {
          if (response.success == true)
          {
-            this.updateCustomerPartNumberOptions(response.parts);
-            document.getElementById(SalesOrder.PageElements.PPTP_PART_NUMBER_INPUT).value = null;
+            this.updateCustomerPartNumber(response.part);
          }
          else
          {
             console.log("Call to fetch items failed.");
          }
       }.bind(this));
-   }
-   
-   onCustomerPartNumberChanged()
-   {
-      let element = document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT);
-      
-      for (let option of element.options)
-      {
-         if (option.selected)
-         {
-            let pptpNumber = option.dataset["pptpnumber"];
-            
-            document.getElementById(SalesOrder.PageElements.PPTP_PART_NUMBER_INPUT).value = pptpNumber;
-            break;
-         }
-      }
    }
    
    validateFilterDates()
@@ -351,7 +414,9 @@ class SalesOrder
    
    onSaveButton()
    {
-      if (this.validateForm())
+      let form = document.getElementById(SalesOrder.PageElements.INPUT_FORM);
+      
+      if (form.reportValidity() == true)
       {
          submitForm(SalesOrder.PageElements.INPUT_FORM, "/app/page/salesOrder", function (response) {
             if (response.success == true)
@@ -363,6 +428,10 @@ class SalesOrder
                alert(response.error);
             }
          })
+      }
+      else
+      {
+         showInvalid(SalesOrder.PageElements.INPUT_FORM);
       }
    }
    
@@ -407,24 +476,30 @@ class SalesOrder
       return (document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT).value);
    }
    
-   updateCustomerPartNumberOptions(parts)
+   updateCustomerPartNumber(part)
    {
-      var element = document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT);
-      
-      while (element.firstChild)
+      if (part != null)
       {
-         element.removeChild(element.firstChild);
+         document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT).value = part.customerNumber;
+         document.getElementById(SalesOrder.PageElements.CUSTOMER_NAME_INPUT).value = part.customerName;
       }
-
-      for (var part of parts)
+      else
       {
-         var option = document.createElement('option');
-         option.innerHTML = part.customerNumber;
-         option.value = part.customerNumber;
-         option.dataset["pptpnumber"] = part.pptpNumber;
-         element.appendChild(option);
+         document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT).value = null;
+         document.getElementById(SalesOrder.PageElements.CUSTOMER_NAME_INPUT).value = null;
       }
+   }
    
-      element.value = null;
+   updateTotal()
+   {
+      let unitPrice = parseFloat(document.getElementById(SalesOrder.PageElements.UNIT_PRICE_INPUT).value);
+      let quantity = parseInt(document.getElementById(SalesOrder.PageElements.QUANTITY_INPUT).value);
+      let total = 0.0;
+      if ((unitPrice != NaN) && (quantity != NaN))
+      {
+         total = (unitPrice * quantity).toFixed(2);
+      }
+      
+      document.getElementById(SalesOrder.PageElements.TOTAL_INPUT).value = total;
    }
 }

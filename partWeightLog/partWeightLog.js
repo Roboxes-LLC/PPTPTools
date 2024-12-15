@@ -92,6 +92,7 @@ function onPanTicketCodeChange()
    clear("job-number-input");
    clear("wc-number-input");
    clear("manufacture-date-input");
+   clear("sample-weight-input");
    clear("operator-input");
    // Customer requested these fields be preserved.  10/23
    //clear("pan-count-input");
@@ -208,30 +209,36 @@ function onJobNumberChange()
    {
       enable("wc-number-input");
       
+      // Poplulate sample weight based on the associated part.
+      
+      let pptpPartNumber = jobNumber.substring(0, jobNumber.indexOf("-"));
+      requestUrl = `/app/page/part/?request=fetch&partNumber=${pptpPartNumber}`;
+      
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            this.updateSampleWeight(response.part.sampleWeight);
+         }
+         else
+         {
+            console.log("Call to fetch part failed.");
+         }
+      }.bind(this));
+      
       // Populate WC numbers based on selected job number.
       
-      // AJAX call to populate WC numbers based on selected job number.
       requestUrl = "../api/wcNumbers/?jobNumber=" + jobNumber;
       
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function()
-      {
-         if (this.readyState == 4 && this.status == 200)
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
          {
-            var json = JSON.parse(this.responseText);
-            
-            if (json.success == true)
-            {
-               updateWcOptions(json.wcNumbers);   
-            }
-            else
-            {
-               console.log("API call to retrieve WC numbers failed.");
-            }
+            updateWcOptions(response.wcNumbers);   
          }
-      };
-      xhttp.open("GET", requestUrl, true);
-      xhttp.send();  
+         else
+         {
+            console.log("API call to retrieve WC numbers failed.");
+         }
+      }.bind(this));
    }
 }
 
@@ -245,37 +252,18 @@ function onWcNumberChange()
    // AJAX call to populate WC numbers based on selected job number.
    requestUrl = "../api/jobInfo/?jobNumber=" + jobNumber + "&wcNumber=" + wcNumber;
    
-   var xhttp = new XMLHttpRequest();
-   xhttp.onreadystatechange = function()
-   {
-      if (this.readyState == 4 && this.status == 200)
+   ajaxRequest(requestUrl, function(response) {
+      if (response.success == true)
       {
-         try
-         {
-            var json = JSON.parse(this.responseText);
-            
-            if (json.success == true)
-            {
-               sampleWeight = json.jobInfo.sampleWeight;          
-            }
-            else
-            {
-               console.log("API call to retrieve job info failed.");
-               
-               sampleWeight = 0.0;
-            }
-            
-            updateCalculatedPartCount();
-         }
-         catch (exception)
-         {
-            console.log("JSON syntax error");
-            console.log(this.responseText);
-         }
+         this.updateSampleWeight(response.jobInfo.part.sampleWeight);
       }
-   };
-   xhttp.open("GET", requestUrl, true);
-   xhttp.send();  
+      else
+      {
+         console.log("API call to retrieve job info failed.");
+   
+         this.updateSampleWeight(0.0);
+      }
+   }.bind(this));
 }
 
 function onTodayButton()
@@ -442,7 +430,7 @@ function twoDigitNumber(value)
    return (("0" + value).slice(-2));
 }
 
-function updateTimeCardInfo(timeCardInfo, jobNumber, wcNumber, wcLabel, operatorName)
+function updateTimeCardInfo(timeCardInfo, jobNumber, wcNumber, wcLabel, operatorName, sampleWeight)
 {
    var operator = timeCardInfo.employeeNumber;
    var date = new Date(timeCardInfo.dateTime);
@@ -457,6 +445,7 @@ function updateTimeCardInfo(timeCardInfo, jobNumber, wcNumber, wcLabel, operator
    set("wc-number-input", wcNumber);
    set("operator-input", operator);
    set("manufacture-date-input", manufactureDate);
+   set("sample-weight-input", sampleWeight);
    
    updateCalculatedPartCount();
 }
@@ -470,6 +459,14 @@ function getBaseWeight()
    var baseWeight = ((panCount * panWeight) + palletWeight);
 
    return (baseWeight);
+}
+
+function updateSampleWeight(sampleWeight)
+{
+   this.sampleWeight = sampleWeight;
+   document.getElementById('sample-weight-input').value = sampleWeight;
+   
+   this.updateCalculatedPartCount();
 }
 
 function updateCalculatedPartCount()

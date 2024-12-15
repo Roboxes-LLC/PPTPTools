@@ -1066,7 +1066,7 @@ class DailySummaryReport
                $row->runTime =              $reportEntry->timeCardInfo->runTime;
                $row->setupTime =            $reportEntry->timeCardInfo->setupTime;
                $row->panCount =             $reportEntry->timeCardInfo->panCount;
-               $row->sampleWeight =         $reportEntry->jobInfo->sampleWeight;
+               $row->sampleWeight =         $reportEntry->jobInfo->part->sampleWeight;
                $row->partWeight =           $reportEntry->partWeight;
                $row->grossPartsPerHour =    $reportEntry->jobInfo->grossPartsPerHour;
                $row->netPartsPerHour =      $reportEntry->jobInfo->netPartsPerHour;

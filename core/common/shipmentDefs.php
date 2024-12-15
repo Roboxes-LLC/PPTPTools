@@ -23,9 +23,7 @@ abstract class ShipmentLocation
    
    public static function getOptions($selectedLocation)
    {
-      $label = "";
-      $value = ShipmentLocation::UNKNOWN;
-      $html = "<option value=\"$value\">$label</option>";
+      $html = "<option style=\"display:none\">";
       
       foreach (ShipmentLocation::$values as $location)
       {

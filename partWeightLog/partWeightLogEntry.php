@@ -29,7 +29,8 @@ abstract class PartWeightLogInputField
    const PAN_WEIGHT = 9;
    const PALLET_WEIGHT = 10;
    const PART_COUNT = 11;
-   const LAST = 12;
+   const SAMPLE_WEIGHT = 12;
+   const LAST = 13;
    const COUNT = PartWeightLogInputField::LAST - PartWeightLogInputField::FIRST;
 }
 
@@ -112,54 +113,55 @@ function isEditable($field)
       case PartWeightLogInputField::JOB_NUMBER:
       case PartWeightLogInputField::OPERATOR:
       case PartWeightLogInputField::MANUFACTURE_DATE:
-         {
-            // Edit status disabled by time card ID.
-            $isEditable &= (getTimeCardId() == TimeCardInfo::UNKNOWN_TIME_CARD_ID);
-            break;
-         }
+      {
+         // Edit status disabled by time card ID.
+         $isEditable &= (getTimeCardId() == TimeCardInfo::UNKNOWN_TIME_CARD_ID);
+         break;
+      }
          
       case PartWeightLogInputField::WC_NUMBER:
-         {
-            // Edit status determined by both time card ID and job number selection.
-            $isEditable &= ((getTimeCardId() == TimeCardInfo::UNKNOWN_TIME_CARD_ID) &&
-               (getJobNumber() != JobInfo::UNKNOWN_JOB_NUMBER));
-            break;
-         }
+      {
+         // Edit status determined by both time card ID and job number selection.
+         $isEditable &= ((getTimeCardId() == TimeCardInfo::UNKNOWN_TIME_CARD_ID) &&
+            (getJobNumber() != JobInfo::UNKNOWN_JOB_NUMBER));
+         break;
+      }
          
       case PartWeightLogInputField::WEIGH_DATE:
-         {
-            // Weigh date is restricted to current date/time.
-            $isEditable = false;
-            break;
-         }
+      {
+         // Weigh date is restricted to current date/time.
+         $isEditable = false;
+         break;
+      }
          
       case PartWeightLogInputField::LABORER:
+      {
+         // Only administrative users can make an entry under another user's name.
+         $userInfo = Authentication::getAuthenticatedUser();
+         if ($userInfo)
          {
-            // Only administrative users can make an entry under another user's name.
-            $userInfo = Authentication::getAuthenticatedUser();
-            if ($userInfo)
-            {
-               $isEditable &= (($userInfo->roles == Role::SUPER_USER) ||
-                  ($userInfo->roles == Role::ADMIN));
-            }
-            break;
+            $isEditable &= (($userInfo->roles == Role::SUPER_USER) ||
+               ($userInfo->roles == Role::ADMIN));
          }
+         break;
+      }
          
       case PartWeightLogInputField::PAN_WEIGHT:
       case PartWeightLogInputField::PALLET_WEIGHT:
       case PartWeightLogInputField::PART_COUNT:
-         {
-            $isEditable = false;
-         }
+      case PartWeightLogInputField::SAMPLE_WEIGHT:
+      {
+         $isEditable = false;
+      }
          
       case PartWeightLogInputField::TIME_CARD_ID:
       case PartWeightLogInputField::PART_WEIGHT:
       case PartWeightLogInputField::PAN_COUNT:
       default:
-         {
-            // Edit status based solely on view.
-            break;
-         }
+      {
+         // Edit status based solely on view.
+         break;
+      }
    }
    
    return ($isEditable);
@@ -249,8 +251,7 @@ function getManufactureDate()
    
    if ($timeCardInfo)
    {
-      $dateTime = new DateTime($timeCardInfo->manufactureDate, new DateTimeZone('America/New_York'));
-      $manufactureDate = $dateTime->format(Time::$javascriptDateFormat);
+      $manufactureDate = Time::toJavascriptDate($timeCardInfo->manufactureDate);
    }
    else
    {
@@ -258,8 +259,7 @@ function getManufactureDate()
       
       if ($partWeightEntry)
       {
-         $dateTime = new DateTime($partWeightEntry->manufactureDate, new DateTimeZone('America/New_York'));
-         $manufactureDate = $dateTime->format(Time::$javascriptDateFormat);
+         $manufactureDate = Time::toJavascriptDate($partWeightEntry->manufactureDate);
       }
    }
    
@@ -268,14 +268,13 @@ function getManufactureDate()
 
 function getWeighDate()
 {
-   $weighDate = Time::now(Time::$javascriptDateFormat);
+   $weighDate = Time::toJavascriptDate(Time::now());
    
    $partWeightEntry = getPartWeightEntry();
    
    if ($partWeightEntry)
    {
-      $dateTime = new DateTime($partWeightEntry->dateTime, new DateTimeZone('America/New_York'));
-      $weighDate = $dateTime->format(Time::$javascriptDateFormat);
+      $weighDate = Time::toJavascriptDate($partWeightEntry->dateTime);
    }
    
    return ($weighDate);
@@ -463,7 +462,7 @@ function getSampleWeight()
    
    if ($jobInfo)
    {
-      $sampleWeight = $jobInfo->sampleWeight;
+      $sampleWeight = $jobInfo->part->sampleWeight;
    }
    
    return ($sampleWeight);
@@ -613,6 +612,7 @@ if (!Authentication::isAuthenticated())
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>  
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>  
    <script src="partWeightLog.js<?php echo versionQuery();?>"></script>
 
@@ -726,6 +726,11 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label">Pallet Weight</div>
                   <input id="pallet-weight-input" type="number" style="width:50px;" name="palletWeight" form="input-form" value="<?php echo getPalletWeight(); ?>" <?php echo getDisabled(PartWeightLogInputField::PALLET_WEIGHT); ?>>&nbsp;lbs
+               </div>
+               
+               <div class="form-item">
+                  <div class="form-label">Sample Weight</div>
+                  <input id="sample-weight-input" type="number" style="width:75px;" value="<?php echo getSampleWeight() ?>" step="0.0001" <?php echo getDisabled(PartWeightLogInputField::SAMPLE_WEIGHT); ?>>&nbsp;lbs
                </div>
                
                <div class="form-item">

@@ -3,7 +3,11 @@
 if (!defined('ROOT')) require_once '../root.php';
 require_once ROOT.'/app/common/appPage.php';
 require_once ROOT.'/app/common/menu.php';
+require_once ROOT.'/core/component/part.php';
 require_once ROOT.'/core/component/shipment.php';
+require_once ROOT.'/core/manager/customerManager.php';
+require_once ROOT.'/core/manager/jobManager.php';
+require_once ROOT.'/core/manager/partManager.php';
 require_once ROOT.'/common/authentication.php';
 require_once ROOT.'/common/header.php';
 require_once ROOT.'/common/userInfo.php';
@@ -18,7 +22,12 @@ abstract class InputField
    const CUSTOMER_PART_NUMBER = 3;
    const QUANTITY = 4;
    const PACKING_LIST_NUMBER = 5;
-   const LAST = 6;
+   const PACKING_LIST = 6;
+   const PPTP_PART_NUMBER = 7;
+   const CUSTOMER_NAME = 8;
+   const LOCATION = 9;
+   const JOB_NUMBER = 10;
+   const LAST = 11;
    const COUNT = InputField::LAST - InputField::FIRST;
 }
 
@@ -88,6 +97,7 @@ function getShipment()
          $shipment = new Shipment();
          $shipment->dateTime = Time::now();
          $shipment->author = Authentication::getAuthenticatedUser()->employeeNumber;
+         $shipment->location = ShipmentLocation::PPTP;
       }
    }
    
@@ -118,8 +128,17 @@ function isEditable($field)
    
    switch ($field)
    {
+      case InputField::JOB_NUMBER:
+      {
+         $isEditable = ($view == View::NEW_SHIPMENT);
+         break;
+      }
+         
       case InputField::DATE:
       case InputField::AUTHOR:
+      case InputField::PPTP_PART_NUMBER:
+      case InputField::CUSTOMER_NAME:
+      case InputField::CUSTOMER_PART_NUMBER:
       {
          $isEditable = false;
          break;
@@ -185,6 +204,37 @@ function getDescription()
    return ($description);
 }
 
+function getPackingListInput()
+{
+   global $PACKING_LISTS_DIR;
+   
+   $packingListInput = "";
+   
+   $packingList = getShipment()->packingList;
+   
+   $disabled = getDisabled(InputField::PACKING_LIST);
+   
+   if ($packingList)
+   {
+      $packingListInput =
+<<<HEREDOC
+         <div class="flex-vertical flex-top">
+            <a href="{$PACKING_LISTS_DIR}{$packingList}" style="margin-bottom: 10px;" target="_blank">$packingList</a>
+            <input type="file" name="packingList" form="input-form" $disabled>
+         </div>
+HEREDOC;
+   }
+   else
+   {
+      $packingListInput =
+<<<HEREDOC
+         <input type="file" name="packingList" form="input-form" $disabled>
+HEREDOC;
+   }
+   
+   return ($packingListInput);
+}
+
 function getForm()
 {
    global $getDisabled;
@@ -193,6 +243,22 @@ function getForm()
    $shipment = getShipment();
    $authorName = getAuthorName();
    $entryDate = getShipment()->dateTime ? Time::dateTimeObject(getShipment()->dateTime)->format("n/j/Y h:i A") : null;
+   $packingListInput = getPackingListInput();
+   $jobNumberOptions = JobManager::getJobNumberOptions($shipment->jobNumber, JobManager::ACTIVE_JOBS);
+   $pptpPartNumber = JobInfo::getJobPrefix($shipment->jobNumber);
+   $pptpPartNumberOptions = PartManager::getPptpPartNumberOptions($pptpPartNumber);
+   $locationOptions = ShipmentLocation::getOptions($shipment->location);
+   $quantity = ($shipment->quantity > 0) ? $shipment->quantity : null;
+   
+   $part = Part::load($pptpPartNumber, Part::USE_PPTP_NUMBER);
+   
+   $customerName = "";
+   $customerPartNumber = "";
+   if ($part)
+   {
+      $customerPartNumber = $part->customerNumber;
+      $customerName = CustomerManager::getCustomerName($part->customerId);
+   }
    
    $html = 
 <<< HEREDOC
@@ -211,13 +277,53 @@ function getForm()
       </div>
 
       <div class="form-item">
-         <div class="form-label">Quantity</div>
-         <input id="address-line-1-input" type="number" name="quantity" style="width:100px;" value="{$shipment->quantity}" {$getDisabled(InputField::QUANTITY)} />
+         <div class="form-label-long">Job #</div>
+         <select id="job-number-input" name="jobNumber" {$getDisabled(InputField::JOB_NUMBER)} required>
+            $jobNumberOptions
+         </select>
       </div>
+
+      <div class="form-section-header">Part Info</div>
+
+      <div class="form-item">
+         <div class="form-label-long">PPTP Part #</div>
+         <input id="pptp-part-number-input" type="text" value="$pptpPartNumber" {$getDisabled(InputField::PPTP_PART_NUMBER)}/>
+      </div>
+
+      <div class="form-item">
+         <div class="form-label-long">Customer</div>
+         <input id="customer-name-input" type="text" value="$customerName" {$getDisabled(InputField::CUSTOMER_NAME)}/>            
+      </div>
+
+      <div class="form-item">
+         <div class="form-label-long">Customer Part #</div>
+         <input id="customer-part-number-input" type="text" value="$customerPartNumber" {$getDisabled(InputField::CUSTOMER_PART_NUMBER)}/>            
+      </div>
+
+      <div class="form-item">
+         <div class="form-label-long">Quantity</div>
+         <input id="address-line-1-input" type="number" name="quantity" style="width:100px;" value="$quantity" min="1" max="1000000" {$getDisabled(InputField::QUANTITY)} required/>
+      </div>
+
+      <div class="form-section-header">Tracking</div>
 
       <div class="form-item">
          <div class="form-label">Packing #</div>
          <input id="address-line-1-input" type="text" name="packingListNumber" maxlength="32" style="width:150px;" value="{$shipment->packingListNumber}" {$getDisabled(InputField::PACKING_LIST_NUMBER)} />
+      </div>
+
+      <div class="form-item">
+         <div class="form-label">Packing List</div>
+         $packingListInput
+      </div>
+
+      <div class="form-item">
+         <div class="form-label">Location</div>
+         <div class="flex-horizontal">
+            <select name="location" {$getDisabled(InputField::LOCATION)} required>
+               $locationOptions
+            </select>
+         </div>
       </div>
 
    </form>

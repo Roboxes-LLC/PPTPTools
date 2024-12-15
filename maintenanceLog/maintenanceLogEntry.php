@@ -179,14 +179,13 @@ function getDescription()
 
 function getEntryDate()
 {
-   $entryDate = Time::now(Time::$javascriptDateFormat);
+   $entryDate = Time::toJavascriptDate(Time::now());
    
    $maintenanceEntry = getMaintenanceEntry();
    
    if ($maintenanceEntry)
    {
-      $dateTime = new DateTime($maintenanceEntry->dateTime, new DateTimeZone('America/New_York'));
-      $entryDate = $dateTime->format(Time::$javascriptDateFormat);
+      $entryDate = Time::toJavascriptDate($maintenanceEntry->dateTime);
    }
    
    return ($entryDate);
@@ -194,14 +193,13 @@ function getEntryDate()
 
 function getMaintenanceDate()
 {
-   $maintenanceDate = Time::now(Time::$javascriptDateFormat);
+   $maintenanceDate = Time::toJavascriptDate(Time::now());
    
    $maintenanceEntry = getMaintenanceEntry();
    
    if ($maintenanceEntry)
    {
-      $dateTime = new DateTime($maintenanceEntry->maintenanceDateTime, new DateTimeZone('America/New_York'));
-      $maintenanceDate = $dateTime->format(Time::$javascriptDateFormat);
+      $maintenanceDate = Time::toJavascriptDate($maintenanceEntry->maintenanceDateTime);
    }
    
    return ($maintenanceDate);

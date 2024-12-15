@@ -59,6 +59,7 @@ class ShipmentManager
          $shipment->jobNumber = $inspection->jobNumber;
          $shipment->inspectionId = $inspectionId;
          $shipment->quantity = $inspection->quantity;
+         $shipment->location = ShipmentLocation::PPTP;
          
          Shipment::save($shipment);
       }

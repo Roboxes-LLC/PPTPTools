@@ -14,34 +14,83 @@ class ShipmentPage extends Page
       {
          case "save_shipment":
          {
-            /*
-            if ($this->authenticate([Permission::EDIT_SCHEDULE]))
+            if ($this->authenticate([Permission::EDIT_SHIPMENT]))
             {
-               if (Page::requireParams($params, ["jobId", "startDate"]))
+               if (Page::requireParams($params, ["shipmentId", "quantity", "packingListNumber", "location"]))
                {
-                  $jobId = $params->getInt("jobId");
-                  $startDate = $params->get("startDate");
-                  $endDate = $params->keyExists("endDate") ? $params->get("endDate") : null;
-
+                  $shipmentId = $params->getInt("shipmentId");
+                  $newShipment = ($shipmentId == Shipment::UNKNOWN_SHIPMENT_ID);
                   
-                  $shipment = new ShipmentEntry();
-                  $shipment->jobId = $jobId;
-                  $shipment->startDate = $startDate;
-                  $shipment->endDate = $endDate;
-                  $shipment->employeeNumber = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
-                  
-                  if (ShipmentEntry::save($shipment))
+                  $shipment = null;
+                  if ($newShipment && Page::requireParams($params, ["jobNumber"]))  // New entries specify the jobNumber manually.
                   {
-                     $this->result->success = true;
-                     $this->result->scheduleEntry = ShipmentEntry::load($shipment->entryId);
+                     $shipment = new Shipment();
+                     $shipment->author = Authentication::getAuthenticatedUser()->employeeNumber;
+                     $shipment->dateTime = Time::now();
+                     $shipment->location = ShipmentLocation::PPTP;
                   }
                   else
                   {
-                     $this->error("Database error");
+                     $shipment = Shipment::load($shipmentId);
+                     
+                     if (!$shipment)
+                     {
+                        $shipment = null;
+                        $this->error("Invalid shipment id [$shipmentId]");
+                     }
+                  }
+                  
+                  if ($shipment)
+                  {
+                     ShipmentPage::getShipmentParams($shipment, $params);
+                     
+                     if (Shipment::save($shipment))
+                     {
+                        $this->result->shipmentId = $shipment->shipmentId;
+                        $this->result->shipment = $shipment;
+                        $this->result->success = true;
+                        
+                        //
+                        // Process uploaded packing list.
+                        //
+                        
+                        if (isset($_FILES["packingList"]) && ($_FILES["packingList"]["name"] != ""))
+                        {
+                           $uploadStatus = Upload::uploadPackingList($_FILES["packingList"]);
+                           
+                           if ($uploadStatus == UploadStatus::UPLOADED)
+                           {
+                              $filename = basename($_FILES["packingList"]["name"]);
+                              
+                              $shipment->packingList = $filename;
+                              
+                              if (!Shipment::save($shipment))
+                              {
+                                 $this->error("Database error");
+                              }
+                           }
+                           else
+                           {
+                              $this->error("File upload failed! " . UploadStatus::toString($uploadStatus));
+                           }
+                        }
+                        
+                        /*
+                         ActivityLog::logComponentActivity(
+                            Authentication::getAuthenticatedUser()->employeeNumber,
+                            ($newShipment ? ActivityType::ADD_SHIPMENT : ActivityType::EDIT_SHIPMENT),
+                            $shipment->shipmentId,
+                            $shipment->???);
+                         */
+                     }
+                     else
+                     {
+                        $this->error("Database error");
+                     }
+                     
                   }
                }
             }
-            */
             break;
          }
          
@@ -254,11 +303,27 @@ class ShipmentPage extends Page
       echo json_encode($this->result);
    }
    
+   private function getShipmentParams(&$shipment, $params)
+   {
+      $shipment->quantity = $params->getInt("quantity");
+      $shipment->packingListNumber = $params->get("packingListNumber");
+      $shipment->location = $params->getInt("location");
+      
+      // New entries specify the jobNumber manually.
+      if ($params->keyExists("jobNumber"))
+      {
+         $shipment->jobNumber = $params->get("jobNumber");
+      }
+   }
+   
    private static function augmentShipment(&$shipment)
    {
+      global $PACKING_LISTS_DIR;
+      
       $shipment->shipmentTicketCode = ShipmentTicket::getShipmentTicketCode($shipment->shipmentId);
       $shipment->locationLabel = ShipmentLocation::getLabel($shipment->location);
       $shipment->formattedDateTime = ($shipment->dateTime) ? Time::dateTimeObject($shipment->dateTime)->format("n/j/Y h:i A") : null;
+      $shipment->packingListUrl = $shipment->packingList ? $PACKING_LISTS_DIR . $shipment->packingList : null;
    }
    
    private static function augmentTimeCard(&$timeCardInfo)

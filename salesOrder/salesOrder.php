@@ -4,6 +4,7 @@ if (!defined('ROOT')) require_once '../root.php';
 require_once ROOT.'/app/common/appPage.php';
 require_once ROOT.'/app/common/menu.php';
 require_once ROOT.'/core/component/salesOrder.php';
+require_once ROOT.'/core/manager/customerManager.php';
 require_once ROOT.'/core/manager/partManager.php';
 require_once ROOT.'/common/authentication.php';
 require_once ROOT.'/common/header.php';
@@ -15,7 +16,7 @@ abstract class InputField
    const AUTHOR = InputField::FIRST;
    const DATE = 1;
    const ORDER_NUMBER = 2;
-   const CUSTOMER_ID = 3;
+   const CUSTOMER_NAME = 3;
    const CUSTOMER_PART_NUMBER = 4;
    const PO_NUMBER = 5;
    const ORDER_DATE = 6;
@@ -25,7 +26,9 @@ abstract class InputField
    const ORDER_STATUS = 10;
    const COMMENTS = 11;
    const PPTP_PART_NUMBER = 12;
-   const LAST = 13;
+   const TOTAL = 13;
+   const PACKING_LIST = 14;
+   const LAST = 15;
    const COUNT = InputField::LAST - InputField::FIRST;
 }
 
@@ -94,6 +97,7 @@ function getSalesOrder()
       {
          $salesOrder = new SalesOrder();
          $salesOrder->dateTime = Time::now();
+         $salesOrder->orderDate = Time::now();
          $salesOrder->author = Authentication::getAuthenticatedUser()->employeeNumber;
          $salesOrder->orderStatus = SalesOrderStatus::OPEN;
       }
@@ -128,9 +132,18 @@ function isEditable($field)
    {
       case InputField::DATE:
       case InputField::AUTHOR:
-      case InputField::PPTP_PART_NUMBER:
+      case InputField::CUSTOMER_NAME:
+      case InputField::CUSTOMER_PART_NUMBER:
+      case InputField::TOTAL:
       {
          $isEditable = false;
+         break;
+      }
+
+      case InputField::UNIT_PRICE:
+      case InputField::TOTAL:
+      {
+         $isEditable = Authentication::checkPermissions(Permission::VIEW_PRICES);
          break;
       }
          
@@ -194,6 +207,37 @@ function getDescription()
    return ($description);
 }
 
+function getPackingListInput()
+{
+   global $PACKING_LISTS_DIR;
+   
+   $packingListInput = "";
+   
+   $packingList = getSalesOrder()->packingList;
+   
+   $disabled = getDisabled(InputField::PACKING_LIST);
+   
+   if ($packingList)
+   {
+      $packingListInput =
+<<<HEREDOC
+         <div class="flex-vertical flex-top">
+            <a href="{$PACKING_LISTS_DIR}{$packingList}" style="margin-bottom: 10px;" target="_blank">$packingList</a>
+            <input type="file" name="packingList" form="input-form" $disabled>
+         </div>
+HEREDOC;
+   }
+   else
+   {
+      $packingListInput =
+<<<HEREDOC
+         <input type="file" name="packingList" form="input-form" $disabled>
+HEREDOC;
+   }
+   
+   return ($packingListInput);
+}
+
 function getForm()
 {
    global $getDisabled;
@@ -201,15 +245,21 @@ function getForm()
    $salesOrderId = getSalesOrderId();
    $salesOrder = getSalesOrder();
    $authorName = getAuthorName();
-   $enteredDate = $salesOrder->dateTime ? Time::toJavascriptDateTime($salesOrder->dateTime) : null;
+   $enteredDate = $salesOrder->dateTime ? Time::toJavascriptDateTime($salesOrder->dateTime): null;
    $orderDate = $salesOrder->orderDate ? Time::toJavascriptDate($salesOrder->orderDate) : null;
    $dueDate = $salesOrder->dueDate ? Time::toJavascriptDate($salesOrder->dueDate) : null;
-   $customerOptions = Customer::getOptions($salesOrder->customerId);
    $orderStatusOptions = SalesOrderStatus::getOptions($salesOrder->orderStatus);
-   $unitPrice = ($salesOrder->unitPrice > 0) ? number_format($salesOrder->unitPrice, 4) : null;
    $quantity = ($salesOrder->quantity > 0) ? $salesOrder->quantity : null;
-   $customerPartNumberOptions = PartManager::getCustomerPartNumberOptions($salesOrder->customerId, $salesOrder->customerPartNumber);
    $pptpPartNumber = PartManager::getPPTPPartNumber($salesOrder->customerPartNumber);
+   $pptpPartNumberOptions = PartManager::getPptpPartNumberOptions($pptpPartNumber);
+   $customerName = CustomerManager::getCustomerName($salesOrder->customerId);
+   $packingListInput = getPackingListInput();
+   
+   $unitPrice = null;
+   if (Authentication::checkPermissions(Permission::VIEW_PRICES))
+   {
+      $unitPrice = ($salesOrder->unitPrice > 0) ? number_format($salesOrder->unitPrice, 4) : null;
+   }
    
    $html =
 <<< HEREDOC
@@ -236,22 +286,27 @@ function getForm()
             
             <div class="form-item">
                <div class="form-label">Order #</div>
-               <input type="text" name="orderNumber" form="input-form" value="$salesOrder->orderNumber" {$getDisabled(InputField::ORDER_NUMBER)}/>
+               <input type="text" name="orderNumber" value="$salesOrder->orderNumber" {$getDisabled(InputField::ORDER_NUMBER)} required/>
             </div>
       
             <div class="form-item">
                <div class="form-label">PO #</div>
-               <input type="text" name="poNumber" form="input-form" value="$salesOrder->poNumber" {$getDisabled(InputField::PO_NUMBER)}/>
+               <input type="text" name="poNumber" value="$salesOrder->poNumber" {$getDisabled(InputField::PO_NUMBER)} required/>
             </div>
       
             <div class="form-item">
                <div class="form-label">Order Date</div>
-               <input type="date" name="orderDate" value="$orderDate" {$getDisabled(InputField::ORDER_DATE)}/>
+               <input type="date" name="orderDate" value="$orderDate" {$getDisabled(InputField::ORDER_DATE)} required/>
             </div>
       
             <div class="form-item">
                <div class="form-label">Due Date</div>
-               <input type="date" name="dueDate" value="$dueDate" {$getDisabled(InputField::DUE_DATE)}/>
+               <input type="date" name="dueDate" value="$dueDate" {$getDisabled(InputField::DUE_DATE)} required/>
+            </div>
+
+            <div class="form-item">
+               <div class="form-label">Packing List</div>
+               $packingListInput
             </div>
 
          </div>
@@ -261,34 +316,35 @@ function getForm()
             <div class="form-section-header">Part Info</div>
 
             <div class="form-item">
-               <div class="form-label-long">Customer</div>
-               <div class="flex-horizontal">
-                  <select id="customer-id-input" name="customerId" {$getDisabled(InputField::CUSTOMER_ID)}>
-                     $customerOptions
-                  </select>
-               </div>
-            </div>
-      
-            <div class="form-item">
-               <div class="form-label-long">Customer Part #</div>
-               <select id="customer-part-number-input" name="customerPartNumber" {$getDisabled(InputField::CUSTOMER_PART_NUMBER)}>
-                  $customerPartNumberOptions
+               <div class="form-label-long">PPTP Part #</div>
+               <select id="pptp-part-number-input" name="pptpPartNumber" {$getDisabled(InputField::PPTP_PART_NUMBER)} required>
+                  $pptpPartNumberOptions
                </select>
             </div>
 
             <div class="form-item">
-               <div class="form-label-long">PPTP Part #</div>
-               <input id="pptp-part-number-input" type="text" value="$pptpPartNumber" {$getDisabled(InputField::PPTP_PART_NUMBER)}/>            
+               <div class="form-label-long">Customer</div>
+               <input id="customer-name-input" type="text" value="$customerName" {$getDisabled(InputField::CUSTOMER_NAME)}/>
+            </div>
+
+            <div class="form-item">
+               <div class="form-label-long">Customer Part #</div>
+               <input id="customer-part-number-input" type="text" value="$salesOrder->customerPartNumber" {$getDisabled(InputField::CUSTOMER_PART_NUMBER)}/>
             </div>
 
             <div class="form-item">
                <div class="form-label-long">Unit Price</div>
-               <input type="number" name="unitPrice" form="input-form" value="$unitPrice" {$getDisabled(InputField::UNIT_PRICE)}/>
+               <input id="unit-price-input" type="number" name="unitPrice" value="$unitPrice" min="0.0" step="0.0001" {$getDisabled(InputField::UNIT_PRICE)} required/>
             </div>
-      
+
             <div class="form-item">
                <div class="form-label-long">Quantity</div>
-               <input type="number" name="quantity" form="input-form" value="$quantity" {$getDisabled(InputField::QUANTITY)}/>
+               <input id="quantity-input" type="number" name="quantity" value="$quantity" {$getDisabled(InputField::QUANTITY)} required/>
+            </div>
+
+            <div class="form-item">
+               <div class="form-label-long">Total</div>
+               <input id="total-input" type="number" value="" {$getDisabled(InputField::TOTAL)}/>
             </div>
 
          </div>
@@ -308,7 +364,7 @@ function getForm()
 
       <div class="form-item">
          <div class="form-label">Comments</div>
-         <textarea class="comments-input" type="text" name="comments" rows="6" maxlength="256" style="width:500px" {$getDisabled(InputField::COMMENTS)}></textarea>
+         <textarea class="comments-input" type="text" name="comments" rows="6" maxlength="256" style="width:500px" {$getDisabled(InputField::COMMENTS)}>$salesOrder->comments</textarea>
       </div>
       
    </form>

@@ -74,4 +74,9 @@ class CustomerManager
       
       return ($html);
    }
+   
+   public static function getCustomerName($customerId)
+   {
+      return (($customer = Customer::load($customerId)) ? $customer->customerName : "");
+   }
 }

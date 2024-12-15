@@ -144,6 +144,8 @@ class PartPage extends Page
                   {
                      $this->result->part = $part;
                      $this->result->success = true;
+                     
+                     PartPage::augmentPart($this->result->part);
                   }
                   else
                   {

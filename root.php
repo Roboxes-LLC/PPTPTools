@@ -11,6 +11,9 @@ $UPLOADS_DIR = "/uploads/";
 // Folder for material certs uploads.
 $MATERIAL_CERTS_DIR = "/uploads/materialCerts/";
 
+// Folder for packing lists uploads.
+$PACKING_LISTS_DIR = "/uploads/packingLists/";
+
 // Path for material certs uploads.
 $UPLOAD_PATH = $_SERVER['DOCUMENT_ROOT'];
 

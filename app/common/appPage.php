@@ -104,7 +104,7 @@ class AppPage
             AppPage::SCHEDULE =>            new AppPage(AppPage::SCHEDULE,            "Schedule",             null,                   Permission::VIEW_SCHEDULE,            "/schedule/schedule.php"),
             AppPage::NOTIFICATION =>        new AppPage(AppPage::NOTIFICATION,        "Messages",             "notifications",        Permission::NOTIFICATIONS,            "/notification/notifications.php"),
             AppPage::SHIPMENT =>            new AppPage(AppPage::SHIPMENT,            "Parts Inventory",      "inventory",            Permission::VIEW_SHIPMENT,            "/shipment/shipments.php"),
-            AppPage::SALES_ORDER =>         new AppPage(AppPage::SALES_ORDER,         "Orders",               null,                   Permission::VIEW_SALES_ORDER,         "/salesOrder/salesOrders.php"),
+            AppPage::SALES_ORDER =>         new AppPage(AppPage::SALES_ORDER,         "Sales Orders",         null,                   Permission::VIEW_SALES_ORDER,         "/salesOrder/salesOrders.php"),
             AppPage::PART =>                new AppPage(AppPage::PART,                "Parts",                null,                   Permission::VIEW_JOB,                 "/part/parts.php")
          );
       }

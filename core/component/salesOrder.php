@@ -44,6 +44,8 @@ class SalesOrder
 {
    const UNKNOWN_SALES_ORDER_ID = 0;
    
+   const MAX_PACKING_LIST_FILENAME_SIZE = 128;
+   
    public $salesOrderId;
    public $author;
    public $dateTime;
@@ -57,6 +59,7 @@ class SalesOrder
    public $dueDate;
    public $orderStatus;
    public $comments;
+   public $packingList;
    
    public function __construct()
    {
@@ -73,7 +76,7 @@ class SalesOrder
       $this->dueDate = null;
       $this->orderStatus = SalesOrderStatus::UNKNOWN;
       $this->comments = null;
-      
+      $this->packingList = null;
    }
    
    public function initialize($row)
@@ -97,6 +100,7 @@ class SalesOrder
                           null;
       $this->orderStatus = intval($row["orderStatus"]);
       $this->comments = $row["comments"];
+      $this->packingList = $row["packingList"];
    }
    
    // **************************************************************************
@@ -137,5 +141,12 @@ class SalesOrder
    public static function delete($salesOrderId)
    {
       return (PPTPDatabaseAlt::getInstance()->deleteSalesOrder($salesOrderId));
+   }
+   
+   // **************************************************************************
+   
+   public function getTotal()
+   {
+      return ($this->unitPrice * $this->quantity);
    }
 }

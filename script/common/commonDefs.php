@@ -6,6 +6,7 @@ require_once ROOT.'/core/component/contact.php';
 require_once ROOT.'/core/component/customer.php';
 require_once ROOT.'/core/component/quote.php';
 require_once ROOT.'/core/component/salesOrder.php';
+require_once ROOT.'/core/component/shipment.php';
 
 header('Content-Type: text/javascript');
 
@@ -18,6 +19,8 @@ UNKNOWN_CONTACT_ID = <?php echo Contact::UNKNOWN_CONTACT_ID ?>;
 UNKNOWN_QUOTE_ID = <?php echo Quote::UNKNOWN_QUOTE_ID ?>;
 
 UNKNOWN_SALES_ORDER_ID = <?php echo SalesOrder::UNKNOWN_SALES_ORDER_ID ?>;
+
+UNKNOWN_SHIPMENT_ID = <?php echo Shipment::UNKNOWN_SHIPMENT_ID ?>;
 
 <?php echo QuoteStatus::getJavascript("QuoteStatus") . "\n" ?>
 

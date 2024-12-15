@@ -482,14 +482,14 @@ function getEntryDate()
       }
    }
 
-   $entryDate = $dateTime->format(Time::$javascriptDateFormat) . "T" . $dateTime->format(Time::$javascriptTimeFormat);   
+   $entryDate = $dateTime->format(Time::JAVASCRIPT_DATE_FORMAT) . "T" . $dateTime->format(Time::JAVASCRIPT_TIME_FORMAT);   
    
    return ($entryDate);
 }
 
 function getManufactureDate()
 {
-   $mfgDate = Time::now(Time::$javascriptDateFormat);
+   $mfgDate = Time::toJavascriptDate(Time::now());
    
    if (getView() != View::NEW_SHIPPING_CARD)
    {
@@ -497,8 +497,7 @@ function getManufactureDate()
       
       if ($shippingCardInfo)
       {
-         $dateTime = new DateTime($shippingCardInfo->manufactureDate, new DateTimeZone('America/New_York'));
-         $mfgDate = $dateTime->format(Time::$javascriptDateFormat);
+         $mfgDate = Time::toJavascriptDate($shippingCardInfo->manufactureDate);
       }
    }
    

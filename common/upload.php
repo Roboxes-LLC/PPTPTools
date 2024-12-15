@@ -83,13 +83,39 @@ class Upload
       
       $returnStatus = UploadStatus::UPLOADED;
       
-      $storedFilename = Upload::generateFilename(basename($file["name"]));
+      $target = $UPLOADS . basename($file["name"]);
       
-      Upload::shortenFilename($storedFilename, QuoteAttachment::MAX_FILENAME_SIZE);
+      if (!Upload::validateFileFormat($file, array("pdf")))
+      {
+         $returnStatus = UploadStatus::BAD_FILE_TYPE;
+      }
+      else if (!Upload::validateFileSize($file, 2000000))  // 2MB
+      {
+         $returnStatus = UploadStatus::BAD_FILE_SIZE;
+      }
+      else if (!move_uploaded_file($file["tmp_name"], $target))
+      {
+         $returnStatus = UploadStatus::FILE_ERROR;
+      }
       
-      $target = $UPLOADS . $storedFilename;
       
-      if (!Upload::validateFileSize($file, 1000000))  // 1MB
+      return ($returnStatus);
+   }
+   
+   static function uploadPackingList($file)
+   {
+      global $UPLOAD_PATH;
+      global $PACKING_LISTS_DIR;
+      
+      $returnStatus = UploadStatus::UPLOADED;
+      
+      $target = $UPLOAD_PATH . $PACKING_LISTS_DIR . basename($file["name"]);
+      
+      if (!Upload::validateFileFormat($file, array("pdf")))
+      {
+         $returnStatus = UploadStatus::BAD_FILE_TYPE;
+      }
+      else if (!Upload::validateFileSize($file, 2000000))  // 2MB
       {
          $returnStatus = UploadStatus::BAD_FILE_SIZE;
       }

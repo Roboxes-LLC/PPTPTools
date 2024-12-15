@@ -240,8 +240,7 @@ function getManufactureDate()
    
    if ($timeCardInfo)
    {
-      $dateTime = new DateTime($timeCardInfo->manufactureDate, new DateTimeZone('America/New_York'));
-      $manufactureDate = $dateTime->format(Time::$javascriptDateFormat);
+      $manufactureDate = Time::toJavascriptDate($timeCardInfo->manufactureDate);
    }
    else
    {
@@ -249,8 +248,7 @@ function getManufactureDate()
       
       if ($partWasherEntry)
       {
-         $dateTime = new DateTime($partWasherEntry->manufactureDate, new DateTimeZone('America/New_York'));
-         $manufactureDate = $dateTime->format(Time::$javascriptDateFormat);
+         $manufactureDate = Time::toJavascriptDate($partWasherEntry->manufactureDate);
       }
    }
    
@@ -259,14 +257,13 @@ function getManufactureDate()
 
 function getWashDate()
 {
-   $washDate = Time::now(Time::$javascriptDateFormat);
+   $washDate = Time::toJavascriptDate(Time::now());
    
    $partWasherEntry = getPartWasherEntry();
    
    if ($partWasherEntry)
    {
-      $dateTime = new DateTime($partWasherEntry->dateTime, new DateTimeZone('America/New_York'));
-      $washDate = $dateTime->format(Time::$javascriptDateFormat);
+      $washDate = Time::toJavascriptDate($partWasherEntry->dateTime);
    }
    
    return ($washDate);

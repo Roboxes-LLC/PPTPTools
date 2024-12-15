@@ -1063,9 +1063,9 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
       "INSERT INTO job " .
-      "(jobNumber, creator, dateTime, partNumber, sampleWeight, wcNumber, grossPartsPerHour, netPartsPerHour, status, customerPrint, firstPartTemplateId, inProcessTemplateId, lineTemplateId, qcpTemplateId, finalTemplateId) " .
+      "(jobNumber, creator, dateTime, partNumber, wcNumber, grossPartsPerHour, netPartsPerHour, status) " .
       "VALUES " .
-      "('$jobInfo->jobNumber', '$jobInfo->creator', '$dateTime', '$jobInfo->partNumber', '$jobInfo->sampleWeight', '$jobInfo->wcNumber', '$jobInfo->grossPartsPerHour', '$jobInfo->netPartsPerHour', '$jobInfo->status', '$jobInfo->customerPrint', '$jobInfo->firstPartTemplateId', '$jobInfo->inProcessTemplateId', '$jobInfo->lineTemplateId', '$jobInfo->qcpTemplateId', '$jobInfo->finalTemplateId');";
+      "('$jobInfo->jobNumber', '$jobInfo->creator', '$dateTime', '$jobInfo->partNumber', '$jobInfo->wcNumber', '$jobInfo->grossPartsPerHour', '$jobInfo->netPartsPerHour', '$jobInfo->status');";
 
       $result = $this->query($query);
 
@@ -1078,7 +1078,7 @@ class PPTPDatabase extends MySqlDatabase
       
       $query =
          "UPDATE job " .
-         "SET creator = '$jobInfo->creator', dateTime = '$dateTime', partNumber = '$jobInfo->partNumber', sampleWeight = '$jobInfo->sampleWeight', wcNumber = '$jobInfo->wcNumber', grossPartsPerHour = '$jobInfo->grossPartsPerHour', netPartsPerHour = '$jobInfo->netPartsPerHour', status = '$jobInfo->status', customerPrint = '$jobInfo->customerPrint', firstPartTemplateId = '$jobInfo->firstPartTemplateId', inProcessTemplateId = '$jobInfo->inProcessTemplateId', lineTemplateId = '$jobInfo->lineTemplateId',  qcpTemplateId = '$jobInfo->qcpTemplateId', finalTemplateId = '$jobInfo->finalTemplateId' " .
+         "SET creator = '$jobInfo->creator', dateTime = '$dateTime', partNumber = '$jobInfo->partNumber', wcNumber = '$jobInfo->wcNumber', grossPartsPerHour = '$jobInfo->grossPartsPerHour', netPartsPerHour = '$jobInfo->netPartsPerHour', status = '$jobInfo->status' " .
          "WHERE jobId = '$jobInfo->jobId';";
 
       $result = $this->query($query);
@@ -1276,7 +1276,7 @@ class PPTPDatabase extends MySqlDatabase
       return ($result);
    }
    
-   public function getInspectionTemplatesForJobNumber($inspectionType, $jobNumber)
+   public function getInspectionTemplatesForPart($inspectionType, $partNumber)
    {
       $result = null;
       
@@ -1292,31 +1292,31 @@ class PPTPDatabase extends MySqlDatabase
          {
             case InspectionType::LINE:
             {
-               $templateIdClause = "job.lineTemplateId = inspectiontemplate.templateId";
+               $templateIdClause = "part.lineTemplateId = inspectiontemplate.templateId";
                break;
             }
             
             case InspectionType::QCP:
             {
-               $templateIdClause = "job.qcpTemplateId = inspectiontemplate.templateId";
+               $templateIdClause = "part.qcpTemplateId = inspectiontemplate.templateId";
                break;
             }
             
             case InspectionType::IN_PROCESS:
             {
-               $templateIdClause = "job.inProcessTemplateId = inspectiontemplate.templateId";
+               $templateIdClause = "part.inProcessTemplateId = inspectiontemplate.templateId";
                break;
             }
             
             case InspectionType::FIRST_PART:
             {
-               $templateIdClause = "job.firstPartTemplateId = inspectiontemplate.templateId";
+               $templateIdClause = "part.firstPartTemplateId = inspectiontemplate.templateId";
                break;
             }
             
             case InspectionType::FINAL:
             {
-               $templateIdClause = "job.finalTemplateId = inspectiontemplate.templateId";
+               $templateIdClause = "part.finalTemplateId = inspectiontemplate.templateId";
                break;
             }
             
@@ -1327,8 +1327,8 @@ class PPTPDatabase extends MySqlDatabase
          }
       
          $query = "SELECT * FROM inspectiontemplate " .
-                  "INNER JOIN job ON $templateIdClause " .
-                  "WHERE $typeClause AND job.jobNumber = '$jobNumber' " .
+                  "INNER JOIN part ON $templateIdClause " .
+                  "WHERE $typeClause AND part.pptpNumber = '$partNumber' " .
                   "ORDER BY name ASC;";
          
          $result = $this->query($query);

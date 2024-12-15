@@ -15,7 +15,7 @@ class SalesOrderPage extends Page
           {
              if ($this->authenticate([Permission::EDIT_SALES_ORDER]))
              {
-                if (Page::requireParams($params, ["salesOrderId", "orderNumber", "customerId", "customerPartNumber", "poNumber", "orderDate", "quantity", "unitPrice", "dueDate", "orderStatus", "comments"]))
+                if (Page::requireParams($params, ["salesOrderId", "orderNumber", "pptpPartNumber", "poNumber", "orderDate", "quantity", "dueDate", "orderStatus", "comments"]))
                 {
                    $salesOrderId = $params->getInt("salesOrderId");
                    $newOrder = ($salesOrderId == SalesOrder::UNKNOWN_SALES_ORDER_ID);
@@ -48,6 +48,31 @@ class SalesOrderPage extends Page
                          $this->result->salesOrder = $salesOrder;
                          $this->result->success = true;
                          
+                         //
+                         // Process uploaded packing list.
+                         //
+                         
+                         if (isset($_FILES["packingList"]) && ($_FILES["packingList"]["name"] != ""))
+                         {
+                            $uploadStatus = Upload::uploadPackingList($_FILES["packingList"]);
+                            
+                            if ($uploadStatus == UploadStatus::UPLOADED)
+                            {
+                               $filename = basename($_FILES["packingList"]["name"]);
+                               
+                               $salesOrder->packingList = $filename;
+                               
+                               if (!SalesOrder::save($salesOrder))
+                               {
+                                  $this->error("Database error");
+                               }
+                            }
+                            else
+                            {
+                               $this->error("File upload failed! " . UploadStatus::toString($uploadStatus));
+                            }
+                         }
+                         
                          /*
                          ActivityLog::logComponentActivity(
                             Authentication::getAuthenticatedUser()->employeeNumber,
@@ -68,7 +93,7 @@ class SalesOrderPage extends Page
           
           case "delete_sales_order":
           {
-             if ($this->authenticate([Permission::EDIT_SALES_ORDER]))
+             if ($this->authenticate([Permission::DELETE_SALES_ORDER]))
              {
                 if (Page::requireParams($params, ["salesOrderId"]))
                 {
@@ -93,7 +118,7 @@ class SalesOrderPage extends Page
                    }
                    else
                    {
-                      $this->error("Invalid sales order id [salesOrderId]");
+                      $this->error("Invalid sales order id [$jobId]");
                    }               
                 }
              }
@@ -116,6 +141,8 @@ class SalesOrderPage extends Page
                    {
                       $this->result->salesOrder = $salesOrder;
                       $this->result->success = true;
+                      
+                      SalesOrderPage::augmentSalesOrder($this->result->salesOrder);
                    }
                    else
                    {
@@ -166,8 +193,6 @@ class SalesOrderPage extends Page
     private function getSalesOrderParams($salesOrder, $params)
     {
        $salesOrder->orderNumber = $params->get("orderNumber");
-       $salesOrder->customerId = $params->getInt("customerId");
-       $salesOrder->customerPartNumber = $params->get("customerPartNumber");
        $salesOrder->poNumber = $params->get("poNumber");
        $salesOrder->orderDate = $params->get("orderDate");
        $salesOrder->quantity = $params->getInt("quantity");
@@ -175,10 +200,26 @@ class SalesOrderPage extends Page
        $salesOrder->dueDate = $params->get("dueDate");
        $salesOrder->orderStatus = $params->getInt("orderStatus");
        $salesOrder->comments = $params->get("comments");
+       
+       $pptpNumber = $params->get("pptpPartNumber");
+       $part = Part::load($pptpNumber, Part::USE_PPTP_NUMBER);
+       if ($part)
+       {
+          $salesOrder->customerId = $part->customerId;
+          $salesOrder->customerPartNumber = $part->customerNumber; 
+       }
+       
+       // May not be set for users without VIEW_PRICES permissions.
+       if ($params->keyExists("unitPrice"))
+       {
+          $salesOrder->unitPrice = $params->getFloat("unitPrice");
+       }
     }
     
     private static function augmentSalesOrder(&$salesOrder)
     {
+       global $PACKING_LISTS_DIR;
+       
        $userInfo = UserInfo::load($salesOrder->author);
        $salesOrder->authorFullName = $salesOrder ? $userInfo->getFullName() : "";
        
@@ -189,11 +230,26 @@ class SalesOrderPage extends Page
        
        $salesOrder->formattedOrderDate = Time::dateTimeObject($salesOrder->orderDate)->format("n/j/Y");
        
-       $salesOrder->formattedUnitPrice = "$".number_format($salesOrder->unitPrice, 4);
-       
        $salesOrder->formattedDueDate = Time::dateTimeObject($salesOrder->dueDate)->format("n/j/Y");
        
        $salesOrder->orderStatusLabel = SalesOrderStatus::getLabel($salesOrder->orderStatus);
+       
+       $salesOrder->packingListUrl = $salesOrder->packingList ? $PACKING_LISTS_DIR . $salesOrder->packingList : null;
+       
+       if (Authentication::checkPermissions(Permission::VIEW_PRICES))
+       {
+          $salesOrder->formattedUnitPrice = "$".number_format($salesOrder->unitPrice, 4);
+          $salesOrder->total = $salesOrder->getTotal();
+          $salesOrder->formattedTotal = "$".number_format($salesOrder->getTotal(), 2);
+       }
+       else
+       {
+          // Redact pricing information.
+          $salesOrder->unitPrice = null;
+          $salesOrder->formattedUnitPrice = null;
+          $salesOrder->total = null;
+          $salesOrder->formattedTotal = null;
+       }
     }
  }
  

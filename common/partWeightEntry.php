@@ -70,10 +70,10 @@ class PartWeightEntry
       
       $jobInfo = JobInfo::load($jobId);
       
-      if ($jobInfo && ($jobInfo->sampleWeight > JobInfo::UNKNOWN_SAMPLE_WEIGHT))
+      if ($jobInfo && ($jobInfo->part->sampleWeight > JobInfo::UNKNOWN_SAMPLE_WEIGHT))
       {
          $partCount = 
-            ($this->weight - ($this->palletWeight + ($this->panCount * $this->panWeight))) / ($jobInfo->sampleWeight);
+            ($this->weight - ($this->palletWeight + ($this->panCount * $this->panWeight))) / ($jobInfo->part->sampleWeight);
          
          $partCount = round($partCount, 0);
       }

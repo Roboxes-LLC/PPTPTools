@@ -502,9 +502,12 @@ function formattedDate(date)
    return (formattedDate);
 }
 
-function onTodayButton()
+function onTodayButton(button)
 {
-   var mfgDateInput = document.querySelector('#mfg-date-input');
+   let inputId = button.dataset["inputfield"];
+   console.log(inputId);
+   
+   var mfgDateInput = document.querySelector(`#${inputId}`);
    
    if (mfgDateInput != null)
    {
@@ -514,9 +517,12 @@ function onTodayButton()
    }         
 }
 
-function onYesterdayButton()
+function onYesterdayButton(button)
 {
-   var mfgDateInput = document.querySelector('#mfg-date-input');
+   let inputId = button.dataset["inputfield"];
+   console.log(inputId);
+      
+   var mfgDateInput = document.querySelector(`#${inputId}`);
    
    if (mfgDateInput != null)
    {

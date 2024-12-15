@@ -3,6 +3,7 @@
 if (!defined('ROOT')) require_once '../root.php';
 require_once ROOT.'/app/common/menu.php';
 require_once ROOT.'/core/manager/jobManager.php';
+require_once ROOT.'/core/manager/partManager.php';
 require_once ROOT.'/common/header.php';
 require_once ROOT.'/common/jobInfo.php';
 require_once ROOT.'/common/params.php';
@@ -12,23 +13,25 @@ abstract class JobInputField
    const FIRST = 0;
    const CREATOR = JobInputField::FIRST;
    const DATE = 1;
-   const JOB_NUMBER = 2;
-   const PART_NUMBER = 3;
-   const WC_NUMBER = 4;
-   const SAMPLE_WEIGHT = 5;
-   const CYCLE_TIME = 6;
-   const GROSS_PIECES = 7;
-   const NET_PERCENTAGE = 8;
-   const NET_PIECES = 9;
-   const STATUS = 10;
-   const FIRST_PART_TEMPLATE = 11;
-   const IN_PROCESS_TEMPLATE = 12;
-   const LINE_TEMPLATE = 13;
-   const QCP_TEMPLATE = 14;
-   const FINAL_TEMPLATE = 15;
-   const CUSTOMER_PRINT = 16;
-   const CUSTOMER_PART_NUMBER = 17;
-   const LAST = 18;
+   const JOB_NUMBER_PREFIX = 2;
+   const JOB_NUMBER_SUFFIX = 3;
+   const PART_NUMBER = 4;
+   const WC_NUMBER = 5;
+   const SAMPLE_WEIGHT = 6;
+   const CYCLE_TIME = 7;
+   const GROSS_PIECES = 8;
+   const NET_PERCENTAGE = 9;
+   const NET_PIECES = 10;
+   const STATUS = 11;
+   const FIRST_PART_TEMPLATE = 12;
+   const IN_PROCESS_TEMPLATE = 13;
+   const LINE_TEMPLATE = 14;
+   const QCP_TEMPLATE = 15;
+   const FINAL_TEMPLATE = 16;
+   const CUSTOMER_PRINT = 17;
+   const CUSTOMER_PART_NUMBER = 18;
+   const CUSTOMER_NAME = 19;
+   const LAST = 20;
    const COUNT = JobInputField::LAST - JobInputField::FIRST;
 }
 
@@ -79,6 +82,9 @@ function isEditable($field)
    {
       case JobInputField::CREATOR:
       case JobInputField::DATE:
+      case JobInputField::JOB_NUMBER_PREFIX:
+      case JobInputField::CUSTOMER_PART_NUMBER:
+      case JobInputField::CUSTOMER_NAME:
       case JobInputField::CYCLE_TIME:
       case JobInputField::NET_PERCENTAGE:
       {
@@ -86,15 +92,10 @@ function isEditable($field)
          break;
       }
       
-      case JobInputField::JOB_NUMBER:
+      case JobInputField::PART_NUMBER:
+      case JobInputField::JOB_NUMBER_SUFFIX:
       {
          $isEditable = ($view == View::NEW_JOB);
-         break;
-      }
-      
-      case JobInputField::CUSTOMER_PART_NUMBER:
-      {
-         $isEditable = !hasCustomerPartNumber();
          break;
       }
 
@@ -112,6 +113,7 @@ function getDisabled($field)
 {
    return (isEditable($field) ? "" : "disabled");
 }
+$getDisabled = "getDisabled";  // For calling in HEREDOC.
 
 function getJobId()
 {
@@ -164,27 +166,23 @@ function getJobInfo()
          {
             // Clear out certain values.
             $jobInfo->jobId = JobInfo::UNKNOWN_JOB_ID;
-            
-            // Set new fields.
-            $jobInfo->jobNumber = JobInfo::getJobPrefix($jobInfo->jobNumber);
-            $jobInfo->dateTime = Time::now("Y-m-d h:i:s A");
-            $jobInfo->status = JobStatus::PENDING;
-            
-            if ($user = Authentication::getAuthenticatedUser())
-            {
-               $jobInfo->creator = $user->employeeNumber;
-            }
+         }
+         else
+         {
+            $jobInfo = new JobInfo();
          }
       }
-      
-      if ($jobInfo == null)
+      else
       {
          $jobInfo = new JobInfo();
-         
-         if ($user = Authentication::getAuthenticatedUser())
-         {
-            $jobInfo->creator = $user->employeeNumber;
-         }
+      }
+      
+      // Set properties for new jobs.
+      if ($jobInfo->jobId == JobInfo::UNKNOWN_JOB_ID)
+      {
+         $jobInfo->creator = Authentication::getAuthenticatedUser()->employeeNumber;
+         $jobInfo->dateTime = Time::now();
+         $jobInfo->status = JobStatus::PENDING;
       }
    }
    
@@ -229,7 +227,7 @@ function getDescription()
    {
       case View::NEW_JOB:
       {
-         $description = "Start with a job number and work center.  Gross/net parts per hour can be found in the JobBOSS database for your part.<br/><br/>Once you're satisfied, click Save below to add this time card to the system.";
+         $description = "Start with a job number and work center.  Gross/net parts per hour can be found in the JobBOSS database for your part.<br/><br/>Once you're satisfied, click Save below to add this job to the system.";
          break;
       }
          
@@ -250,25 +248,6 @@ function getDescription()
    return ($description);
 }
 
-function getCreator()
-{
-   $creator = "";
-
-   $userInfo = UserInfo::load(getJobInfo()->creator);
-   
-   if ($userInfo)
-   {
-      $creator = $userInfo->getFullName();
-   }
-   
-   return ($creator);
-}
-
-function getCreationDate()
-{
-   return(date_format(new DateTime(getJobInfo()->dateTime), "Y-m-d"));
-}
-
 function getStatusOptions()
 {
    $options = "";
@@ -287,68 +266,176 @@ function getStatusOptions()
    return ($options);
 }
 
-function getInspectionTemplateOptions($inspectionType, $selectedTemplateId)
+function getPPTPPartNumber()
 {
-   $options = "<option value=\"" . InspectionTemplate::UNKNOWN_TEMPLATE_ID . "\"></option>";
-
-   $inspectionTemplates = InspectionTemplate::getInspectionTemplates($inspectionType);
+   $pptpPartNumber = Part::UNKNOWN_PPTP_NUMBER;
    
-   foreach ($inspectionTemplates as $templateId)
+   $jobInfo = getJobInfo();
+   
+   if ($jobInfo->part)
    {
-      $inspectionTemplate = InspectionTemplate::load($templateId);
+      $pptpPartNumber = $jobInfo->part->pptpNumber;
+   }
+   
+   return ($pptpPartNumber);
+}
+
+function getPPTPPartNumberOptions($selectedPartNumber)
+{
+   $html = "<option style=\"display:none\">";
+   
+   $parts = PartManager::getParts();
+   
+   foreach ($parts as $part)
+   {
+      $value = $part->pptpNumber;
+      $label = $part->pptpNumber;
+      $selected = ($part->pptpNumber == $selectedPartNumber) ? "selected" : "";
       
-      if ($inspectionTemplate)
-      {
-         $selected = ($inspectionTemplate->templateId == $selectedTemplateId) ? "selected" : "";
-         
-         $options .= "<option value=\"$inspectionTemplate->templateId\" $selected>$inspectionTemplate->name</option>";
-      }
+      $html .= "<option value=\"$value\" $selected>$label</option>";
    }
    
-   return ($options);
-}
-
-function getCustomerPrintInput()
-{
-   global $ROOT;
-   
-   $customerPrintInput = "";
-   
-   $customerPrint = getJobInfo()->customerPrint;
-   
-   $disabled = getDisabled(JobInputField::CUSTOMER_PRINT);
-   
-   if ($customerPrint != "")
-   {
-      $customerPrintInput =
-<<<HEREDOC
-         <div class="flex-vertical flex-top">
-            <a href="$ROOT/uploads/$customerPrint" style="margin-bottom: 10px;" target="_blank">$customerPrint</a>
-            <input type="file" name="customerPrint" form="input-form" $disabled>
-         </div>
-HEREDOC;
-   }
-   else
-   {
-      $customerPrintInput =
-<<<HEREDOC
-         <input type="file" name="customerPrint" form="input-form" $disabled>
-HEREDOC;
-   }
-   
-   return ($customerPrintInput);
-}
-
-function hasCustomerPartNumber()
-{
-   return (JobManager::getCustomerPartNumber(getJobInfo()->partNumber) != null);
+   return ($html);
 }
 
 function getCustomerPartNumber()
 {
-   $customerPartNumber = JobManager::getCustomerPartNumber(getJobInfo()->partNumber);
+   $customerPartNumber = Part::UNKNOWN_CUSTOMER_NUMBER;
    
-   return ($customerPartNumber ? $customerPartNumber : "");
+   $jobInfo = getJobInfo();
+   
+   if ($jobInfo->part)
+   {
+      $customerPartNumber = $jobInfo->part->customerNumber;
+   }
+   
+   return ($customerPartNumber);
+}
+
+function getCustomerName()
+{
+   $customerName = null;
+   
+   $jobInfo = getJobInfo();
+   
+   if ($jobInfo->part)
+   {
+      $customer = Customer::load($jobInfo->part->customerId);
+      
+      if ($customer)
+      {
+         $customerName = $customer->customerName;
+      }
+   }
+   
+   return ($customerName);
+}
+
+function getForm()
+{
+   global $getDisabled;
+   
+   $jobInfo = getJobInfo();
+   $JobNumberSuffix = JobInfo::getJobSuffix($jobInfo->jobNumber);
+   $authorName = $jobInfo->creator ? UserInfo::load($jobInfo->creator)->getFullName() : null;
+   $creationDate = Time::toJavascriptDate($jobInfo->dateTime);
+   $partNumberOptions = getPPTPPartNumberOptions($jobInfo->partNumber);
+   $customerName = getCustomerName();
+   $customerPartNumber = getCustomerPartNumber();
+   $wcNumberOptions = JobInfo::getWcNumberOptions(JobInfo::UNKNOWN_JOB_NUMBER, $jobInfo->wcNumber);
+   $statusOptions = getStatusOptions();
+   
+   $html =
+<<< HEREDOC
+   <form id="input-form" action="" method="POST" style="display:block">
+      <input type="hidden" name="request" value="save_job">      
+      <input type="hidden" name="jobId" value="$jobInfo->jobId">
+      <input type="hidden" name="creator" value="$jobInfo->creator">
+      <input type="hidden" name="dateTime" value="$jobInfo->dateTime">
+      <input id="job-number-input" type="hidden" name="jobNumber" value="$jobInfo->jobNumber">
+      <input type="hidden" name="partNumber" value="$jobInfo->partNumber">
+      
+      <div class="flex-horizontal flex-left flex-wrap">
+      
+         <div class="flex-vertical flex-left" style="margin-right: 50px;">
+         
+            <div class="form-item">
+               <div class="form-label">Creator</div>
+               <input type="text" style="width:180px;" value="$authorName" {$getDisabled(JobInputField::CREATOR)}/>
+            </div>
+            <div class="form-item">
+               <div class="form-label">Date</div>
+               <input type="date" name="date" style="width:180px;" value="$creationDate" {$getDisabled(JobInputField::DATE)}/>
+            </div>
+            
+         </div>
+         
+         <div class="flex-vertical flex-left">
+         
+            <div class="form-item">
+               <div class="form-label-long">PPTP Part #</div>
+               <select id="pptp-part-number-input" name="partNumber" {$getDisabled(JobInputField::PART_NUMBER)} required>
+                  $partNumberOptions
+               </select>
+            </div>
+            
+            <div class="form-item">
+               <div class="form-label-long">Job #</div>
+               <div class="flex-horizontal flex-v-center flex-left">
+                  <input id="job-number-prefix-input" type="text" name="jobNumberPrefix" style="width:150px;" value="$jobInfo->partNumber" autocomplete="off" {$getDisabled(JobInputField::JOB_NUMBER_PREFIX)}/>
+                  <div>&nbsp-&nbsp</div>
+                  <input id="job-number-suffix-input" type="text" name="jobNumberSuffix" style="width:150px;" value="$JobNumberSuffix" autocomplete="off" {$getDisabled(JobInputField::JOB_NUMBER_SUFFIX)} required/>
+               </div>
+            </div>
+            
+            <div class="form-item">
+               <div class="form-label-long">Customer</div>
+               <input id="customer-name-input" type="text" style="width:150px;" value="$customerName" {$getDisabled(JobInputField::CUSTOMER_NAME)}/>
+            </div>
+            
+            <div class="form-item">
+               <div class="form-label-long">Customer Part #</div>
+               <input id="customer-part-number-input" type="text" style="width:150px;" value="$customerPartNumber" {$getDisabled(JobInputField::CUSTOMER_PART_NUMBER)}/>
+            </div>
+            
+            <div class="form-item">
+               <div class="form-label-long">Work center #</div>
+               <div><select id="work-center-input" name="wcNumber" {$getDisabled(JobInputField::WC_NUMBER)} required>$wcNumberOptions</select></div>
+            </div>
+            
+            <div class="form-item">
+               <div class="form-label-long">Gross Pieces/Hour</div>
+               <input id="gross-parts-per-hour-input" type="number" name="grossPartsPerHour" style="width:150px;" value="$jobInfo->grossPartsPerHour" {$getDisabled(JobInputField::GROSS_PIECES)} required/>
+            </div>
+
+            <div class="form-item">
+               <div class="form-label-long">Cycle Time</div>
+               <input id="cycle-time-input" type="number" name="cycleTime" style="width:150px;" {$getDisabled(JobInputField::CYCLE_TIME)}/>
+            </div>
+            
+            <div class="form-item">
+               <div class="form-label-long">Net Pieces/Hour</div>
+               <input id="net-parts-per-hour-input" type="number" name="netPartsPerHour" style="width:150px;" value="$jobInfo->netPartsPerHour" {$getDisabled(JobInputField::NET_PIECES)} required/>
+            </div>
+            
+            <div class="form-item">
+               <div class="form-label-long">Net Percentage</div>
+               <input id="net-percentage-input" type="number" name="netPercentage" style="width:150px;" {$getDisabled(JobInputField::NET_PERCENTAGE)}/>
+               <div class="form-label">&nbsp%</div>
+            </div>
+            
+            <div class="form-item">
+               <div class="form-label-long">Job status</div>
+               <div><select id="status-input" name="status" {$getDisabled(JobInputField::STATUS)} required>$statusOptions</select></div>
+            </div>
+            
+         </div>
+         
+      </div>
+   </form>
+HEREDOC;
+                  
+   return ($html);
 }
 
 // ********************************** BEGIN ************************************
@@ -359,247 +446,18 @@ session_start();
 
 if (!Authentication::isAuthenticated())
 {
-   header('Location: ../login.php');
+   header('Location: /login.php');
    exit;
 }
 
+$versionQuery = versionQuery();
+$javascriptFile = "job.js";
+$javascriptClass = "Job";
+$appPageId = AppPage::JOBS;
+$heading = getHeading();
+$description = getDescription();
+$formId = "input-form";
+$form = getForm();
+
+include ROOT.'/templates/formPageTemplate.php'
 ?>
-
-<!DOCTYPE html>
-<html>
-
-<head>
-
-   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-   
-   <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
-   <link rel="stylesheet" type="text/css" href="../common/common.css"/>
-   
-   <script src="/common/common.js"></script>
-   <script src="/common/validate.js"></script>
-   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
-   <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
-   <script src="jobs.js"></script>
-
-</head>
-
-<body class="flex-vertical flex-top flex-left">
-        
-   <form id="input-form" action="" method="POST">
-         <input type="hidden" name="jobId" value="<?php echo getJobInfo()->jobId; ?>">
-         <input type="hidden" name="creator" value="<?php echo getJobInfo()->creator; ?>">
-         <input type="hidden" name="dateTime" value="<?php echo getJobInfo()->dateTime; ?>">
-         <input id="job-number-input" type="hidden" name="jobNumber" value="<?php echo getJobInfo()->partNumber; ?>">   
-         <input id="part-number-input" type="hidden" name="partNumber" value="<?php echo getJobInfo()->partNumber; ?>">
-   </form>
-
-   <?php Header::render("PPTP Tools"); ?>
-
-   <div class="main flex-horizontal flex-top flex-left">
-   
-      <?php Menu::render(); ?>
-      
-      <div class="content flex-vertical flex-top flex-left">
-      
-         <div class="flex-horizontal flex-v-center flex-h-center">
-            <div class="heading"><?php echo getHeading(); ?></div>&nbsp;&nbsp;
-            <i id="help-icon" class="material-icons icon-button">help</i>
-         </div>
-         
-         <div id="description" class="description"><?php echo getDescription(); ?></div>
-         
-         <br>
-         
-         <div class="flex-horizontal flex-left flex-wrap">
-         
-            <div class="flex-vertical flex-left" style="margin-right: 50px;">
-            
-               <div class="form-item">
-                  <div class="form-label">Creator</div>
-                  <input type="text" style="width:180px;" value="<?php echo getCreator(); ?>" <?php echo getDisabled(JobInputField::CREATOR); ?> />
-               </div>
-               <div class="form-item">
-                  <div class="form-label">Date</div>
-                  <input type="date" name="date" style="width:180px;" value="<?php echo getCreationDate() ?>" <?php echo getDisabled(JobInputField::DATE); ?> />
-               </div>
-               
-            </div>
-            
-            <div class="flex-vertical flex-left">
-
-               <div class="form-item">
-                  <div class="form-label-long">Job #</div>
-                  <div class="flex-horizontal flex-v-center flex-left">
-                     <input id="job-number-prefix-input" type="text" name="jobNumberPrefix" form="input-form" style="width:150px;" value="<?php echo JobInfo::getJobPrefix(getJobInfo()->jobNumber); ?>" oninput="{this.validator.validate(); autoFillPartNumber(); autoFillCustomerPartNumber();}" autocomplete="off" <?php echo getDisabled(JobInputField::JOB_NUMBER); ?> />
-                     <div>&nbsp-&nbsp</div>
-                     <input id="job-number-suffix-input" type="text" name="jobNumberSuffix" form="input-form" style="width:150px;" value="<?php echo JobInfo::getJobSuffix(getJobInfo()->jobNumber); ?>" oninput="{this.validator.validate(); autoFillJobNumber();}" autocomplete="off" <?php echo getDisabled(JobInputField::JOB_NUMBER); ?> />
-                  </div>
-               </div>
-         
-               <div class="form-item">
-                  <div class="form-label-long">PPTP Part #</div>
-                  <input id="part-number-display-input" type="text" style="width:150px;" value="<?php echo getJobInfo()->partNumber; ?>" <?php echo getDisabled(JobInputField::PART_NUMBER); ?> />
-               </div>
-               
-               <div class="form-item">
-                  <div class="form-label-long">Customer Part #</div>
-                  <input id="customer-part-number-input" type="text" name="customerPartNumber" form="input-form" style="width:150px;" value="<?php echo getCustomerPartNumber() ?>" <?php echo getDisabled(JobInputField::CUSTOMER_PART_NUMBER); ?> />
-                  &nbsp;
-                  <i id="customer-part-number-edit-button" class="material-icons icon-button" style="visibility:<?php echo isEditable(JobInputField::CUSTOMER_PART_NUMBER) ? "hidden" : "visible" ?>" onclick="onEditCustomerPartNumber()">edit</i>
-               </div>
-         
-               <div class="form-item">
-                  <div class="form-label-long">Work center #</div>
-                  <div><select id="work-center-input" name="wcNumber" form="input-form" <?php echo getDisabled(JobInputField::WC_NUMBER); ?>><?php echo JobInfo::getWcNumberOptions(JobInfo::UNKNOWN_JOB_NUMBER, getJobInfo()->wcNumber) ?></select></div>
-               </div>
-      
-               <div class="form-item">
-                  <div class="form-label-long">Sample weight</div>
-                  <input id="sample-weight-input" type="number" name="sampleWeight" form="input-form" style="width:150px;" value="<?php echo getJobInfo()->sampleWeight; ?>" oninput="this.validator.validate();" <?php echo getDisabled(JobInputField::SAMPLE_WEIGHT); ?> />
-               </div>
-               
-               <div class="form-item">
-                  <div class="form-label-long">Gross Pieces/Hour</div>
-                  <input id="gross-parts-per-hour-input" type="number" name="grossPartsPerHour" form="input-form" style="width:150px;" value="<?php echo getJobInfo()->grossPartsPerHour; ?>" oninput="this.validator.validate(); autoFillPartStats();" <?php echo getDisabled(JobInputField::GROSS_PIECES); ?> />
-               </div>
-         
-               <div class="form-item">
-                  <div class="form-label-long">Cycle Time</div>
-                  <input id="cycle-time-input" type="number" name="cycleTime" style="width:150px;" <?php echo getDisabled(JobInputField::CYCLE_TIME); ?> />
-               </div>
-         
-               <div class="form-item">
-                  <div class="form-label-long">Net Pieces/Hour</div>
-                  <input id="net-parts-per-hour-input" type="number" name="netPartsPerHour" form="input-form" style="width:150px;" value="<?php echo getJobInfo()->netPartsPerHour; ?>" oninput="this.validator.validate(); autoFillPartStats();" <?php echo getDisabled(JobInputField::NET_PIECES); ?> />
-               </div>
-               
-               <div class="form-item">
-                  <div class="form-label-long">Net Percentage</div>
-                  <input id="net-percentage-input" type="number" name="netPercentage" style="width:150px;" <?php echo getDisabled(JobInputField::NET_PERCENTAGE); ?> />
-                  <div class="form-label">&nbsp%</div>
-               </div>
-         
-               <div class="form-item">
-                  <div class="form-label-long">Job status</div>
-                  <div><select id="status-input" name="status" form="input-form" <?php echo getDisabled(JobInputField::STATUS); ?>><?php echo getStatusOptions(); ?></select></div>
-               </div>
-      
-               <div class="form-item">
-                  <div class="form-label-long">First Piece Template</div>
-                  <div><select name="firstPartTemplateId" form="input-form" <?php echo getDisabled(JobInputField::FIRST_PART_TEMPLATE); ?>><?php echo getInspectionTemplateOptions(InspectionType::FIRST_PART, getJobInfo()->firstPartTemplateId); ?></select></div>
-               </div>
-      
-               <div class="form-item">
-                  <div class="form-label-long">In Process Template</div>
-                  <div><select name="inProcessTemplateId" form="input-form" <?php echo getDisabled(JobInputField::IN_PROCESS_TEMPLATE); ?>><?php echo getInspectionTemplateOptions(InspectionType::IN_PROCESS, getJobInfo()->inProcessTemplateId); ?></select></div>
-               </div>
-            
-               <div class="form-item">
-                  <div class="form-label-long">Line Template</div>
-                  <div><select name="lineTemplateId" form="input-form" <?php echo getDisabled(JobInputField::LINE_TEMPLATE); ?>><?php echo getInspectionTemplateOptions(InspectionType::LINE, getJobInfo()->lineTemplateId); ?></select></div>
-               </div>
-      
-               <div class="form-item">
-                  <div class="form-label-long">QCP Template</div>
-                  <div><select name="qcpTemplateId" form="input-form" <?php echo getDisabled(JobInputField::QCP_TEMPLATE); ?>><?php echo getInspectionTemplateOptions(InspectionType::QCP, getJobInfo()->qcpTemplateId); ?></select></div>
-               </div>
-               
-               <div class="form-item">
-                  <div class="form-label-long">Final Template</div>
-                  <div><select name="finalTemplateId" form="input-form" <?php echo getDisabled(JobInputField::FINAL_TEMPLATE); ?>><?php echo getInspectionTemplateOptions(InspectionType::FINAL, getJobInfo()->finalTemplateId); ?></select></div>
-               </div>
-      
-               <div class="form-item">
-                  <div class="form-label-long">Customer print</div>
-                  <?php echo getCustomerPrintInput() ?>
-               </div>
-         
-            </div>
-         
-         </div>
-         
-         <br>
-         
-         <div class="flex-horizontal flex-h-center">
-            <button id="cancel-button">Cancel</button>&nbsp;&nbsp;&nbsp;
-            <button id="save-button" class="accent-button">Save</button>            
-         </div>
-      
-      </div> <!-- content -->
-     
-   </div> <!-- main -->   
-         
-   <script>
-   
-      var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
-      menu.setMenuItemSelected(<?php echo AppPage::JOBS ?>);  
-   
-      preserveSession();
-      
-      var jobNumberPrefixValidator = new PartNumberPrefixValidator("job-number-prefix-input", 5, 1, 9999, false);
-      var jobNumberSuffixValidator = new PartNumberSuffixValidator("job-number-suffix-input", 3, 1, 99, false);
-      var sampleWeightValidator = new DecimalValidator("sample-weight-input", 6, 0.001, 10, 5, false);         
-      var grossPartsValidator = new IntValidator("gross-parts-per-hour-input", 4, 1, 9999, false);
-      var netPartsValidator = new IntValidator("net-parts-per-hour-input", 4, 1, 9999, false);
-      
-      // Extend the isValid() function to validate that the net is always less than the gross.
-      netPartsValidator.isValid = function()
-      {
-         var valid = false;
-   
-         var element = document.getElementById(this.inputId);
-         
-         var grossPartsPerHour = parseInt(document.getElementById("gross-parts-per-hour-input").value);
-      
-         if (element)
-         {
-            var value = element.value;
-            
-            if ((value == null) || (value == "")) 
-            {
-               valid = this.allowNull;
-            }
-            else
-            {
-               var intVal = parseInt(value);
-               
-               valid = !(isNaN(value) || 
-                         (intVal < this.minValue) || 
-                         (intVal > this.maxValue) ||
-                         (intVal > grossPartsPerHour));
-            }
-         }
-      
-         return (valid);
-      }
-      
-      function onEditCustomerPartNumber()
-      {
-         document.getElementById("customer-part-number-input").disabled = false;
-         hide("customer-part-number-edit-button");
-      }
-
-      jobNumberPrefixValidator.init();
-      sampleWeightValidator.init();
-      jobNumberSuffixValidator.init();
-      grossPartsValidator.init();
-      netPartsValidator.init();
-
-      autoFillPartNumber();
-      autoFillPartStats();
-
-      // Setup event handling on all DOM elements.
-      document.getElementById("cancel-button").onclick = function(){onCancel();};
-      document.getElementById("save-button").onclick = function(){onSaveJob();};      
-      document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-
-      // Store the initial state of the form, for change detection.
-      setInitialFormState("input-form");
-      
-   </script>
-
-</body>
-
-</html>

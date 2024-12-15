@@ -2,6 +2,8 @@ class Shipment
 {
    // HTML elements
    static PageElements = {
+      // Forms
+      "INPUT_FORM": "input-form",
       // Filters
       // Tables
       "DATA_TABLE":        "data-table",
@@ -9,9 +11,14 @@ class Shipment
       "HEAT_TABLE":        "heat-table",
       // Buttons
       "ADD_BUTTON":        "add-button",
+      "SAVE_BUTTON":       "save-button",
       "CANCEL_BUTTON":     "cancel-button",
       // Input fields
-      "SHIPMENT_ID_INPUT": "shipment-id-input"
+      "SHIPMENT_ID_INPUT": "shipment-id-input",
+      "JOB_NUMBER_INPUT": "job-number-input",
+      "PPTP_PART_NUMBER_INPUT": "pptp-part-number-input",
+      "CUSTOMER_NAME_INPUT": "customer-name-input",
+      "CUSTOMER_PART_NUMBER_INPUT": "customer-part-number-input"
    };
 
    constructor()
@@ -35,10 +42,31 @@ class Shipment
          this.createHeatTable(Shipment.PageElements.HEAT_TABLE);
       }
       
+      if (document.getElementById(Shipment.PageElements.ADD_BUTTON) != null)
+      {
+         document.getElementById(Shipment.PageElements.ADD_BUTTON).addEventListener('click', function() {
+            this.onAddButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Shipment.PageElements.SAVE_BUTTON) != null)
+      {
+         document.getElementById(Shipment.PageElements.SAVE_BUTTON).addEventListener('click', function() {
+            this.onSaveButton();
+         }.bind(this));
+      }
+      
       if (document.getElementById(Shipment.PageElements.CANCEL_BUTTON) != null)
       {
          document.getElementById(Shipment.PageElements.CANCEL_BUTTON).addEventListener('click', function() {
             history.back();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Shipment.PageElements.JOB_NUMBER_INPUT) != null)
+      {
+         document.getElementById(Shipment.PageElements.JOB_NUMBER_INPUT).addEventListener('change', function() {
+            this.onJobNumberChanged();
          }.bind(this));
       }
    }      
@@ -76,11 +104,31 @@ class Shipment
                   return (cell.getValue());
                }  
             },
-            {title:"Created",           field:"formattedDateTime", headerFilter:true},
+            {title:"Created",           field:"dateTime",         headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered) {
+                  return (cell.getRow().getData().formattedDateTime);
+               }
+            },
             {title:"Job #",             field:"jobNumber",         headerFilter:true},
             {title:"Quantity",          field:"quantity",          headerFilter:true},
             {title:"Location",          field:"locationLabel",     headerFilter:true},
             {title:"Packing #",         field:"packingListNumber", headerFilter:true},
+            {title:"Packing List",      field:"packingList",       hozAlign:"left",
+               formatter:function(cell, formatterParams, onRendered){
+                  let cellValue = "";
+                  
+                  let filename = cell.getValue();
+                  let url = cell.getRow().getData().packingListUrl;
+                  
+                  if (filename != null)
+                  {
+                     var truncatedFilename = (filename.length > 20) ? filename.substr(0, 20) + "..." : filename; 
+                     cellValue = `<a href="${url}" target="_blank">${truncatedFilename}</a>`;
+                  }
+                  
+                  return (cellValue);
+                }
+            },
             {title:"",                  field:"delete",
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
@@ -88,7 +136,7 @@ class Shipment
             }
          ],
          initialSort:[
-            {column:"shipmentId", dir:"asc"}
+            {column:"dateTime", dir:"desc"}
          ],
          cellClick:function(e, cell){
             let shipmentId = parseInt(cell.getRow().getData().shipmentId);
@@ -96,6 +144,10 @@ class Shipment
             if (cell.getColumn().getField() == "shipmentTicketCode")
             {
                document.location = `/shipment/printShipmentTicket.php?shipmentTicketId=${shipmentId}`;
+            }
+            else if (cell.getColumn().getField() == "packingList")
+            {
+               e.stopPropagation();
             }
             else if (cell.getColumn().getField() == "delete")
             {
@@ -228,23 +280,7 @@ class Shipment
             
    onAddButton(jobId)
    {
-      /*
-      let startDate = document.getElementById(Schedule.PageElements.MFG_DATE_INPUT).value;
-      
-      // AJAX call to delete the component.
-      let requestUrl = `/app/page/schedule/?request=save_entry&jobId=${jobId}&startDate=${startDate}&employeeNumber=0`;
-      
-      ajaxRequest(requestUrl, function(response) {
-         if (response.success == true)
-         {
-            this.updateTables();
-         }
-         else
-         {
-            alert(response.error);
-         }
-      }.bind(this));
-      */
+      document.location = `/shipment/shipment.php?shipmentId=${UNKNOWN_SHIPMENT_ID}`;
    }
    
    onDeleteButton(shipmentId)
@@ -266,8 +302,71 @@ class Shipment
          }.bind(this));
       }
    }
+   
+   onSaveButton()
+   {
+      let form = document.getElementById(Shipment.PageElements.INPUT_FORM);
+      
+      if (form.reportValidity() == true)
+      {
+         submitForm(Shipment.PageElements.INPUT_FORM, "/app/page/shipment", function (response) {
+            if (response.success == true)
+            {
+               location.href = "/shipment/shipments.php";
+            }
+            else
+            {
+               alert(response.error);
+            }
+         })
+      }
+      else
+      {
+         showInvalid(Shipment.PageElements.INPUT_FORM);
+      }
+   }
+   
+   onJobNumberChanged()
+   {
+      let jobNumber = document.getElementById(Shipment.PageElements.JOB_NUMBER_INPUT).value;
+      
+      if ((jobNumber != "") && (jobNumber != null))
+      {
+         let pptpPartNumber = jobNumber.substring(0, jobNumber.indexOf("-"));
+      
+         let requestUrl = `/app/page/part/?request=fetch&partNumber=${pptpPartNumber}`;
+         
+         ajaxRequest(requestUrl, function(response) {
+            if (response.success == true)
+            {
+               this.updatePartNumber(response.part);
+            }
+            else
+            {
+               console.log("Call to fetch items failed.");
+            }
+         }.bind(this));
+      }
+   }
+
       
    // **************************************************************************
+   
+   updatePartNumber(part)
+   {
+      if (part != null)
+      {
+         document.getElementById(Shipment.PageElements.PPTP_PART_NUMBER_INPUT).value = part.pptpNumber;
+         document.getElementById(Shipment.PageElements.CUSTOMER_PART_NUMBER_INPUT).value = part.customerNumber;
+         document.getElementById(Shipment.PageElements.CUSTOMER_NAME_INPUT).value = part.customerName;
+      }
+      else
+      {
+         document.getElementById(Shipment.PageElements.PPTP_PART_NUMBER_INPUT).value = null;
+         document.getElementById(Shipment.PageElements.CUSTOMER_PART_NUMBER_INPUT).value = null;
+         document.getElementById(Shipment.PageElements.CUSTOMER_NAME_INPUT).value = null;
+      }
+   }
    
    getShipmentId()
    {

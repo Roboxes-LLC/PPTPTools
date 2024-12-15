@@ -51,7 +51,9 @@ class Permission
    const EDIT_SHIPMENT            = 45;
    const VIEW_SALES_ORDER         = 46;
    const EDIT_SALES_ORDER         = 47;
-   const LAST                     = Permission::EDIT_SALES_ORDER;
+   const DELETE_SALES_ORDER       = 48;
+   const VIEW_PRICES              = 49;
+   const LAST                     = Permission::VIEW_PRICES;
    
    const NO_PERMISSIONS = 0x0000000000000000;
    const ALL_PERMISSIONS = 0xFFFFFFFFFFFFFFFF;
@@ -113,7 +115,9 @@ class Permission
                   new Permission(Permission::VIEW_SHIPMENT,            "View shipments"),
                   new Permission(Permission::EDIT_SHIPMENT,            "Edit shipments"),
                   new Permission(Permission::VIEW_SALES_ORDER,         "View sales orders"),
-                  new Permission(Permission::EDIT_SALES_ORDER,         "Edit sales orders")
+                  new Permission(Permission::EDIT_SALES_ORDER,         "Edit sales orders"),
+                  new Permission(Permission::DELETE_SALES_ORDER,       "Delete sales orders"),
+                  new Permission(Permission::VIEW_PRICES,              "View prices")
             );
       }
       

@@ -171,16 +171,14 @@ class InspectionTemplate
    {
       $templateIds = array();
       
-      $database = PPTPDatabase::getInstance();
+      $partNumber = JobInfo::getJobPrefix($jobNumber);
       
-      if ($database && $database->isConnected())
+      $part = Part::load($partNumber, Part::USE_PPTP_NUMBER);
+      
+      if ($part && 
+          ($part->inspectionTemplateIds[$inspectionType] != InspectionTemplate::UNKNOWN_TEMPLATE_ID))
       {
-         $result = $database->getInspectionTemplatesForJobNumber($inspectionType, $jobNumber);
-         
-         while ($result && ($row = $result->fetch_assoc()))
-         {
-            $templateIds[] = intval($row["templateId"]);
-         }
+         $templateIds[] = $part->inspectionTemplateIds[$inspectionType];
       }
       
       return ($templateIds);
@@ -199,38 +197,25 @@ class InspectionTemplate
             break;
          }         
                         
+         // These inspection types have a jobId associated with them.
          case InspectionType::FIRST_PART:
          case InspectionType::IN_PROCESS:
          case InspectionType::LINE:
          case InspectionType::QCP:
          {
             $jobInfo = JobInfo::load($jobId);
-            if ($jobInfo)
+            if ($jobInfo &&
+                $jobInfo->part &&
+                ($jobInfo->part->inspectionTemplateIds[$inspectionType] != InspectionTemplate::UNKNOWN_TEMPLATE_ID))
             {
-               if ($inspectionType == InspectionType::FIRST_PART)
-               {
-                  $templateIds[] = $jobInfo->firstPartTemplateId;
-               }
-               else if ($inspectionType == InspectionType::IN_PROCESS)
-               {
-                  $templateIds[] = $jobInfo->inProcessTemplateId;
-               }
-               else if ($inspectionType == InspectionType::LINE)
-               {
-                  $templateIds[] = $jobInfo->lineTemplateId;
-               }
-               else if ($inspectionType == InspectionType::QCP)
-               {
-                  $templateIds[] = $jobInfo->qcpTemplateId;
-               }
-               else if ($inspectionType == InspectionType::FINAL)
-               {
-                  $templateIds[] = $jobInfo->finalTemplateId;
-               }
+               // Note: At one point, each JobInfo had a set of templates, so a particular jobNumber could be associated with multiple templates.
+               //       With the addition of the part component, a job number can only be associated with a single template of each type, by its part.
+               $templateIds[] = $jobInfo->part->inspectionTemplateIds[$inspectionType];
             }
             break;
          }
          
+         // Whereas a Final inspection covers multiple jobs, all with the same job number.
          case InspectionType::FINAL:
          {
             $templateIds = InspectionTemplate::getInspectionTemplatesForJobNumber($inspectionType, $jobNumber);

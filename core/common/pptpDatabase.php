@@ -707,7 +707,7 @@ class PPTPDatabaseAlt extends PDODatabase
    
    public function getParts()
    {
-      $statement = $this->pdo->prepare("SELECT * from part");
+      $statement = $this->pdo->prepare("SELECT * from part ORDER BY pptpNumber ASC");
       
       $result = $statement->execute() ? $statement->fetchAll() : null;
       
@@ -716,7 +716,7 @@ class PPTPDatabaseAlt extends PDODatabase
    
    public function getPartsForCustomer($customerId)
    {
-      $statement = $this->pdo->prepare("SELECT * from part WHERE customerId = ?");
+      $statement = $this->pdo->prepare("SELECT * from part WHERE customerId = ? ORDER BY pptpNumber ASC");
       
       $result = $statement->execute([$customerId]) ? $statement->fetchAll() : null;
       
@@ -1093,8 +1093,8 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "INSERT INTO shipment " .
-         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, location) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?)");
+         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, packingList, location) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -1104,6 +1104,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->inspectionId,
             $shipment->quantity,
             $shipment->packingListNumber,
+            $shipment->packingList,
             $shipment->location
          ]);
       
@@ -1116,7 +1117,7 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "UPDATE shipment " .
-         "SET jobNumber = ?, $dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, location = ? " .
+         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, packingList = ?, location = ? " .
          "WHERE shipmentId = ?");
       
       $result = $statement->execute(
@@ -1127,6 +1128,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->inspectionId,
             $shipment->quantity,
             $shipment->packingListNumber,
+            $shipment->packingList,
             $shipment->location,
             $shipment->shipmentId
          ]);
@@ -1149,7 +1151,7 @@ class PPTPDatabaseAlt extends PDODatabase
    public function getSalesOrder($shipmentId)
    {
       $statement = $this->pdo->prepare(
-         "SELECT * FROM salesOrder WHERE salesOrderId = ?;");
+         "SELECT * FROM salesorder WHERE salesOrderId = ?;");
       
       $result = $statement->execute([$shipmentId]) ? $statement->fetchAll() : null;
       
@@ -1159,7 +1161,7 @@ class PPTPDatabaseAlt extends PDODatabase
    public function getSalesOrders($startDate, $endDate, $allActive)
    {
       $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
-      $endDate = $endDate ? Time::toMySqlDate(Time::startOfDay($endDate)) : null;
+      $endDate = $endDate ? Time::toMySqlDate(Time::endOfDay($endDate)) : null;
       
       $dateClause = ($startDate && $endDate && !$allActive) ? "(dateTime BETWEEN '$startDate' AND '$endDate')" : "TRUE";
       $statusClause = (!$allActive) ? "TRUE" : "(orderStatus != " . SalesOrderStatus::SHIPPED . ")";
@@ -1180,8 +1182,8 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "INSERT INTO salesorder " .
-         "(author, dateTime, orderNumber, customerId, customerPartNumber, poNumber, orderDate, quantity, unitPrice, dueDate, orderStatus, comments) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(author, dateTime, orderNumber, customerId, customerPartNumber, poNumber, orderDate, quantity, unitPrice, dueDate, orderStatus, comments, packingList) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -1196,7 +1198,8 @@ class PPTPDatabaseAlt extends PDODatabase
             $salesOrder->unitPrice,
             $dueDate,
             $salesOrder->orderStatus,
-            $salesOrder->comments
+            $salesOrder->comments,
+            $salesOrder->packingList
          ]);
       
       return ($result);
@@ -1210,7 +1213,7 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "UPDATE salesorder " .
-         "SET author = ?, dateTime = ?, orderNumber = ?, customerId = ?, customerPartNumber = ?, poNumber = ?, orderDate = ?, quantity = ?, unitPrice = ?, dueDate = ?, orderStatus = ?, comments = ? " .
+         "SET author = ?, dateTime = ?, orderNumber = ?, customerId = ?, customerPartNumber = ?, poNumber = ?, orderDate = ?, quantity = ?, unitPrice = ?, dueDate = ?, orderStatus = ?, comments = ?, packingList = ? " .
          "WHERE salesOrderId = ?");
 
       $result = $statement->execute(
@@ -1227,6 +1230,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $dueDate,
             $salesOrder->orderStatus,
             $salesOrder->comments,
+            $salesOrder->packingList,
             $salesOrder->salesOrderId
          ]);
       

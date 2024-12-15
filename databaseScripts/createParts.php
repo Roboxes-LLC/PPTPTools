@@ -14,6 +14,7 @@ function checkEqual($left, $right)
    return (($left->pptpNumber == $right->pptpNumber) &&
            ($left->customerNumber == $right->customerNumber) &&
            ($left->customerId == $right->customerId) &&
+           ($left->sampleWeight == $right->sampleWeight) &&
            ($left->inspectionTemplateIds == $right->inspectionTemplateIds) &&
            ($left->customerPrint == $right->customerPrint));
 }
@@ -54,7 +55,7 @@ function reconcile(&$part, $existingPart)
       else if ($existingPart->sampleWeight != 0.0)
       {
          echo "Sample weight inconsistency: $part->sampleWeight vs $existingPart->sampleWeight<br>";
-         return (false);
+         //return (false);
       }
    }
    
@@ -110,7 +111,7 @@ while ($result && ($row = $result->fetch_assoc()))
    $part->inspectionTemplateIds[InspectionType::FINAL] = $jobInfo->finalTemplateId;
    $part->customerPrint = $jobInfo->customerPrint;
    
-   $existingPart = Part::load($part->pptpNumber, Part::UNKNOWN_PPTP_NUMBER);
+   $existingPart = Part::load($part->pptpNumber, Part::USE_PPTP_NUMBER);
    
    if (!$existingPart)
    {
@@ -122,27 +123,33 @@ while ($result && ($row = $result->fetch_assoc()))
          $entriesUpdated++;
       }
    }
-   else if (checkEqual($part, $existingPart))
-   {
-      echo "No updated required from job $jobInfo->jobNumber:<br>";
-   }
-   else if (reconcile($part, $existingPart))
-   {
-      echo "Updating part $part->pptpNumber from job $jobInfo->jobNumber<br>";
-      
-      if ($commit)
-      {
-         Part::save($part);
-      }
-   }
    else
    {
-      echo "Could not reconcile part properties in job $jobInfo->jobNumber:<br>";
-      echo "New: <br>";
-      var_dump($part);
-      echo "Existing: <br>";
-      var_dump($existingPart);
-   }   
+      $part->customerNumber = $existingPart->customerNumber;
+      $part->customerId = $existingPart->customerId;
+      
+      if (checkEqual($part, $existingPart))
+      {
+         echo "No updated required from job $jobInfo->jobNumber:<br>";
+      }
+      else if (reconcile($part, $existingPart))
+      {
+         echo "Updating part $part->pptpNumber from job $jobInfo->jobNumber<br>";
+         
+         if ($commit)
+         {
+            Part::save($part);
+         }
+      }
+      else
+      {
+         echo "Could not reconcile part properties in job $jobInfo->jobNumber:<br>";
+         echo "New: <br>";
+         var_dump($part);
+         echo "Existing: <br>";
+         var_dump($existingPart);
+      }
+   }
 }
 
 echo "Updated $entriesUpdated entries<br>";

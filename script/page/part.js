@@ -76,6 +76,23 @@ class Part
             {title:"PPTP #",            field:"pptpNumber",     hozAlign:"left", headerFilter:true},
             {title:"Customer #",        field:"customerNumber", hozAlign:"left", headerFilter:true},
             {title:"Customer",          field:"customerName",   hozAlign:"left", headerFilter:true},
+            {title:"Sample Weight",     field:"sampleWeight",   hozAlign:"left",
+               formatter:function(cell, formatterParams, onRendered){
+                  if (cell.getValue() <= 0.02)
+                  {
+                     cell.getElement().style.color = "red";
+                  }
+                  
+                  return (cell.getValue());
+               }
+            },
+            {title:"Customer Print",    field:"customerPrint", hozAlign:"left",
+               formatter:function(cell, formatterParams, onRendered){
+                  var filename = cell.getValue();
+                  var truncatedFilename = (filename.length > 20) ? filename.substr(0, 20) + "..." : filename; 
+                  return ("<a href=\"<?php echo $ROOT ?>/uploads/" + filename + "\" target=\"_blank\">" + truncatedFilename + "</a>");
+                }
+            },
             {title:"",                  field:"delete",
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");

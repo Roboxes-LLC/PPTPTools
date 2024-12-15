@@ -19,6 +19,7 @@ class Shipment
    public $inspectionId;
    public $quantity;
    public $packingListNumber;
+   public $packingList;
    public $location;
    
    public $jobInfo;
@@ -33,6 +34,7 @@ class Shipment
       $this->inspectionId = Inspection::UNKNOWN_INSPECTION_ID;
       $this->quantity = 0;
       $this->packingListNumber = Shipment::UNKNOWN_PACKING_LIST_NUMBER;
+      $this->packingList = null;
       $this->location = ShipmentLocation::UNKNOWN;
       
       $this->inspection = null;
@@ -49,6 +51,7 @@ class Shipment
       $this->inspectionId = intval($row["inspectionId"]);
       $this->quantity = intval($row["quantity"]);
       $this->packingListNumber = $row["packingListNumber"];
+      $this->packingList = $row["packingList"];
       $this->location = intval($row["location"]);
    }
    

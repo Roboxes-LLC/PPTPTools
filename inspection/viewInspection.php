@@ -127,7 +127,9 @@ function isEditable($field)
       {
          $isSpecified = (getStartMfgDate() != null);
          
-         $isEditable &= (!$isSpecified && showOptionalProperty(OptionalInspectionProperties::START_MFG_DATE));
+         $isFinalInspection = (getInspectionType() == InspectionType::FINAL);
+         
+         $isEditable &= ($isFinalInspection || (!$isSpecified && showOptionalProperty(OptionalInspectionProperties::START_MFG_DATE)));
          break;
       }
       
@@ -135,7 +137,9 @@ function isEditable($field)
       {
          $isSpecified = ($hasLinkedTimeCard || (getMfgDate() != null));
          
-         $isEditable &= (!$isSpecified && showOptionalProperty(OptionalInspectionProperties::MFG_DATE));
+         $isFinalInspection = (getInspectionType() == InspectionType::FINAL);
+         
+         $isEditable &= ($isFinalInspection || (!$isSpecified && showOptionalProperty(OptionalInspectionProperties::MFG_DATE)));
          break;
       }
       
@@ -261,6 +265,13 @@ function getNewInspection()
             }
          }
       }
+   }
+   
+   // Final inspections don't really have a manufacture date (they span multiple dates) but for filtering purposes, initialize it
+   // to the inspection creation date.
+   if ($inspectionTemplate->inspectionType == InspectionType::FINAL)
+   {
+      $inspection->mfgDate = Time::startOfDay(Time::now());
    }
  
    return ($inspection);
@@ -515,31 +526,17 @@ function getMfgDate()
 {
    $mfgDate = null;
    
-   if (getInspectionId() != Inspection::UNKNOWN_INSPECTION_ID)
+   $inspection = getInspection();
+   
+   if ($inspection && $inspection->getManufactureDate())
    {
-      $inspection = getInspection();
-      
-      if ($inspection && $inspection->getManufactureDate())
-      {
-         
-         // Convert to Javascript date format.
-         $mfgDate = Time::dateTimeObject($inspection->getManufactureDate())->format(Time::$javascriptDateFormat);
-      }
+      // Convert to Javascript date format.
+      $mfgDate = Time::toJavascriptDate($inspection->getManufactureDate());
    }
-   else
+   else if ($timeCardInfo = TimeCardInfo::load(getTimeCardId()))
    {
-      $timeCardId = getTimeCardId();
-      
-      if ($timeCardId != TimeCardInfo::UNKNOWN_TIME_CARD_ID)
-      {
-         $timeCardInfo = TimeCardInfo::load($timeCardId);
-         
-         if ($timeCardInfo)
-         {
-            // Convert to Javascript date format.
-            $mfgDate = Time::dateTimeObject($timeCardInfo->manufactureDate)->format(Time::$javascriptDateFormat);
-         }
-      }
+      // Convert to Javascript date format.
+      $mfgDate = Time::toJavascriptDate($timeCardInfo->manufactureDate);
    }
    
    return ($mfgDate);
@@ -1061,18 +1058,18 @@ if (!Authentication::isAuthenticated())
                      <div class="form-label">Start Mfg Date</div>
                      <input id="start-mfg-date-input" type="date" name="startMfgDate" form="input-form" value="<?php echo getStartMfgDate() ?>" <?php echo getDisabled(InspectionInputField::START_MFG_DATE) ?>>
                      &nbsp;&nbsp;
-                     <button id="today-button" class="small-button">Today</button>
+                     <button class="small-button today-button" data-inputfield="start-mfg-date-input">Today</button>
                      &nbsp;&nbsp;
-                     <button id="yesterday-button" class="small-button">Yesterday</button>
+                     <button class="small-button yesterday-button" data-inputfield="start-mfg-date-input">Yesterday</button>
                   </div>
                   
                   <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::MFG_DATE) ?>">
                      <div class="form-label"><?php echo getInspectionType() == InspectionType::FINAL ? "End Mfg Date" : "Mfg Date" ?></div>
                      <input id="mfg-date-input" type="date" name="mfgDate" form="input-form" value="<?php echo getMfgDate() ?>" <?php echo getDisabled(InspectionInputField::MFG_DATE) ?>>
                      &nbsp;&nbsp;
-                     <button id="today-button" class="small-button">Today</button>
+                     <button class="small-button today-button" data-inputfield="mfg-date-input">Today</button>
                      &nbsp;&nbsp;
-                     <button id="yesterday-button" class="small-button">Yesterday</button>
+                     <button class="small-button yesterday-button" data-inputfield="mfg-date-input">Yesterday</button>
                   </div>
                                     
                   <div class="form-item optional-property-container <?php echo getHidden(OptionalInspectionProperties::QUANTITY) ?>">
@@ -1140,9 +1137,15 @@ if (!Authentication::isAuthenticated())
       document.getElementById("cancel-button").onclick = function(){location.href = "viewInspections.php";};
       document.getElementById("save-button").onclick = function(){onSaveInspection();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-      document.getElementById("today-button").onclick = function(){onTodayButton();};
-      document.getElementById("yesterday-button").onclick = function(){onYesterdayButton();};
       document.getElementById("quantity-input").onchange = function(){onQuantityChanged();};
+      for (let button of document.getElementsByClassName("today-button"))
+      {
+         button.onclick = function(event){onTodayButton(event.target);};
+      }
+      for (let button of document.getElementsByClassName("yesterday-button"))
+      {
+         button.onclick = function(event){onYesterdayButton(event.target);};
+      }      
                         
    </script>
 

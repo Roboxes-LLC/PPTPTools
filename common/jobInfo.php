@@ -1,6 +1,8 @@
 <?php
-require_once 'database.php';
-require_once 'inspectionTemplate.php';
+
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/common/database.php';
+require_once ROOT.'/core/component/part.php';
 
 abstract class JobStatus
 {
@@ -62,39 +64,27 @@ class JobInfo
       
    public $jobId = JobInfo::UNKNOWN_JOB_ID;
    public $jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
+   public $partNumber = JobInfo::UNKNOWN_PART_NUMBER;
    public $creator;
    public $dateTime;
-   public $partNumber = JobInfo::UNKNOWN_PART_NUMBER;
-   public $sampleWeight = JobInfo::UNKNOWN_SAMPLE_WEIGHT;
    public $wcNumber;
    public $grossPartsPerHour;
    public $netPartsPerHour;
    public $status = JobStatus::PENDING;
-   public $firstPartTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
-   public $inProcessTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
-   public $lineTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
-   public $qcpTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
-   public $finalTemplateId = InspectionTemplate::UNKNOWN_TEMPLATE_ID;
-   public $customerPrint = null;
+   
+   public $part;
    
    public function initialize($row)
    {
       $this->jobId =               intval($row['jobId']);
       $this->jobNumber =           $row['jobNumber'];
+      $this->partNumber =          $row['partNumber'];
       $this->creator =             $row['creator'];
       $this->dateTime =            Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
-      $this->partNumber =          $row['partNumber'];
-      $this->sampleWeight =        doubleval($row['sampleWeight']);
       $this->wcNumber =            $row['wcNumber'];
       $this->grossPartsPerHour =   intval($row['grossPartsPerHour']);
       $this->netPartsPerHour =     intval($row['netPartsPerHour']);
       $this->status =              $row['status'];
-      $this->firstPartTemplateId = intval($row['firstPartTemplateId']);
-      $this->inProcessTemplateId = intval($row['inProcessTemplateId']);
-      $this->lineTemplateId =      intval($row['lineTemplateId']);
-      $this->qcpTemplateId =       intval($row['qcpTemplateId']);
-      $this->finalTemplateId =     intval($row['finalTemplateId']);
-      $this->customerPrint =       $row['customerPrint'];
    }
    
    public function isActive()
@@ -121,10 +111,34 @@ class JobInfo
          {
             $jobInfo = new JobInfo();
             $jobInfo->initialize($row);
+            
+            $jobInfo->part = Part::load($jobInfo->partNumber, Part::USE_PPTP_NUMBER);
          }
       }
       
       return ($jobInfo);
+   }
+   
+   public static function save($jobInfo)
+   {
+      $success = false;
+      
+      if ($jobInfo->jobId == JobInfo::UNKNOWN_JOB_ID)
+      {
+         $success = PPTPDatabase::getInstance()->newJob($jobInfo);
+         $jobInfo->jobId = PPTPDatabase::getInstance()->lastInsertId();
+      }
+      else
+      {
+         $success = PPTPDatabase::getInstance()->updateJob($jobInfo);
+      }
+      
+      return ($success);
+   }
+   
+   public static function delete($jobId)
+   {
+      return (PPTPDatabase::getInstance()->deleteJob($jobId));
    }
    
    public static function getJobPrefix($jobNumber)
@@ -177,6 +191,7 @@ class JobInfo
       return ($netPercentage);
    }
    
+   // TODO: Move to JobManager
    public static function getJobNumbers($onlyActive)
    {
       $jobNumbers = array();
@@ -199,6 +214,7 @@ class JobInfo
       return ($jobNumbers);
    }
    
+   // TODO: Move to JobManager
    public static function getJobIdByComponents($jobNumber, $wcNumber)
    {
       $jobId = JobInfo::UNKNOWN_JOB_ID;
@@ -215,6 +231,7 @@ class JobInfo
       return ($jobId);
    }
    
+   // TODO: Move to JobManager
    static function getJobNumberOptions($selectedJobNumber, $onlyActive, $allowNull)
    {
       $html = "";
@@ -318,17 +335,11 @@ class JobInfo
    {
       $customerPrint = null;
       
-      $result = PPTPDatabase::getInstance()->getJobs($jobNumber, null);
-
-      while ($result && ($row = $result->fetch_assoc()))
+      $part = Part::load(JobInfo::getJobPrefix($jobNumber), Part::UNKNOWN_PPTP_NUMBER);
+      
+      if ($part)
       {
-         $customerPrint = $row['customerPrint'];
-         
-         if ($customerPrint)
-         {
-            // Assumption: All jobs with the same job number share the same customer print.
-            break;
-         }
+         $customerPrint = $part->customerPrint;
       }
       
       return ($customerPrint);
@@ -348,16 +359,9 @@ if (isset($_GET["$jobId"]))
       echo "creator: " .             $jobInfo->creator .             "<br/>";
       echo "dateTime: " .            $jobInfo->dateTime .            "<br/>";
       echo "partNumber: " .          $jobInfo->partNumber .          "<br/>";
-      echo "sampleWeight: " .        $jobInfo->sampleWeight .        "<br/>";
       echo "wcNumber: " .            $jobInfo->wcNumber .            "<br/>";
       echo "grossPartsPerHour: " .   $jobInfo->grossPartsPerHour .   "<br/>";
       echo "netPartsPerHour: " .     $jobInfo->netPartsPerHour .     "<br/>";
-      echo "firstPartTemplateId: " . $jobInfo->firstPartTemplateId . "<br/>";
-      echo "inProcessTemplateId: " . $jobInfo->inProcessTemplateId . "<br/>";
-      echo "lineTemplateId: " .      $jobInfo->lineTemplateId .      "<br/>";
-      echo "qcpTemplateId: " .       $jobInfo->qcpTemplateId .       "<br/>";
-      echo "finalTemplateId: " .     $jobInfo->finalTemplateId .     "<br/>";
-      echo "customerPrint: " .       $jobInfo->customerPrint .       "<br/>";
       
       echo "status: " . JobStatus::getName($jobInfo->status) . "<br/>";
    }

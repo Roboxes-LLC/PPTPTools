@@ -58,6 +58,160 @@ class JobPage extends Page
                break;
             }
             
+            case "save_job":
+            {
+               if (Page::authenticate([Permission::EDIT_JOB]))
+               {
+                  if (Page::requireParams($params, ["jobId", "partNumber", "jobNumber", "wcNumber", "grossPartsPerHour", "netPartsPerHour", "status"]))
+                  {
+                     $jobId = $params->getInt("jobId");
+                     $isNew = ($jobId == JobInfo::UNKNOWN_JOB_ID);
+                     
+                     $job = null;
+                     if ($isNew)
+                     {
+                        $job = new JobInfo();
+                        $job->creator = Authentication::getAuthenticatedUser()->employeeNumber;
+                        $job->dateTime = Time::now();
+                     }
+                     else
+                     {
+                        $job = JobInfo::load($jobId);
+                        
+                        if (!$job)
+                        {
+                           $job = null;
+                           $this->error("Invalid job id [$jobId]");
+                        }
+                     }
+                     
+                     if ($job)
+                     {
+                        JobPage::getJobParams($job, $params);
+                        
+                        if (JobPage::checkUnique($job))
+                        {
+                           if (JobInfo::save($job))
+                           {
+                              $this->result->jobId = $job->jobId;
+                              $this->result->job = $job;
+                              $this->result->success = true;
+                              
+                              /*
+                               ActivityLog::logComponentActivity(
+                               Authentication::getAuthenticatedUser()->employeeNumber,
+                               ($newOrder ? ActivityType::ADD_JOB : ActivityType::EDIT_JOB),
+                               $job->jobId,
+                               $salesOrder->jobNumber);
+                               */
+                           }
+                           else
+                           {
+                              $this->error("Database error");
+                           }
+                        }
+                        else
+                        {
+                           $this->error("Duplicate job [job# $job->jobNumber, wc# $job->wcNumber]");
+                        }
+                     }
+                  }
+               }
+               break;
+            }
+            
+            case "delete_job":
+            {  
+               if (Page::authenticate([Permission::EDIT_JOB]))
+               {
+                  if (Page::requireParams($params, ["jobId"]))
+                  {
+                     $jobId = $params->getInt("jobId");
+                     
+                     $job = JobInfo::load($jobId);
+                     
+                     if ($jobId)
+                     {
+                        JobInfo::delete($jobId);
+                        
+                        $this->result->jobId = $jobId;
+                        $this->result->success = true;
+                        
+                        /*
+                         ActivityLog::logComponentActivity(
+                         Authentication::getAuthenticatedUser()->employeeNumber,
+                         ActivityType::DELETE_JOB,
+                         $job->jobId,
+                         $job->jobNumber);
+                         */
+                     }
+                     else
+                     {
+                        $this->error("Invalid job id [$jobId]");
+                     }
+                  }
+               }
+               break;
+            }
+            
+            case "fetch":
+            {
+               // Fetch single component.
+               if (isset($params["jobId"]))
+               {
+                  $jobId = $params->getInt("jobId");
+                  
+                  $jobInfo = JobInfo::load($jobId);
+                  
+                  if ($jobInfo)
+                  {
+                     $this->result->success = true;
+                     $this->result->$jobInfo = $jobInfo;
+                  }
+                  else
+                  {
+                     $this->error("Invalid job id [$jobId]");
+                  }
+               }
+               // Fetch all components.
+               else
+               {
+                  $jobStatuses = array();
+                  
+                  for ($jobStatus = JobStatus::FIRST; $jobStatus < JobStatus::LAST; $jobStatus++)
+                  {
+                     $name = strtolower(JobStatus::getName($jobStatus));
+                     
+                     if (isset($params[$name]) && $params->getBool($name))
+                     {
+                        $jobStatuses[] = $jobStatus;
+                     }
+                  }
+                  
+                  $this->result->success = true;
+                  $this->result->jobs = JobManager::getJobs(JobInfo::UNKNOWN_JOB_NUMBER, $jobStatuses);
+                  
+                  foreach ($this->result->jobs as $jobInfo)
+                  {
+                     $jobInfo->wcLabel = JobInfo::getWcLabel($jobInfo->wcNumber);
+                     $jobInfo->statusLabel = JobStatus::getName($jobInfo->status);
+                     $jobInfo->cycleTime = $jobInfo->getCycleTime();
+                     $jobInfo->netPercentage = $jobInfo->getNetPercentage();
+                     
+                     $jobInfo->customerName = null;
+                     if ($jobInfo->part)
+                     {
+                        $customer = Customer::load($jobInfo->part->customerId);
+                        if ($customer)
+                        {
+                           $jobInfo->customerName = $customer->customerName;
+                        }
+                     }
+                  }
+               }
+               break;
+            }
+            
             default:
             {
                $this->error("Unsupported command [$request]");
@@ -66,5 +220,25 @@ class JobPage extends Page
       }
       
       echo json_encode($this->result);
+   }
+   
+   // **************************************************************************
+   
+   private function getJobParams(&$job, $params)
+   {
+      $job->partNumber = $params->get("partNumber");
+      $job->jobNumber = $params->get("jobNumber");
+      $job->wcNumber = $params->getInt("wcNumber");
+      $job->grossPartsPerHour = $params->getInt("grossPartsPerHour");
+      $job->netPartsPerHour = $params->getInt("netPartsPerHour");
+      $job->status = $params->getInt("status");
+   }
+   
+   private function checkUnique($job)
+   {
+      $existingJobId = JobInfo::getJobIdByComponents($job->jobNumber, $job->wcNumber);
+      
+      return ((($job->jobId == JobInfo::UNKNOWN_JOB_ID) && ($existingJobId == JobInfo::UNKNOWN_JOB_ID)) ||  // New job
+              (($job->jobId != JobInfo::UNKNOWN_JOB_ID) && ($existingJobId == $job->jobId)));               // Updated job
    }
 }
