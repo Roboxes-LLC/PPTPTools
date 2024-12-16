@@ -299,7 +299,7 @@ function getForm()
 
       <div class="form-item">
          <div class="form-label-long">Unit Price</div>
-         <input id="unit-price-input" type="number" name="unitPrice" value="$unitPrice" min="0.0" step="0.0001" {$getDisabled(InputField::UNIT_PRICE)} required/>
+         <input id="unit-price-input" type="number" name="unitPrice" style="width:100px;" value="$unitPrice" min="0.0" step="0.0001" {$getDisabled(InputField::UNIT_PRICE)} required/>
       </div>
 
       <div class="form-section-header">Inspections</div>
