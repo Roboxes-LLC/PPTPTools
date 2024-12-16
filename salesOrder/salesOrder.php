@@ -143,7 +143,7 @@ function isEditable($field)
       case InputField::UNIT_PRICE:
       case InputField::TOTAL:
       {
-         $isEditable = Authentication::checkPermissions(Permission::VIEW_PRICES);
+         $isEditable &= Authentication::checkPermissions(Permission::VIEW_PRICES);
          break;
       }
          
@@ -334,7 +334,13 @@ function getForm()
 
             <div class="form-item">
                <div class="form-label-long">Unit Price</div>
-               <input id="unit-price-input" type="number" name="unitPrice" value="$unitPrice" min="0.0" step="0.0001" {$getDisabled(InputField::UNIT_PRICE)} required/>
+               <div class="flex-vertical">
+                  <input id="unit-price-input" type="number" name="unitPrice" value="$unitPrice" min="0.0" step="0.0001" {$getDisabled(InputField::UNIT_PRICE)} required/>
+                  <div class="flex-horizontal flex-v-center">
+                     <input type="checkbox" name="updateUnitPrice" style="margin-right: 10px" {$getDisabled(InputField::UNIT_PRICE)}/>
+                     Update part price
+                  </div>
+               </div>
             </div>
 
             <div class="form-item">

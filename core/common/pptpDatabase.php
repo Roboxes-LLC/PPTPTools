@@ -742,8 +742,8 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "INSERT INTO part " .
-         "(pptpNumber, customerNumber, customerId, sampleWeight, firstPartTemplateId, lineTemplateId, qcpTemplateId, inProcessTemplateId, finalTemplateId, customerPrint) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(pptpNumber, customerNumber, customerId, sampleWeight, unitPrice, firstPartTemplateId, lineTemplateId, qcpTemplateId, inProcessTemplateId, finalTemplateId, customerPrint) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -751,6 +751,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $part->customerNumber,
             $part->customerId,
             $part->sampleWeight,
+            $part->unitPrice,
             $part->inspectionTemplateIds[InspectionType::FIRST_PART],
             $part->inspectionTemplateIds[InspectionType::LINE],
             $part->inspectionTemplateIds[InspectionType::QCP],
@@ -766,7 +767,7 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "UPDATE part " .
-         "SET customerNumber = ?, customerId = ?, sampleWeight = ?, firstPartTemplateId = ?, lineTemplateId = ?, qcpTemplateId = ?, inProcessTemplateId = ?, finalTemplateId = ?, customerPrint = ? " .
+         "SET customerNumber = ?, customerId = ?, sampleWeight = ?, unitPrice = ?, firstPartTemplateId = ?, lineTemplateId = ?, qcpTemplateId = ?, inProcessTemplateId = ?, finalTemplateId = ?, customerPrint = ? " .
          "WHERE pptpNumber = ?");
       
       $result = $statement->execute(
@@ -774,6 +775,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $part->customerNumber,
             $part->customerId,
             $part->sampleWeight,
+            $part->unitPrice,
             $part->inspectionTemplateIds[InspectionType::FIRST_PART],
             $part->inspectionTemplateIds[InspectionType::LINE],
             $part->inspectionTemplateIds[InspectionType::QCP],

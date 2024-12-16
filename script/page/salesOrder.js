@@ -482,12 +482,16 @@ class SalesOrder
       {
          document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT).value = part.customerNumber;
          document.getElementById(SalesOrder.PageElements.CUSTOMER_NAME_INPUT).value = part.customerName;
+         document.getElementById(SalesOrder.PageElements.UNIT_PRICE_INPUT).value = part.unitPrice.toFixed(4);
       }
       else
       {
          document.getElementById(SalesOrder.PageElements.CUSTOMER_PART_NUMBER_INPUT).value = null;
          document.getElementById(SalesOrder.PageElements.CUSTOMER_NAME_INPUT).value = null;
+         document.getElementById(SalesOrder.PageElements.UNIT_PRICE_INPUT).value = null;
       }
+      
+      this.updateTotal();
    }
    
    updateTotal()

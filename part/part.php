@@ -22,7 +22,8 @@ abstract class InputField
    const QCP_INSPECTION_TEMPLATE_ID = 7;
    const FINAL_INSPECTION_TEMPLATE_ID = 8;
    const CUSTOMER_PRINT = 9;
-   const LAST = 10;
+   const UNIT_PRICE = 10;
+   const LAST = 11;
    const COUNT = InputField::LAST - InputField::FIRST;
 }
 
@@ -110,6 +111,12 @@ function isEditable($field)
       {
          $isEditable = ($view == PageView::NEW);
          break;   
+      }
+      
+      case InputField::UNIT_PRICE:
+      {
+         $isEditable &= Authentication::checkPermissions(Permission::VIEW_PRICES);
+         break;
       }
       
       default:
@@ -232,6 +239,12 @@ function getForm()
    
    $formattedSampleWeight = $part->sampleWeight ? number_format($part->sampleWeight, 4) : null;
    
+   $unitPrice = null;
+   if (Authentication::checkPermissions(Permission::VIEW_PRICES))
+   {
+      $unitPrice = ($part->unitPrice > 0) ? number_format($part->unitPrice, 4) : null;
+   }
+   
    $templateOptions = [];
    foreach (InspectionType::$VALUES as $inspectionType)
    {
@@ -280,6 +293,13 @@ function getForm()
       <div class="form-item">
          <div class="form-label-long">Customer print</div>
          $customerPrintInput
+      </div>
+
+      <div class="form-section-header">Sales</div>
+
+      <div class="form-item">
+         <div class="form-label-long">Unit Price</div>
+         <input id="unit-price-input" type="number" name="unitPrice" value="$unitPrice" min="0.0" step="0.0001" {$getDisabled(InputField::UNIT_PRICE)} required/>
       </div>
 
       <div class="form-section-header">Inspections</div>

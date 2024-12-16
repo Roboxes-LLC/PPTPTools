@@ -49,6 +49,21 @@ class SalesOrderPage extends Page
                          $this->result->success = true;
                          
                          //
+                         // Process updated unit price
+                         //
+                         
+                         if ($params->getBool("updateUnitPrice"))
+                         {
+                            $part = Part::load($salesOrder->customerPartNumber, Part::USE_CUSTOMER_NUMBER);
+                            
+                            if ($part)
+                            {
+                               $part->unitPrice = $salesOrder->unitPrice;
+                               Part::save($part);
+                            }
+                         }
+                         
+                         //
                          // Process uploaded packing list.
                          //
                          

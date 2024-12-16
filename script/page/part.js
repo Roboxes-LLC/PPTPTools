@@ -86,6 +86,27 @@ class Part
                   return (cell.getValue());
                }
             },
+            {title:"Unit Price",      field:"unitPrice",       headerFilter:false,
+               formatter:function(cell, formatterParams, onRendered) {
+                  let cellValue = cell.getValue();
+                  
+                  if (cellValue === null)
+                  {
+                     cellValue = "---";
+                  }
+                  else if (parseFloat(cellValue) == 0.0)
+                  {
+                     cellValue = null;
+                  }
+                  else
+                  {
+                     // Use provided formatted value.
+                     cellValue = cell.getRow().getData().formattedUnitPrice;
+                  }
+                  
+                  return (cellValue);
+               }
+            },
             {title:"Customer Print",    field:"customerPrint", hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
                   var filename = cell.getValue();

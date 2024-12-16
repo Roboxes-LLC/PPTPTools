@@ -63,6 +63,12 @@ class PartPage extends Page
                         $part->inspectionTemplateIds[InspectionType::QCP] = $params->getInt("qcpTemplateId");
                         $part->inspectionTemplateIds[InspectionType::FINAL] = $params->getInt("finalTemplateId");
                         
+                        // May not be set for users without VIEW_PRICES permissions.
+                        if ($params->keyExists("unitPrice"))
+                        {
+                           $part->unitPrice = $params->getFloat("unitPrice");
+                        }
+                        
                         if (Part::save($part))
                         {
                            $this->result->success = true;
@@ -181,5 +187,16 @@ class PartPage extends Page
    {
       $customer = Customer::load($part->customerId);
       $part->customerName = ($customer ? $customer->customerName : "");
+      
+      if (Authentication::checkPermissions(Permission::VIEW_PRICES))
+      {
+         $part->formattedUnitPrice = "$".number_format($part->unitPrice, 4);
+      }
+      else
+      {
+         // Redact pricing information.
+         $part->unitPrice = null;
+         $part->formattedUnitPrice = null;
+      }
    }
 }
