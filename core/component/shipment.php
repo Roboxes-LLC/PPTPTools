@@ -21,8 +21,8 @@ class Shipment
    public $packingListNumber;
    public $packingList;
    public $location;
+   public $shippedDate;
    
-   public $jobInfo;
    public $inspection;
   
    public function __construct()
@@ -36,6 +36,7 @@ class Shipment
       $this->packingListNumber = Shipment::UNKNOWN_PACKING_LIST_NUMBER;
       $this->packingList = null;
       $this->location = ShipmentLocation::UNKNOWN;
+      $this->shippedDate = null;
       
       $this->inspection = null;
    }
@@ -53,6 +54,7 @@ class Shipment
       $this->packingListNumber = $row["packingListNumber"];
       $this->packingList = $row["packingList"];
       $this->location = intval($row["location"]);
+      $this->shippedDate = $row["shippedDate"];
    }
    
    // **************************************************************************

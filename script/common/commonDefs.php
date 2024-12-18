@@ -2,6 +2,7 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/common/inspectionDefs.php';
+require_once ROOT.'/core/common/shipmentDefs.php';
 require_once ROOT.'/core/component/contact.php';
 require_once ROOT.'/core/component/customer.php';
 require_once ROOT.'/core/component/quote.php';
@@ -29,3 +30,7 @@ UNKNOWN_SHIPMENT_ID = <?php echo Shipment::UNKNOWN_SHIPMENT_ID ?>;
 <?php echo InspectionStatus::getJavascript("InspectionStatus") . "\n" ?>
 
 <?php echo InspectionStatus::getJavascriptInspectionClasses("InspectionStatusClasses") . "\n" ?>
+
+<?php echo ShipmentLocation::getJavascript("ShipmentLocation") . "\n" ?>
+
+

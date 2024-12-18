@@ -16,7 +16,7 @@ class ShipmentPage extends Page
          {
             if ($this->authenticate([Permission::EDIT_SHIPMENT]))
             {
-               if (Page::requireParams($params, ["shipmentId", "quantity", "packingListNumber", "location"]))
+               if (Page::requireParams($params, ["shipmentId", "quantity", "packingListNumber", "location", "shippedDate"]))
                {
                   $shipmentId = $params->getInt("shipmentId");
                   $newShipment = ($shipmentId == Shipment::UNKNOWN_SHIPMENT_ID);
@@ -164,8 +164,35 @@ class ShipmentPage extends Page
                // Fetch all components.
                else
                {
+                  $shipmentLocation = ShipmentLocation::PPTP;
+                  $startDate = null;
+                  $endDate = null;
+                  
+                  if (isset($params["shipmentLocation"]))
+                  {
+                     $shipmentLocation = $params->getInt("shipmentLocation");
+                  }
+                  
+                  if ($shipmentLocation == ShipmentLocation::CUSTOMER)
+                  {
+                     $dateTime = Time::dateTimeObject(null);
+                     
+                     $endDate = Time::endOfDay($dateTime->format(Time::STANDARD_FORMAT));
+                     $startDate = Time::startofDay($dateTime->modify("-1 month")->format(Time::STANDARD_FORMAT));
+                     
+                     if (isset($params["startDate"]))
+                     {
+                        $startDate = Time::startOfDay($params["startDate"]);
+                     }
+                     
+                     if (isset($params["endDate"]))
+                     {
+                        $endDate = Time::endOfDay($params["endDate"]);
+                     }
+                  }
+                  
                   $this->result->success = true;
-                  $this->result->shipments = ShipmentManager::getShipments();
+                  $this->result->shipments = ShipmentManager::getShipments($shipmentLocation, $startDate, $endDate);
                   
                   // Augment shipment.
                   foreach ($this->result->shipments as $shipment)
@@ -308,6 +335,7 @@ class ShipmentPage extends Page
       $shipment->quantity = $params->getInt("quantity");
       $shipment->packingListNumber = $params->get("packingListNumber");
       $shipment->location = $params->getInt("location");
+      $shipment->shippedDate = $params->get("shippedDate");
       
       // New entries specify the jobNumber manually.
       if ($params->keyExists("jobNumber"))
@@ -324,6 +352,7 @@ class ShipmentPage extends Page
       $shipment->locationLabel = ShipmentLocation::getLabel($shipment->location);
       $shipment->formattedDateTime = ($shipment->dateTime) ? Time::dateTimeObject($shipment->dateTime)->format("n/j/Y h:i A") : null;
       $shipment->packingListUrl = $shipment->packingList ? $PACKING_LISTS_DIR . $shipment->packingList : null;
+      $shipment->formattedShippedDate = ($shipment->shippedDate) ? Time::dateTimeObject($shipment->shippedDate)->format("n/j/Y") : null;
    }
    
    private static function augmentTimeCard(&$timeCardInfo)

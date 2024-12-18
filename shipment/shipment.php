@@ -27,7 +27,8 @@ abstract class InputField
    const CUSTOMER_NAME = 8;
    const LOCATION = 9;
    const JOB_NUMBER = 10;
-   const LAST = 11;
+   const SHIPPED_DATE = 11;
+   const LAST = 12;
    const COUNT = InputField::LAST - InputField::FIRST;
 }
 
@@ -242,13 +243,13 @@ function getForm()
    $shipmentId = getShipmentId();
    $shipment = getShipment();
    $authorName = getAuthorName();
-   $entryDate = getShipment()->dateTime ? Time::dateTimeObject(getShipment()->dateTime)->format("n/j/Y h:i A") : null;
+   $entryDate = $shipment->dateTime ? Time::dateTimeObject($shipment->dateTime)->format("n/j/Y h:i A") : null;
    $packingListInput = getPackingListInput();
    $jobNumberOptions = JobManager::getJobNumberOptions($shipment->jobNumber, JobManager::ACTIVE_JOBS);
    $pptpPartNumber = JobInfo::getJobPrefix($shipment->jobNumber);
-   $pptpPartNumberOptions = PartManager::getPptpPartNumberOptions($pptpPartNumber);
    $locationOptions = ShipmentLocation::getOptions($shipment->location);
    $quantity = ($shipment->quantity > 0) ? $shipment->quantity : null;
+   $shippedDate = $shipment->shippedDate ? Time::toJavascriptDate($shipment->shippedDate) : null;
    
    $part = Part::load($pptpPartNumber, Part::USE_PPTP_NUMBER);
    
@@ -308,6 +309,15 @@ function getForm()
       <div class="form-section-header">Tracking</div>
 
       <div class="form-item">
+         <div class="form-label">Location</div>
+         <div class="flex-horizontal">
+            <select name="location" {$getDisabled(InputField::LOCATION)} required>
+               $locationOptions
+            </select>
+         </div>
+      </div>
+
+      <div class="form-item">
          <div class="form-label">Packing #</div>
          <input id="address-line-1-input" type="text" name="packingListNumber" maxlength="32" style="width:150px;" value="{$shipment->packingListNumber}" {$getDisabled(InputField::PACKING_LIST_NUMBER)} />
       </div>
@@ -318,12 +328,8 @@ function getForm()
       </div>
 
       <div class="form-item">
-         <div class="form-label">Location</div>
-         <div class="flex-horizontal">
-            <select name="location" {$getDisabled(InputField::LOCATION)} required>
-               $locationOptions
-            </select>
-         </div>
+         <div class="form-label">Shipped Date</div>
+         <input id="shipped-date-input" type="date" name="shippedDate" value="$shippedDate" {$getDisabled(InputField::SHIPPED_DATE)} />
       </div>
 
    </form>

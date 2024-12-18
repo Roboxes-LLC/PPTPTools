@@ -14,6 +14,9 @@ class Shipment
       "SAVE_BUTTON":       "save-button",
       "CANCEL_BUTTON":     "cancel-button",
       // Input fields
+      "SHIPMENT_LOCATION_INPUT": "shipment-location-input",
+      "START_DATE_INPUT": "start-date-input",
+      "END_DATE_INPUT": "end-date-input",
       "SHIPMENT_ID_INPUT": "shipment-id-input",
       "JOB_NUMBER_INPUT": "job-number-input",
       "PPTP_PART_NUMBER_INPUT": "pptp-part-number-input",
@@ -28,6 +31,8 @@ class Shipment
       this.heatTable = null;
       
       this.setup();
+      
+      this.onShipmentLocationChanged();
    }
    
    setup()
@@ -40,6 +45,27 @@ class Shipment
       if (document.getElementById(Shipment.PageElements.HEAT_TABLE) != null)
       {
          this.createHeatTable(Shipment.PageElements.HEAT_TABLE);
+      }
+      
+      if (document.getElementById(Shipment.PageElements.SHIPMENT_LOCATION_INPUT) != null)
+      {
+         document.getElementById(Shipment.PageElements.SHIPMENT_LOCATION_INPUT).addEventListener('change', function() {
+            this.onShipmentLocationChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Shipment.PageElements.START_DATE_INPUT) != null)
+      {
+         document.getElementById(Shipment.PageElements.START_DATE_INPUT).addEventListener('change', function() {
+            this.onStartDateChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Shipment.PageElements.END_DATE_INPUT) != null)
+      {
+         document.getElementById(Shipment.PageElements.END_DATE_INPUT).addEventListener('change', function() {
+            this.onEndDateChanged();
+         }.bind(this));
       }
       
       if (document.getElementById(Shipment.PageElements.ADD_BUTTON) != null)
@@ -74,13 +100,12 @@ class Shipment
    createTable(tableElementId)
    {
       let url = "/app/page/shipment/";
-      let params = new Object();
-      params.request = "fetch";
+      let params = this.getTableQueryParams();
       
       let tableElementQuery = "#" + tableElementId;
    
       // Create Tabulator table
-      this.scheduledTable = new Tabulator(tableElementQuery, {
+      this.table = new Tabulator(tableElementQuery, {
          layout:"fitData",
          cellVertAlign:"middle",
          ajaxURL:url,
@@ -128,6 +153,11 @@ class Shipment
                   
                   return (cellValue);
                 }
+            },
+            {title:"Shipped",           field:"dateTime",         headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered) {
+                  return (cell.getRow().getData().formattedShippedDate);
+               }
             },
             {title:"",                  field:"delete",
                formatter:function(cell, formatterParams, onRendered){
@@ -277,6 +307,52 @@ class Shipment
    }
    
    // **************************************************************************
+   
+   onStartDateChanged()
+   {
+      if (!this.validateFilterDates())
+      {
+         document.getElementById(Shipment.PageElements.END_DATE_INPUT).value = 
+            document.getElementById(Shipment.PageElements.START_DATE_INPUT).value
+      }
+      
+      this.onFilterUpdate();
+      
+      setSession("shipment.startDate", document.getElementById(Shipment.PageElements.START_DATE_INPUT).value);
+   }
+   
+   onEndDateChanged()
+   {
+      if (!this.validateFilterDates())
+      {
+         document.getElementById(Shipment.PageElements.START_DATE_INPUT).value = 
+            document.getElementById(Shipment.PageElements.END_DATE_INPUT).value
+      }
+
+      this.onFilterUpdate();
+      
+      setSession("shipment.endDate", document.getElementById(Shipment.PageElements.END_DATE_INPUT).value);
+   }
+   
+   onShipmentLocationChanged()
+   {
+      let shipmentLocation = parseInt(document.getElementById(Shipment.PageElements.SHIPMENT_LOCATION_INPUT).value);
+      
+      if (shipmentLocation != ShipmentLocation.CUSTOMER)
+      {
+         disable(Shipment.PageElements.START_DATE_INPUT);
+         disable(Shipment.PageElements.END_DATE_INPUT);
+      }
+      else
+      {
+         enable(Shipment.PageElements.START_DATE_INPUT);
+         enable(Shipment.PageElements.END_DATE_INPUT);
+      }
+      
+      this.onFilterUpdate();
+      
+      setSession("shipment.shipmentLocation", shipmentLocation);
+   }
             
    onAddButton(jobId)
    {
@@ -371,6 +447,46 @@ class Shipment
    getShipmentId()
    {
       return (parseInt(document.getElementById(Shipment.PageElements.SHIPMENT_ID_INPUT).value));
+   }
+   
+   getTableQueryParams()
+   {
+      let params = new Object();
+      
+      params.request = "fetch";
+      
+      params.shipmentLocation = document.getElementById(Shipment.PageElements.SHIPMENT_LOCATION_INPUT).value;
+      
+      params.startDate =  document.getElementById(Shipment.PageElements.START_DATE_INPUT).value;
+      
+      params.endDate =  document.getElementById(Shipment.PageElements.END_DATE_INPUT).value;
+
+      return (params);
+   }
+   
+   validateFilterDates()
+   {
+      let startDate = document.getElementById(Shipment.PageElements.START_DATE_INPUT).value;
+      let endDate = document.getElementById(Shipment.PageElements.END_DATE_INPUT).value;
+      
+      return (new Date(endDate) >= new Date(startDate))
+   }
+   
+   onFilterUpdate()
+   {
+      if (document.readyState === "complete")
+      {
+         let url = "/app/page/shipment/";
+         let params = this.getTableQueryParams();
+
+         this.table.setData(url, params)
+         .then(function(){
+            // Run code after table has been successfuly updated
+         })
+         .catch(function(error){
+            // Handle error loading data
+         });
+      }
    }
    
    // **************************************************************************

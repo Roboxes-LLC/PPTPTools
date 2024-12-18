@@ -1057,12 +1057,17 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
-   public function getShipments()
+   public function getShipments($shipmentLocation, $startDate, $endDate)
    {
-      $statement = $this->pdo->prepare(
-         "SELECT * FROM shipment ORDER BY shipmentId ASC;");
+      $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
+      $endDate = $endDate ? Time::toMySqlDate(Time::endOfDay($endDate)) : null;
       
-      $result = $statement->execute() ? $statement->fetchAll() : null;
+      $dateClause = ($startDate && $endDate) ? "(dateTime BETWEEN '$startDate' AND '$endDate')" : "TRUE";
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM shipment WHERE location = ? AND $dateClause ORDER BY shipmentId ASC;");
+      
+      $result = $statement->execute([$shipmentLocation]) ? $statement->fetchAll() : null;
       
       return ($result);
    }
@@ -1092,11 +1097,12 @@ class PPTPDatabaseAlt extends PDODatabase
    public function addShipment($shipment)
    {
       $dateTime = $shipment->dateTime ? Time::toMySqlDate($shipment->dateTime) : null;
+      $shippedDate = $shipment->shippedDate ? Time::toMySqlDate($shipment->shippedDate) : null;
       
       $statement = $this->pdo->prepare(
          "INSERT INTO shipment " .
-         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, packingList, location) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, packingList, location, shippedDate) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -1107,7 +1113,8 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->quantity,
             $shipment->packingListNumber,
             $shipment->packingList,
-            $shipment->location
+            $shipment->location,
+            $shippedDate
          ]);
       
       return ($result);
@@ -1116,10 +1123,11 @@ class PPTPDatabaseAlt extends PDODatabase
    public function updateShipment($shipment)
    {
       $dateTime = $shipment->dateTime ? Time::toMySqlDate($shipment->dateTime) : null;
+      $shippedDate = $shipment->shippedDate ? Time::toMySqlDate($shipment->shippedDate) : null;
       
       $statement = $this->pdo->prepare(
          "UPDATE shipment " .
-         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, packingList = ?, location = ? " .
+         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, packingList = ?, location = ?, shippedDate = ? " .
          "WHERE shipmentId = ?");
       
       $result = $statement->execute(
@@ -1132,6 +1140,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->packingListNumber,
             $shipment->packingList,
             $shipment->location,
+            $shippedDate,
             $shipment->shipmentId
          ]);
       

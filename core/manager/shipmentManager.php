@@ -8,11 +8,11 @@ require_once ROOT.'/printer/printJob.php';
 
 class ShipmentManager
 {
-   public static function getShipments()
+   public static function getShipments($shipmentLocation, $startDate, $endDate)
    {
       $shipments = array();
       
-      $result = PPTPDatabaseAlt::getInstance()->getShipments();
+      $result = PPTPDatabaseAlt::getInstance()->getShipments($shipmentLocation, $startDate, $endDate);
       
       foreach ($result as $row)
       {

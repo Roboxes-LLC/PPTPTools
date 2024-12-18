@@ -19,8 +19,10 @@ class Session
    const SALES_ORDER_ACTIVE_ORDERS = "salesOrder.activeOrders";
    const SALES_ORDER_START_DATE = "salesOrder.startDate";
    const SALES_ORDER_END_DATE = "salesOrder.endDate";
-   
-   
+   const SHIPMENT_SHIPMENT_LOCATION = "shipment.shipmentLocation";
+   const SHIPMENT_START_DATE = "shipment.startDate";
+   const SHIPMENT_END_DATE = "shipment.endDate";
+      
    public static function isset($key)
    {
       return (isset($_SESSION[$key]));

@@ -36,6 +36,26 @@ abstract class ShipmentLocation
       
       return ($html);
    }
+   
+   public static function getJavascript($enumName)
+   {
+      // Note: Keep synced with enum.
+      $varNames = array("UNKNOWN", "PPTP", "PLATER", "CUSTOMER");
+      
+      $html = "$enumName = {";
+      
+      $html .= "{$varNames[ShipmentLocation::UNKNOWN]}: " . ShipmentLocation::UNKNOWN . ", ";
+      
+      foreach (ShipmentLocation::$values as $location)
+      {
+         $html .= "{$varNames[$location]}: $location";
+         $html .= ($location < (ShipmentLocation::LAST - 1) ? ", " : "");
+      }
+      
+      $html .= "};";
+      
+      return ($html);
+   } 
 }
 
 ?>
