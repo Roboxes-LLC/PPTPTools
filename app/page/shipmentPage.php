@@ -353,6 +353,19 @@ class ShipmentPage extends Page
       $shipment->formattedDateTime = ($shipment->dateTime) ? Time::dateTimeObject($shipment->dateTime)->format("n/j/Y h:i A") : null;
       $shipment->packingListUrl = $shipment->packingList ? $PACKING_LISTS_DIR . $shipment->packingList : null;
       $shipment->formattedShippedDate = ($shipment->shippedDate) ? Time::dateTimeObject($shipment->shippedDate)->format("n/j/Y") : null;
+      
+      // Inspection status.
+      $shipment->inspectionStatus = InspectionStatus::UNKNOWN;
+      if ($shipment->inspectionId != Inspection::UNKNOWN_INSPECTION_ID)
+      {
+         $inspection = Inspection::load($shipment->inspectionId, false);  // Don't load inspection results.
+         if ($inspection)
+         {
+            $shipment->inspectionStatus = $inspection->getInspectionStatus();
+         }
+      }
+      $shipment->inspectionStatusLabel = InspectionStatus::getLabel($shipment->inspectionStatus);
+      $shipment->inspectionStatusClass = InspectionStatus::getClass($shipment->inspectionStatus);
    }
    
    private static function augmentTimeCard(&$timeCardInfo)

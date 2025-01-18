@@ -3,11 +3,24 @@
 if (!defined('ROOT')) require_once '../root.php';
 require_once ROOT.'/app/common/menu.php';
 require_once '../common/database.php';
+require_once '../common/filterDateType.php';
 require_once '../common/header.php';
 require_once '../common/inspection.php';
 require_once '../common/inspectionTemplate.php';
 require_once '../common/newIndicator.php';
 require_once '../common/permissions.php';
+
+function getFilterDateType()
+{
+   $filterDateType = FilterDateType::ENTRY_DATE;
+   
+   if (isset($_SESSION["inspection.filter.dateType"]))
+   {
+      $filterDateType = $_SESSION["inspection.filter.dateType"];
+   }
+   
+   return ($filterDateType);
+}
 
 function getFilterStartDate()
 {
@@ -49,6 +62,18 @@ function getFilterInspectionType()
    }
    
    return ($inspectionType);
+}
+
+function getFilterAllIncomplete()
+{
+   $allIncomplete = false;
+   
+   if (isset($_SESSION["inspection.filter.allIncomplete"]))
+   {
+      $allIncomplete = filter_var($_SESSION["inspection.filter.allIncomplete"], FILTER_VALIDATE_BOOLEAN);
+   }
+   
+   return ($allIncomplete);
 }
 
 function getReportFilename()
@@ -123,26 +148,28 @@ if (!Authentication::isAuthenticated())
 
          <br>
          
-         <div class="flex-horizontal flex-left flex-wrap">
+         <div class="flex-horizontal flex-left flex-wrap flex-v-center">
             <div class="flex-horizontal">
                <div style="white-space: nowrap">Inspection type</div>
                &nbsp;
                <select id="inspection-type-filter"><?php echo getInspectionTypeOptions(getFilterInspectionType(), true); ?></select>
             </div>
             &nbsp;&nbsp;
-            <div class="flex-horizontal">
-               <div style="white-space: nowrap">Start date</div>
-               &nbsp;
-               <input id="start-date-filter" type="date" value="<?php echo getFilterStartDate()?>">
-               &nbsp;&nbsp;
-               <div style="white-space: nowrap">End date</div>
-               &nbsp;
-               <input id="end-date-filter" type="date" value="<?php echo getFilterEndDate()?>">
-               &nbsp;&nbsp;
-               <button id="today-button" class="small-button">Today</button>
-               &nbsp;&nbsp;
-               <button id="yesterday-button" class="small-button">Yesterday</button>
-            </div>
+            <select id="date-type-filter"><?php echo FilterDateType::getOptions([FilterDateType::ENTRY_DATE, FilterDateType::MANUFACTURING_DATE], getFilterDateType()) ?></select>
+            &nbsp;&nbsp;
+            <div style="white-space: nowrap">Start</div>
+            &nbsp;
+            <input id="start-date-filter" type="date" value="<?php echo getFilterStartDate()?>">
+            &nbsp;&nbsp;
+            <div style="white-space: nowrap">End</div>
+            &nbsp;
+            <input id="end-date-filter" type="date" value="<?php echo getFilterEndDate()?>">
+            &nbsp;&nbsp;
+            <button id="today-button" class="small-button">Today</button>
+            &nbsp;&nbsp;
+            <button id="yesterday-button" class="small-button">Yesterday</button>
+            &nbsp;&nbsp;
+            <input id="all-incomplete-filter" type="checkbox" <?php echo getFilterAllIncomplete() ? "checked" : "" ?>>&nbsp;All Incomplete
          </div>
          
          <br>
@@ -177,8 +204,17 @@ if (!Authentication::isAuthenticated())
          var params = new Object();
 
          params.inspectionType = document.getElementById("inspection-type-filter").value;
-         params.startDate =  document.getElementById("start-date-filter").value;
-         params.endDate =  document.getElementById("end-date-filter").value;
+         
+         if (document.getElementById("all-incomplete-filter").checked)
+         {
+            params.allIncomplete = true;
+         }
+         else
+         {
+            params.startDate =  document.getElementById("start-date-filter").value;
+            params.endDate =  document.getElementById("end-date-filter").value;
+            params.dateType =  document.getElementById("date-type-filter").value;
+         }
 
          return (params);
       }
@@ -344,8 +380,10 @@ if (!Authentication::isAuthenticated())
             var filterId = event.srcElement.id;
    
             if ((filterId == "inspection-type-filter") ||
+                (filterId == "date-type-filter") ||
                 (filterId == "start-date-filter") ||
-                (filterId == "end-date-filter"))
+                (filterId == "end-date-filter") ||
+                (filterId == "all-incomplete-filter"))
             {
                var url = getTableQuery();
                var params = getTableQueryParams();
@@ -362,6 +400,10 @@ if (!Authentication::isAuthenticated())
                {
                   setSession("inspection.filter.inspectionType", document.getElementById("inspection-type-filter").value);
                }
+               else if (filterId == "date-type-filter")
+               {
+                  setSession("inspection.filter.dateType", document.getElementById("date-type-filter").value);
+               }
                else if (filterId == "start-date-filter")
                {
                   setSession("inspection.filter.startDate", document.getElementById("start-date-filter").value);
@@ -369,6 +411,10 @@ if (!Authentication::isAuthenticated())
                else if (filterId == "end-date-filter")
                {
                   setSession("inspection.filter.endDate", document.getElementById("end-date-filter").value);
+               }
+               else if (filterId == "all-incomplete-filter")
+               {
+                  setSession("inspection.filter.allIncomplete", document.getElementById("all-incomplete-filter").checked);
                }
             }
          }
@@ -420,16 +466,45 @@ if (!Authentication::isAuthenticated())
             endDateFilter.dispatchEvent(new Event('change'));  // TODO: Avoid calling this!  "An active ajax request was blocked ..."
          }      
       }
+      
+      function onAllIncompleteFilterChanged()
+      {
+         let allIncomplete = document.getElementById("all-incomplete-filter").checked;
+         
+         if (allIncomplete)
+         {
+            disable("date-type-filter");
+            disable("start-date-filter");
+            disable("end-date-filter");
+            disable("today-button");
+            disable("yesterday-button");
+         }
+         else
+         {
+            enable("date-type-filter");
+            enable("start-date-filter");
+            enable("end-date-filter");
+            enable("today-button");
+            enable("yesterday-button");
+         }
+      }
 
       // Setup event handling on all DOM elements.
       document.getElementById("inspection-type-filter").addEventListener("change", updateFilter);
       document.getElementById("start-date-filter").addEventListener("change", updateFilter);      
       document.getElementById("end-date-filter").addEventListener("change", updateFilter);
+      document.getElementById("date-type-filter").addEventListener("change", updateFilter);
+      document.getElementById("all-incomplete-filter").addEventListener("change", function() {
+         onAllIncompleteFilterChanged();
+         updateFilter(event);
+      });
       document.getElementById("today-button").onclick = filterToday;
       document.getElementById("yesterday-button").onclick = filterYesterday;
       document.getElementById("new-inspection-button").onclick = function(){location.href = 'selectInspection.php';};
       document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
+      
+      onAllIncompleteFilterChanged();
    </script>
    
 </body>

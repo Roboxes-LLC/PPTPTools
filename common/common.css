@@ -720,3 +720,40 @@ form.show-invalid select:invalid
 {
    outline: solid 2px red;
 }
+
+.inspection-status {
+   display: flex;
+   flex-direction: row;
+   align-items: center;
+   justify-content: center;
+   
+   font-size: 14px;
+   color: #fff;
+   text-shadow: -1px 1px #417cb8;
+   
+   line-height: 1.8;
+   appearance: none;
+   box-shadow: none;
+   border-radius: 0;
+   background-color: grey;
+   border: none;
+   
+   width: 90px;
+   height: 20px;  
+}
+
+.inspection-status.pass {
+   background-color: green;
+}
+
+.inspection-status.warning {
+   background-color: orange;
+}
+
+.inspection-status.fail {
+   background-color: red;
+}
+
+.inspection-status.incomplete {
+   background-color: grey;
+}

@@ -19,8 +19,8 @@ Required PHP variables:
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
    
-   <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
-   <link rel="stylesheet" type="text/css" href="../common/common.css"/>
+   <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo $versionQuery ?>"/>
+   <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo $versionQuery ?>"/>
    
    <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
    <script src="../thirdParty/moment/moment.min.js"></script>

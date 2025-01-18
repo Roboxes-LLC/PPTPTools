@@ -1602,7 +1602,14 @@ $router->add("inspectionData", function($params) {
    
    $startDate = Time::startOfDay(Time::now("Y-m-d"));
    $endDate = Time::endOfDay(Time::now("Y-m-d"));
+   $dateType = FilterDateType::ENTRY_DATE;
    $inspectionType = InspectionType::UNKNOWN;
+   $allIncomplete = isset($params["allIncomplete"]);
+   
+   if (isset($params["dateType"]))
+   {
+      $dateType = $params->getInt("dateType");
+   }
    
    if (isset($params["startDate"]))
    {
@@ -1630,7 +1637,16 @@ $router->add("inspectionData", function($params) {
    
    if ($database && $database->isConnected())
    {
-      $databaseResult = $database->getInspections($inspectionType, $authorInspectorOperator, $startDate, $endDate);
+      $databaseResult = null;
+      if ($allIncomplete)
+      {
+         $databaseResult = $database->getInspectionsByStatus($inspectionType, $authorInspectorOperator, InspectionStatus::INCOMPLETE);
+      }
+      else
+      {
+         $useMfgDate = ($dateType == FilterDateType::MANUFACTURING_DATE);
+         $databaseResult = $database->getInspections($inspectionType, $authorInspectorOperator, $startDate, $endDate, $useMfgDate);
+      }
       
       // Populate data table.
       foreach ($databaseResult as $row)
@@ -1902,12 +1918,11 @@ $router->add("saveInspection", function($params) {
                      NotificationManager::onFirstPartInspectionComplete($inspection->inspectionId);
                   }
                   
-                  // React to a complete FINAL inspection by creating a new shipment.
+                  // React to the creation of a FINAL inspection by creating a new shipment.
                   if (($inspectionTemplate->inspectionType == InspectionType::FINAL) &&
-                      !$wasComplete && 
-                      $inspection->complete())
+                      $newInspection)
                   {
-                     ShipmentManager::onFinalInspectionCompleted($inspection->inspectionId);
+                     ShipmentManager::onFinalInspectionCreated($inspection->inspectionId);
                   }
                }
                else

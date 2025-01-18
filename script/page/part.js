@@ -109,9 +109,16 @@ class Part
             },
             {title:"Customer Print",    field:"customerPrint", hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = cell.getValue();
+                  
                   var filename = cell.getValue();
-                  var truncatedFilename = (filename.length > 20) ? filename.substr(0, 20) + "..." : filename; 
-                  return ("<a href=\"<?php echo $ROOT ?>/uploads/" + filename + "\" target=\"_blank\">" + truncatedFilename + "</a>");
+                  if (filename !== null)
+                  {
+                     var truncatedFilename = (filename.length > 20) ? filename.substr(0, 20) + "..." : filename; 
+                     cellValue = "<a href=\"<?php echo $ROOT ?>/uploads/" + filename + "\" target=\"_blank\">" + truncatedFilename + "</a>";
+                  }
+                  
+                  return (cellValue);
                 }
             },
             {title:"",                  field:"delete",

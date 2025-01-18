@@ -136,6 +136,18 @@ class Shipment
             },
             {title:"Job #",             field:"jobNumber",         headerFilter:true},
             {title:"Quantity",          field:"quantity",          headerFilter:true},
+            {title:"Inspection",        field:"inspectionStatus",  headerFilter:true, hozAlign:"center",
+               formatter:function(cell, formatterParams, onRendered) {
+                  let cellValue = "";
+                  let label = cell.getRow().getData().inspectionStatusLabel;
+                  if (label != "")
+                  {
+                     let cssClass = cell.getRow().getData().inspectionStatusClass;
+                     cellValue = `<div class="inspection-status ${cssClass}">${label}</div>`;
+                  }
+                  return (cellValue);
+               }
+            }, 
             {title:"Location",          field:"locationLabel",     headerFilter:true},
             {title:"Packing #",         field:"packingListNumber", headerFilter:true},
             {title:"Packing List",      field:"packingList",       hozAlign:"left",
@@ -174,6 +186,15 @@ class Shipment
             if (cell.getColumn().getField() == "shipmentTicketCode")
             {
                document.location = `/shipment/printShipmentTicket.php?shipmentTicketId=${shipmentId}`;
+            }
+            else if (cell.getColumn().getField() == "inspectionStatus")
+            {
+               let inspectionId = parseInt(cell.getRow().getData().inspectionId);
+               if (inspectionId != 0)
+               {
+                  document.location = `/inspection/viewInspection.php?inspectionId=${inspectionId}`;
+               }
+               e.stopPropagation();
             }
             else if (cell.getColumn().getField() == "packingList")
             {

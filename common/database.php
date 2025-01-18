@@ -1484,7 +1484,7 @@ class PPTPDatabase extends MySqlDatabase
    //                                Inspections
    // **************************************************************************
    
-   public function getInspections($inspectionType, $authorInspectorOperator, $startDate, $endDate)
+   public function getInspections($inspectionType, $authorInspectorOperator, $startDate, $endDate, $useMfgDate = false)
    {
       $authorInspectorOperatorClause = "TRUE";
       if ($authorInspectorOperator != UserInfo::UNKNOWN_EMPLOYEE_NUMBER)
@@ -1498,21 +1498,91 @@ class PPTPDatabase extends MySqlDatabase
       {
          $typeClause = "inspectiontemplate.inspectionType = $inspectionType";
       }
-      
-      // Manufacture date can be specified by time card id, or explicitly.
-      $mySqlStartDate = Time::toMySqlDate($startDate);
-      $mySqlEndDate = Time::toMySqlDate($endDate);
-      $mfgDateClause =
+
+      $mySqlStartDate = Time::toMySqlDate(Time::startOfDay($startDate));
+      $mySqlEndDate = Time::toMySqlDate(Time::endOfDay($endDate));
+      $dateClause = "";
+      if ($useMfgDate == true)
+      {
+         // Manufacture date can be specified by time card id, or explicitly.
+         $dateClause =
 <<<HEREDOC
-         ((timecard.manufactureDate BETWEEN '$mySqlStartDate' AND '$mySqlEndDate') OR (inspection.mfgDate BETWEEN '$mySqlStartDate' AND '$mySqlEndDate'))
+            ((timecard.manufactureDate BETWEEN '$mySqlStartDate' AND '$mySqlEndDate') OR (inspection.mfgDate BETWEEN '$mySqlStartDate' AND '$mySqlEndDate'))
 HEREDOC;
+      }
+      else
+      {
+         $dateClause =
+<<<HEREDOC
+            (inspection.dateTime BETWEEN '$mySqlStartDate' AND '$mySqlEndDate')
+HEREDOC;
+      }
 
       $query = "SELECT inspection.*, inspectiontemplate.* FROM inspection " .
                "INNER JOIN inspectiontemplate ON inspection.templateId = inspectiontemplate.templateId " .
                "LEFT JOIN timecard ON inspection.timeCardId = timecard.timeCardId " .
-               "WHERE $authorInspectorOperatorClause AND $typeClause AND $mfgDateClause " .
+               "WHERE $authorInspectorOperatorClause AND $typeClause AND $dateClause " .
                "ORDER BY inspection.dateTime DESC, inspectionId DESC;";
 
+      $result = $this->query($query);
+      
+      return ($result);
+   }
+   
+   public function getInspectionsByStatus($inspectionType, $authorInspectorOperator, $inspectionStatus)
+   {
+      $authorInspectorOperatorClause = "TRUE";
+      if ($authorInspectorOperator != UserInfo::UNKNOWN_EMPLOYEE_NUMBER)
+      {
+         $authorInspectorOperatorClause =
+         "((author = $authorInspectorOperator) OR (inspector = $authorInspectorOperator) OR (operator = $authorInspectorOperator) OR (timecard.employeeNumber = $authorInspectorOperator))";
+      }
+      
+      $typeClause = "TRUE";
+      if ($inspectionType != InspectionType::UNKNOWN)
+      {
+         $typeClause = "inspectiontemplate.inspectionType = $inspectionType";
+      }
+      
+      $statusClause = "TRUE";
+      switch ($inspectionStatus)
+      {
+         case InspectionStatus::PASS:
+         {
+            $statusClause = "(((inspection.warningCount  + inspection.failCount) = 0) AND (inspection.passCount > 0))";
+            break;
+         }
+         
+         case InspectionStatus::WARNING:
+         {
+            $statusClause = "((inspection.failCount = 0) AND (inspection.warningCount > 0))";
+            break;
+         }
+         
+         case InspectionStatus::FAIL:
+         {
+            $statusClause = "(inspection.failCount > 0)";
+            break;
+         }
+            
+         case InspectionStatus::INCOMPLETE:
+         {
+            $statusClause = "((inspection.passCount + inspection.warningCount  + inspection.failCount) = 0)";
+            break;  
+         }
+         
+         default:
+         {
+            break;
+         }
+      }
+      
+      $query = "SELECT inspection.*, inspectiontemplate.* FROM inspection " .
+               "INNER JOIN inspectiontemplate ON inspection.templateId = inspectiontemplate.templateId " .
+               "LEFT JOIN timecard ON inspection.timeCardId = timecard.timeCardId " .
+               "WHERE $authorInspectorOperatorClause AND $typeClause AND $statusClause " .
+               "ORDER BY inspection.dateTime DESC, inspectionId DESC;";
+      
       $result = $this->query($query);
       
       return ($result);

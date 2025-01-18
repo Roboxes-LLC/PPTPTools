@@ -47,7 +47,7 @@ class ShipmentManager
       return ($success);
    }
    
-   public static function onFinalInspectionCompleted($inspectionId)
+   public static function onFinalInspectionCreated($inspectionId)
    {
       $inspection = Inspection::load($inspectionId, true);
       

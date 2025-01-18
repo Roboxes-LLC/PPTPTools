@@ -515,7 +515,8 @@ if (!Authentication::isAuthenticated())
       document.getElementById("print-link").onclick = function(){table.print(false, true);};
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
-
+      
+      onAllUnissuedFilterChanged()
    </script>
    
 </body>
