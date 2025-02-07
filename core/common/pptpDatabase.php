@@ -1080,14 +1080,15 @@ class PPTPDatabaseAlt extends PDODatabase
          $questionMarks[] = "?";
       }
       $locationList = "(" . implode(", ", $questionMarks) . ")";
-      
+    
       $statement = $this->pdo->prepare(
-         "SELECT * FROM shipment " .
-         "INNER JOIN job ON job.jobNumber = shipment.jobNumber " .
-         "WHERE job.partNumber = ? AND location IN $locationList ORDER BY shipmentId ASC;");
-
-      $params = [$partNumber];
-      $params = array_merge($params, ShipmentLocation::$activeLocations);
+         "SELECT * from shipment " .
+         "WHERE location IN $locationList AND " .
+         "EXISTS (SELECT 1 FROM job WHERE job.partNumber = ? AND job.jobNumber = shipment.jobNumber) " .
+         "ORDER BY shipmentId ASC;");
+            
+      $params = ShipmentLocation::$activeLocations;
+      $params[] = $partNumber;
       
       $result = $statement->execute($params) ? $statement->fetchAll() : null;
       

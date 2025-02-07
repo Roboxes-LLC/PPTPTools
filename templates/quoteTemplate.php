@@ -227,7 +227,7 @@ Required PHP variables:
             <th>Additional charge **</th>
             <th>Total price ***</th>
          </tr>
-         <?php 
+         <?php
          foreach ($templateParams->quote->getSelectedEstimates() as $estimate)
          {
             $quantity = number_format($estimate->quantity, 0);
@@ -246,6 +246,23 @@ Required PHP variables:
                <td class="bold">$totalCost</td>
             </tr>
 HEREDOC;
+            // Total hack.  On 1/30/2025, Craig asked if we could include a second part estimate with the same estimate values.
+            if ($templateParams->quote->quoteId == 47)
+            {
+               $altPartNumber = "OP06-3041";
+
+               echo
+<<<HEREDOC
+               <tr id="total-row">
+                  <td>$altPartNumber</td>
+                  <td>{$templateParams->quote->partDescription}</td>
+                  <td>$quantity</td>
+                  <td>$unitPrice</td>
+                  <td>$additionalCharge</td>
+                  <td class="bold">$totalCost</td>
+               </tr>
+HEREDOC;
+            }
          }
          ?>
       </table>

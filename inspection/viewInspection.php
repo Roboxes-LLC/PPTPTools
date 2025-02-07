@@ -562,33 +562,16 @@ function getCustomerPrint()
    
    $jobId = getInspection()->getJobId();
    $jobNumber = getJobNumber();
-   $wcNumber = getWcNumber();
    
-   // Job ID
    if ($jobId != JobInfo::UNKNOWN_JOB_ID)
    {
       $jobInfo = JobInfo::load($jobId);
       
       if ($jobInfo)
       {
-         $customerPrint = $jobInfo->customerPrint;
+         $customerPrint = $jobInfo->part->customerPrint;
       }
    }
-   // Job Number and WC Number
-   else if (($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER) &&
-            ($wcNumber != JobInfo::UNKNOWN_WC_NUMBER))
-   {
-      $jobId = JobInfo::getJobIdByComponents($jobNumber, $wcNumber);
-      
-      $jobInfo = JobInfo::load($jobId);
-      
-      if ($jobInfo)
-      {
-         $customerPrint = $jobInfo->customerPrint;
-      }
-   }
-   // Job Number
-   // Note: This is the case of FINAL inspections, that don't include a WC number.
    else if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
    {
       $customerPrint = JobInfo::getCustomerPrint($jobNumber);

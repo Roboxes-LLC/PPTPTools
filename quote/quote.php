@@ -697,7 +697,7 @@ function getSendPanel()
    
             <div class="form-item">
                <div class="form-label">Notes</div>
-               <textarea id="email-notes-input" class="email-notes-input" type="text" name="emailNotes" rows="8" maxlength="512" style="width:300px" <?php echo getDisabled(InputField::EMAIL_BODY) ?>{$quote->emailNotes}</textarea>
+               <textarea id="email-notes-input" class="email-notes-input" type="text" name="emailNotes" rows="16" maxlength="1024" style="width:400px; height:300px; overflow-y:scroll;" <?php echo getDisabled(InputField::EMAIL_BODY) ?>{$quote->emailNotes}</textarea>
             </div>
             
             <br>

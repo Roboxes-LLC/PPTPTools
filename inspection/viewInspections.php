@@ -12,7 +12,7 @@ require_once '../common/permissions.php';
 
 function getFilterDateType()
 {
-   $filterDateType = FilterDateType::ENTRY_DATE;
+   $filterDateType = FilterDateType::MANUFACTURING_DATE;
    
    if (isset($_SESSION["inspection.filter.dateType"]))
    {
