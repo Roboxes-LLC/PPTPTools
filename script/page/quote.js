@@ -305,8 +305,7 @@ class Quote
    
       // Create Tabulator table
       this.table = new Tabulator(tableElementQuery, {
-         layout:"fitData",
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
          ajaxResponse:function(url, params, response) {
@@ -317,7 +316,14 @@ class Quote
             }
             return (tableData);
          },
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
             {                         field:"quoteId",                 visible:false},
             {title:"Quote #",         field:"quoteNumber",             headerFilter:true},
@@ -329,7 +335,7 @@ class Quote
             {title:"Quantity",        field:"quantity",                headerFilter:false},
             {title:"Estimates",       field:"estimateCount",           headerFilter:false},
             {title:"Status",          field:"quoteStatusLabel",        headerFilter:true},
-            {title:"",                field:"delete",
+            {title:"",                field:"delete",                  hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
@@ -337,21 +343,23 @@ class Quote
          ],
          initialSort:[
             {column:"quoteNumber", dir:"asc"}
-         ],
-         cellClick:function(e, cell){
-            let quoteId = parseInt(cell.getRow().getData().quoteId);
-            
-            if (cell.getColumn().getField() == "delete")
-            {
-               this.onDeleteButton(quoteId);
-               e.stopPropagation();
-            }
-         }.bind(this),
-         rowClick:function(e, row){
-            var quoteId = row.getData().quoteId;
-            document.location = `/quote/quote.php?quoteId=${quoteId}`;
-         }.bind(this),
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         let quoteId = parseInt(cell.getRow().getData().quoteId);
+         
+         if (cell.getColumn().getField() == "delete")
+         {
+            this.onDeleteButton(quoteId);
+            e.stopPropagation();
+         }
+      }.bind(this));
+      
+      this.table.on("rowClick", function(e, row) {
+         var quoteId = row.getData().quoteId;
+         document.location = `/quote/quote.php?quoteId=${quoteId}`;
+      }.bind(this));
    }
    
    setQuoteStatus(quoteStatus)

@@ -113,14 +113,14 @@ if (!Authentication::isAuthenticated())
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css"/>
+   <link rel="stylesheet" type="text/css" href="/thirdParty/tabulator/css/tabulator.min.css<?php echo versionQuery();?>"/>
    
-   <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
-   <link rel="stylesheet" type="text/css" href="../common/common.css"/>
-   <link rel="stylesheet" type="text/css" href="inspection.css"/>
+   <link rel="stylesheet" type="text/css" href="/common/theme.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="/common/common.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="inspection.css<?php echo versionQuery();?>"/>
    
-   <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
-   <script src="../thirdParty/moment/moment.min.js"></script>
+   <script src="/thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/common.js"></script>
    <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
@@ -224,15 +224,20 @@ if (!Authentication::isAuthenticated())
       
       // Create Tabulator on DOM element time-card-table.
       var table = new Tabulator("#inspection-table", {
-         //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         //Columns
          columns:[
-            {title:"Id",              field:"inspectionId",        hozAlign:"left", visible:false},
-            {title:"",                field:"isPriority",          hozAlign:"left", width: 25,
+            {title:"Id",              field:"inspectionId",     visible:false},
+            {title:"",                field:"isPriority",       width:25,
                formatter:function(cell, formatterParams, onRendered){
                   let cellValue = "";
                   let isPriority = (cell.getValue() != 0);
@@ -245,7 +250,7 @@ if (!Authentication::isAuthenticated())
                   return (cellValue);
                }
             },
-            {title:"Ticket",            field:"ticketCode",     hozAlign:"left", headerFilter:true,
+            {title:"Ticket",            field:"ticketCode",     headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "";
                   
@@ -274,28 +279,28 @@ if (!Authentication::isAuthenticated())
                   return ("<div class=\"inspection-status " + cssClass + "\">" + label + "</div>");
                }
             },  
-            {title:"Inspection Type", field:"inspectionTypeLabel", hozAlign:"left"},
-            {title:"Name",            field:"name",                hozAlign:"left", headerFilter:true},
-            {title:"Created ",        field:"dateTime",            hozAlign:"left",
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Inspection Type", field:"inspectionTypeLabel"},
+            {title:"Name",            field:"name",             headerFilter:true},
+            {title:"Created ",        field:"dateTime",
+               formatter:"datetime",
                formatterParams:{
-                  outputFormat:"MM/DD/YYYY h:mm A",
+                  outputFormat:"M/d/yyyy h:mm a",
                   invalidPlaceholder:""
                }
             },
-            {title:"Created By",      field:"authorName",          hozAlign:"left",   headerFilter:true},
-            {title:"Inspector",       field:"inspectorName",       hozAlign:"left",   headerFilter:true},
-            {title:"Mfg Date",        field:"mfgDate",             hozAlign:"left",
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Created By",      field:"authorName",       headerFilter:true},
+            {title:"Inspector",       field:"inspectorName",    headerFilter:true},
+            {title:"Mfg Date",        field:"mfgDate",
+               formatter:"datetime",
                formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
+                  outputFormat:"M/d/yyyy",
                   invalidPlaceholder:""
                }
             },         
-            {title:"Operator",        field:"operatorName",        hozAlign:"left",   headerFilter:true},
-            {title:"Job",             field:"jobNumber",           hozAlign:"left",   headerFilter:true},
-            {title:"Work Center",     field:"wcLabel",             hozAlign:"left",   headerFilter:true},
-            {title:"In Process #",    field:"inspectionNumber",    hozAlign:"left",   headerFilter:true,
+            {title:"Operator",        field:"operatorName",     headerFilter:true},
+            {title:"Job",             field:"jobNumber",        headerFilter:true},
+            {title:"Work Center",     field:"wcLabel",          headerFilter:true},
+            {title:"In Process #",    field:"inspectionNumber", headerFilter:true,
               formatter:function(cell, formatterParams, onRendered){
                   let cellValue = "";
 
@@ -313,14 +318,14 @@ if (!Authentication::isAuthenticated())
                   return (cellValue);
                }
             },
-            {title:"Completed ",      field:"completedDateTime",   hozAlign:"left",
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Completed ",      field:"completedDateTime",
+               formatter:"datetime",
                formatterParams:{
-                  outputFormat:"MM/DD/YYYY h:mm A",
+                  outputFormat:"M/d/yyyy h:mm a",
                   invalidPlaceholder:""
                }
             },
-            {title:"Success Rate",    field:"successRate",         hozAlign:"left",
+            {title:"Success Rate",    field:"successRate",
                formatter:function(cell, formatterParams, onRendered){
                   var count = cell.getRow().getData().samples;
                   var naCount = cell.getRow().getData().naCount;
@@ -328,50 +333,49 @@ if (!Authentication::isAuthenticated())
                   return (passCount + "/" + (count - naCount));
                }
             },
-            {title:"",                field:"delete", <?php echo !Authentication::checkPermissions(Permission::DELETE_INSPECTION) ? "visible:false, " : "" ?>
+            {title:"",                field:"delete",           hozAlign:"center", print:false,
+               <?php echo !Authentication::checkPermissions(Permission::DELETE_INSPECTION) ? "visible:false, " : "" ?>
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-         ],
-         cellClick:function(e, cell){
-            var inspectionId = parseInt(cell.getRow().getData().inspectionId);
-            
-            if ((cell.getColumn().getField() == "ticketCode") &&
-                (cell.getRow().getData().timeCardId != 0))
-            {               
-               timeCardId = parseInt(cell.getRow().getData().timeCardId);
-               document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
-            }  
-            else if ((cell.getColumn().getField() == "ticketCode") &&
-                     (cell.getRow().getData().shipmentId != 0))
-            {               
-               shipmentId = parseInt(cell.getRow().getData().shipmentId);
-               document.location = "<?php echo $ROOT?>/shipment/printShipmentTicket.php?shipmentTicketId=" + shipmentId;
-            }  
-            else if (cell.getColumn().getField() == "delete")
-            {
-               onDeleteInspection(inspectionId);
-            }
-            else // Any other column
-            {
-               var inspectionType = cell.getRow().getData().inspectionType;
-
-               // Open user for viewing/editing.
-               if (inspectionType == <?php echo InspectionType::OASIS; ?>)
-               {
-                  document.location = "<?php echo $ROOT?>/inspection/viewOasisInspection.php?inspectionId=" + inspectionId;
-               }
-               else
-               {
-                  document.location = "<?php echo $ROOT?>/inspection/viewInspection.php?inspectionId=" + inspectionId;
-               }
-            }
-         },
-         rowClick:function(e, row){
-            // No row click function needed.
-         },
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         var inspectionId = parseInt(cell.getRow().getData().inspectionId);
+         
+         if ((cell.getColumn().getField() == "ticketCode") &&
+             (cell.getRow().getData().timeCardId != 0))
+         {               
+            timeCardId = parseInt(cell.getRow().getData().timeCardId);
+            document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
+         }  
+         else if ((cell.getColumn().getField() == "ticketCode") &&
+                  (cell.getRow().getData().shipmentId != 0))
+         {               
+            shipmentId = parseInt(cell.getRow().getData().shipmentId);
+            document.location = "<?php echo $ROOT?>/shipment/printShipmentTicket.php?shipmentTicketId=" + shipmentId;
+         }  
+         else if (cell.getColumn().getField() == "delete")
+         {
+            onDeleteInspection(inspectionId);
+         }
+         else // Any other column
+         {
+            var inspectionType = cell.getRow().getData().inspectionType;
+
+            // Open user for viewing/editing.
+            if (inspectionType == <?php echo InspectionType::OASIS; ?>)
+            {
+               document.location = "<?php echo $ROOT?>/inspection/viewOasisInspection.php?inspectionId=" + inspectionId;
+            }
+            else
+            {
+               document.location = "<?php echo $ROOT?>/inspection/viewInspection.php?inspectionId=" + inspectionId;
+            }
+         }
+      }.bind(this));
 
       function updateFilter(event)
       {

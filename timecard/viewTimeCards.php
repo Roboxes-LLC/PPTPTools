@@ -108,8 +108,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    <link rel="stylesheet" type="text/css" href="/common/theme.css<?php echo versionQuery();?>"/>
    <link rel="stylesheet" type="text/css" href="/common/common.css<?php echo versionQuery();?>"/>
    
-   <script src="/thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
-   <script src="/thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/tabulator/js/tabulator.min.js"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/barcodeScanner.js<?php echo versionQuery();?>"></script>   
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
@@ -200,29 +200,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       
       // Create Tabulator on DOM element time-card-table.
       var table = new Tabulator("#time-card-table", {
-         //height:500,            // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         index:"timeCardId",
-         layout:"fitData",
-         responsiveLayout:"hide",   // enable responsive layouts
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Timecards<h1>",
-         printFooter:"<h2>TODO: Date range<h2>",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Printing
+         printAsHtml:true,
+         printRowRange:"all",
+         printHeader:"<h1>Timecards<h1>",
+         // Columns
+         index:"timeCardId",
          columns:[
-            {title:"Id",           field:"timeCardId",      hozAlign:"left", visible:false},
-            {title:"Ticket",       field:"panTicketCode",   hozAlign:"left", responsive:0, headerFilter:true,
+            {title:"Id",           field:"timeCardId",      visible:false},
+            {title:"Ticket",       field:"panTicketCode",   headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
-                  return ("<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().panTicketCode);
+                  let panTicketCode = cell.getRow().getData().panTicketCode;
+                  return (`<i class="material-icons icon-button">receipt</i>&nbsp<div>${panTicketCode}`);
                },
                formatterPrint:function(cell, formatterParams, onRendered){
                   return (cell.getValue());
                }  
             },                   
-            {title:"Date",         field:"dateTime",        hozAlign:"left", responsive:0, print:true,
+            {title:"Date",         field:"dateTime",        print:true,
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "---";
                   
@@ -253,18 +258,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                  return (cellValue);
               },
             },
-            {title:"Mfg. Date",    field:"manufactureDate", hozAlign:"left", responsive:0, headerFilter:true, print:true,
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Mfg. Date",    field:"manufactureDate", headerFilter:"input",
+               formatter:"datetime",  // Requires luxon.js 
                formatterParams:{
-                  outputFormat:"M/D/YYYY",
+                  outputFormat:"M/d/yyyy",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Operator",     field:"operator",        hozAlign:"left", responsive:0, headerFilter:true, print:true},
-            {title:"Job #",        field:"jobNumber",       hozAlign:"left", responsive:0, headerFilter:true, print:true},
-            {title:"WC #",         field:"wcLabel",         hozAlign:"left", responsive:0, headerFilter:true, print:true},
-            {title:"Heat #",       field:"materialNumber",  hozAlign:"left", responsive:6, print:true},
-            {title:"Shift Time",   field:"shiftTime",       hozAlign:"left", responsive:1, print:true,
+            {title:"Operator",     field:"operator",       headerFilter:true},
+            {title:"Job #",        field:"jobNumber",       headerFilter:true},
+            {title:"WC #",         field:"wcLabel",         headerFilter:true},
+            {title:"Heat #",       field:"materialNumber"},
+            {title:"Shift Time",   field:"shiftTime",
                formatter:function(cell, formatterParams, onRendered){
 
                   var minutes = parseInt(cell.getValue());
@@ -287,7 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cellValue);
                 }                
             },
-            {title:"Run Time",     field:"runTime",         hozAlign:"left", responsive:1, print:true,
+            {title:"Run Time",     field:"runTime",
                contextMenu:function(component){
                   var menu = [];
 
@@ -353,7 +358,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                    return (toolTip);                  
                 }                
             },
-            {title:"Setup Time",   field:"setupTime",       hozAlign:"left", responsive:2, print:true,
+            {title:"Setup Time",   field:"setupTime",
                contextMenu:function(component){
                   var menu = [];
 
@@ -415,7 +420,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                    return (toolTip);                  
                 }
             },
-            {title:"Basket Count", field:"panCount",        hozAlign:"left", responsive:3, print:true,
+            {title:"Basket Count", field:"panCount",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
                   
@@ -430,7 +435,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                    return (cell.getValue());
                 }
             },
-            {title:"Part Count",   field:"partCount",       hozAlign:"left", responsive:4, print:true,
+            {title:"Part Count",   field:"partCount",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
                   
@@ -445,39 +450,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                    return (cell.getValue());
                 }                
             },
-            {title:"Scrap Count",  field:"scrapCount",      hozAlign:"left", responsive:5, print:true},
-            {title:"Efficiency",   field:"efficiency",      hozAlign:"left", responsive:7, print:true, 
+            {title:"Scrap Count",  field:"scrapCount"},
+            {title:"Efficiency",   field:"efficiency", 
                formatter:function(cell, formatterParams, onRendered){
                   return (parseFloat(cell.getValue()).toFixed(2) + "%");
                 }
             },
-            {title:"Parts Taken<br>Early", field:"partsTakenEarly", hozAlign:"center", responsive:5, print:true, formatter:"tickCross", formatterParams:{crossElement:""}},
-            {title:"", field:"delete", responsive:0, width:75, print:false,
+            {title:"Parts Taken<br>Early", field:"partsTakenEarly", hozAlign:"center", formatter:"tickCross", formatterParams:{crossElement:""}},
+            {title:"", field:"delete", hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-         ],
-         cellClick:function(e, cell){
-            var timeCardId = parseInt(cell.getRow().getData().timeCardId);
+         ]
+      });
+      
+      table.on("cellClick", function(e, cell) {
+         var timeCardId = parseInt(cell.getRow().getData().timeCardId);
 
-            if (cell.getColumn().getField() == "panTicketCode")
-            {
-               document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
-            }            
-            else if (cell.getColumn().getField() == "delete")
-            {
-               onDeleteTimeCard(timeCardId);
-            }
-            else // Any other column
-            {
-               // Open time card for viewing/editing.
-               document.location = "<?php echo $ROOT?>/timecard/viewTimeCard.php?timeCardId=" + timeCardId;               
-            }
-         },
-         rowClick:function(e, row){
-            // No row click function needed.
-         },
+         if (cell.getColumn().getField() == "panTicketCode")
+         {
+            document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
+         }            
+         else if (cell.getColumn().getField() == "delete")
+         {
+            onDeleteTimeCard(timeCardId);
+         }
+         else // Any other column
+         {
+            // Open time card for viewing/editing.
+            document.location = "<?php echo $ROOT?>/timecard/viewTimeCard.php?timeCardId=" + timeCardId;               
+         }
       });
 
       function updateFilter(event)

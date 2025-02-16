@@ -123,11 +123,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
    
-   <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
-   <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
       
 </head>
@@ -240,121 +241,128 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       var params = getTableQueryParams(OPERATOR_SUMMARY_TABLE);
       
       tables[OPERATOR_SUMMARY_TABLE] = new Tabulator("#operator-summary-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Totals<h1>",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         maxHeight:500,
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Printing
+         printAsHtml:true,
+         printRowRange:"all", 
+         printHeader:"<h1>Totals<h1>",
+         // Columns
          columns:[
-            {title:"Operator",   field:"operator",       hozAlign:"left", headerFilter:true, print:true, frozen:true},
-            {title:"Employee #", field:"employeeNumber", hozAlign:"left",                    print:true, frozen:true},
+            {title:"Operator",   field:"operator",       headerFilter:true, frozen:true},
+            {title:"Employee #", field:"employeeNumber", frozen:true},
             // Sunday
             {
                title:"Sunday",
                columns:[
-                  {title:"Hours",         field:"sunday.runTime",         hozAlign:"left", print:true},
-                  {title:"Efficiency",    field:"sunday.efficiency",      hozAlign:"left", print:true,
+                  {title:"Hours",         field:"sunday.runTime"},
+                  {title:"Efficiency",    field:"sunday.efficiency",
                      formatter:function(cell, formatterParams, onRendered){
                         return (cell.getValue() + "%");
                      }
                   },
-                  {title:"Paid Hours",    field:"sunday.shiftTime",        hozAlign:"left", print:true},
-                  {title:"Machine Hours", field:"sunday.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"sunday.ratio",            hozAlign:"left", print:true}
+                  {title:"Paid Hours",    field:"sunday.shiftTime"},
+                  {title:"Machine Hours", field:"sunday.machineHoursMade"},
+                  {title:"Ratio",         field:"sunday.ratio",}
                ],
             },
             // Monday
             {
                title:"Monday",
                columns:[
-                  {title:"Hours",         field:"monday.runTime",         hozAlign:"left", print:true},
-                  {title:"Efficiency",    field:"monday.efficiency",      hozAlign:"left", print:true,
+                  {title:"Hours",         field:"monday.runTime"},
+                  {title:"Efficiency",    field:"monday.efficiency",
                      formatter:function(cell, formatterParams, onRendered){
                         return (cell.getValue() + "%");
                      }
                   },
-                  {title:"Paid Hours",    field:"monday.shiftTime",        hozAlign:"left", print:true},
-                  {title:"Machine Hours", field:"monday.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"monday.ratio",            hozAlign:"left", print:true}
+                  {title:"Paid Hours",    field:"monday.shiftTime"},
+                  {title:"Machine Hours", field:"monday.machineHoursMade"},
+                  {title:"Ratio",         field:"monday.ratio"}
                ],
             },
             // Tuesday
             {
                title:"Tuesday",
                columns:[
-                  {title:"Hours",         field:"tuesday.runTime",         hozAlign:"left", print:true,},
-                  {title:"Efficiency",    field:"tuesday.efficiency",      hozAlign:"left", print:true,
+                  {title:"Hours",         field:"tuesday.runTime"},
+                  {title:"Efficiency",    field:"tuesday.efficiency",
                      formatter:function(cell, formatterParams, onRendered){
                         return (cell.getValue() + "%");
                      }
                   },
-                  {title:"Paid Hours",    field:"tuesday.shiftTime",        hozAlign:"left", print:true,},                  
-                  {title:"Machine Hours", field:"tuesday.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"tuesday.ratio",            hozAlign:"left", print:true}
+                  {title:"Paid Hours",    field:"tuesday.shiftTime",},                  
+                  {title:"Machine Hours", field:"tuesday.machineHoursMade"},
+                  {title:"Ratio",         field:"tuesday.ratio"}
                ],
             },
             // Wednesday
             {
                title:"Wednesday",
                columns:[
-                  {title:"Hours",         field:"wednesday.runTime",         hozAlign:"left", print:true,},
-                  {title:"Efficiency",    field:"wednesday.efficiency",      hozAlign:"left", print:true,
+                  {title:"Hours",         field:"wednesday.runTime"},
+                  {title:"Efficiency",    field:"wednesday.efficiency",
                      formatter:function(cell, formatterParams, onRendered){
                         return (cell.getValue() + "%");
                      }
                   },
-                  {title:"Paid Hours",    field:"wednesday.shiftTime",        hozAlign:"left", print:true,},                                    
-                  {title:"Machine Hours", field:"wednesday.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"wednesday.ratio",            hozAlign:"left", print:true}
+                  {title:"Paid Hours",    field:"wednesday.shiftTime"},                                    
+                  {title:"Machine Hours", field:"wednesday.machineHoursMade"},
+                  {title:"Ratio",         field:"wednesday.ratio"}
                ],
             },
             // Thursday
             {
                title:"Thursday",
                columns:[
-                  {title:"Hours",         field:"thursday.runTime",         hozAlign:"left", print:true,},
-                  {title:"Efficiency",    field:"thursday.efficiency",      hozAlign:"left", print:true,
+                  {title:"Hours",         field:"thursday.runTime"},
+                  {title:"Efficiency",    field:"thursday.efficiency",
                      formatter:function(cell, formatterParams, onRendered){
                         return (cell.getValue() + "%");
                      }
                   },
-                  {title:"Paid Hours",    field:"thursday.shiftTime",        hozAlign:"left", print:true,},                                                      
-                  {title:"Machine Hours", field:"thursday.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"thursday.ratio",            hozAlign:"left", print:true}
+                  {title:"Paid Hours",    field:"thursday.shiftTime"},                                                      
+                  {title:"Machine Hours", field:"thursday.machineHoursMade"},
+                  {title:"Ratio",         field:"thursday.ratio"}
                ],
             },
             // Friday
             {
                title:"Friday",
                columns:[
-                  {title:"Hours",         field:"friday.runTime",         hozAlign:"left", print:true,},
-                  {title:"Efficiency",    field:"friday.efficiency",      hozAlign:"left", print:true,
+                  {title:"Hours",         field:"friday.runTime"},
+                  {title:"Efficiency",    field:"friday.efficiency",
                      formatter:function(cell, formatterParams, onRendered){
                         return (cell.getValue() + "%");
                      }
                   },
-                  {title:"Paid Hours",    field:"friday.shiftTime",        hozAlign:"left", print:true,},                  
-                  {title:"Machine Hours", field:"friday.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"friday.ratio",            hozAlign:"left", print:true}
+                  {title:"Paid Hours",    field:"friday.shiftTime"},                  
+                  {title:"Machine Hours", field:"friday.machineHoursMade"},
+                  {title:"Ratio",         field:"friday.ratio"}
                ],
             },
             // Saturday
             {
                title:"Saturday",
                columns:[
-                  {title:"Hours",         field:"saturday.runTime",         hozAlign:"left", print:true,},
-                  {title:"Efficiency",    field:"saturday.efficiency",      hozAlign:"left", print:true,
+                  {title:"Hours",         field:"saturday.runTime"},
+                  {title:"Efficiency",    field:"saturday.efficiency",
                      formatter:function(cell, formatterParams, onRendered){
                         return (cell.getValue() + "%");
                      }
                   },
-                  {title:"Paid Hours",    field:"saturday.shiftTime",        hozAlign:"left", print:true,},                  
-                  {title:"Machine Hours", field:"saturday.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"saturday.ratio",            hozAlign:"left", print:true}
+                  {title:"Paid Hours",    field:"saturday.shiftTime"},                  
+                  {title:"Machine Hours", field:"saturday.machineHoursMade"},
+                  {title:"Ratio",         field:"saturday.ratio"}
                ],
             }
          ]
@@ -366,26 +374,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       params = getTableQueryParams(SHOP_SUMMARY_TABLE);
       
       tables[SHOP_SUMMARY_TABLE] = new Tabulator("#shop-summary-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Totals<h1>",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         maxHeight:500,
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         layout:"fitData",
+         cellVertAlign:"middle",
+         // Printing
+         printAsHtml:true,
+         printRowRange:"all", 
+         printHeader:"<h1>Totals<h1>",
+         // Columns
          columns:[
-            {title:"Day",                field:"day",              hozAlign:"left", print:true},
-            {title:"Hours",              field:"runTime",          hozAlign:"left", print:true},         
-            {title:"Efficiency",         field:"efficiency",       hozAlign:"left", print:true,
+            {title:"Day",                field:"day"},
+            {title:"Hours",              field:"runTime"},         
+            {title:"Efficiency",         field:"efficiency",
                formatter:function(cell, formatterParams, onRendered){
                   return (cell.getValue() + "%");
                }
             },
-            {title:"Paid Hours",         field:"shiftTime",        hozAlign:"left", print:true},
-            {title:"Machine Hours Made", field:"machineHoursMade", hozAlign:"left", print:true},
-            {title:"Ratio",              field:"ratio",            hozAlign:"left", print:true},
+            {title:"Paid Hours",         field:"shiftTime"},
+            {title:"Machine Hours Made", field:"machineHoursMade"},
+            {title:"Ratio",              field:"ratio"},
          ]
       });      
       
@@ -408,67 +425,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       } 
       
       tables[BONUS_TABLE] = new Tabulator("#bonus-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Totals<h1>",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         maxHeight:500,
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         //  Printing
+         printAsHtml:true,
+         printRowRange:"all", 
+         printHeader:"<h1>Totals<h1>",
+         // Columns
          columns:[
-            {title:"Operator",   field:"operator",       hozAlign:"left", headerFilter:true, print:true, frozen:true},
-            {title:"Employee #", field:"employeeNumber", hozAlign:"left",                    print:true, frozen:true},         
-            {title:"Hours",      field:"runTime",        hozAlign:"left",                    print:true},
-            {title:"Efficiency", field:"efficiency",     hozAlign:"left",                    print:true,
+            {title:"Operator",   field:"operator",       headerFilter:true, frozen:true},
+            {title:"Employee #", field:"employeeNumber", frozen:true},         
+            {title:"Hours",      field:"runTime"},
+            {title:"Efficiency", field:"efficiency",
                formatter:function(cell, formatterParams, onRendered){
                   return (cell.getValue() + "%");
                }
             },
-            {title:"Paid Hours",    field:"shiftTime",        hozAlign:"left", print:true},
-            {title:"Machine Hours", field:"machineHoursMade", hozAlign:"left", print:true},
-            {title:"PC/G",          field:"pcOverG",          hozAlign:"left", print:true},
+            {title:"Paid Hours",    field:"shiftTime"},
+            {title:"Machine Hours", field:"machineHoursMade"},
+            {title:"PC/G",          field:"pcOverG"},
             {
                title:"75%",
                columns:[
-                  {title:"$0.25", field:"tier1", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:1}}
+                  {title:"$0.25", field:"tier1", formatter:bonusFormatter, formatterParams:{tier:1}}
                ]
             },
             {
                title:"80%",
                columns:[
-                  {title:"$0.50", field:"tier2", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:2}}
+                  {title:"$0.50", field:"tier2", formatter:bonusFormatter, formatterParams:{tier:2}}
                ]
             },
             {
                title:"85%",
                columns:[
-                  {title:"$1.00", field:"tier3", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:3}}
+                  {title:"$1.00", field:"tier3", formatter:bonusFormatter, formatterParams:{tier:3}}
                ]
             },
             {
                title:"90%",
                columns:[
-                  {title:"$1.50", field:"tier4", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:4}}
+                  {title:"$1.50", field:"tier4", formatter:bonusFormatter, formatterParams:{tier:4}}
                ]
             },
             {
                title:"95%",
                columns:[
-                  {title:"$2.00", field:"tier5", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:5}}
+                  {title:"$2.00", field:"tier5", formatter:bonusFormatter, formatterParams:{tier:5}}
                ]
             },
             {
                title:"100%",
                columns:[
-                  {title:"$3.00", field:"tier6", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:6}}
+                  {title:"$3.00", field:"tier6", formatter:bonusFormatter, formatterParams:{tier:6}}
                ]
             },
             {
                title:"3+ Machine",
                columns:[
-                  {title:"$4.00", field:"additionalMachineBonus", hozAlign:"left", print:true, 
+                  {title:"$4.00", field:"additionalMachineBonus", 
                      formatter:function(cell, formatterParams, onRendered) {
                         if (cell.getRow().getData().additionalMachineBonusEarned)
                         {

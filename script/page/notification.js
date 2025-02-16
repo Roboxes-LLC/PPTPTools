@@ -92,8 +92,7 @@ class Notification
    
       // Create Tabulator table
       this.table = new Tabulator(tableElementQuery, {
-         layout:"fitData",
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
          ajaxResponse:function(url, params, response) {
@@ -104,7 +103,14 @@ class Notification
             }
             return (tableData);
          },
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
             {                           field:"notificationId",          visible:false},
             {title:"Date/Time",         field:"formattedDateTime",       headerFilter:true},
@@ -134,17 +140,18 @@ class Notification
          ],
          initialSort:[
             {column:"notificationId", dir:"asc"}
-         ],
-         cellClick:function(e, cell){
-            if (cell.getColumn().getField() == "acknowledged")
-            {
-               let notificationId = cell.getRow().getData().notificationId;
-               let acknowledged = cell.getRow().getData().acknowledged;
-               
-               this.onAcknowledged(notificationId, !acknowledged);
-            }
-         }.bind(this),
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         if (cell.getColumn().getField() == "acknowledged")
+         {
+            let notificationId = cell.getRow().getData().notificationId;
+            let acknowledged = cell.getRow().getData().acknowledged;
+            
+            this.onAcknowledged(notificationId, !acknowledged);
+         }
+      }.bind(this));
    }
    
    // **************************************************************************

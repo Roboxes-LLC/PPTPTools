@@ -1091,6 +1091,11 @@ $router->add("partWasherLogData", function($params) {
                ($partWasherEntry->totalPartWeightLogPanCount != $partWasherEntry->totalPartWasherLogPanCount);
          }
          
+         // Tabulator 5.0 and beyond does not handle duplicate fields in tables.
+         // Therefore, we'll break dateTime up into washDate and washTime.
+         $partWasherEntry->washDate = $partWasherEntry->dateTime;
+         $partWasherEntry->washTime = $partWasherEntry->dateTime;
+         
          $result[] = $partWasherEntry;
       }
    }
@@ -1377,6 +1382,11 @@ $router->add("partWeightLogData", function($params) {
                (($partWeightEntry->totalPartWasherLogPanCount > 0) &&
                 ($partWeightEntry->totalPartWeightLogPanCount != $partWeightEntry->totalPartWasherLogPanCount));
          }
+         
+         // Tabulator 5.0 and beyond does not handle duplicate fields in tables.
+         // Therefore, we'll break dateTime up into washDate and washTime.
+         $partWeightEntry->weighDate = $partWeightEntry->dateTime;
+         $partWeightEntry->weighTime = $partWeightEntry->dateTime;
          
          $result[] = $partWeightEntry;
       }

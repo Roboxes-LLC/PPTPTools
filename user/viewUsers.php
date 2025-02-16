@@ -35,17 +35,18 @@ if (!Authentication::isAuthenticated())
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css"/>
+   <link rel="stylesheet" type="text/css" href="/thirdParty/tabulator/css/tabulator.min.css<?php echo versionQuery();?>"/>
    
-   <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
-   <link rel="stylesheet" type="text/css" href="../common/common.css"/>
+   <link rel="stylesheet" type="text/css" href="/common/theme.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="/common/common.css<?php echo versionQuery();?>"/>
    
-   <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
-   <script src="../thirdParty/moment/moment.min.js"></script>
+   <script src="/thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
-   <script src="/common/common.js"></script>
+   <script src="/common/common.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>   
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>   
-   <script src="/user/user.js"></script>
+   <script src="/user/user.js<?php echo versionQuery();?>"></script>
       
 </head>
 
@@ -97,39 +98,43 @@ if (!Authentication::isAuthenticated())
       
       // Create Tabulator on DOM element user-table.
       var table = new Tabulator("#user-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         responsiveLayout:"hide", // enable responsive layouts
+         // Data
          ajaxURL:url,
-         //Define Table Columns
+         // Layout
+         maxHeight:500,
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
-            {title:"Employee #", field:"employeeNumber", hozAlign:"left", responsive:0},
-            {title:"Name",       field:"name",           hozAlign:"left", responsive:1, headerFilter:true},
-            {title:"Username",   field:"username",       hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Email",      field:"email",          hozAlign:"left", responsive:2, width:250	},
-            {title:"Role",       field:"roleLabel",      hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"",           field:"delete",                          responsive:0,
+            {title:"Employee #", field:"employeeNumber"},
+            {title:"Name",       field:"name",           headerFilter:true},
+            {title:"Username",   field:"username",       headerFilter:true},
+            {title:"Email",      field:"email",          width:250},
+            {title:"Role",       field:"roleLabel",      headerFilter:true},
+            {title:"",           field:"delete",         hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-         ],
-         cellClick:function(e, cell){
-            var employeeNumber = parseInt(cell.getRow().getData().employeeNumber);
-            
-            if (cell.getColumn().getField() == "delete")
-            {
-               onDeleteUser(employeeNumber);
-            }
-            else // Any other column
-            {
-               // Open user for viewing/editing.
-               document.location = "<?php echo $ROOT?>/user/viewUser.php?employeeNumber=" + employeeNumber;               
-            }
-         },
-         rowClick:function(e, row){
-            // No row click function needed.
-         },
+         ]
+      });
+      
+      table.on("cellClick", function(e, cell) {
+         var employeeNumber = parseInt(cell.getRow().getData().employeeNumber);
+         
+         if (cell.getColumn().getField() == "delete")
+         {
+            onDeleteUser(employeeNumber);
+         }
+         else // Any other column
+         {
+            // Open user for viewing/editing.
+            document.location = "<?php echo $ROOT?>/user/viewUser.php?employeeNumber=" + employeeNumber;               
+         }
       });
 
       // Setup event handling on all DOM elements.

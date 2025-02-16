@@ -106,8 +106,7 @@ class Shipment
    
       // Create Tabulator table
       this.table = new Tabulator(tableElementQuery, {
-         layout:"fitData",
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
          ajaxResponse:function(url, params, response) {
@@ -118,10 +117,17 @@ class Shipment
             }
             return (tableData);
          },
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
             {                           field:"shipmentId",         visible:false},
-            {title:"Ticket",            field:"shipmentTicketCode", hozAlign:"left", headerFilter:true,
+            {title:"Ticket",            field:"shipmentTicketCode", headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().shipmentTicketCode);
                },
@@ -129,7 +135,7 @@ class Shipment
                   return (cell.getValue());
                }  
             },
-            {title:"Created",           field:"dateTime",         headerFilter:true,
+            {title:"Created",           field:"dateTime",          headerFilter:true,
                formatter:function(cell, formatterParams, onRendered) {
                   return (cell.getRow().getData().formattedDateTime);
                }
@@ -166,12 +172,12 @@ class Shipment
                   return (cellValue);
                 }
             },
-            {title:"Shipped",           field:"dateTime",         headerFilter:true,
+            {title:"Shipped",           field:"dateTime",          headerFilter:true,
                formatter:function(cell, formatterParams, onRendered) {
                   return (cell.getRow().getData().formattedShippedDate);
                }
             },
-            {title:"",                  field:"delete",
+            {title:"",                  field:"delete",            hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
@@ -179,37 +185,38 @@ class Shipment
          ],
          initialSort:[
             {column:"dateTime", dir:"desc"}
-         ],
-         cellClick:function(e, cell){
-            let shipmentId = parseInt(cell.getRow().getData().shipmentId);
-            
-            if (cell.getColumn().getField() == "shipmentTicketCode")
+         ]
+      });
+      
+      this.table.on("cellClick", function(e, cell) {
+         let shipmentId = parseInt(cell.getRow().getData().shipmentId);
+         
+         if (cell.getColumn().getField() == "shipmentTicketCode")
+         {
+            document.location = `/shipment/printShipmentTicket.php?shipmentTicketId=${shipmentId}`;
+         }
+         else if (cell.getColumn().getField() == "inspectionStatus")
+         {
+            let inspectionId = parseInt(cell.getRow().getData().inspectionId);
+            if (inspectionId != 0)
             {
-               document.location = `/shipment/printShipmentTicket.php?shipmentTicketId=${shipmentId}`;
+               document.location = `/inspection/viewInspection.php?inspectionId=${inspectionId}`;
             }
-            else if (cell.getColumn().getField() == "inspectionStatus")
-            {
-               let inspectionId = parseInt(cell.getRow().getData().inspectionId);
-               if (inspectionId != 0)
-               {
-                  document.location = `/inspection/viewInspection.php?inspectionId=${inspectionId}`;
-               }
-               e.stopPropagation();
-            }
-            else if (cell.getColumn().getField() == "packingList")
-            {
-               e.stopPropagation();
-            }
-            else if (cell.getColumn().getField() == "delete")
-            {
-               this.onDeleteButton(shipmentId);
-               e.stopPropagation();
-            }
-            else
-            {
-               document.location = `/shipment/shipment.php?shipmentId=${shipmentId}`;
-            }
-         }.bind(this),
+            e.stopPropagation();
+         }
+         else if (cell.getColumn().getField() == "packingList")
+         {
+            e.stopPropagation();
+         }
+         else if (cell.getColumn().getField() == "delete")
+         {
+            this.onDeleteButton(shipmentId);
+            e.stopPropagation();
+         }
+         else
+         {
+            document.location = `/shipment/shipment.php?shipmentId=${shipmentId}`;
+         }
       });
    }
    

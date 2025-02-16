@@ -127,8 +127,7 @@ class SalesOrder
    
       // Create Tabulator table
       this.table = new Tabulator(tableElementQuery, {
-         layout:"fitData",
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
          ajaxResponse:function(url, params, response) {
@@ -139,7 +138,14 @@ class SalesOrder
             }
             return (tableData);
          },
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
             {                         field:"salesOrderId",            visible:false},
             {title:"Order",           field:"orderNumber",             headerFilter:true},
@@ -210,7 +216,7 @@ class SalesOrder
                   return (abridgedComments);
                }
             },
-            {title:"",                field:"delete",
+            {title:"",                field:"delete",                  hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
@@ -218,25 +224,26 @@ class SalesOrder
          ],
          initialSort:[
             {column:"dueDate", dir:"asc"}
-         ],
-         cellClick:function(e, cell){
-            let salesOrderId = parseInt(cell.getRow().getData().salesOrderId);
-            
-            if (cell.getColumn().getField() == "packingList")
-            {
-               e.stopPropagation();
-            }
-            if (cell.getColumn().getField() == "delete")
-            {
-               this.onDeleteButton(salesOrderId);
-               e.stopPropagation();
-            }
-         }.bind(this),
-         rowClick:function(e, row){
-            let salesOrderId = parseInt(row.getData().salesOrderId);
-            document.location = `/salesOrder/salesOrder.php?salesOrderId=${salesOrderId}`;
-         }.bind(this),
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         let salesOrderId = parseInt(cell.getRow().getData().salesOrderId);
+         
+         if (cell.getColumn().getField() == "packingList")
+         {
+            e.stopPropagation();
+         }
+         else if (cell.getColumn().getField() == "delete")
+         {
+            this.onDeleteButton(salesOrderId);
+            e.stopPropagation();
+         }
+         else
+         {
+            document.location = `/salesOrder/salesOrder.php?salesOrderId=${salesOrderId}`;
+         }
+      }.bind(this));
    }
    
    createPartsInventoryTable(tableElementId)

@@ -31,17 +31,17 @@ if (!Authentication::isAuthenticated())
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css"/>
+   <link rel="stylesheet" type="text/css" href="/thirdParty/tabulator/css/tabulator.min.css<?php echo versionQuery();?>"/>
    
-   <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
-   <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="/common/theme.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="/common/common.css<?php echo versionQuery();?>"/>
    
-   <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
-   <script src="../thirdParty/moment/moment.js"></script>
-   <!-- script src="../thirdParty/moment/moment.min.js"></script> TODO: Figure this out. -->
-   <script src="../thirdParty/dymo/DYMO.Label.Framework.3.0.js" type="text/javascript" charset="UTF-8"></script>
+   <script src="/thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/dymo/DYMO.Label.Framework.3.0.js" type="text/javascript" charset="UTF-8"></script>
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>  
    <script src="printer.js<?php echo versionQuery();?>"></script>
       
@@ -114,19 +114,23 @@ if (!Authentication::isAuthenticated())
       
       // Create Tabulator on DOM element local-printer-table.
       var localPrinterTable = new Tabulator("#local-printer-table", {
-         //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         // Layout
          layout:"fitData",
-         responsiveLayout:"hide", // enable responsive layouts
-         //Define Table Columns
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
-            {title:"Name",     field:"name", hozAlign:"left"},
-            {title:"Model",    field:"modelName",       hozAlign:"left"},
-            {title:"Location", field:"isLocal",    hozAlign:"left",
+            {title:"Name",     field:"name"},
+            {title:"Model",    field:"modelName"},
+            {title:"Location", field:"isLocal",
                formatter:function(cell, formatterParams, onRendered){
                   return (cell.getValue() ? "Local" : "Network");
                }
             },            
-            {title:"Status",   field:"isConnected",      hozAlign:"left",
+            {title:"Status",   field:"isConnected",
                formatter:function(cell, formatterParams, onRendered){
                   return (cell.getValue() ? "Online" : "Offline");
                }
@@ -136,59 +140,67 @@ if (!Authentication::isAuthenticated())
 
       // Create Tabulator on DOM element cloud-printer-table.
       var cloudPrinterTable = new Tabulator("#cloud-printer-table", {
-         //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         // Layout
          layout:"fitData",
-         responsiveLayout:"hide", // enable responsive layouts
-         //Define Table Columns
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
-            {title:"Name",     field:"displayName", hozAlign:"left"},
-            {title:"Model",    field:"model",       hozAlign:"left"},
-            //{title:"Location", field:"location",    hozAlign:"left",},
-            {title:"Status",   field:"status",      hozAlign:"left"}
+            {title:"Name",       field:"displayName"},
+            {title:"Model",      field:"model"},
+            //{title:"Location", field:"location"},
+            {title:"Status",     field:"status"}
          ],
       });
 
       // Create Tabulator on DOM element print-queue-table.
       var printQueueTable = new Tabulator("#print-queue-table", {
-         //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         // Layout
          layout:"fitData",
-         responsiveLayout:"hide", // enable responsive layouts
-         //Define Table Columns
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
-            {title:"Date",            field:"dateTime",       hozAlign:"left", responsive:0,
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Date",            field:"dateTime",
+               formatter:"datetime",
                formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
+                  outputFormat:"M/d/yyyy",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Time",            field:"dateTime",       hozAlign:"left", responsive:0,
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Time",            field:"dateTime",
+               formatter:"datetime",
                formatterParams:{
-                  outputFormat:"hh:mm A",
+                  outputFormat:"h:mm a",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Owner",       field:"ownerName",          hozAlign:"left"},
-            {title:"Description", field:"description",        hozAlign:"left"},
-            {title:"Destination", field:"printerDisplayName", hozAlign:"left"},
-            {title:"Copies",      field:"copies",             hozAlign:"left"},
-            {title:"Status",      field:"statusLabel",        hozAlign:"left"},
-            {title:"",            field:"delete",             hozAlign:"center",
+            {title:"Owner",           field:"ownerName"},
+            {title:"Description",     field:"description"},
+            {title:"Destination",     field:"printerDisplayName"},
+            {title:"Copies",          field:"copies"},
+            {title:"Status",          field:"statusLabel"},
+            {title:"",                field:"delete", hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-         ],
-         cellClick:function(e, cell){
-            var printJobId = parseInt(cell.getRow().getData().printJobId);
-            
-            if (cell.getColumn().getField() == "delete")
-            {
-               printManager.cancelPrintJob(printJobId);
-            }
-         },
+         ]
+      });
+      
+      printQueueTable.on("cellClick", function(e, cell) {
+         var printJobId = parseInt(cell.getRow().getData().printJobId);
          
+         if (cell.getColumn().getField() == "delete")
+         {
+            printManager.cancelPrintJob(printJobId);
+         }
       });
 
       function renderPrintPreview(printJob)

@@ -130,11 +130,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
    
-   <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
-   <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
       
 </head>
@@ -248,39 +249,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       var params = getTableQueryParams(DAILY_SUMMARY_TABLE);
       
       tables[DAILY_SUMMARY_TABLE] = new Tabulator("#report-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)      
-         layout:"fitData",
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h2>Daily Summary Report - Daily Summary<h2>",
-         printFooter:"<h2>TODO: Date range<h2>",
-         groupBy:"operator",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         initialSort : [
-            { column: "efficiency", dir: "dec" },
-         ],
-         //Define Table Columns
+         // Layout
+         maxHeight:500,
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Printing
+         printAsHtml:true,
+         printRowRange:"all", 
+         printHeader:"<h2>Daily Summary Report - Daily Summary<h2>",
+         // Columns
          columns:[
-            {title:"Time Card Id", field:"timeCardId",      hozAlign:"left",   frozen:true, visible:false},
+            {title:"Time Card Id", field:"timeCardId",      frozen:true, visible:false},
             {title:"Status",       field:"dataStatusLabel", hozAlign:"center", frozen:true,
                formatter:function(cell, formatterParams, onRendered){
-                  cell.getElement().classList.add(cell.getRow().getData().dataStatusClass);
-                  return ("<div class=\"" + cell.getRow().getData().dataStatusClass + "\">" + cell.getValue() + "</div>");
+                  let dataStatusClass = cell.getRow().getData().dataStatusClass;
+                  cell.getElement().classList.add(dataStatusClass);
+                  //let value = cell.getValue();
+                  //cell.getElement().classList.add(dataStatusClass);
+                  //return (`<div class="${dataStatusClass}">${value}</div>`);
+                  return (cell.getValue());
                },
             },
-            {title:"Mfg. Date", field:"manufactureDate", hozAlign:"left", frozen:true, print:true,
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Mfg. Date", field:"manufactureDate",    frozen:true,
+               formatter:"datetime", 
                formatterParams:{
-                  outputFormat:"M/D/YYYY",
+                  outputFormat:"M/d/yyyy",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Operator",     field:"operator",        hozAlign:"left", headerFilter:true, print:true, frozen:true},
-            {title:"Employee #",   field:"employeeNumber",  hozAlign:"left",                    print:true},
+            {title:"Operator",     field:"operator",        headerFilter:true, frozen:true},
+            {title:"Employee #",   field:"employeeNumber"},
             
-            {title:"",             field:"panTicketCode",   hozAlign:"left",
+            {title:"",             field:"panTicketCode",
                formatter:function(cell, formatterParams, onRendered){
                   let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
                   let panTicketCode = cell.getRow().getData().panTicketCode;
@@ -297,12 +304,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   
                   return (cellValue);
                },
-               tooltip:function(cell) {
+               tooltip:function(e, cell, onRendered) {
                   let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
                   return (maintenanceLogEntry ? "" : "Pan ticket");                  
                }
             },
-            {title:"",       field:"timeCardLink", hozAlign:"left", print:false,
+            {title:"",       field:"timeCardLink",          print:false,
                formatter:function(cell, formatterParams, onRendered){
                   let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
                   let panTicketCode = cell.getRow().getData().panTicketCode;
@@ -319,34 +326,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   
                   return (cellValue);
                },
-               tooltip:function(cell) {
+               tooltip:function(e, cell, onRendered) {
                   let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
                   return (maintenanceLogEntry ? "Maintenance log" : "Time card");                  
                }
             },              
-            {title:"",       field:"partWeightLogLink", hozAlign:"left", print:false,
+            {title:"",       field:"partWeightLogLink",     print:false,
                formatter:function(cell, formatterParams, onRendered){
                   let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
                   return (maintenanceLogEntry ? "" : "<i class=\"material-icons icon-button\">fingerprint</i>");
                },
-               tooltip:function(cell) {
+               tooltip:function(e, cell, onRendered) {
                   let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
                   return (maintenanceLogEntry ? "" : "Part weight logs");                  
                }
             },            
-            {title:"",       field:"partWasherLogLink", hozAlign:"left", print:false,
+            {title:"",       field:"partWasherLogLink",     print:false,
                formatter:function(cell, formatterParams, onRendered){
                   let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
                   return (maintenanceLogEntry ? "" : "<i class=\"material-icons icon-button\">opacity</i>");
                },
-               tooltip:function(cell) {
+               tooltip:function(e, cell, onRendered) {
                   let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
                   return (maintenanceLogEntry ? "" : "Part washer logs");                  
                }
             },
-            {title:"Job #",        field:"jobNumber",       hozAlign:"left", headerFilter:true, print:true},
-            {title:"WC #",         field:"wcLabel",         hozAlign:"left", headerFilter:true, print:true},
-            {title:"Shift Time",   field:"shiftTime",       hozAlign:"left",                    print:true,
+            {title:"Job #",        field:"jobNumber",       headerFilter:true},
+            {title:"WC #",         field:"wcLabel",         headerFilter:true},
+            {title:"Shift Time",   field:"shiftTime",
                formatter:function(cell, formatterParams, onRendered){
 
                   var minutes = parseInt(cell.getValue());
@@ -369,7 +376,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cellValue);
                }              
             },
-            {title:"Run Time",     field:"runTime",         hozAlign:"left",                    print:true,
+            {title:"Run Time",     field:"runTime",
                formatter:function(cell, formatterParams, onRendered){
 
                   var minutes = parseInt(cell.getValue());
@@ -396,7 +403,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cellValue);
                }                
             },
-            {title:"Setup Time",     field:"setupTime",         hozAlign:"left",                    print:true,
+            {title:"Setup Time",     field:"setupTime",
                formatter:function(cell, formatterParams, onRendered){
 
                   var minutes = parseInt(cell.getValue());
@@ -419,7 +426,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cellValue);
                }                
             },
-            {title:"Basket Count",            field:"panCount",             hozAlign:"left", print:true,
+            {title:"Basket Count",            field:"panCount",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
                   
@@ -435,13 +442,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
             {
                title:"Factory Stats",
                columns:[
-                  {title:"Count",      field:"factoryStats.count",      hozAlign:"left", print:true},
-                  {title:"First Part", field:"factoryStats.firstEntry", hozAlign:"left", print:true},
-                  {title:"Last Part",  field:"factoryStats.updateTime", hozAlign:"left", print:true},
+                  {title:"Count",      field:"factoryStats.count"},
+                  {title:"First Part", field:"factoryStats.firstEntry"},
+                  {title:"Last Part",  field:"factoryStats.updateTime"},
                ]
             },             
-            {title:"Sample Weight",           field:"sampleWeight",         hozAlign:"left", print:true},
-            {title:"Total Weight",            field:"partWeight",           hozAlign:"left", print:true,
+            {title:"Sample Weight",           field:"sampleWeight"},
+            {title:"Total Weight",            field:"partWeight",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
                
@@ -453,8 +460,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cellValue);
                }
             },
-            {title:"Avg. Basket Weight",      field:"averagePanWeight",     hozAlign:"left", print:true},
-            {title:"Part Count (time card)",  field:"partCountByTimeCard",  hozAlign:"left", print:true,
+            {title:"Avg. Basket Weight",      field:"averagePanWeight"},
+            {title:"Part Count (time card)",  field:"partCountByTimeCard",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
                   
@@ -470,7 +477,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cellValue);
                }
             },
-            {title:"Part Count (weight log)", field:"partCountByWeightLog", hozAlign:"left", print:true,
+            {title:"Part Count (weight log)", field:"partCountByWeightLog",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
                   
@@ -482,7 +489,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cellValue);
                }
             },            
-            {title:"Part Count (washer log)", field:"partCountByWasherLog", hozAlign:"left", print:true,
+            {title:"Part Count (washer log)", field:"partCountByWasherLog",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
                   
@@ -494,10 +501,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cellValue);
                }
             },            
-            {title:"Part Count",              field:"partCount",            hozAlign:"left", print:true},
-            {title:"Gross Hour",              field:"grossPartsPerHour",    hozAlign:"left", print:true},
-            {title:"Gross Shift",             field:"grossParts",           hozAlign:"left", print:true},
-            {title:"Efficiency",              field:"efficiency",           hozAlign:"left", print:true,
+            {title:"Part Count",              field:"partCount"},
+            {title:"Gross Hour",              field:"grossPartsPerHour"},
+            {title:"Gross Shift",             field:"grossParts"},
+            {title:"Efficiency",              field:"efficiency",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue() + "%";
                   
@@ -512,119 +519,135 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cell.getValue() + "%");
                },  
             },
-            {title:"Scrap Count",             field:"scrapCount",           hozAlign:"left", print:true},
-            {title:"Quoted Net",              field:"netPartsPerHour",      hozAlign:"left", print:true},
-            {title:"Machine Hours<br>Made",   field:"machineHoursMade",     hozAlign:"left", print:true},
-            {title:"In Process<br>Inspections", field:"inProcessInspectionCount", hozAlign:"left", print:true,
+            {title:"Scrap Count",             field:"scrapCount"},
+            {title:"Quoted Net",              field:"netPartsPerHour"},
+            {title:"Machine Hours<br>Made",   field:"machineHoursMade"},
+            {title:"In Process<br>Inspections", field:"inProcessInspectionCount",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = parseInt(cell.getValue());
                   return ((cellValue > 0) ? cellValue : "");
                }
             }                 
          ],
-         cellClick:function(e, cell){
-            let timeCardId = cell.getRow().getData().timeCardId;
-            let maintenanceEntryId = cell.getRow().getData().maintenanceEntryId;
-            let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
-            
-            if (maintenanceLogEntry)
-            {
-                if (cell.getColumn().getField() == "timeCardLink")
-                {
-                   document.location = "<?php echo $ROOT?>/maintenanceLog/maintenanceLogEntry.php?entryId=" + maintenanceEntryId;
-                }
-            }
-            else if (cell.getColumn().getField() == "panTicketCode")
-            {
-               document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
-            }
-            else if ((cell.getColumn().getField() == "timeCardLink") ||
-                     (cell.getColumn().getField() == "partCountByTimeCard"))
-            {
-               document.location = "<?php echo $ROOT?>/timecard/viewTimeCard.php?timeCardId=" + timeCardId;
-            }
-            else if ((cell.getColumn().getField() == "partWeightLogLink") ||
-                     (cell.getColumn().getField() == "partWeight") ||
-                     (cell.getColumn().getField() == "partCountByWeightLog"))
-                     
-            {
-               document.location = "<?php echo $ROOT?>/partWeightLog/partWeightLog.php?timeCardId=" + timeCardId;
-            }
-            else if ((cell.getColumn().getField() == "partWasherLogLink") ||
-                     (cell.getColumn().getField() == "partCountByWasherLog"))
-            {
-               document.location = "<?php echo $ROOT?>/partWasherLog/partWasherLog.php?timeCardId=" + timeCardId;
-            }
-         },
-         rowClick:function(e, row){
-            // No row click function needed.
-         },
+         groupBy:"operator",
+         initialSort:[
+            {column: "efficiency", dir: "dec"}
+         ]
+      });
+      
+      tables[DAILY_SUMMARY_TABLE].on("cellClick", function(e, cell) {
+         let timeCardId = cell.getRow().getData().timeCardId;
+         let maintenanceEntryId = cell.getRow().getData().maintenanceEntryId;
+         let maintenanceLogEntry = cell.getRow().getData().maintenanceLogEntry;
+         
+         if (maintenanceLogEntry)
+         {
+             if (cell.getColumn().getField() == "timeCardLink")
+             {
+                document.location = "<?php echo $ROOT?>/maintenanceLog/maintenanceLogEntry.php?entryId=" + maintenanceEntryId;
+             }
+         }
+         else if (cell.getColumn().getField() == "panTicketCode")
+         {
+            document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
+         }
+         else if ((cell.getColumn().getField() == "timeCardLink") ||
+                  (cell.getColumn().getField() == "partCountByTimeCard"))
+         {
+            document.location = "<?php echo $ROOT?>/timecard/viewTimeCard.php?timeCardId=" + timeCardId;
+         }
+         else if ((cell.getColumn().getField() == "partWeightLogLink") ||
+                  (cell.getColumn().getField() == "partWeight") ||
+                  (cell.getColumn().getField() == "partCountByWeightLog"))
+                  
+         {
+            document.location = "<?php echo $ROOT?>/partWeightLog/partWeightLog.php?timeCardId=" + timeCardId;
+         }
+         else if ((cell.getColumn().getField() == "partWasherLogLink") ||
+                  (cell.getColumn().getField() == "partCountByWasherLog"))
+         {
+            document.location = "<?php echo $ROOT?>/partWasherLog/partWasherLog.php?timeCardId=" + timeCardId;
+         }
       });
       
       params = getTableQueryParams(OPERATOR_SUMMARY_TABLE);
       
       tables[OPERATOR_SUMMARY_TABLE] = new Tabulator("#operator-summary-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h2>Daily Summary Report - Operator Summary<h2>",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Printing
+         printAsHtml:true,
+         printRowRange:"all", 
+         printHeader:"<h2>Daily Summary Report - Operator Summary<h2>",
+         // Columns
          columns:[
-            {title:"Operator",           field:"operator",       hozAlign:"left", print:true, headerFilter:true, frozen:true},
-            {title:"Employee #",         field:"employeeNumber", hozAlign:"left", print:true, frozen:true},
-            {title:"Run Time",           field:"runTime",        hozAlign:"left", print:true,},
-            {title:"Efficiency",         field:"efficiency",     hozAlign:"left", print:true,
+            {title:"Operator",                  field:"operator",       headerFilter:true, frozen:true},
+            {title:"Employee #",                field:"employeeNumber", frozen:true},
+            {title:"Run Time",                  field:"runTime"},
+            {title:"Efficiency",                field:"efficiency",
                formatter:function(cell, formatterParams, onRendered){
                   return (cell.getValue() + "%");
                }
             },
             // Temp Start
-            {title:"2 Machine Efficiency",         field:"topEfficiency",     hozAlign:"left", print:true,
+            {title:"2 Machine Efficiency",      field:"topEfficiency",
                formatter:function(cell, formatterParams, onRendered){
                   return (cell.getValue() + "%");
                }
             },
-            {title:"Borrowed Hours",           field:"adjustedHours",            hozAlign:"left", print:true},
-            {title:"Borrowed Parts",           field:"adjustedPartCount",        hozAlign:"left", print:true},
-            {title:"Adj. 2 Machine Efficiency",         field:"adjustedTopEfficiency",     hozAlign:"left", print:true,
+            {title:"Borrowed Hours",            field:"adjustedHours"},
+            {title:"Borrowed Parts",            field:"adjustedPartCount"},
+            {title:"Adj. 2 Machine Efficiency", field:"adjustedTopEfficiency",
                formatter:function(cell, formatterParams, onRendered){
                   return (cell.getValue() + "%");
                }
             },
-            {title:"PC/G",         field:"adjustedBottomPCOverG",     hozAlign:"left", print:true},
+            {title:"PC/G",                      field:"adjustedBottomPCOverG"},
             // Temp End
-            {title:"Paid Hours",         field:"shiftTime",       hozAlign:"left", print:true},            
-            {title:"Machine Hours Made", field:"machineHoursMade", hozAlign:"left", print:true},
-            {title:"Ratio",              field:"ratio",            hozAlign:"left", print:true}
+            {title:"Paid Hours",                field:"shiftTime"},            
+            {title:"Machine Hours Made",        field:"machineHoursMade"},
+            {title:"Ratio",                     field:"ratio"}
          ],
       });
       
       params = getTableQueryParams(SHOP_SUMMARY_TABLE);
       
       tables[SHOP_SUMMARY_TABLE] = new Tabulator("#shop-summary-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h2>Daily Summary Report - Shop Summary<h2>",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout         
+         maxHeight:500,
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Printing
+         printAsHtml:true,
+         printRowRange:"all", 
+         printHeader:"<h2>Daily Summary Report - Shop Summary<h2>",
+         // Columns
          columns:[
-            {title:"Hours",              field:"runTime",         hozAlign:"left", print:true},
-            {title:"Efficiency",         field:"efficiency",    hozAlign:"left", print:true,
+            {title:"Hours",              field:"runTime"},
+            {title:"Efficiency",         field:"efficiency",
                formatter:function(cell, formatterParams, onRendered){
                   return (cell.getValue() + "%");
                }
             },
-            {title:"Paid Hours",         field:"shiftTime",       hozAlign:"left", print:true},                        
-            {title:"Machine Hours Made", field:"machineHoursMade", hozAlign:"left", print:true},
-            {title:"Ratio",              field:"ratio",            hozAlign:"left", print:true}
+            {title:"Paid Hours",         field:"shiftTime"},                        
+            {title:"Machine Hours Made", field:"machineHoursMade"},
+            {title:"Ratio",              field:"ratio"}
          ],
       });
 

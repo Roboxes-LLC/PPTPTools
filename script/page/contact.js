@@ -48,8 +48,7 @@ class Contact
    
       // Create Tabulator table
       this.table = new Tabulator(tableElementQuery, {
-         layout:"fitData",
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
          ajaxResponse:function(url, params, response) {
@@ -60,7 +59,14 @@ class Contact
             }
             return (tableData);
          },
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
             {                         field:"contactId",    visible:false},
             {title:"First Name",      field:"firstName",    headerFilter:true},
@@ -68,7 +74,7 @@ class Contact
             {title:"Organization",    field:"customerName", headerFilter:true},
             {title:"Phone",           field:"phone",        headerFilter:true},
             {title:"Email",           field:"email",        headerFilter:true},
-            {title:"",                field:"delete",
+            {title:"",                field:"delete",       hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
@@ -76,22 +82,24 @@ class Contact
          ],
          initialSort:[
             {column:"firstName", dir:"asc"}
-         ],
-         cellClick:function(e, cell){
-            let contactId = parseInt(cell.getRow().getData().contactId);
-            
-            if (cell.getColumn().getField() == "delete")
-            {
-               this.onDeleteButton(contactId);
-                        
-               e.stopPropagation();
-            }
-         }.bind(this),
-         rowClick:function(e, row){
-            var contactId = row.getData().contactId;
-            document.location = `/customer/contact.php?contactId=${contactId}`;
-         }.bind(this),
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         let contactId = parseInt(cell.getRow().getData().contactId);
+         
+         if (cell.getColumn().getField() == "delete")
+         {
+            this.onDeleteButton(contactId);
+                     
+            e.stopPropagation();
+         }
+      }.bind(this));
+      
+      this.table.on("rowClick", function(e, row) {
+         var contactId = row.getData().contactId;
+         document.location = `/customer/contact.php?contactId=${contactId}`;
+      }.bind(this));
    }
    
    // **************************************************************************

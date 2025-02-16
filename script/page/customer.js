@@ -48,8 +48,7 @@ class Customer
    
       // Create Tabulator table
       this.table = new Tabulator(tableElementQuery, {
-         layout:"fitData",
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
          ajaxResponse:function(url, params, response) {
@@ -60,7 +59,14 @@ class Customer
             }
             return (tableData);
          },
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
             {                         field:"contactId",               visible:false},
             {title:"Customer Name",   field:"customerName",            headerFilter:true},
@@ -69,7 +75,7 @@ class Customer
             {title:"Primary Contact", field:"primaryContact.fullName", headerFilter:true},
             {title:"Phone",           field:"primaryContact.phone",    headerFilter:true},
             {title:"Email",           field:"primaryContact.email",    headerFilter:true},
-            {title:"",                field:"delete",
+            {title:"",                field:"delete",                  hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
@@ -77,21 +83,23 @@ class Customer
          ],
          initialSort:[
             {column:"customerName", dir:"asc"}
-         ],
-         cellClick:function(e, cell){
-            let customerId = parseInt(cell.getRow().getData().customerId);
-            
-            if (cell.getColumn().getField() == "delete")
-            {
-               this.onDeleteButton(customerId);
-               e.stopPropagation();
-            }
-         }.bind(this),
-         rowClick:function(e, row){
-            var customerId = row.getData().customerId;
-            document.location = `/customer/customer.php?customerId=${customerId}`;
-         }.bind(this),
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         let customerId = parseInt(cell.getRow().getData().customerId);
+         
+         if (cell.getColumn().getField() == "delete")
+         {
+            this.onDeleteButton(customerId);
+            e.stopPropagation();
+         }
+      }.bind(this));
+      
+      this.table.on("rowClick", function(e, row) {
+         var customerId = row.getData().customerId;
+         document.location = `/customer/customer.php?customerId=${customerId}`;
+      }.bind(this));
    }
    
    onAddButton()
