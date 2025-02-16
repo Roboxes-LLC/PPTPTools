@@ -134,8 +134,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
    
-   <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
-   <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
@@ -247,129 +247,136 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       var params = getTableQueryParams(OPERATOR_SUMMARY_TABLE);
       
       tables[OPERATOR_SUMMARY_TABLE] = new Tabulator("#operator-summary-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)      
-         layout:"fitData",
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Totals<h1>",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         maxHeight:500,
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Printing
+         printAsHtml:true,
+         printRowRange:"all", 
+         printHeader:"<h1>Totals<h1>",
+         // Columns
          columns:[
-            {title:"Operator",   field:"operator",       hozAlign:"left", headerFilter:true, print:true, frozen:true},
-            {title:"Employee #", field:"employeeNumber", hozAlign:"left",                    print:true, frozen:true},
+            {title:"Operator",   field:"operator",       headerFilter:true, frozen:true},
+            {title:"Employee #", field:"employeeNumber", frozen:true},
             // Week 1
             {
                title:"Week 1",
                columns:[
-                  {title:"Machine Hours", field:"week1.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week1.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week1.machineHoursMade"},
+                  {title:"Ratio",         field:"week1.ratio"}
                ]
             },
             // Week 2
             {
                title:"Week 2",
                columns:[
-                  {title:"Machine Hours", field:"week2.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week2.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week2.machineHoursMade"},
+                  {title:"Ratio",         field:"week2.ratio"}
                ]
             },            
             // Week 3
             {
                title:"Week 3",
                columns:[
-                  {title:"Machine Hours", field:"week3.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week3.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week3.machineHoursMade"},
+                  {title:"Ratio",         field:"week3.ratio"}
                ]
             },
             // Week 4
             {
                title:"Week 4",
                columns:[
-                  {title:"Machine Hours", field:"week4.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week4.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week4.machineHoursMade"},
+                  {title:"Ratio",         field:"week4.ratio"}
                ]
             },
             // Week 5
             {
                title:"Week 5",
                columns:[
-                  {title:"Machine Hours", field:"week5.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week5.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week5.machineHoursMade"},
+                  {title:"Ratio",         field:"week5.ratio"}
                ]
             },            
             // Week 6
             {
                title:"Week 6",
                columns:[
-                  {title:"Machine Hours", field:"week6.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week6.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week6.machineHoursMade"},
+                  {title:"Ratio",         field:"week6.ratio"}
                ]
             },
             // Week 7
             {
                title:"Week 7",
                columns:[
-                  {title:"Machine Hours", field:"week7.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week7.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week7.machineHoursMade"},
+                  {title:"Ratio",         field:"week7.ratio"}
                ]
             },                        
             // Week 8
             {
                title:"Week 8",
                columns:[
-                  {title:"Machine Hours", field:"week8.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week8.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week8.machineHoursMade"},
+                  {title:"Ratio",         field:"week8.ratio"}
                ]
             },            
             // Week 9
             {
                title:"Week 9",
                columns:[
-                  {title:"Machine Hours", field:"week9.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week9.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week9.machineHoursMade"},
+                  {title:"Ratio",         field:"week9.ratio"}
                ]
             },            
             // Week 10
             {
                title:"Week 10",
                columns:[
-                  {title:"Machine Hours", field:"week10.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week10.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week10.machineHoursMade"},
+                  {title:"Ratio",         field:"week10.ratio"}
                ]
             },            
             // Week 11
             {
                title:"Week 11",
                columns:[
-                  {title:"Machine Hours", field:"week11.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week11.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week11.machineHoursMade"},
+                  {title:"Ratio",         field:"week11.ratio"}
                ]
             },            
             // Week 12
             {
                title:"Week 12",
                columns:[
-                  {title:"Machine Hours", field:"week12.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week12.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week12.machineHoursMade"},
+                  {title:"Ratio",         field:"week12.ratio"}
                ]
             },            
             // Week 13
             {
                title:"Week 13",
                columns:[
-                  {title:"Machine Hours", field:"week13.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"week13.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"week13.machineHoursMade"},
+                  {title:"Ratio",         field:"week13.ratio"}
                ]
             },
             // Quarter
             {
                title:"Quarter",
                columns:[
-                  {title:"Machine Hours", field:"quarter.machineHoursMade", hozAlign:"left", print:true},
-                  {title:"Shift Time",    field:"quarter.shiftTime",        hozAlign:"left", print:true},
-                  {title:"Ratio",         field:"quarter.ratio",            hozAlign:"left", print:true}
+                  {title:"Machine Hours", field:"quarter.machineHoursMade"},
+                  {title:"Shift Time",    field:"quarter.shiftTime"},
+                  {title:"Ratio",         field:"quarter.ratio"}
                ]
             }
          ]
@@ -381,121 +388,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       params = getTableQueryParams(SHOP_SUMMARY_TABLE);
       
       tables[SHOP_SUMMARY_TABLE] = new Tabulator("#shop-summary-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)      
-         layout:"fitData",
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Totals<h1>",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         maxHeight:500,
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Printing
+         printAsHtml:true,
+         printRowRange:"all", 
+         printHeader:"<h1>Totals<h1>",
+         // Columns
          columns:[
-            {title:"Week",               field:"week",             hozAlign:"left", print:true,
+            {title:"Week",               field:"week",
                 formatter:function(cell, formatterParams, onRendered){
                    return ("Week " + cell.getValue());
                 }
             },
-            {title:"Dates",              field:"dates",            hozAlign:"left", print:true},         
-            {title:"Machine Hours", field:"machineHoursMade", hozAlign:"left", print:true},
-            {title:"Shift Hours",        field:"shiftTime",        hozAlign:"left", print:true},
-            {title:"Ratio",              field:"ratio",            hozAlign:"left", print:true}
+            {title:"Dates",              field:"dates"},         
+            {title:"Machine Hours", field:"machineHoursMade"},
+            {title:"Shift Hours",        field:"shiftTime"},
+            {title:"Ratio",              field:"ratio"}
          ]
       });
       
-      // ***********************************************************************
-      //                                Bonus
-      
-      /*
-      params = getTableQueryParams(BONUS_TABLE);
-      
-      var bonusFormatter = function(cell, formatterParams, onRendered)
-      {
-         var tier = parseInt(cell.getRow().getData().tier);
-
-         if (tier == formatterParams.tier)
-         {
-            cell.getElement().classList.add("bonus-earned");
-         }
-         
-         return ("$" + cell.getValue().toFixed(2));
-      } 
-      
-      tables[BONUS_TABLE] = new Tabulator("#bonus-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)      
-         layout:"fitData",
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Totals<h1>",
-         ajaxURL:url,
-         ajaxParams:params,
-         //Define Table Columns
-         columns:[
-            {title:"Operator",   field:"operator",          hozAlign:"left", headerFilter:true, print:true},
-            {title:"Employee #", field:"employeeNumber",    hozAlign:"left",                    print:true},         
-            {title:"Hours",      field:"runTime",      hozAlign:"left",                    print:true},
-            {title:"Efficiency", field:"efficiency", hozAlign:"left",                    print:true,
-               formatter:function(cell, formatterParams, onRendered){
-                  return (cell.getValue() + "%");
-               }
-            },
-            {title:"Machine Hours", field:"machineHoursMade", hozAlign:"left", print:true},
-            {title:"PC/G", field:"pcOverG", hozAlign:"left", print:true},
-            {
-               title:"75%",
-               columns:[
-                  {title:"$0.25", field:"tier1", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:1}}
-               ]
-            },
-            {
-               title:"80%",
-               columns:[
-                  {title:"$0.50", field:"tier2", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:2}}
-               ]
-            },
-            {
-               title:"85%",
-               columns:[
-                  {title:"$1.00", field:"tier3", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:3}}
-               ]
-            },
-            {
-               title:"90%",
-               columns:[
-                  {title:"$1.50", field:"tier4", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:4}}
-               ]
-            },
-            {
-               title:"95%",
-               columns:[
-                  {title:"$2.00", field:"tier5", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:5}}
-               ]
-            },
-            {
-               title:"100%",
-               columns:[
-                  {title:"$3.00", field:"tier6", hozAlign:"left", print:true, formatter:bonusFormatter, formatterParams:{tier:6}}
-               ]
-            },
-            {
-               title:"3+ Machine",
-               columns:[
-                  {title:"$4.00", field:"additionalMachineBonus", hozAlign:"left", print:true, 
-                     formatter:function(cell, formatterParams, onRendered) {
-                        if (cell.getRow().getData().additionalMachineBonusEarned)
-                        {
-                           cell.getElement().classList.add("bonus-earned");
-                        }
-         
-                        return ("$" + cell.getValue().toFixed(2));
-                     }
-                  }
-               ]
-            },
-         ]
-      });
-      */      
+      // ***********************************************************************  
 
       function updateFilter(event)
       {

@@ -143,11 +143,11 @@ if (!Authentication::isAuthenticated())
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
    <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css<?php echo versionQuery();?>"/>
    
-   <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
-   <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="/common/theme.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="/common/common.css<?php echo versionQuery();?>"/>
       
-   <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
-   <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/barcodeScanner.js<?php echo versionQuery();?>"></script>
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
@@ -239,21 +239,25 @@ if (!Authentication::isAuthenticated())
       
       // Create Tabulator on DOM element part-weight-log-table.
       var table = new Tabulator("#part-weight-log-table", {
-         //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         responsiveLayout:"hide", // enable responsive layouts
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Part Weight Log<h1>",
-         printFooter:"<h2>TODO: Date range<h2>",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Print
+         printAsHtml:true,
+         printRowRange:"all",
+         printHeader:"<h1>Part Washer Log<h1>",
+         // Columns
          columns:[
-            {title:"Id",                field:"partWeightEntryId", hozAlign:"left", visible:false},
-            {title:"Time Card Id",      field:"timeCardId",        hozAlign:"left", visible:false},            
-            {title:"Ticket",            field:"panTicketCode",     hozAlign:"left", responsive:0, headerFilter:true,
+            {title:"Id",                field:"partWeightEntryId", visible:false},
+            {title:"Time Card Id",      field:"timeCardId",        visible:false},            
+            {title:"Ticket",            field:"panTicketCode",     headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "";
                   
@@ -270,18 +274,18 @@ if (!Authentication::isAuthenticated())
                   return (cell.getValue());
               }               
             },
-            {title:"Job #",             field:"jobNumber",         hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"WC #",              field:"wcLabel",           hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Operator",          field:"operatorName",      hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Mfg. Date",         field:"manufactureDate",   hozAlign:"left", responsive:0, headerFilter:true,
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Job #",             field:"jobNumber",         headerFilter:true},
+            {title:"WC #",              field:"wcLabel",           headerFilter:true},
+            {title:"Operator",          field:"operatorName",      headerFilter:true},
+            {title:"Mfg. Date",         field:"manufactureDate",   headerFilter:"input",
+               formatter:"datetime",
                formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
+                  outputFormat:"M/d/yyyy",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Laborer",           field:"laborerName",       hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Weight Date",       field:"dateTime",          hozAlign:"left", responsive:0,
+            {title:"Laborer",           field:"laborerName",       headerFilter:true},
+            {title:"Weigh Date",        field:"weighDate",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "---";
                   
@@ -312,14 +316,14 @@ if (!Authentication::isAuthenticated())
                   return (cellValue);
               },
             },
-            {title:"Weight Time",       field:"dateTime",          hozAlign:"left", responsive:0,
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Weigh Time",        field:"weighTime",
+               formatter:"datetime",
                formatterParams:{
-                  outputFormat:"hh:mm A",
+                  outputFormat:"h:mm a",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Basket Count",      field:"panCount",          hozAlign:"left", responsive:2,
+            {title:"Basket Count",      field:"panCount",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
                   
@@ -351,38 +355,36 @@ if (!Authentication::isAuthenticated())
                   return (toolTip);                  
                }
             },
-            {title:"Weight",            field:"weight",           hozAlign:"left", responsive:1},
-            {title:"Part Count (Est.)", field:"partCount",         hozAlign:"left", responsive:1},
-            {title:"",                  field:"delete",                             responsive:0, print:false,
+            {title:"Weight",            field:"weight"},
+            {title:"Part Count (Est.)", field:"partCount"},
+            {title:"",                  field:"delete",            hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-         ],
-         cellClick:function(e, cell){
-            var entryId = parseInt(cell.getRow().getData().partWeightEntryId);
-            
-            var timeCardId = cell.getRow().getData().timeCardId;
-            
-            if ((cell.getColumn().getField() == "panTicketCode") &&
-                (cell.getRow().getData().timeCardId != 0))
-            {               
-               document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
-            }  
-            else if (cell.getColumn().getField() == "delete")
-            {
-               onDeletePartWeightEntry(entryId);
-            }
-            else // Any other column
-            {
-               // Open time card for viewing/editing.
-               document.location = "<?php echo $ROOT?>/partWeightLog/partWeightLogEntry.php?entryId=" + entryId;               
-            }
-         },
-         rowClick:function(e, row){
-            // No row click function needed.
-         },
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         var entryId = parseInt(cell.getRow().getData().partWeightEntryId);
+         
+         var timeCardId = cell.getRow().getData().timeCardId;
+         
+         if ((cell.getColumn().getField() == "panTicketCode") &&
+             (cell.getRow().getData().timeCardId != 0))
+         {               
+            document.location = "<?php echo $ROOT?>/panTicket/viewPanTicket.php?panTicketId=" + timeCardId;
+         }  
+         else if (cell.getColumn().getField() == "delete")
+         {
+            onDeletePartWeightEntry(entryId);
+         }
+         else // Any other column
+         {
+            // Open time card for viewing/editing.
+            document.location = "<?php echo $ROOT?>/partWeightLog/partWeightLogEntry.php?entryId=" + entryId;               
+         }
+      }.bind(this));
 
       function updateFilter(event)
       {

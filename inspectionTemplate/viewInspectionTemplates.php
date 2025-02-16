@@ -122,49 +122,52 @@ if (!Authentication::isAuthenticated())
 
       // Create Tabulator on DOM element user-table.
       var table = new Tabulator("#inspection-template-table", {
-         //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         responsiveLayout:"hide", // enable responsive layouts
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
-            {title:"Id",             field:"templateId",          hozAlign:"left", visible:false},
-            {title:"Name",           field:"name",                hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Type",           field:"inspectionTypeLabel", hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Description",    field:"description",         hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"",               field:"copy",                           responsive:0,
+            {title:"Id",             field:"templateId",          visible:false},
+            {title:"Name",           field:"name",                headerFilter:true},
+            {title:"Type",           field:"inspectionTypeLabel", headerFilter:true},
+            {title:"Description",    field:"description",         headerFilter:true},
+            {title:"",               field:"copy",                hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">content_copy</i>");
                }
             },            
-            {title:"",           field:"delete",                                   responsive:0,
+            {title:"",           field:"delete",                  hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-         ],
-         cellClick:function(e, cell){
-            var templateId = parseInt(cell.getRow().getData().templateId);
-
-            if (cell.getColumn().getField() == "copy")
-            {
-               onCopyInspectionTemplate(templateId);
-            }
-            else if (cell.getColumn().getField() == "delete")
-            {
-               onDeleteInspectionTemplate(templateId);
-            }
-            else // Any other column
-            {
-               // Open user for viewing/editing.
-               document.location = "<?php echo $ROOT?>/inspectionTemplate/viewInspectionTemplate.php?templateId=" + templateId;               
-            }
-         },
-         rowClick:function(e, row){
-            // No row click function needed.
-         },
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         var templateId = parseInt(cell.getRow().getData().templateId);
+
+         if (cell.getColumn().getField() == "copy")
+         {
+            onCopyInspectionTemplate(templateId);
+         }
+         else if (cell.getColumn().getField() == "delete")
+         {
+            onDeleteInspectionTemplate(templateId);
+         }
+         else // Any other column
+         {
+            // Open user for viewing/editing.
+            document.location = "<?php echo $ROOT?>/inspectionTemplate/viewInspectionTemplate.php?templateId=" + templateId;               
+         }
+      }.bind(this));
 
       function updateFilter(event)
       {

@@ -107,8 +107,7 @@ class Job
    
       // Create Tabulator table
       this.table = new Tabulator(tableElementQuery, {
-         layout:"fitData",
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
          ajaxResponse:function(url, params, response) {
@@ -119,25 +118,32 @@ class Job
             }
             return (tableData);
          },
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
-            {title:"Id",             field:"jobId",         hozAlign:"left", visible:false},
-            {title:"Job #",          field:"jobNumber",     hozAlign:"left", headerFilter:true},
-            {title:"Date",           field:"dateTime",      hozAlign:"left", headerFilter:true,
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Id",             field:"jobId",           visible:false},
+            {title:"Job #",          field:"jobNumber",       headerFilter:true},
+            {title:"Date",           field:"dateTime",        headerFilter:"input",
+               formatter:"datetime",
                formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
+                  outputFormat:"M/d/yyyy",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Part #",         field:"part.pptpNumber",    hozAlign:"left", headerFilter:true},
-            {title:"Customer",       field:"customerName",       hozAlign:"left", headerFilter:true},
-            {title:"Cust. Part #",   field:"part.pptpNumber",    hozAlign:"left", headerFilter:true},
-            {title:"Work Center",    field:"wcLabel",            hozAlign:"left", headerFilter:true},
-            {title:"Cycle Time",        field:"cycleTime",  hozAlign:"left", },
-            {title:"Gross Pieces/Hour", field:"grossPartsPerHour", hozAlign:"left"},
-            {title:"Net Pieces/Hour",   field:"netPartsPerHour", hozAlign:"left"},                     
-            {title:"Customer Print",    field:"part.customerPrint", hozAlign:"left", 
+            {title:"Part #",         field:"part.pptpNumber", headerFilter:true},
+            {title:"Customer",       field:"customerName",    headerFilter:true},
+            {title:"Cust. Part #",   field:"part.pptpNumber", headerFilter:true},
+            {title:"Work Center",    field:"wcLabel",         headerFilter:true},
+            {title:"Cycle Time",        field:"cycleTime"},
+            {title:"Gross Pieces/Hour", field:"grossPartsPerHour"},
+            {title:"Net Pieces/Hour",   field:"netPartsPerHour"},                     
+            {title:"Customer Print",    field:"part.customerPrint", 
                formatter:function(cell, formatterParams, onRendered){
                   let cellValue = null;
                   let filename = cell.getValue();
@@ -149,13 +155,13 @@ class Job
                   return (cellValue);
                 }
             },
-            {title:"Status",         field:"statusLabel",   hozAlign:"left", headerFilter:true},
-            {title:"",               field:"copy",
+            {title:"Status",         field:"statusLabel",     headerFilter:true},
+            {title:"",               field:"copy",            hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">content_copy</i>");
                }
             },
-            {title:"",               field:"delete",                          responsive:0,
+            {title:"",               field:"delete",          hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
@@ -163,29 +169,30 @@ class Job
          ],
          initialSort:[
             {column:"jobNumber", dir:"asc"}
-         ],
-         cellClick:function(e, cell){
-            let jobId = parseInt(cell.getRow().getData().jobId);
-            
-            if (cell.getColumn().getField() == "copy")
-            {
-               document.location = `viewJob.php?copyFromJobId=${jobId}`;
-            }
-            else if (cell.getColumn().getField() == "delete")
-            {
-               this.onDeleteButton(jobId);
-               e.stopPropagation();
-            }
-            else if (cell.getColumn().getField() == "customerPrint")
-            {
-               // No action.  Allow for clicking on link.
-            }
-            else // Any other column
-            {
-               document.location = `/jobs/viewJob.php?jobId=${jobId}`;          
-            }
-         }.bind(this),
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         let jobId = parseInt(cell.getRow().getData().jobId);
+         
+         if (cell.getColumn().getField() == "copy")
+         {
+            document.location = `viewJob.php?copyFromJobId=${jobId}`;
+         }
+         else if (cell.getColumn().getField() == "delete")
+         {
+            this.onDeleteButton(jobId);
+            e.stopPropagation();
+         }
+         else if (cell.getColumn().getField() == "customerPrint")
+         {
+            // No action.  Allow for clicking on link.
+         }
+         else // Any other column
+         {
+            document.location = `/jobs/viewJob.php?jobId=${jobId}`;          
+         }
+      }.bind(this));
    }
    
    // **************************************************************************

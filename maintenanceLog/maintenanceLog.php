@@ -94,10 +94,11 @@ if (!Authentication::isAuthenticated())
    <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
    
    <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
-   <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo $versionQuery ?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
    <script src="maintenanceLog.js<?php echo versionQuery();?>"></script>
       
@@ -181,74 +182,76 @@ if (!Authentication::isAuthenticated())
       
       // Create Tabulator on DOM element maintenance-log-table.
       var table = new Tabulator("#maintenance-log-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         responsiveLayout:"hide", // enable responsive layouts
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
-            {title:"Id",          field:"maintenanceEntryId",       hozAlign:"left", visible:false},
-            {title:"Entry Date",  field:"dateTime",                 hozAlign:"left",
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Id",          field:"maintenanceEntryId",        visible:false},
+            {title:"Entry Date",  field:"dateTime",
+               formatter:"datetime",  // Requires luxon.js 
                formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
+                  outputFormat:"M/d/yyyy",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Maint. Date", field:"maintenanceDateTime",      hozAlign:"left",
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Maint. Date", field:"maintenanceDateTime",
+               formatter:"datetime",  // Requires luxon.js 
                formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
+                  outputFormat:"M/d/yyyy",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Techician",   field:"technicianName",            hozAlign:"left", headerFilter:true},            
-            {title:"Job #",       field:"jobNumber",                 hozAlign:"left", headerFilter:true},
-            {title:"Equipment",   field:"equipmentName",             hozAlign:"left", headerFilter:true},
-            {title:"Maint. Type", field:"typeLabel",                 hozAlign:"left", headerFilter:true},
-            {title:"Category",    field:"categoryLabel",             hozAlign:"left", headerFilter:true},
-            {title:"Subcategory", field:"subcategoryLabel",          hozAlign:"left", headerFilter:true},
-            {title:"Shift Time",  field:"shiftTime",                 hozAlign:"left",
+            {title:"Techician",   field:"technicianName",            headerFilter:true},            
+            {title:"Job #",       field:"jobNumber",                 headerFilter:true},
+            {title:"Equipment",   field:"equipmentName",             headerFilter:true},
+            {title:"Maint. Type", field:"typeLabel",                 headerFilter:true},
+            {title:"Category",    field:"categoryLabel",             headerFilter:true},
+            {title:"Subcategory", field:"subcategoryLabel",          headerFilter:true},
+            {title:"Shift Time",  field:"shiftTime",
                formatter:function(cell, formatterParams, onRendered){
                   var minutes = parseInt(cell.getValue());
                   var cellValue = Math.floor(minutes / 60) + ":" + ("0" + (minutes % 60)).slice(-2);
                   return (cellValue);
                }
             },
-            {title:"Maint. Time", field:"maintenanceTime",           hozAlign:"left",
+            {title:"Maint. Time", field:"maintenanceTime",
                formatter:function(cell, formatterParams, onRendered){
                   var minutes = parseInt(cell.getValue());
                   var cellValue = Math.floor(minutes / 60) + ":" + ("0" + (minutes % 60)).slice(-2);
                   return (cellValue);
                }
             },
-            {title:"Part #",      field:"partNumber",                hozAlign:"left", headerFilter:true},
-            {title:"Comments",    field:"comments",                  hozAlign:"left"},
-            {title:"", field:"delete", responsive:0,
+            {title:"Part #",      field:"partNumber",                headerFilter:true},
+            {title:"Comments",    field:"comments"},
+            {title:"", field:"delete",                               hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-         ],
-         cellClick:function(e, cell){
-            var entryId = parseInt(cell.getRow().getData().maintenanceEntryId);
-         
-            if (cell.getColumn().getField() == "delete")
-            {
-               onDeleteMaintenanceEntry(entryId);
-            }
-            else // Any other column
-            {
-               // Open maintenance log entry for viewing/editing.
-               document.location = "<?php echo $ROOT?>/maintenanceLog/maintenanceLogEntry.php?entryId=" + entryId;               
-            }
-         },
-         rowClick:function(e, row){
-            // No row click function needed.
-         },
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         var entryId = parseInt(cell.getRow().getData().maintenanceEntryId);
+      
+         if (cell.getColumn().getField() == "delete")
+         {
+            onDeleteMaintenanceEntry(entryId);
+         }
+         else // Any other column
+         {
+            // Open maintenance log entry for viewing/editing.
+            document.location = "<?php echo $ROOT?>/maintenanceLog/maintenanceLogEntry.php?entryId=" + entryId;               
+         }
+      }.bind(this));
 
       function updateFilter(event)
       {
@@ -298,7 +301,6 @@ if (!Authentication::isAuthenticated())
 
          return (formattedDate);
       }
-            
 
       function filterToday()
       {

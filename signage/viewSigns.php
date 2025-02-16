@@ -84,47 +84,50 @@ if (!Authentication::isAuthenticated())
       
       // Create Tabulator on DOM element sign-table.
       var table = new Tabulator("#sign-table", {
-         //height:500, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         responsiveLayout:"hide", // enable responsive layouts
+         // Data
          ajaxURL:url,
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
             {title:"", field:"launch",
                formatter:function(cell, formatterParams, onRendered){
                   return ("<button class=\"small-button accent-button\" style=\"width:50px;\">Go</button>");
                }
             },
-            {title:"Name",        field:"name",        hozAlign:"left"},
-            {title:"Description", field:"description", hozAlign:"left"},
-            {title:"URL",         field:"url",         hozAlign:"left"},
+            {title:"Name",        field:"name",},
+            {title:"Description", field:"description"},
+            {title:"URL",         field:"url"},
             {title:"",           field:"delete",
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-         ],
-         cellClick:function(e, cell){
-            var signId = parseInt(cell.getRow().getData().signId);
-            var url = cell.getRow().getData().url;
+         ]
+      });
+      
+      table.on("cellClick", function(e, cell) {
+         var signId = parseInt(cell.getRow().getData().signId);
+         var url = cell.getRow().getData().url;
 
-            if (cell.getColumn().getField() == "launch")
-            {
-               window.open(url);
-            }
-            else if (cell.getColumn().getField() == "delete")
-            {
-               onDeleteSign(signId);
-            }
-            else // Any other column
-            {
-               // Open user for viewing/editing.
-               document.location = "<?php echo $ROOT?>/signage/viewSign.php?signId=" + signId;               
-            }
-         },
-         rowClick:function(e, row){
-            // No row click function needed.
-         },
+         if (cell.getColumn().getField() == "launch")
+         {
+            window.open(url);
+         }
+         else if (cell.getColumn().getField() == "delete")
+         {
+            onDeleteSign(signId);
+         }
+         else // Any other column
+         {
+            // Open user for viewing/editing.
+            document.location = "<?php echo $ROOT?>/signage/viewSign.php?signId=" + signId;               
+         }
       });
 
       // Setup event handling on all DOM elements.

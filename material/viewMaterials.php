@@ -120,7 +120,7 @@ if (!Authentication::isAuthenticated())
    <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
    
    <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
-   <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
@@ -230,18 +230,25 @@ if (!Authentication::isAuthenticated())
       
       // Create Tabulator on DOM element.
       var table = new Tabulator("#material-table", {
-         maxHeight:500,  // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         layout:"fitData",
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
+         // Layout
+         maxHeight: 500,
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Printing
          printAsHtml:true,          //enable HTML table printing
          printRowRange:"all",       // print all rows 
          printHeader:"<h1>Material Log<h1>",
-         //Define Table Columns
+         // Columns
          columns:[
-            {title:"Id",          field:"materialEntryId",       hozAlign:"left", visible:false},
-            {title:"Ticket",      field:"materialTicketCode",    hozAlign:"left", headerFilter:true,
+            {title:"Id",          field:"materialEntryId",                          visible:false},
+            {title:"Ticket",      field:"materialTicketCode",                       headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().materialTicketCode);
                },
@@ -249,28 +256,28 @@ if (!Authentication::isAuthenticated())
                   return (cell.getValue());
                }  
             },                   
-            {title:"Received",    field:"receivedDateTime",       hozAlign:"left",
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Received",    field:"receivedDateTime",
+               formatter:"datetime",
                formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
+                  outputFormat:"M/d/yyyy",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Material",    field:"materialHeatInfo.materialInfo.partNumber", hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Vendor",      field:"vendorName",                               hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Vendor Heat", field:"vendorHeatNumber",                         hozAlign:"left", headerFilter:true, visible:true},            
-            {title:"PPTP Heat",   field:"materialHeatInfo.internalHeatNumber",      hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Tag",         field:"tagNumber",                                hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Location",    field:"locationLabel",                            hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Type",        field:"materialHeatInfo.materialInfo.typeLabel",  hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Size",        field:"materialHeatInfo.materialInfo.size",       hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Length",      field:"materialHeatInfo.materialInfo.length",     hozAlign:"left", headerFilter:true, visible:true},
-            {title:"Pieces",      field:"pieces",                                   hozAlign:"left", visible:true},            
-            {title:"Quantity",    field:"quantity",                                 hozAlign:"left", visible:true},
+            {title:"Material",    field:"materialHeatInfo.materialInfo.partNumber", headerFilter:true},
+            {title:"Vendor",      field:"vendorName",                               headerFilter:true},
+            {title:"Vendor Heat", field:"vendorHeatNumber",                         headerFilter:true},            
+            {title:"PPTP Heat",   field:"materialHeatInfo.internalHeatNumber",      headerFilter:true},
+            {title:"Tag",         field:"tagNumber",                                headerFilter:true},
+            {title:"Location",    field:"locationLabel",                            headerFilter:true},
+            {title:"Type",        field:"materialHeatInfo.materialInfo.typeLabel",  headerFilter:true},
+            {title:"Size",        field:"materialHeatInfo.materialInfo.size",       headerFilter:true},
+            {title:"Length",      field:"materialHeatInfo.materialInfo.length",     headerFilter:true},
+            {title:"Pieces",      field:"pieces"},            
+            {title:"Quantity",    field:"quantity"},
             {
                title:"Inspection",
                columns:[
-                  {title:"Accepted", field:"acceptedPieces",                        hozAlign:"left",
+                  {title:"Accepted", field:"acceptedPieces",
                      formatter:function(cell, formatterParams, onRendered){
                         let received = parseInt(cell.getRow().getData().pieces);
                         let accepted = parseInt(cell.getRow().getData().acceptedPieces);
@@ -287,11 +294,11 @@ if (!Authentication::isAuthenticated())
                         return (cell.getValue());
                      }
                   },
-                  {title:"Stamp",       field:"materialStampLabel",              hozAlign:"left", headerFilter:true, visible:true},
-                  {title:"PO #",        field:"poNumber",                        hozAlign:"left", headerFilter:true, visible:true}
+                  {title:"Stamp",       field:"materialStampLabel",                 headerFilter:true},
+                  {title:"PO #",        field:"poNumber",                           headerFilter:true}
                ]
             },
-            {title:"",            field:"issue",                                                     visible:hasIssuePermission, print:false,
+            {title:"",            field:"issue",                                    visible:hasIssuePermission, print:false,
                formatter:function(cell, formatterParams, onRendered){
                   let isIssued = cell.getRow().getData().isIssued;                  
                   let buttonText = isIssued ? "Revoke" : "Issue";
@@ -304,18 +311,18 @@ if (!Authentication::isAuthenticated())
             {
                title:"Issued",
                columns:[
-                  {title:"Issued Date", field:"issuedDateTime",                  hozAlign:"left",
-                     formatter:"datetime",  // Requires moment.js 
+                  {title:"Issued Date", field:"issuedDateTime",
+                     formatter:"datetime",  // Requires luxon.js 
                      formatterParams:{
-                        outputFormat:"MM/DD/YYYY",
+                        outputFormat:"M/d/yyyy",
                         invalidPlaceholder:""
                      }
                   },
-                  {title:"Job #",       field:"issuedJobNumber",                 hozAlign:"left", headerFilter:true, visible:true},
-                  {title:"WC #",        field:"issuedWCNumber",                  hozAlign:"left", headerFilter:true, visible:true}
+                  {title:"Job #",       field:"issuedJobNumber",                   headerFilter:true},
+                  {title:"WC #",        field:"issuedWCNumber",                    headerFilter:true}
                ]
             },
-            {title:"Ack.",        field:"isAcknowledged",                  hozAlign:"left", visible:true,
+            {title:"Ack.",        field:"isAcknowledged",
                formatter:function(cell, formatterParams, onRendered){
                   let isIssued = cell.getRow().getData().isIssued;
                   let isAcknowledged = cell.getRow().getData().isAcknowledged;                   
@@ -330,59 +337,57 @@ if (!Authentication::isAuthenticated())
                   return (isAcknowledged ? "YES" : "");
                }  
             },
-            {title:"", field:"delete", responsive:0, print:false,
+            {title:"", field:"delete",                                              hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-         ],
-         cellClick:function(e, cell){
-            var entryId = parseInt(cell.getRow().getData().materialEntryId);            
-                     
-            if (cell.getColumn().getField() == "materialTicketCode")
-            {
-               document.location = `printMaterialTicket.php?materialTicketId=${entryId}`;
-            }
-            else if (cell.getColumn().getField() == "issue")
-            {
-               let isIssued = cell.getRow().getData().isIssued;      
-                              
-               if (!isIssued)
-               {
-                  document.location = `viewMaterial.php?entryId=${entryId}&issue=1`;
-               }
-               else
-               {
-                  onRevokeButton(entryId);
-               }
-            }
-            else if (cell.getColumn().getField() == "isAcknowledged")
-            {
-               let isAcknowledged = cell.getRow().getData().isAcknowledged;   
-
-               if (!isAcknowledged)
-               {                              
-                  onAcknowledge(entryId, acknowledgedUserId);  // Note: acknowledgedUserId set below.
-               }
-               else
-               {
-                  onUnacknowledge(entryId);               
-               }
-            }
-            else if (cell.getColumn().getField() == "delete")
-            {
-               onDeleteMaterialEntry(entryId);
-            }
-            else // Any other column
-            {
-               // Open material entry for viewing/editing.
-               document.location = `viewMaterial.php?entryId=${entryId}`;               
-            }
-         },
-         rowClick:function(e, row){
-            // No row click function needed.
-         },
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         var entryId = parseInt(cell.getRow().getData().materialEntryId);            
+                  
+         if (cell.getColumn().getField() == "materialTicketCode")
+         {
+            document.location = `printMaterialTicket.php?materialTicketId=${entryId}`;
+         }
+         else if (cell.getColumn().getField() == "issue")
+         {
+            let isIssued = cell.getRow().getData().isIssued;      
+                           
+            if (!isIssued)
+            {
+               document.location = `viewMaterial.php?entryId=${entryId}&issue=1`;
+            }
+            else
+            {
+               onRevokeButton(entryId);
+            }
+         }
+         else if (cell.getColumn().getField() == "isAcknowledged")
+         {
+            let isAcknowledged = cell.getRow().getData().isAcknowledged;   
+   
+            if (!isAcknowledged)
+            {                              
+               onAcknowledge(entryId, acknowledgedUserId);  // Note: acknowledgedUserId set below.
+            }
+            else
+            {
+               onUnacknowledge(entryId);               
+            }
+         }
+         else if (cell.getColumn().getField() == "delete")
+         {
+            onDeleteMaterialEntry(entryId);
+         }
+         else // Any other column
+         {
+            // Open material entry for viewing/editing.
+            document.location = `viewMaterial.php?entryId=${entryId}`;               
+         }
+      }.bind(this));
 
       function updateFilter(event)
       {

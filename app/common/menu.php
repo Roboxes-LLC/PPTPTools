@@ -87,10 +87,6 @@ $jsonMenu =
          ]
       },
       {
-         "type":"menu-item",
-         "pageId": 9
-      },
-      {
          "type":"submenu",
          "menuId":"reports",
          "label":"Reports",

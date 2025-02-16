@@ -58,9 +58,8 @@ class Part
       let tableElementQuery = "#" + tableElementId;
    
       // Create Tabulator table
-      this.scheduledTable = new Tabulator(tableElementQuery, {
-         layout:"fitData",
-         cellVertAlign:"middle",
+      this.table = new Tabulator(tableElementQuery, {
+         // Data
          ajaxURL:url,
          ajaxParams:params,
          ajaxResponse:function(url, params, response) {
@@ -71,12 +70,19 @@ class Part
             }
             return (tableData);
          },
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
-            {title:"PPTP #",            field:"pptpNumber",     hozAlign:"left", headerFilter:true},
-            {title:"Customer #",        field:"customerNumber", hozAlign:"left", headerFilter:true},
-            {title:"Customer",          field:"customerName",   hozAlign:"left", headerFilter:true},
-            {title:"Sample Weight",     field:"sampleWeight",   hozAlign:"left",
+            {title:"PPTP #",            field:"pptpNumber",     headerFilter:true},
+            {title:"Customer #",        field:"customerNumber", headerFilter:true},
+            {title:"Customer",          field:"customerName",   headerFilter:true},
+            {title:"Sample Weight",     field:"sampleWeight",
                formatter:function(cell, formatterParams, onRendered){
                   if (cell.getValue() <= 0.02)
                   {
@@ -86,7 +92,7 @@ class Part
                   return (cell.getValue());
                }
             },
-            {title:"Unit Price",      field:"unitPrice",       headerFilter:false,
+            {title:"Unit Price",      field:"unitPrice",
                formatter:function(cell, formatterParams, onRendered) {
                   let cellValue = cell.getValue();
                   
@@ -107,7 +113,7 @@ class Part
                   return (cellValue);
                }
             },
-            {title:"Customer Print",    field:"customerPrint", hozAlign:"left",
+            {title:"Customer Print",    field:"customerPrint",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
                   
@@ -121,7 +127,7 @@ class Part
                   return (cellValue);
                 }
             },
-            {title:"",                  field:"delete",
+            {title:"",                  field:"delete",         hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
@@ -129,21 +135,22 @@ class Part
          ],
          initialSort:[
             {column:"pptpNumber", dir:"asc"}
-         ],
-         cellClick:function(e, cell){
-            let partNumber = cell.getRow().getData().pptpNumber;
-            
-            if (cell.getColumn().getField() == "delete")
-            {
-               this.onDeleteButton(partNumber);
-               e.stopPropagation();
-            }
-            else
-            {
-               document.location = `/part/part.php?partNumber=${partNumber}`;
-            }
-         }.bind(this),
+         ]
       });
+      
+      this.table.on("cellClick", function(e, cell) {
+         let partNumber = cell.getRow().getData().pptpNumber;
+         
+         if (cell.getColumn().getField() == "delete")
+         {
+            this.onDeleteButton(partNumber);
+            e.stopPropagation();
+         }
+         else
+         {
+            document.location = `/part/part.php?partNumber=${partNumber}`;
+         }
+      }.bind(this));
    }
    
    // **************************************************************************

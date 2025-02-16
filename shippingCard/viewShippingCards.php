@@ -108,12 +108,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
    <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo versionQuery();?>"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo versionQuery();?>"/>
    
-   <script src="../thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
-   <script src="../thirdParty/moment/moment.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/barcodeScanner.js<?php echo versionQuery();?>"></script>   
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>   
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>   
    <script src="shippingCard.js<?php echo versionQuery();?>"></script>
       
@@ -199,21 +200,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       
       // Create Tabulator on DOM element shipping-card-table.
       var table = new Tabulator("#shipping-card-table", {
-         //height:500,            // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-         index:"shippingCardId",
-         layout:"fitData",
-         responsiveLayout:"hide",   // enable responsive layouts
-         cellVertAlign:"middle",
-         printAsHtml:true,          //enable HTML table printing
-         printRowRange:"all",       // print all rows 
-         printHeader:"<h1>Shipping Cards<h1>",
-         printFooter:"<h2>TODO: Date range<h2>",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Printing
+         printAsHtml:true,
+         printRowRange:"all",
+         printHeader:"<h1>Shipping Cards<h1>",
+         // Columns
+         index:"shippingCardId",
          columns:[
-            {title:"Id",           field:"shippingCardId",  hozAlign:"left", visible:false},
-            {title:"Ticket",       field:"panTicketCode",   hozAlign:"left", responsive:0, headerFilter:true,
+            {title:"Id",           field:"shippingCardId",  visible:false},
+            {title:"Ticket",       field:"panTicketCode",   headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "";
                   
@@ -230,7 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cell.getValue());
               }                 
             },
-            {title:"Date",         field:"dateTime",        hozAlign:"left", responsive:0, print:true,
+            {title:"Date",         field:"dateTime",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = "---";
                   
@@ -261,20 +266,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                  return (cellValue);
               },
             },
-            {title:"Shipper",      field:"shipper",         hozAlign:"left", responsive:0, headerFilter:true, print:true},
-            {title:"Job #",        field:"jobNumber",         hozAlign:"left", responsive:0, headerFilter:true},
-            /*
-            {title:"WC #",         field:"wcNumber",          hozAlign:"left", responsive:0, headerFilter:true},
-            {title:"Operator",     field:"operatorName",      hozAlign:"left", responsive:0, headerFilter:true},
-            */
-            {title:"Mfg. Date",    field:"manufactureDate",   hozAlign:"left", responsive:0, headerFilter:true,
-               formatter:"datetime",  // Requires moment.js 
+            {title:"Shipper",      field:"shipper",         headerFilter:true},
+            {title:"Job #",        field:"jobNumber",       headerFilter:true},
+            {title:"Mfg. Date",    field:"manufactureDate", headerFilter:"input",
+               formatter:"datetime",
                formatterParams:{
-                  outputFormat:"MM/DD/YYYY",
+                  outputFormat:"M/d/yyyy",
                   invalidPlaceholder:"---"
                }
             },
-            {title:"Shift Time",   field:"shiftTime",       hozAlign:"left", responsive:1, print:true,
+            {title:"Shift Time",   field:"shiftTime",
                formatter:function(cell, formatterParams, onRendered){
 
                   var minutes = parseInt(cell.getValue());
@@ -297,7 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cellValue);
                 }                
             },
-            {title:"Shipping Time",     field:"shippingTime",         hozAlign:"left", responsive:1, print:true,
+            {title:"Shipping Time",     field:"shippingTime",
                formatter:function(cell, formatterParams, onRendered){
 
                   var minutes = parseInt(cell.getValue());
@@ -320,8 +321,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (cellValue);
                }
             },
-            {title:"Activity",     field:"activityLabel",   hozAlign:"left", responsive:0, headerFilter:true, print:true},
-            {title:"Part Count",   field:"partCount",       hozAlign:"left", responsive:4, print:true,
+            {title:"Activity",     field:"activityLabel",   headerFilter:true},
+            {title:"Part Count",   field:"partCount",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();
                   
@@ -336,30 +337,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                    return (cell.getValue());
                 }                
             },
-            {title:"Scrap Count",  field:"scrapCount",      hozAlign:"left", responsive:5, print:true},
-            {title:"Scrap Type",   field:"scrapTypeLabel",  hozAlign:"left", responsive:5, headerFilter:true, print:true},
-            {title:"", field:"delete", responsive:0, width:75, print:false,
+            {title:"Scrap Count",  field:"scrapCount"},
+            {title:"Scrap Type",   field:"scrapTypeLabel",  headerFilter:true},
+            {title:"", field:"delete",                      hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-         ],
-         cellClick:function(e, cell){
-            var shippingCardId = parseInt(cell.getRow().getData().shippingCardId);
-
-            if (cell.getColumn().getField() == "delete")
-            {
-               onDeleteShippingCard(shippingCardId);
-            }
-            else // Any other column
-            {
-               // Open shipping card for viewing/editing.
-               document.location = "<?php echo $ROOT?>/shippingCard/viewShippingCard.php?shippingCardId=" + shippingCardId;               
-            }
-         },
-         rowClick:function(e, row){
-            // No row click function needed.
-         },
+         ]
+      });
+      
+      table.on("cellClick", function(e, cell) {
+         var shippingCardId = parseInt(cell.getRow().getData().shippingCardId);
+   
+         if (cell.getColumn().getField() == "delete")
+         {
+            onDeleteShippingCard(shippingCardId);
+         }
+         else // Any other column
+         {
+            // Open shipping card for viewing/editing.
+            document.location = "<?php echo $ROOT?>/shippingCard/viewShippingCard.php?shippingCardId=" + shippingCardId;               
+         }
       });
 
       function updateFilter(event)

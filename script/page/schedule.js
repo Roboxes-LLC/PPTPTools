@@ -76,8 +76,7 @@ class Schedule
    
       // Create Tabulator table
       this.scheduledTable = new Tabulator(tableElementQuery, {
-         layout:"fitData",
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
          ajaxResponse:function(url, params, response) {
@@ -88,13 +87,20 @@ class Schedule
             }
             return (tableData);
          },
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
             {                           field:"entryId",                    visible:false},
             {title:"WC #",              field:"jobInfo.wcNumber",           headerFilter:true},
             {title:"Job #",             field:"jobInfo.jobNumber",          headerFilter:true},
             {title:"Customer Part #",   field:"jobInfo.customerPartNumber", headerFilter:true},
-            {title:"Assigned Operator", field:"userInfo.employeeNumber",    headerFilter:true,  editor:"select", cssClass:"editable",
+            {title:"Assigned Operator", field:"userInfo.employeeNumber",    headerFilter:true,  editor:"list", cssClass:"editable",
                editorParams:{
                   values:this.operatorOptions
                },
@@ -105,9 +111,9 @@ class Schedule
                   return (cellValue);
                }.bind(this)
             },
-            {title:"Start",             field:"formattedStartDate",      headerFilter:true},
-            {title:"End",               field:"formattedEndDate",        headerFilter:true},
-            {title:"",                  field:"delete",
+            {title:"Start",             field:"formattedStartDate",         headerFilter:true},
+            {title:"End",               field:"formattedEndDate",           headerFilter:true},
+            {title:"",                  field:"delete",                     hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
@@ -115,30 +121,32 @@ class Schedule
          ],
          initialSort:[
             {column:"jobInfo.wcNumber", dir:"asc"}
-         ],
-         cellClick:function(e, cell){
-            let entryId = parseInt(cell.getRow().getData().entryId);
-            
-            if (cell.getColumn().getField() == "delete")
-            {
-               this.onDeleteButton(entryId);
-               e.stopPropagation();
-            }
-            else if (cell.getColumn().getField() == "userInfo.username")
-            {
-               e.stopPropagation();
-            }
-         }.bind(this),
-         cellEdited:function(cell){
-            if (cell.getColumn().getField() == "userInfo.employeeNumber")
-            {
-               let entryId = cell.getRow().getData().entryId;
-               let employeeNumber = cell.getValue();
-               
-               this.onJobAssigned(entryId, employeeNumber);
-            }
-         }.bind(this),
+         ]
       });
+      
+      this.scheduledTable.on("cellClick", function(e, cell) {
+         let entryId = parseInt(cell.getRow().getData().entryId);
+         
+         if (cell.getColumn().getField() == "delete")
+         {
+            this.onDeleteButton(entryId);
+            e.stopPropagation();
+         }
+         else if (cell.getColumn().getField() == "userInfo.username")
+         {
+            e.stopPropagation();
+         }
+      }.bind(this));
+      
+      this.scheduledTable.on("cellEdited", function(cell) {
+         if (cell.getColumn().getField() == "userInfo.employeeNumber")
+         {
+            let entryId = cell.getRow().getData().entryId;
+            let employeeNumber = cell.getValue();
+            
+            this.onJobAssigned(entryId, employeeNumber);
+         }
+      }.bind(this));
    }
    
    createUnscheduledTable(tableElementId)
@@ -153,8 +161,7 @@ class Schedule
    
       // Create Tabulator table
       this.unscheduledTable = new Tabulator(tableElementQuery, {
-         layout:"fitData",
-         cellVertAlign:"middle",
+         // Data
          ajaxURL:url,
          ajaxParams:params,
          ajaxResponse:function(url, params, response) {
@@ -165,13 +172,20 @@ class Schedule
             }
             return (tableData);
          },
-         //Define Table Columns
+         // Layout
+         layout:"fitData",
+         columnDefaults:{
+            hozAlign:"left", 
+            vertAlign:"middle"
+         },
+         persistence:true,
+         // Columns
          columns:[
             {                           field:"jobId",              visible:false},
             {title:"WC #",              field:"wcNumber",           headerFilter:true},
             {title:"Job #",             field:"jobNumber",          headerFilter:true},
             {title:"Customer Part #",   field:"customerPartNumber", headerFilter:true},
-            {title:"",                  field:"add",
+            {title:"",                  field:"add",                hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">add</i>");
                }
@@ -179,17 +193,18 @@ class Schedule
          ],
          initialSort:[
             {column:"wcNumber", dir:"asc"}
-         ],
-         cellClick:function(e, cell){
-            if (cell.getColumn().getField() == "add")
-            {
-               let jobId = cell.getRow().getData().jobId;
-               
-               this.onAddButton(jobId);
-               e.stopPropagation();
-            }
-         }.bind(this),
+         ]
       });
+      
+      this.unscheduledTable.on("cellClick", function(e, cell) {
+         if (cell.getColumn().getField() == "add")
+         {
+            let jobId = cell.getRow().getData().jobId;
+            
+            this.onAddButton(jobId);
+            e.stopPropagation();
+         }
+      }.bind(this));
    }
    
    // **************************************************************************

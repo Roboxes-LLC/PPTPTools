@@ -14,13 +14,13 @@ Required PHP variables:
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css"/>
+   <link rel="stylesheet" type="text/css" href="/thirdParty/tabulator/css/tabulator.min.css"/>
    
-   <link rel="stylesheet" type="text/css" href="../common/theme.css<?php echo $versionQuery ?>"/>
-   <link rel="stylesheet" type="text/css" href="../common/common.css<?php echo $versionQuery ?>"/>
+   <link rel="stylesheet" type="text/css" href="/common/theme.css<?php echo $versionQuery ?>"/>
+   <link rel="stylesheet" type="text/css" href="/common/common.css<?php echo $versionQuery ?>"/>
    
-   <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
-   <script src="../thirdParty/moment/moment.min.js"></script>
+   <script src="/thirdParty/tabulator/js/tabulator.min.js"></script>
+   <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/common.js<?php echo $versionQuery ?>"></script>
    <script src="/script/common/common.js<?php echo $versionQuery ?>"></script>
