@@ -5,6 +5,7 @@ class SalesOrder
       // Forms
       "INPUT_FORM":    "input-form",
       // Inputs
+      "DATE_TYPE_INPUT": "date-type-input",
       "START_DATE_INPUT": "start-date-input",
       "END_DATE_INPUT": "end-date-input",
       "ACTIVE_ORDERS_INPUT": "active-orders-input",
@@ -36,6 +37,13 @@ class SalesOrder
    
    setup()
    {
+      if (document.getElementById(SalesOrder.PageElements.DATE_TYPE_INPUT) != null)
+      {
+         document.getElementById(SalesOrder.PageElements.DATE_TYPE_INPUT).addEventListener('change', function() {
+            this.onDateTypeChanged();
+         }.bind(this));
+      }
+      
       if (document.getElementById(SalesOrder.PageElements.START_DATE_INPUT) != null)
       {
          document.getElementById(SalesOrder.PageElements.START_DATE_INPUT).addEventListener('change', function() {
@@ -303,6 +311,13 @@ class SalesOrder
    }
    
    // **************************************************************************
+    
+   onDateTypeChanged()
+   {
+      this.onFilterUpdate();
+      
+      setSession("salesOrder.dateType", document.getElementById(SalesOrder.PageElements.DATE_TYPE_INPUT).value);
+   } 
          
    onStartDateChanged()
    {
@@ -336,11 +351,13 @@ class SalesOrder
       
       if (activeQuotes)
       {
+         disable(SalesOrder.PageElements.DATE_TYPE_INPUT);
          disable(SalesOrder.PageElements.START_DATE_INPUT);
          disable(SalesOrder.PageElements.END_DATE_INPUT);
       }
       else
       {
+         enable(SalesOrder.PageElements.DATE_TYPE_INPUT);
          enable(SalesOrder.PageElements.START_DATE_INPUT);
          enable(SalesOrder.PageElements.END_DATE_INPUT);
       }
@@ -460,9 +477,11 @@ class SalesOrder
       
       params.request = "fetch";
       
-      params.startDate =  document.getElementById(SalesOrder.PageElements.START_DATE_INPUT).value;
+      params.dateType = document.getElementById(SalesOrder.PageElements.DATE_TYPE_INPUT).value;
       
-      params.endDate =  document.getElementById(SalesOrder.PageElements.END_DATE_INPUT).value;
+      params.startDate = document.getElementById(SalesOrder.PageElements.START_DATE_INPUT).value;
+      
+      params.endDate = document.getElementById(SalesOrder.PageElements.END_DATE_INPUT).value;
       
       if (document.getElementById(SalesOrder.PageElements.ACTIVE_ORDERS_INPUT).checked)
       {

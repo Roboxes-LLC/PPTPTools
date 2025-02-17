@@ -126,8 +126,8 @@ class Shipment
          persistence:true,
          // Columns
          columns:[
-            {                           field:"shipmentId",         visible:false},
-            {title:"Ticket",            field:"shipmentTicketCode", headerFilter:true,
+            {                           field:"shipmentId",           visible:false},
+            {title:"Ticket",            field:"shipmentTicketCode",   headerFilter:true,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">receipt</i>&nbsp" + cell.getRow().getData().shipmentTicketCode);
                },
@@ -135,14 +135,15 @@ class Shipment
                   return (cell.getValue());
                }  
             },
-            {title:"Created",           field:"dateTime",          headerFilter:true,
+            {title:"Created",           field:"dateTime",            headerFilter:true,
                formatter:function(cell, formatterParams, onRendered) {
                   return (cell.getRow().getData().formattedDateTime);
                }
             },
-            {title:"Job #",             field:"jobNumber",         headerFilter:true},
-            {title:"Quantity",          field:"quantity",          headerFilter:true},
-            {title:"Inspection",        field:"inspectionStatus",  headerFilter:true, hozAlign:"center",
+            {title:"Part #",            field:"part.customerNumber", headerFilter:true},
+            {title:"Job #",             field:"jobNumber",           headerFilter:true},
+            {title:"Quantity",          field:"quantity",            headerFilter:true},
+            {title:"Inspection",        field:"inspectionStatus",    headerFilter:true, hozAlign:"center",
                formatter:function(cell, formatterParams, onRendered) {
                   let cellValue = "";
                   let label = cell.getRow().getData().inspectionStatusLabel;
@@ -154,9 +155,9 @@ class Shipment
                   return (cellValue);
                }
             }, 
-            {title:"Location",          field:"locationLabel",     headerFilter:true},
-            {title:"Packing #",         field:"packingListNumber", headerFilter:true},
-            {title:"Packing List",      field:"packingList",       hozAlign:"left",
+            {title:"Location",          field:"locationLabel",       headerFilter:true},
+            {title:"Packing #",         field:"packingListNumber",   headerFilter:true},
+            {title:"Packing List",      field:"packingList",         hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
                   let cellValue = "";
                   
@@ -172,12 +173,12 @@ class Shipment
                   return (cellValue);
                 }
             },
-            {title:"Shipped",           field:"dateTime",          headerFilter:true,
+            {title:"Shipped",           field:"dateTime",            headerFilter:true,
                formatter:function(cell, formatterParams, onRendered) {
                   return (cell.getRow().getData().formattedShippedDate);
                }
             },
-            {title:"",                  field:"delete",            hozAlign:"center", print:false,
+            {title:"",                  field:"delete",              hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }

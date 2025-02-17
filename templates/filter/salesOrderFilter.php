@@ -1,11 +1,14 @@
 <!-- 
 Required PHP variables:
+   $filterDateType
    $filterStartDate
    $filterEndDate
    $filterActiveOrders
  -->
 
 <div class="flex-horizontal flex-top flex-left">
+   <select id="date-type-input"><?php echo FilterDateType::getOptions([FilterDateType::ENTRY_DATE, FilterDateType::ORDERED_DATE, FilterDateType::DUE_DATE], $filterDateType) ?></select>
+   &nbsp;&nbsp;&nbsp;
    <div class="input-group">
       <label>Start</label>
       <input id="start-date-input" type="date" value="<?php echo $filterStartDate ?>">

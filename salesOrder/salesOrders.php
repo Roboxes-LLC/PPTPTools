@@ -4,8 +4,21 @@ if (!defined('ROOT')) require_once '../root.php';
 require_once ROOT.'/app/common/appPage.php';
 require_once ROOT.'/app/common/menu.php';
 require_once ROOT.'/common/authentication.php';
+require_once ROOT.'/common/filterDateType.php';
 require_once ROOT.'/common/header.php';
 require_once ROOT.'/common/version.php';
+
+function getFilterDateType($filterVar)
+{
+   $filterDateType = FilterDateType::ORDERED_DATE;
+   
+   if (Session::isset($filterVar))
+   {
+      $filterDateType = intval($_SESSION[$filterVar]);
+   }
+   
+   return ($filterDateType);
+}
 
 function getFilterDate($filterVar)
 {
@@ -43,6 +56,7 @@ $heading = "Sales Orders";
 $description = "Nom nom nom";
 $filterTemplate = "salesOrderFilter.php";
 $filterActiveOrders = filter_var(Session::getVar(Session::SALES_ORDER_ACTIVE_ORDERS), FILTER_VALIDATE_BOOLEAN);
+$filterDateType = getFilterDateType(Session::SALES_ORDER_FILTER_DATE_TYPE);
 $filterStartDate = getFilterDate(Session::SALES_ORDER_START_DATE);
 $filterEndDate = getFilterDate(Session::SALES_ORDER_END_DATE);
 $newButtonLabel = "Add order";

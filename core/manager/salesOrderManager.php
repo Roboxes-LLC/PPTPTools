@@ -6,11 +6,11 @@ require_once ROOT.'/core/component/salesOrder.php';
 
 class SalesOrderManager
 {
-   public static function getSalesOrders($startDate, $endDate, $allActive)
+   public static function getSalesOrders($dateType, $startDate, $endDate, $allActive)
    {
       $salesOrders = array();
       
-      $result = PPTPDatabaseAlt::getInstance()->getSalesOrders($startDate, $endDate, $allActive);
+      $result = PPTPDatabaseAlt::getInstance()->getSalesOrders($dateType, $startDate, $endDate, $allActive);
       
       foreach ($result as $row)
       {

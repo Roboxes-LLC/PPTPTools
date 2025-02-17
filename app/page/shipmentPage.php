@@ -366,6 +366,14 @@ class ShipmentPage extends Page
       }
       $shipment->inspectionStatusLabel = InspectionStatus::getLabel($shipment->inspectionStatus);
       $shipment->inspectionStatusClass = InspectionStatus::getClass($shipment->inspectionStatus);
+      
+      // Part
+      $pptpPartNumber = JobInfo::getJobPrefix($shipment->jobNumber);
+      $part = Part::load($pptpPartNumber, false);  // Use PPTP number.
+      if ($part)
+      {
+         $shipment->part = $part;
+      }
    }
    
    private static function augmentTimeCard(&$timeCardInfo)

@@ -1170,12 +1170,39 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
-   public function getSalesOrders($startDate, $endDate, $allActive)
+   public function getSalesOrders($dateType, $startDate, $endDate, $allActive)
    {
+      $dateField = "orderDate";
+      switch ($dateType)
+      {
+         case FilterDateType::ENTRY_DATE:
+         {
+            $dateField = "dateTime";
+            break;
+         }
+         
+         case FilterDateType::ORDERED_DATE:
+         {
+            $dateField = "orderDate";
+            break;
+         }
+         
+         case FilterDateType::DUE_DATE:
+         {
+            $dateField = "dueDate";
+            break;
+         }
+         
+         default:
+         {
+            break;
+         }
+      }
+      
       $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
       $endDate = $endDate ? Time::toMySqlDate(Time::endOfDay($endDate)) : null;
       
-      $dateClause = ($startDate && $endDate && !$allActive) ? "(dateTime BETWEEN '$startDate' AND '$endDate')" : "TRUE";
+      $dateClause = ($startDate && $endDate && !$allActive) ? "($dateField BETWEEN '$startDate' AND '$endDate')" : "TRUE";
       $statusClause = (!$allActive) ? "TRUE" : "(orderStatus != " . SalesOrderStatus::SHIPPED . ")";
             
       $statement = $this->pdo->prepare(

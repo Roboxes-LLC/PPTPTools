@@ -2,6 +2,7 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/app/page/page.php';
+require_once ROOT.'/common/filterDateType.php';
 require_once ROOT.'/core/manager/activityLog.php';
 require_once ROOT.'/core/manager/salesOrderManager.php';
 
@@ -169,9 +170,15 @@ class SalesOrderPage extends Page
                 {
                    $dateTime = Time::dateTimeObject(null);
                    
+                   $dateType = FilterDateType::ORDERED_DATE;
                    $endDate = Time::endOfDay($dateTime->format(Time::STANDARD_FORMAT));
                    $startDate = Time::startofDay($dateTime->modify("-1 month")->format(Time::STANDARD_FORMAT));
                    $activeOrders = false;
+                   
+                   if (isset($params["dateType"]))
+                   {
+                      $dateType = $params->getInt("dateType");
+                   }
                    
                    if (isset($params["startDate"]))
                    {
@@ -189,7 +196,7 @@ class SalesOrderPage extends Page
                    }
                    
                    $this->result->success = true;
-                   $this->result->salesOrders = SalesOrderManager::getSalesOrders($startDate, $endDate, $activeOrders);
+                   $this->result->salesOrders = SalesOrderManager::getSalesOrders($dateType, $startDate, $endDate, $activeOrders);
                    
                    // Augment data.
                    foreach ($this->result->salesOrders as $saleOrder)

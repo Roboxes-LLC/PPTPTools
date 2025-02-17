@@ -17,6 +17,7 @@ class Session
    const NOTIFICATION_END_DATE = "notification.endDate";
    const NOTIFICATION_SHOW_ALL_UNACKNOWLEDGED = "notification.showAllUnacknowledged";
    const SALES_ORDER_ACTIVE_ORDERS = "salesOrder.activeOrders";
+   const SALES_ORDER_FILTER_DATE_TYPE = "salesOrder.filterDateType";
    const SALES_ORDER_START_DATE = "salesOrder.startDate";
    const SALES_ORDER_END_DATE = "salesOrder.endDate";
    const SHIPMENT_SHIPMENT_LOCATION = "shipment.shipmentLocation";
