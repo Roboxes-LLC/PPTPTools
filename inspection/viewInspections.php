@@ -204,17 +204,10 @@ if (!Authentication::isAuthenticated())
          var params = new Object();
 
          params.inspectionType = document.getElementById("inspection-type-filter").value;
-         
-         if (document.getElementById("all-incomplete-filter").checked)
-         {
-            params.allIncomplete = true;
-         }
-         else
-         {
-            params.startDate =  document.getElementById("start-date-filter").value;
-            params.endDate =  document.getElementById("end-date-filter").value;
-            params.dateType =  document.getElementById("date-type-filter").value;
-         }
+         params.startDate =  document.getElementById("start-date-filter").value;
+         params.endDate =  document.getElementById("end-date-filter").value;
+         params.dateType =  document.getElementById("date-type-filter").value;
+         params.allIncomplete = document.getElementById("all-incomplete-filter").checked;
 
          return (params);
       }

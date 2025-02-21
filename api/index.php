@@ -1614,7 +1614,7 @@ $router->add("inspectionData", function($params) {
    $endDate = Time::endOfDay(Time::now("Y-m-d"));
    $dateType = FilterDateType::ENTRY_DATE;
    $inspectionType = InspectionType::UNKNOWN;
-   $allIncomplete = isset($params["allIncomplete"]);
+   $allIncomplete = false;
    
    if (isset($params["dateType"]))
    {
@@ -1635,6 +1635,11 @@ $router->add("inspectionData", function($params) {
    {
       $inspectionType = intval($params["inspectionType"]);
    }
+   
+   if (isset($params["allIncomplete"]))
+   {
+      $allIncomplete = $params->getBool("allIncomplete");
+   }   
    
    $authorInspectorOperator = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;  // Get inspections for all authors/inspectors/operators.
    if (Authentication::checkPermissions(Permission::VIEW_OTHER_USERS) == false)

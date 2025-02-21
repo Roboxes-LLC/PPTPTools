@@ -66,11 +66,13 @@ class SalesOrder
          
          if (document.getElementById(SalesOrder.PageElements.ACTIVE_ORDERS_INPUT).checked)
          {
+            disable(SalesOrder.PageElements.DATE_TYPE_INPUT);
             disable(SalesOrder.PageElements.START_DATE_INPUT);
             disable(SalesOrder.PageElements.END_DATE_INPUT);
          }
          else
          {
+            enable(SalesOrder.PageElements.DATE_TYPE_INPUT);
             enable(SalesOrder.PageElements.START_DATE_INPUT);
             enable(SalesOrder.PageElements.END_DATE_INPUT);
          }
@@ -347,9 +349,9 @@ class SalesOrder
    
    onActiveOrdersChanged()
    {
-      var activeQuotes = document.getElementById(SalesOrder.PageElements.ACTIVE_ORDERS_INPUT).checked;
+      var activeOrders = document.getElementById(SalesOrder.PageElements.ACTIVE_ORDERS_INPUT).checked;
       
-      if (activeQuotes)
+      if (activeOrders)
       {
          disable(SalesOrder.PageElements.DATE_TYPE_INPUT);
          disable(SalesOrder.PageElements.START_DATE_INPUT);
@@ -363,8 +365,8 @@ class SalesOrder
       }
       
       this.onFilterUpdate();
-      
-      setSession("salesOrder.activeOrders", (activeQuotes ? "true" : "false"));
+
+      setSession("salesOrder.activeOrders", (activeOrders ? "true" : "false"));
    }
    
    onPptpPartNumberChanged()
@@ -483,10 +485,7 @@ class SalesOrder
       
       params.endDate = document.getElementById(SalesOrder.PageElements.END_DATE_INPUT).value;
       
-      if (document.getElementById(SalesOrder.PageElements.ACTIVE_ORDERS_INPUT).checked)
-      {
-         params.activeOrders = true;
-      }
+      params.activeOrders = document.getElementById(SalesOrder.PageElements.ACTIVE_ORDERS_INPUT).checked;
 
       return (params);
 
