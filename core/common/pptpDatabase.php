@@ -742,7 +742,7 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "INSERT INTO part " .
-         "(pptpNumber, customerNumber, customerId, sampleWeight, unitPrice, firstPartTemplateId, lineTemplateId, qcpTemplateId, inProcessTemplateId, finalTemplateId, customerPrint) " .
+         "(pptpNumber, customerNumber, customerId, sampleWeight, unitPrice, unitCost, firstPartTemplateId, lineTemplateId, qcpTemplateId, inProcessTemplateId, finalTemplateId, customerPrint) " .
          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
@@ -752,6 +752,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $part->customerId,
             $part->sampleWeight,
             $part->unitPrice,
+            $part->unitCost,
             $part->inspectionTemplateIds[InspectionType::FIRST_PART],
             $part->inspectionTemplateIds[InspectionType::LINE],
             $part->inspectionTemplateIds[InspectionType::QCP],
@@ -767,7 +768,7 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "UPDATE part " .
-         "SET customerNumber = ?, customerId = ?, sampleWeight = ?, unitPrice = ?, firstPartTemplateId = ?, lineTemplateId = ?, qcpTemplateId = ?, inProcessTemplateId = ?, finalTemplateId = ?, customerPrint = ? " .
+         "SET customerNumber = ?, customerId = ?, sampleWeight = ?, unitPrice = ?, unitCost = ?, firstPartTemplateId = ?, lineTemplateId = ?, qcpTemplateId = ?, inProcessTemplateId = ?, finalTemplateId = ?, customerPrint = ? " .
          "WHERE pptpNumber = ?");
       
       $result = $statement->execute(
@@ -776,6 +777,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $part->customerId,
             $part->sampleWeight,
             $part->unitPrice,
+            $part->unitCost,
             $part->inspectionTemplateIds[InspectionType::FIRST_PART],
             $part->inspectionTemplateIds[InspectionType::LINE],
             $part->inspectionTemplateIds[InspectionType::QCP],
@@ -1102,7 +1104,7 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "INSERT INTO shipment " .
-         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, packingList, location, shippedDate) " .
+         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, packingList, location, shippedDate, platingStatus, priorityPlating) " .
          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
@@ -1115,7 +1117,9 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->packingListNumber,
             $shipment->packingList,
             $shipment->location,
-            $shippedDate
+            $shippedDate,
+            $shipment->platingStatus,
+            $shipment->priorityPlating ? 1 : 0
          ]);
       
       return ($result);
@@ -1128,7 +1132,7 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "UPDATE shipment " .
-         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, packingList = ?, location = ?, shippedDate = ? " .
+         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, packingList = ?, location = ?, shippedDate = ?, platingStatus = ?, priorityPlating = ? " .
          "WHERE shipmentId = ?");
       
       $result = $statement->execute(
@@ -1142,7 +1146,9 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->packingList,
             $shipment->location,
             $shippedDate,
-            $shipment->shipmentId
+            $shipment->shipmentId,
+            $shipment->platingStatus,
+            $shipment->priorityPlating ? 1 : 0
          ]);
       
       return ($result);

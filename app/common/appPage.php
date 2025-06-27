@@ -31,7 +31,8 @@ class AppPage
    const SHIPMENT = 22;
    const SALES_ORDER = 23;
    const PART = 24;
-   const LAST = 25;
+   const PLATING = 25;
+   const LAST = 26;
    
    public $pageId;
    public $label;
@@ -73,6 +74,7 @@ class AppPage
       AppPage::SHIPMENT,
       AppPage::SALES_ORDER,
       AppPage::PART,
+      AppPage::PLATING
    );
    
    private static $pages = null;
@@ -105,7 +107,8 @@ class AppPage
             AppPage::NOTIFICATION =>        new AppPage(AppPage::NOTIFICATION,        "Messages",             "notifications",        Permission::NOTIFICATIONS,            "/notification/notifications.php"),
             AppPage::SHIPMENT =>            new AppPage(AppPage::SHIPMENT,            "Parts Inventory",      "inventory",            Permission::VIEW_SHIPMENT,            "/shipment/shipments.php"),
             AppPage::SALES_ORDER =>         new AppPage(AppPage::SALES_ORDER,         "Sales Orders",         null,                   Permission::VIEW_SALES_ORDER,         "/salesOrder/salesOrders.php"),
-            AppPage::PART =>                new AppPage(AppPage::PART,                "Parts",                null,                   Permission::VIEW_JOB,                 "/part/parts.php")
+            AppPage::PART =>                new AppPage(AppPage::PART,                "Parts",                null,                   Permission::VIEW_JOB,                 "/part/parts.php"),
+            AppPage::PLATING =>             new AppPage(AppPage::PLATING,             "Plating",              "inventory",            Permission::VIEW_PLATING_STATUS,      "/plating/shipments.php")
          );
       }
       

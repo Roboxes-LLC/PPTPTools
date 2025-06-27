@@ -15,7 +15,8 @@ class Role
    const PART_WASHER = 5;
    const SHIPPER     = 6;
    const INSPECTOR   = 7;
-   const LAST        = Role::INSPECTOR;
+   const PLATER      = 8;
+   const LAST        = Role::PLATER;
    
    public $roleId;
    
@@ -36,7 +37,8 @@ class Role
                   new Role(Role::LABORER,     "Laborer",     Permission::getBits(Permission::VIEW_PART_WEIGHT_LOG, Permission::EDIT_PART_WEIGHT_LOG),                                                                 AppPage::PART_WEIGHT),
                   new Role(Role::PART_WASHER, "Part Washer", Permission::getBits(Permission::VIEW_PART_WASHER_LOG, Permission::EDIT_PART_WASHER_LOG),                                                                 AppPage::PART_WASH),
                   new Role(Role::SHIPPER,     "Shipper",     Permission::getBits(Permission::VIEW_PART_WASHER_LOG, Permission::EDIT_PART_WASHER_LOG, Permission::VIEW_SHIPPING_CARD, Permission::EDIT_SHIPPING_CARD), AppPage::SHIPPING_CARD),
-                  new Role(Role::INSPECTOR,   "Inspector",   Permission::getBits(Permission::VIEW_PART_INSPECTION, Permission::VIEW_INSPECTION, Permission::EDIT_INSPECTION),                                         AppPage::INSPECTION)
+                  new Role(Role::INSPECTOR,   "Inspector",   Permission::getBits(Permission::VIEW_PART_INSPECTION, Permission::VIEW_INSPECTION, Permission::EDIT_INSPECTION),                                         AppPage::INSPECTION),
+                  new Role(Role::PLATER,      "Plater",      Permission::getBits(Permission::VIEW_PLATING_STATUS, Permission::EDIT_PLATING_STATUS),                                                                   AppPage::PLATING)
             );
       }
       

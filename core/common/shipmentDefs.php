@@ -58,4 +58,40 @@ abstract class ShipmentLocation
    } 
 }
 
+abstract class PlatingStatus
+{
+   const UNKNOWN = 0;
+   const FIRST = 1;
+   const RAW = PlatingStatus::FIRST;
+   const PLATED = 2;
+   const STRIP_AND_REPLATE = 3;
+   const LAST = 4;
+   const COUNT = PlatingStatus::LAST - PlatingStatus::FIRST;
+   
+   public static $values = array(PlatingStatus::PLATED, PlatingStatus::PLATED, PlatingStatus::STRIP_AND_REPLATE);
+   
+   public static function getLabel($status)
+   {
+      $labels = array("", "Raw", "Plated", "Strip and Replate");
+      
+      return ($labels[$status]);
+   }
+   
+   public static function getOptions($selectedStatus)
+   {
+      $html = "<option style=\"display:none\">";
+      
+      foreach (PlatingStatus::$values as $status)
+      {
+         $label = PlatingStatus::getLabel($status);
+         $value = $status;
+         $selected = ($status == $selectedStatus) ? "selected" : "";
+         
+         $html .= "<option value=\"$value\" $selected>$label</option>";
+      }
+      
+      return ($html);
+   }
+}
+
 ?>

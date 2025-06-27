@@ -123,7 +123,7 @@ class Shipment
             hozAlign:"left", 
             vertAlign:"middle"
          },
-         persistence:true,
+         persistence:false,
          // Columns
          columns:[
             {                           field:"shipmentId",           visible:false},
@@ -178,6 +178,25 @@ class Shipment
                   return (cell.getRow().getData().formattedShippedDate);
                }
             },
+            {
+               title:"Plating",
+               columns:[
+                  {title:"Status",      field:"platingStatusLabel"},
+                  {title:"Priority",    field:"priorityPlating", hozAlign:"center",
+                     formatter:function(cell, formatterParams, onRendered){
+                        let priorityPlating = cell.getValue();
+                        let location = cell.getRow().getData().location;
+                        let disabled = (location == ShipmentLocation.PLATER) ? "" : "disabled";
+                     
+                        return (`<input type=\"checkbox\" ${priorityPlating} ${disabled}>`);
+                     },
+                     formatterPrint:function(cell, formatterParams, onRendered){
+                        let priorityPlating = cell.getValue();  
+                        return (priorityPlating ? "YES" : "");
+                     }
+                  }
+               ]
+            },
             {title:"",                  field:"delete",              hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
@@ -208,6 +227,10 @@ class Shipment
          else if (cell.getColumn().getField() == "packingList")
          {
             e.stopPropagation();
+         }
+         else if (cell.getColumn().getField() == "priorityPlating")
+         {
+            //onTogglePriorityPlating(cell.getRow().getData().shipmentId);
          }
          else if (cell.getColumn().getField() == "delete")
          {

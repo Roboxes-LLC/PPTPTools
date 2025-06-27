@@ -22,6 +22,8 @@ class Shipment
    public $packingList;
    public $location;
    public $shippedDate;
+   public $platingStatus;
+   public $priorityPlating;
    
    public $inspection;
   
@@ -37,6 +39,8 @@ class Shipment
       $this->packingList = null;
       $this->location = ShipmentLocation::UNKNOWN;
       $this->shippedDate = null;
+      $this->platingStatus = PlatingStatus::UNKNOWN;
+      $this->priorityPlating = false;
       
       $this->inspection = null;
    }
@@ -54,7 +58,11 @@ class Shipment
       $this->packingListNumber = $row["packingListNumber"];
       $this->packingList = $row["packingList"];
       $this->location = intval($row["location"]);
-      $this->shippedDate = $row["shippedDate"];
+      $this->shippedDate = $row["shippedDate"] ?
+                              Time::fromMySqlDate($row["shippedDate"]) :
+                              null;
+      $this->platingStatus = intval($row["platingStatus"]);
+      $this->priorityPlating = filter_var($row["priorityPlating"], FILTER_VALIDATE_BOOLEAN);
    }
    
    // **************************************************************************

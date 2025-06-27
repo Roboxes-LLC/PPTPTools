@@ -69,6 +69,12 @@ class PartPage extends Page
                            $part->unitPrice = $params->getFloat("unitPrice");
                         }
                         
+                        // May not be set for users without VIEW_PRICES permissions.
+                        if ($params->keyExists("unitCost"))
+                        {
+                           $part->unitCost = $params->getFloat("unitCost");
+                        }
+                        
                         if (Part::save($part))
                         {
                            $this->result->success = true;
@@ -191,12 +197,15 @@ class PartPage extends Page
       if (Authentication::checkPermissions(Permission::VIEW_PRICES))
       {
          $part->formattedUnitPrice = "$".number_format($part->unitPrice, 4);
+         $part->formattedUnitCost = "$".number_format($part->unitCost, 4);
       }
       else
       {
          // Redact pricing information.
          $part->unitPrice = null;
          $part->formattedUnitPrice = null;
+         $part->unitCost = null;
+         $part->formattedUnitCost = null;
       }
    }
 }

@@ -53,7 +53,9 @@ class Permission
    const EDIT_SALES_ORDER         = 47;
    const DELETE_SALES_ORDER       = 48;
    const VIEW_PRICES              = 49;
-   const LAST                     = Permission::VIEW_PRICES;
+   const VIEW_PLATING_STATUS      = 50;
+   const EDIT_PLATING_STATUS      = 51;
+   const LAST                     = Permission::EDIT_PLATING_STATUS;
    
    const NO_PERMISSIONS = 0x0000000000000000;
    const ALL_PERMISSIONS = 0xFFFFFFFFFFFFFFFF;
@@ -117,7 +119,9 @@ class Permission
                   new Permission(Permission::VIEW_SALES_ORDER,         "View sales orders"),
                   new Permission(Permission::EDIT_SALES_ORDER,         "Edit sales orders"),
                   new Permission(Permission::DELETE_SALES_ORDER,       "Delete sales orders"),
-                  new Permission(Permission::VIEW_PRICES,              "View prices")
+                  new Permission(Permission::VIEW_PRICES,              "View prices"),
+                  new Permission(Permission::VIEW_PLATING_STATUS,      "View plating status"),
+                  new Permission(Permission::EDIT_PLATING_STATUS,      "Edit plating status")
             );
       }
       

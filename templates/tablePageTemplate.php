@@ -54,7 +54,7 @@ Required PHP variables:
         
          <br>
         
-         <button id="add-button" class="accent-button"><?php echo $newButtonLabel ?></button>
+         <button id="add-button" class="accent-button <?php echo ($newButtonLabel ? "" : "hidden") ?>"><?php echo $newButtonLabel ?></button>
 
          <br>
         

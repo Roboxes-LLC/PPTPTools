@@ -22,6 +22,7 @@ class Part
    public $customerId;
    public $sampleWeight;
    public $unitPrice;
+   public $unitCost;
    public $inspectionTemplateIds;
    public $customerPrint;
    
@@ -32,6 +33,7 @@ class Part
       $this->customerId = Customer::UNKNOWN_CUSTOMER_ID;
       $this->sampleWeight = Part::UNKNOWN_SAMPLE_WEIGHT;
       $this->unitPrice = 0.0;
+      $this->unitCost = 0.0;
       $this->inspectionTemplateIds = [];
       $this->customerPrint = null;
       
@@ -48,6 +50,7 @@ class Part
       $this->customerId = intval($row["customerId"]);
       $this->sampleWeight = floatval($row["sampleWeight"]);
       $this->unitPrice = floatval($row["unitPrice"]);
+      $this->unitCost = floatval($row["unitCost"]);
       $this->inspectionTemplateIds[InspectionType::FIRST_PART] = intval($row['firstPartTemplateId']);
       $this->inspectionTemplateIds[InspectionType::LINE] = intval($row['lineTemplateId']);
       $this->inspectionTemplateIds[InspectionType::QCP] = intval($row['qcpTemplateId']);

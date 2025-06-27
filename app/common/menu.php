@@ -116,6 +116,10 @@ $jsonMenu =
          "pageId": 22
       },
       {
+         "type":"menu-item",
+         "pageId": 25
+      },
+      {
          "type":"submenu",
          "menuId":"sales",
          "label":"Sales",

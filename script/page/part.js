@@ -113,6 +113,27 @@ class Part
                   return (cellValue);
                }
             },
+            {title:"Std. Cost",      field:"unitCost",
+               formatter:function(cell, formatterParams, onRendered) {
+                  let cellValue = cell.getValue();
+                  
+                  if (cellValue === null)
+                  {
+                     cellValue = "---";
+                  }
+                  else if (parseFloat(cellValue) == 0.0)
+                  {
+                     cellValue = null;
+                  }
+                  else
+                  {
+                     // Use provided formatted value.
+                     cellValue = cell.getRow().getData().formattedUnitCost;
+                  }
+                  
+                  return (cellValue);
+               }
+            },
             {title:"Customer Print",    field:"customerPrint",
                formatter:function(cell, formatterParams, onRendered){
                   var cellValue = cell.getValue();

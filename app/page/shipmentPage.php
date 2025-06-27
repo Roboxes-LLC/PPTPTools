@@ -117,7 +117,8 @@ class ShipmentPage extends Page
          
          case "fetch":
          {
-            if ($this->authenticate([Permission::VIEW_SHIPMENT]))
+            if (Authentication::checkPermissions(Permission::VIEW_SHIPMENT) ||
+                Authentication::checkPermissions(Permission::VIEW_PLATING_STATUS))
             {
                // Fetch single component.
                if (isset($params["shipmentId"]))
@@ -201,6 +202,10 @@ class ShipmentPage extends Page
                   }
                }
             }
+            else
+            {
+               $this->error("Authentication error");
+            }            
             break;
          }
             
@@ -336,6 +341,7 @@ class ShipmentPage extends Page
       $shipment->packingListNumber = $params->get("packingListNumber");
       $shipment->location = $params->getInt("location");
       $shipment->shippedDate = $params->get("shippedDate");
+      $shipment->platingStatus = $params->getInt("platingStatus");
       
       // New entries specify the jobNumber manually.
       if ($params->keyExists("jobNumber"))
@@ -353,6 +359,7 @@ class ShipmentPage extends Page
       $shipment->formattedDateTime = ($shipment->dateTime) ? Time::dateTimeObject($shipment->dateTime)->format("n/j/Y h:i A") : null;
       $shipment->packingListUrl = $shipment->packingList ? $PACKING_LISTS_DIR . $shipment->packingList : null;
       $shipment->formattedShippedDate = ($shipment->shippedDate) ? Time::dateTimeObject($shipment->shippedDate)->format("n/j/Y") : null;
+      $shipment->platingStatusLabel = PlatingStatus::getLabel($shipment->platingStatus);
       
       // Inspection status.
       $shipment->inspectionStatus = InspectionStatus::UNKNOWN;
