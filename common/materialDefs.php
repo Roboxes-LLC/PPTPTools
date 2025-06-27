@@ -52,21 +52,22 @@ abstract class MaterialShape
    const UNKNOWN = MaterialShape::FIRST;
    const ROUND = 1;
    const HEXAGONAL = 2;
-   const LAST = 3;
+   const SQUARE = 3;
+   const LAST = 4;
    const COUNT = MaterialShape::LAST - MaterialShape::FIRST;
    
-   public static $VALUES = array(MaterialShape::HEXAGONAL, MaterialShape::ROUND);
+   public static $VALUES = array(MaterialShape::HEXAGONAL, MaterialShape::ROUND, MaterialShape::SQUARE);
    
    public static function getLabel($materialShape)
    {
-      $labels = array("", "Round", "Hexagonal");
+      $labels = array("", "Round", "Hexagonal", "Square");
       
       return ($labels[$materialShape]);
    }
    
    public static function getAbbreviation($materialShape)
    {
-      $abbreviations = array("", "RD", "HEX");
+      $abbreviations = array("", "RD", "HEX", "SQ");
       
       return ($abbreviations[$materialShape]);
    }
