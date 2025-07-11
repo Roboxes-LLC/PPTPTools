@@ -7,16 +7,17 @@ abstract class ShipmentLocation
    const PPTP = ShipmentLocation::FIRST;
    const PLATER = 2;
    const CUSTOMER = 3;
-   const LAST = 4;
+   const VENDOR = 4;
+   const LAST = 5;
    const COUNT = ShipmentLocation::LAST - ShipmentLocation::FIRST;
    
-   public static $values = array(ShipmentLocation::PPTP, ShipmentLocation::PLATER, ShipmentLocation::CUSTOMER);
+   public static $values = array(ShipmentLocation::PPTP, ShipmentLocation::PLATER, ShipmentLocation::CUSTOMER, ShipmentLocation::VENDOR);
    
    public static $activeLocations = [ShipmentLocation::PPTP, ShipmentLocation::PLATER];
    
    public static function getLabel($location)
    {
-      $labels = array("", "Pittsburgh Precision", "Plater", "Customer");
+      $labels = array("", "Pittsburgh Precision", "Plater", "Customer", "Vendor");
       
       return ($labels[$location]);
    }
@@ -40,7 +41,7 @@ abstract class ShipmentLocation
    public static function getJavascript($enumName)
    {
       // Note: Keep synced with enum.
-      $varNames = array("UNKNOWN", "PPTP", "PLATER", "CUSTOMER");
+      $varNames = array("UNKNOWN", "PPTP", "PLATER", "CUSTOMER", "VENDOR");
       
       $html = "$enumName = {";
       

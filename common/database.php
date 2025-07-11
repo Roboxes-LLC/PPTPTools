@@ -1377,7 +1377,7 @@ class PPTPDatabase extends MySqlDatabase
             "(templateId, name, specification, dataType, dataUnits, ordering) " .
             "VALUES " .
             "('$templateId', '$inspectionProperty->name', '$inspectionProperty->specification', '$inspectionProperty->dataType', '$inspectionProperty->dataUnits', '$inspectionProperty->ordering');";
-
+            
             $result &= $this->query($query);
             
             if (!$result)

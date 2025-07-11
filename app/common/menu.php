@@ -141,6 +141,19 @@ $jsonMenu =
          ]
       },
       {
+         "type":"submenu",
+         "menuId":"iso",
+         "label":"ISO",
+         "icon":"diamond",
+         "permissions":50,
+         "menuItems": [
+            {
+               "type":"menu-item",
+               "pageId": 25
+            }
+         ]
+      },
+      {
          "type":"menu-item",
          "pageId": 21
       }

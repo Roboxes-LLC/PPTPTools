@@ -2,6 +2,7 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/core/common/router.php';
+require_once ROOT.'/app/page/correctiveActionPage.php';
 require_once ROOT.'/app/page/customerPage.php';
 require_once ROOT.'/app/page/jobPage.php';
 require_once ROOT.'/app/page/notificationPage.php';
@@ -19,6 +20,10 @@ session_start();
 
 $router = new Router();
 $router->setLogging(false);
+
+$router->add("correctiveAction", function($params) {
+   (new CorrectiveActionPage())->handleRequest($params);
+});
 
 $router->add("customer", function($params) {
    (new CustomerPage())->handleRequest($params);
