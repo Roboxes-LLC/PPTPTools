@@ -352,7 +352,8 @@ abstract class Specification
    const POP_UP_GAGE = 14;
    const THREADED_PLUG_GAGE = 15;
    const CHAMFER_GAGE = 16;
-   const LAST = 17;
+   const INDICATOR = 17;
+   const LAST = 18;
    const COUNT = Specification::LAST - Specification::FIRST;
    
    public static $values = [
@@ -363,6 +364,7 @@ abstract class Specification
       Specification::DEPTH_CALIPER,
       Specification::DEPTH_MICS,
       Specification::GAGE_PINS,
+      Specification::INDICATOR,
       Specification::MICS,
       Specification::OASIS,
       Specification::PIPE_PLUG,
@@ -391,7 +393,8 @@ abstract class Specification
       "Pipe Plug",
       "Pop Up Gage",
       "Threaded Plug Gage",
-      "Chamfer Gage"
+      "Chamfer Gage",
+      "Indicator"
    ];
    
    public static function getLabel($specification)

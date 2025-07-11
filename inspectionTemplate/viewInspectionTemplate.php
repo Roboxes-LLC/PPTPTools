@@ -487,11 +487,12 @@ if (!Authentication::isAuthenticated())
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
    <link rel="stylesheet" type="text/css" href="inspectionTemplate.css"/>
    
-   <script src="/common/common.js"></script>
-   <script src="/common/validate.js"></script>
+   <script src="/common/common.js<?php echo versionQuery();?>"></script>
+   <script src="/common/validate.js<?php echo versionQuery();?>"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script>
    <script src="/script/common/commonDefs.php<?php echo versionQuery();?>"></script>
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script>
-   <script src="inspectionTemplate.js"></script>
+   <script src="inspectionTemplate.js<?php echo versionQuery();?>"></script>
 
 </head>
 
