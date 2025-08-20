@@ -32,7 +32,10 @@ class Shipment
       
       this.setup();
       
-      this.onShipmentLocationChanged();
+      if (document.getElementById(Shipment.PageElements.SHIPMENT_LOCATION_INPUT) != null)
+      {
+         this.onShipmentLocationChanged();
+      }
    }
    
    setup()

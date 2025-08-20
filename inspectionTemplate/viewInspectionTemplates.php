@@ -93,6 +93,8 @@ if (!Authentication::isAuthenticated())
         
          <div id="download-link" class="download-link">Download CSV file</div>
          
+         <div id="print-link" class="download-link">Print</div>
+         
       </div> <!-- content -->
       
    </div> <!-- main -->
@@ -197,6 +199,7 @@ if (!Authentication::isAuthenticated())
       document.getElementById("inspection-type-filter").addEventListener("change", updateFilter);      
       document.getElementById("new-template-button").onclick = function(){location.href = 'viewInspectionTemplate.php';};
       document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};
+      document.getElementById("print-link").onclick = function(){table.print("active", true);};
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
    </script>
    

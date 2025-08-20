@@ -746,11 +746,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       document.getElementById("yesterday-button").onclick = filterYesterday;
       
       document.getElementById("download-daily-summary-link").onclick = function(){tables[DAILY_SUMMARY_TABLE].download("csv", "<?php echo getReportFilename(DailySummaryReportTable::DAILY_SUMMARY) ?>", {delimiter:","})};
-      document.getElementById("print-daily-summary-link").onclick = function(){tables[DAILY_SUMMARY_TABLE].print(false, true);};
+      document.getElementById("print-daily-summary-link").onclick = function(){tables[DAILY_SUMMARY_TABLE].print("active", true);};
       document.getElementById("download-operator-summary-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].download("csv", "<?php echo getReportFilename(DailySummaryReportTable::OPERATOR_SUMMARY) ?>", {delimiter:","})};
-      document.getElementById("print-operator-summary-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].print(false, true);};
+      document.getElementById("print-operator-summary-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].print("active", true);};
       document.getElementById("download-shop-summary-link").onclick = function(){tables[SHOP_SUMMARY_TABLE].download("csv", "<?php echo getReportFilename(DailySummaryReportTable::SHOP_SUMMARY) ?>", {delimiter:","})};
-      document.getElementById("print-shop-summary-link").onclick = function(){tables[SHOP_SUMMARY_TABLE].print(false, true);};
+      document.getElementById("print-shop-summary-link").onclick = function(){tables[SHOP_SUMMARY_TABLE].print("active", true);};
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       document.getElementById("menu-button").onclick = function(){document.getElementById("menu").classList.toggle('shown');};
