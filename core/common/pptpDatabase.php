@@ -1337,7 +1337,7 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare(
          "INSERT INTO correctiveaction " .
          "(occuranceDate, customerId, jobId, inspectionId, description, employee, batchSize, dimensionalDefectCount, platingDefectCount, otherDefectCount, disposition, rootCause, dmrNumber, initiator, location, shortTermCorrection, longTermCorrection, status) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
    
       $result = $statement->execute(
          [

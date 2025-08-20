@@ -35,10 +35,13 @@ class CorrectiveAction
       "COMMENT_BUTTON":         "comment-button",
       "DELETE_ATTACH_BUTTON":   "delete-quote-attachment-button",
       // Input fields
-      "QUOTE_ID_INPUT":         "quote-id-input",
-      "CUSTOMER_ID_INPUT":      "customer-id-input",
-      "CONTACT_ID_INPUT":       "contact-id-input",
-      "SUBMIT_ESTIMATE_INPUT":  "submit-estimate-input",
+      "JOB_ID_INPUT":           "job-id-input",
+      "JOB_NUMBER_INPUT":       "job-number-input",
+      "WC_NUMBER_INPUT":        "wc-number-input",
+      "PAN_TICKET_CODE_INPUT":  "pan-ticket-code-input",
+      "EMPLOYEE_NUMBER_INPUT":  "employee-number-input",
+      "OCCURANCE_DATE_INPUT":   "occurance-date-input",
+
       "IS_APPROVED_INPUT":      "is-approved-input",
       "IS_ACCEPTED_INPUT":      "is-accepted-input",
       "EMAIL_NOTES_INPUT":      "email-notes-input",
@@ -138,89 +141,26 @@ class CorrectiveAction
          button.addEventListener('click', function() {
             this.onDeleteAttachmentButton(attachmentId);
          }.bind(this));
-      }  
-          
-      if (document.getElementById(CorrectiveAction.PageElements.SAVE_ESTIMATE_BUTTON) != null)
+      }
+      
+      if (document.getElementById(CorrectiveAction.PageElements.PAN_TICKET_CODE_INPUT) != null)
       {
-         document.getElementById(CorrectiveAction.PageElements.SAVE_ESTIMATE_BUTTON).addEventListener('click', function() {
-            this.onSaveEstimateButton(false);  // Save, but don't submit.
+         document.getElementById(CorrectiveAction.PageElements.PAN_TICKET_CODE_INPUT).addEventListener('change', function() {
+            this.onPanTicketCodeChanged();
          }.bind(this));
       }
       
-      if (document.getElementById(CorrectiveAction.PageElements.SUBMIT_ESTIMATE_BUTTON) != null)
+      if (document.getElementById(CorrectiveAction.PageElements.JOB_NUMBER_INPUT) != null)
       {
-         document.getElementById(CorrectiveAction.PageElements.SUBMIT_ESTIMATE_BUTTON).addEventListener('click', function() {
-            this.onSaveEstimateButton(true);  // Save and submit.
+         document.getElementById(CorrectiveAction.PageElements.JOB_NUMBER_INPUT).addEventListener('change', function() {
+            this.onJobNumberChanged();
          }.bind(this));
       }
       
-      if (document.getElementById(CorrectiveAction.PageElements.REVISE_BUTTON) != null)
+      if (document.getElementById(CorrectiveAction.PageElements.WC_NUMBER_INPUT) != null)
       {
-         document.getElementById(CorrectiveAction.PageElements.REVISE_BUTTON).addEventListener('click', function() {
-            this.onSaveEstimateButton(true);  // Save and re-submit.
-         }.bind(this));
-      }
-            
-      if (document.getElementById(CorrectiveAction.PageElements.APPROVE_BUTTON) != null)
-      {
-         document.getElementById(CorrectiveAction.PageElements.APPROVE_BUTTON).addEventListener('click', function() {
-            this.onApproveButton();
-         }.bind(this));
-      }
-      
-      if (document.getElementById(CorrectiveAction.PageElements.UNAPPROVE_BUTTON) != null)
-      {
-         document.getElementById(CorrectiveAction.PageElements.UNAPPROVE_BUTTON).addEventListener('click', function() {
-            this.onUnapproveButton();
-         }.bind(this));
-      }
-      
-      if (document.getElementById(CorrectiveAction.PageElements.PREVIEW_BUTTON) != null)
-      {
-         document.getElementById(CorrectiveAction.PageElements.PREVIEW_BUTTON).addEventListener('click', function() {
-            this.onPreviewButton();
-         }.bind(this));
-      }
-      
-      if (document.getElementById(CorrectiveAction.PageElements.SAVE_DRAFT_BUTTON) != null)
-      {
-         document.getElementById(CorrectiveAction.PageElements.SAVE_DRAFT_BUTTON).addEventListener('click', function() {
-            this.onSaveDraftButton();
-         }.bind(this));
-      }
-      
-      if (document.getElementById(CorrectiveAction.PageElements.SEND_BUTTON) != null)
-      {
-         document.getElementById(CorrectiveAction.PageElements.SEND_BUTTON).addEventListener('click', function() {
-            this.onSendButton();
-         }.bind(this));
-      }
-      
-      if (document.getElementById(CorrectiveAction.PageElements.RESEND_BUTTON) != null)
-      {
-         document.getElementById(CorrectiveAction.PageElements.RESEND_BUTTON).addEventListener('click', function() {
-            this.onSendButton();
-         }.bind(this));
-      }
-      
-      if (document.getElementById(CorrectiveAction.PageElements.ACCEPT_BUTTON) != null)
-      {
-         document.getElementById(CorrectiveAction.PageElements.ACCEPT_BUTTON).addEventListener('click', function() {
-            this.onAcceptButton();
-         }.bind(this));
-      }
-      
-      if (document.getElementById(CorrectiveAction.PageElements.REJECT_BUTTON) != null)
-      {
-         document.getElementById(CorrectiveAction.PageElements.REJECT_BUTTON).addEventListener('click', function() {
-            this.onRejectButton();
-         }.bind(this));
-      }
-      
-      if (document.getElementById(CorrectiveAction.PageElements.COMMENT_BUTTON) != null)
-      {
-         document.getElementById(CorrectiveAction.PageElements.COMMENT_BUTTON).addEventListener('click', function() {
-            this.onCommentButton();
+         document.getElementById(CorrectiveAction.PageElements.WC_NUMBER_INPUT).addEventListener('change', function() {
+            this.onWcNumberChanged();
          }.bind(this));
       }
       
@@ -350,18 +290,18 @@ class CorrectiveAction
       });
       
       this.table.on("cellClick", function(e, cell) {
-         let quoteId = parseInt(cell.getRow().getData().quoteId);
+         let correctiveActionId = parseInt(cell.getRow().getData().correctiveActionId);
          
          if (cell.getColumn().getField() == "delete")
          {
-            this.onDeleteButton(quoteId);
+            this.onDeleteButton(correctiveActionId);
             e.stopPropagation();
+
          }
-      }.bind(this));
-      
-      this.table.on("rowClick", function(e, row) {
-         var quoteId = row.getData().correctiveActionId;
-         document.location = `/correctiveAction/correctiveAction.php?correctiveActionId=${correctiveActionId}`;
+         else
+         {
+            document.location = `/correctiveAction/correctiveAction.php?correctiveActionId=${correctiveActionId}`;
+         }
       }.bind(this));
    }
    
@@ -439,29 +379,194 @@ class CorrectiveAction
    
    onAddButton()
    {
-      document.location = `/quote/newCorrectiveAction.php`;
+      document.location = `/correctiveAction/newCorrectiveAction.php`;
    }
    
-   onDeleteButton(quoteId)
+   onDeleteButton(correctiveActionId)
    {
-      if (confirm("Are you sure you want to delete this quote?"))
+      if (confirm("Are you sure you want to delete this CAR?"))
       {
          // AJAX call to delete the component.
-         let requestUrl = `/app/page/quote/?request=delete_quote&quoteId=${quoteId}`;
+         let requestUrl = `/app/page/correctiveAction/?request=delete_corrective_action&correctiveActionId=${correctiveActionId}`;
          
          ajaxRequest(requestUrl, function(response) {
             if (response.success == true)
             {
-               location.href = "/quote/quotes.php";
+               location.href = "/correctiveAction/correctiveActions.php";
             }
             else
             {
-               console.log("Call to delete the quote failed.");
+               console.log("Call to delete the CAR failed.");
                alert(response.error);
             }
          });
       }
    }
+   
+   onPanTicketCodeChanged()
+   {
+      var panTicketCode = document.getElementById(CorrectiveAction.PageElements.PAN_TICKET_CODE_INPUT).value;
+      
+      // Clear fields.
+      clear(CorrectiveAction.PageElements.JOB_NUMBER_INPUT);
+      clear(CorrectiveAction.PageElements.WC_NUMBER_INPUT);
+      clear(CorrectiveAction.PageElements.EMPLOYEE_NUMBER_INPUT);
+      clear(CorrectiveAction.PageElements.OCCURANCE_DATE_INPUT);
+      
+      if (panTicketCode == "")
+      {
+         // Enable fields.
+         enable(CorrectiveAction.PageElements.JOB_NUMBER_INPUT);
+         enable(CorrectiveAction.PageElements.WC_NUMBER_INPUT);
+         
+         // Disable WC number, as it's dependent on the job number.
+         disable(CorrectiveAction.PageElements.WC_NUMBER_INPUT);
+         
+         // AJAX call to retrieve active jobs.
+         requestUrl = "../api/jobs/?onlyActive=true";
+         
+         ajaxRequest("../api/jobs/?onlyActive=true", function(response) {
+            if (response.success == true)
+            {
+               this.updateJobOptions(response.jobs);  
+            }
+            else
+            {
+               console.log("API call to retrieve jobs failed.");
+            }
+         }.bind(this)); 
+      }
+      else
+      {
+         // Disable fields.
+         disable(CorrectiveAction.PageElements.JOB_NUMBER_INPUT);
+         disable(CorrectiveAction.PageElements.WC_NUMBER_INPUT);
+         
+         // AJAX call to populate input fields based on pan ticket selection.
+         requestUrl = "../api/timeCardInfo/?panTicketCode=" + panTicketCode + "&expandedProperties=true";
+         
+         ajaxRequest(requestUrl, function(response) {
+            if (response.success == true)
+            {
+               let manufactureDate = formatInputDate(new Date(response.timeCardInfo.dateTime));
+               
+               this.updateJobOptions(new Array(response.jobNumber));
+               this.updateWcOptions(new Array({wcNumber:response.wcNumber, label:response.wcLabel}));
+   
+               set(CorrectiveAction.PageElements.JOB_ID_INPUT, response.timeCardInfo.jobId);
+               console.log("Set job id: " + response.timeCardInfo.jobId);
+               set(CorrectiveAction.PageElements.JOB_NUMBER_INPUT, response.jobNumber);
+               set(CorrectiveAction.PageElements.WC_NUMBER_INPUT, response.wcNumber);
+               set(CorrectiveAction.PageElements.WC_NUMBER_INPUT, response.wcNumber);
+               set(CorrectiveAction.PageElements.EMPLOYEE_NUMBER_INPUT, response.timeCardInfo.employeeNumber);
+               set(CorrectiveAction.PageElements.OCCURANCE_DATE_INPUT, manufactureDate);               
+            }
+            else
+            {
+               console.log("API call to retrieve time card info failed.");
+            }
+         }.bind(this));
+      }
+   }
+   
+   onJobNumberChanged()
+   {
+      let jobNumber = document.getElementById(CorrectiveAction.PageElements.JOB_NUMBER_INPUT).value;
+      
+      if (jobNumber == null)
+      {
+         disable("wc-number-input");
+      }
+      else
+      {
+         enable("wc-number-input");
+         
+         // Populate WC numbers based on selected job number.
+         
+         requestUrl = "../api/wcNumbers/?jobNumber=" + jobNumber;
+         
+         ajaxRequest(requestUrl, function(response) {
+            if (response.success == true)
+            {
+               this.updateWcOptions(response.wcNumbers);   
+            }
+            else
+            {
+               console.log("API call to retrieve WC numbers failed.");
+            }
+         }.bind(this));
+      }
+   }
+   
+   onWcNumberChanged()
+   {
+      let jobNumber = document.getElementById(CorrectiveAction.PageElements.JOB_NUMBER_INPUT).value;
+      let wcNumber = document.getElementById(CorrectiveAction.PageElements.WC_NUMBER_INPUT).value;
+      
+      if ((jobNumber != null) &&
+          (wcNumber != null))
+      {
+         // Fetech job id.
+         
+         requestUrl = `/app/page/job/?request=fetch&jobNumber=${jobNumber}&wcNumber=${wcNumber}`;
+         
+         ajaxRequest(requestUrl, function(response) {
+            if (response.success == true)
+            {
+               set(CorrectiveAction.PageElements.JOB_ID_INPUT, response.jobInfo.jobId);
+               console.log("Set job id: " + response.jobInfo.jobId);
+            }
+            else
+            {
+               console.log("API call to retrieve job failed.");
+            }
+         }.bind(this));
+      }
+   }
+   
+   // **************************************************************************
+   
+   updateJobOptions(jobNumbers)
+   {
+      let element = document.getElementById(CorrectiveAction.PageElements.JOB_NUMBER_INPUT);
+      
+      while (element.firstChild)
+      {
+         element.removeChild(element.firstChild);
+      }
+   
+      for (var jobNumber of jobNumbers)
+      {
+         var option = document.createElement('option');
+         option.innerHTML = jobNumber;
+         option.value = jobNumber;
+         element.appendChild(option);
+      }
+      
+      element.value = null;
+   }
+   
+   updateWcOptions(wcNumbers)
+   {
+      let element = document.getElementById("wc-number-input");
+      
+      while (element.firstChild)
+      {
+         element.removeChild(element.firstChild);
+      }
+   
+      for (var wcNumber of wcNumbers)
+      {
+         let option = document.createElement('option');
+         option.innerHTML = wcNumber.label;
+         option.value = wcNumber.wcNumber;
+         element.appendChild(option);
+      }
+      
+      element.value = null;
+   }
+   
+   // ********************************************************************
    
    onPreviewButton()
    {
@@ -492,10 +597,10 @@ class CorrectiveAction
    {
       if (this.validateForm())
       {
-         submitForm(CorrectiveAction.PageElements.INPUT_FORM, "/app/page/quote", function (response) {
+         submitForm(CorrectiveAction.PageElements.INPUT_FORM, "/app/page/correctiveAction", function (response) {
             if (response.success == true)
             {
-               location.href = `/quote/CorrectiveAction.php?quoteId=${response.quoteId}`;
+               location.href = `/correctiveAction/correctiveAction.php?correctiveActionId=${response.correctiveActionId}`;
             }
             else
             {
@@ -507,7 +612,7 @@ class CorrectiveAction
    
    onCancelButton()
    {
-      document.location = `/quote/quotes.php`;
+      document.location = `/correctiveAction/correctiveActions.php`;
    }
    
    onUpdateButton()

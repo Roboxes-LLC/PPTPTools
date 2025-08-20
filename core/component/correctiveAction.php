@@ -93,8 +93,7 @@ class CorrectiveAction
       $this->jobId = intval($row["jobId"]);
       $this->inspectionId = intval($row["inspectionId"]);
       $this->inspectionId = intval($row["inspectionId"]);
-      $this->shipmentId = intval($row["shipmentId"]);
-      $this->description = $row["shipmentId"];
+      $this->description = $row["description"];
       $this->employee = intval($row["employee"]);
       $this->batchSize = intval($row["batchSize"]);
       $this->dimensionalDefectCount = intval($row["dimensionalDefectCount"]);
@@ -145,6 +144,8 @@ class CorrectiveAction
       if ($correctiveAction->correctiveActionId == CorrectiveAction::UNKNOWN_CA_ID)
       {
          $success = PPTPDatabaseAlt::getInstance()->addCorrectiveAction($correctiveAction);
+         
+         $correctiveAction->correctiveActionId = intval(PPTPDatabaseAlt::getInstance()->lastInsertId());
       }
       else
       {
@@ -207,5 +208,10 @@ class CorrectiveAction
       return ($this->dimensionalDefectCount +
               $this->platingDefectCount +
               $this->otherDefectCount);
+   }
+   
+   public function create()
+   {
+      // TODO: 
    }
 }

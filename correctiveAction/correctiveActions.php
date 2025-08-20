@@ -39,13 +39,13 @@ $versionQuery = versionQuery();
 $javascriptFile = "correctiveAction.js";
 $javascriptClass = "CorrectiveAction";
 $appPageId = AppPage::CORRECTIVE_ACTION;
-$heading = "Corrective Actions";
+$heading = "Corrective Action Requests";
 $description = "Nom nom nom";
 $filterTemplate = "correctiveActionFilter.php";
 $filterActiveActions = filter_var(Session::getVar(Session::CA_ACTIVE_ACTIONS), FILTER_VALIDATE_BOOLEAN);
 $filterStartDate = getFilterDate(Session::CA_START_DATE);
 $filterEndDate = getFilterDate(Session::CA_END_DATE);
-$newButtonLabel = "Add CA";
+$newButtonLabel = "Add CAR";
 $reportFileName = "correctiveActions.csv";
 
 include ROOT.'/templates/tablePageTemplate.php'

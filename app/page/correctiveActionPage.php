@@ -12,43 +12,47 @@ class CorrectiveActionPage extends Page
        {
           case "save_corrective_action":
           {
-             /*
-             if (Page::requireParams($params, ["contactId", "firstName", "lastName", "customerId", "email", "phone"]))
+             if (Page::requireParams($params, ["correctiveActionId", "jobId", "employeeNumber", "occuranceDate", "description"]))
              {
-                $contactId = $params->getInt("contactId");
-                $newContact = ($contactId == Contact::UNKNOWN_CONTACT_ID);
-                
-                $contact = null;
-                if ($newContact)
+                $correctiveActionId = $params->getInt("correctiveActionId");
+                $newCorrectiveAction = ($correctiveActionId == CorrectiveAction::UNKNOWN_CA_ID);
+
+                $correctiveAction = null;
+                if ($newCorrectiveAction)
                 {
-                   $contact = new Contact();
+                   $correctiveAction = new CorrectiveAction();
                 }
                 else
                 {
-                   $contact = Contact::load($contactId);
+                   $correctiveAction = CorrectiveAction::load($correctiveActionId);
                    
-                   if (!$contact)
+                   if (!$correctiveAction)
                    {
-                      $contact = null;
-                      $this->error("Invalid contact id [$contactId]");
+                      $correctiveAction = null;
+                      $this->error("Invalid corrective action id [$correctiveActionId]");
                    }
                 }
                 
-                if ($contact)
+                if ($correctiveAction)
                 {
-                   CustomerPage::getContactParams($contact, $params);
+                   CorrectiveActionPage::getCorrectiveActionParams($correctiveAction, $params);
                    
-                   if (Contact::save($contact))
+                   if (CorrectiveAction::save($correctiveAction))
                    {
-                      $this->result->contactId = $contact->contactId;
-                      $this->result->contact = $contact;
+                      $this->result->correctiveActionId = $correctiveAction->correctiveActionId;
+                      $this->result->correctiveAction = $correctiveAction;
                       $this->result->success = true;
+                      
+                      if ($newCorrectiveAction)
+                      {
+                         $correctiveAction->create(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                      }
                       
                       ActivityLog::logComponentActivity(
                          Authentication::getAuthenticatedUser()->employeeNumber,
-                         ($newContact ? ActivityType::ADD_CONTACT : ActivityType::EDIT_CONTACT),
-                         $contact->contactId,
-                         $contact->getFullName());
+                         ($newCorrectiveAction ? ActivityType::ADD_CORRECTIVE_ACTION : ActivityType::EDIT_CORRECTIVE_ACTION),
+                         $correctiveAction->correctiveActionId,
+                         $correctiveAction->getCorrectiveActionNumber());
                    }
                    else
                    {
@@ -56,7 +60,6 @@ class CorrectiveActionPage extends Page
                    }
                 }
              }
-             */
              break;
           }
           
@@ -77,13 +80,11 @@ class CorrectiveActionPage extends Page
                       $this->result->correctiveActionId = $correctiveActionId;
                       $this->result->success = true;
                       
-                      /*
                       ActivityLog::logComponentActivity(
                          Authentication::getAuthenticatedUser()->employeeNumber,
-                         ActivityType::DELETE_CONTACT,
-                         $contact->contactId,
-                         $contact->getFullName());
-                      */
+                         ActivityType::DELETE_CORRECTIVE_ACTION,
+                         $correctiveAction->correctiveActionId,
+                         $correctiveAction->getCorrectiveActionNumber());
                    }
                    else
                    {
@@ -173,6 +174,10 @@ class CorrectiveActionPage extends Page
     
     private function getCorrectiveActionParams(&$correctiveAction, $params)
     {
+       $correctiveAction->jobId = $params->getInt("jobId");
+       $correctiveAction->employee = $params->getInt("employeeNumber");
+       $correctiveAction->occuranceDate = $params->get("occuranceDate");
+       $correctiveAction->description = $params->get("description");
     }
     
     private static function augmentCorrectiveAction(&$correctiveAction)
@@ -182,25 +187,23 @@ class CorrectiveActionPage extends Page
        $correctiveAction->formattedOccuranceDate = $correctiveAction->occuranceDate ? Time::dateTimeObject($correctiveAction->occuranceDate)->format("n/j/Y") : "";
        
        // customerName
-       $customer = Customer::load($correctiveAction->customerId);
+       $customer = JobManager::getCustomer($correctiveAction->jobId);
        if ($customer)
        {
           $correctiveAction->customerName = $customer->customerName;
+          $correctiveAction->customerName = $customer->customerName;
        }
        
-       if ($correctiveAction->inspectionId != Inspection::UNKNOWN_INSPECTION_ID)
+       // pptpPartNumber, customerPartNumber
+       $job = JobInfo::load($correctiveAction->jobId);
+       if ($job)
        {
-          $inspection = Inspection::load($correctiveAction->inspectionId, false);  // Don't load inspection results.
-          if ($inspection)
+          $pptpPartNumber = JobInfo::getJobPrefix($job->jobNumber);
+          $part = Part::load($pptpPartNumber, false);  // Use PPTP number.
+          if ($part)
           {
-             // Part
-             $pptpPartNumber = JobInfo::getJobPrefix($inspection->jobNumber);
-             $part = Part::load($pptpPartNumber, false);  // Use PPTP number.
-             if ($part)
-             {
-                $correctiveAction->pptpPartNumber = $part->pptpNumber;
-                $correctiveAction->customerPartNumber = $part->customerNumber;
-             }
+             $correctiveAction->pptpPartNumber = $part->pptpNumber;
+             $correctiveAction->customerPartNumber = $part->customerNumber;
           }
        }
        

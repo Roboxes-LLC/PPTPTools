@@ -222,6 +222,18 @@ function formatDate(date)
    return (formattedDate);
 }
 
+function formatInputDate(date)
+{
+   // Convert to Y-M-D format, per HTML5 Date control.
+   // https://stackoverflow.com/questions/12346381/set-date-in-input-type-date
+   var day = ("0" + date.getDate()).slice(-2);
+   var month = ("0" + (date.getMonth() + 1)).slice(-2);
+   
+   var formattedDate = date.getFullYear() + "-" + (month) + "-" + (day);
+
+   return (formattedDate);
+}
+
 function formatToTwoDigits(value)
 {
    return (("0" + value).slice(-2));

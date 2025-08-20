@@ -34,8 +34,12 @@ abstract class ActivityType
    const ANNOTATE_QUOTE = 26;
    const ADD_QUOTE_ATTACHMENT = 27;
    const DELETE_QUOTE_ATTACHMENT = 28;
+   // Corrective Action
+   const ADD_CORRECTIVE_ACTION = 29;
+   const EDIT_CORRECTIVE_ACTION = 30;
+   const DELETE_CORRECTIVE_ACTION = 31;
    //
-   const LAST = 29;
+   const LAST = 32;
    const COUNT = ActivityType::LAST - ActivityType::FIRST;
    
    public static $quoteActivites = 
@@ -52,6 +56,13 @@ abstract class ActivityType
          ActivityType::REVISE_QUOTE,
          ActivityType::PASS_QUOTE,
          ActivityType::ANNOTATE_QUOTE,
+      );
+      
+   public static $correctiveActionActivites =
+      array(
+         ActivityType::ADD_CORRECTIVE_ACTION,
+         ActivityType::EDIT_CORRECTIVE_ACTION,
+         ActivityType::DELETE_CORRECTIVE_ACTION
       );
       
    public static $activitiesWithNotes =
@@ -90,7 +101,10 @@ abstract class ActivityType
             "Revise Quote",
             "Pass On Quote",
             "Add Attachment",
-            "Remove Attachment"
+            "Remove Attachment",
+            "Add Corrective Action Request",
+            "Edit Corrective Action Request",
+            "Delete Corrective Action Request",
          );
       
       return ($labels[$activityType]);

@@ -24,6 +24,8 @@ class Role
    public $defaultPermissions;
    
    public $defaultAppPage;
+   
+   public static $allRoles = [Role::SUPER_USER, Role::ADMIN, Role::OPERATOR, Role::LABORER, Role::PART_WASHER, Role::SHIPPER, Role::INSPECTOR];
       
    public static function getRoles()
    {
