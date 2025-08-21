@@ -64,6 +64,8 @@ Required PHP variables:
         
          <div id="download-link" class="download-link">Download CSV file</div>
          
+         <div id="print-link" class="download-link">Print</div>
+         
       </div> <!-- content -->
       
    </div> <!-- main -->
@@ -78,7 +80,8 @@ Required PHP variables:
       PAGE.createTable("data-table");
 
       // Setup event handling on all DOM elements.
-      document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo $reportFileName ?>", {delimiter:"."})};
+      document.getElementById("download-link").onclick = function(){PAGE.table.download("csv", "<?php echo $reportFileName ?>", {delimiter:"."})};
+      document.getElementById("print-link").onclick = function(){PAGE.table.print("active", true);};
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
    </script>
    

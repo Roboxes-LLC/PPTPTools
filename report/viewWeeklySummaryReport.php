@@ -643,7 +643,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
       document.getElementById("today-button").onclick = filterToday;
       document.getElementById("yesterday-button").onclick = filterYesterday;
       document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};
-      document.getElementById("print-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].print(false, true);};
+      document.getElementById("print-link").onclick = function(){tables[OPERATOR_SUMMARY_TABLE].print("active", true);};
 
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       

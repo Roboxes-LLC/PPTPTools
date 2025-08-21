@@ -1372,12 +1372,15 @@ class PPTPDatabase extends MySqlDatabase
          
          foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
          {
+            // Note: Added to handle single quotes in descriptions.
+            $propertyName = mysqli_real_escape_string($this->getConnection(), $inspectionProperty->name);
+            
             $query =
             "INSERT INTO inspectionproperty " .
             "(templateId, name, specification, dataType, dataUnits, ordering) " .
             "VALUES " .
-            "('$templateId', '$inspectionProperty->name', '$inspectionProperty->specification', '$inspectionProperty->dataType', '$inspectionProperty->dataUnits', '$inspectionProperty->ordering');";
-            
+            "('$templateId', '$propertyName', '$inspectionProperty->specification', '$inspectionProperty->dataType', '$inspectionProperty->dataUnits', '$inspectionProperty->ordering');";
+
             $result &= $this->query($query);
             
             if (!$result)
@@ -1415,6 +1418,9 @@ class PPTPDatabase extends MySqlDatabase
          
          foreach ($inspectionTemplate->inspectionProperties as $inspectionProperty)
          {
+            // Note: Added to handle single quotes in descriptions.
+            $propertyName = mysqli_real_escape_string($this->getConnection(), $inspectionProperty->name);
+            
             if ($inspectionProperty->propertyId == InspectionProperty::UNKNOWN_PROPERTY_ID)
             {
                // New property.
@@ -1422,7 +1428,7 @@ class PPTPDatabase extends MySqlDatabase
                "INSERT INTO inspectionproperty " .
                "(templateId, name, specification, dataType, dataUnits, ordering) " .
                "VALUES " .
-               "('$inspectionTemplate->templateId', '$inspectionProperty->name', '$inspectionProperty->specification', '$inspectionProperty->dataType', '$inspectionProperty->dataUnits', '$inspectionProperty->ordering');";
+               "('$inspectionTemplate->templateId', '$propertyName', '$inspectionProperty->specification', '$inspectionProperty->dataType', '$inspectionProperty->dataUnits', '$inspectionProperty->ordering');";
 
                $result = $this->query($query);
             }
@@ -1433,7 +1439,7 @@ class PPTPDatabase extends MySqlDatabase
                // Updated property.
                $query =
                "UPDATE inspectionproperty " .
-               "SET name = '$inspectionProperty->name', specification = '$inspectionProperty->specification', dataType =  '$inspectionProperty->dataType', dataUnits = '$inspectionProperty->dataUnits', ordering = '$inspectionProperty->ordering' " .
+               "SET name = '$propertyName', specification = '$inspectionProperty->specification', dataType =  '$inspectionProperty->dataType', dataUnits = '$inspectionProperty->dataUnits', ordering = '$inspectionProperty->ordering' " .
                "WHERE propertyId = '$inspectionProperty->propertyId';";
 
                $result = $this->query($query);
