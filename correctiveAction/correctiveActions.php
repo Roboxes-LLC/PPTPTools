@@ -47,6 +47,10 @@ $filterStartDate = getFilterDate(Session::CA_START_DATE);
 $filterEndDate = getFilterDate(Session::CA_END_DATE);
 $newButtonLabel = "Add CAR";
 $reportFileName = "correctiveActions.csv";
+$customCss = 
+<<<HEREDOC
+   <link rel="stylesheet" type="text/css" href="/css/correctiveAction.css{$versionQuery}"/>";
+HEREDOC;
 
 include ROOT.'/templates/tablePageTemplate.php'
       

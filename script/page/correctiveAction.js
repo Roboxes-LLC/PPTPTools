@@ -6,10 +6,8 @@ class CorrectiveAction
       "INPUT_FORM":             "input-form",
       "REQUEST_FORM":           "request-form",
       "ATTACHMENTS_FORM":       "attachments-form",
-      "QUOTE_FORM":             "quote-form",
       "APPROVE_FORM":           "approve-form",
-      "ACCEPT_FORM":            "accept-form",
-      "SEND_FORM":              "send-form",
+      "REVIEW_FORM":            "review-form",
       "HISTORY_FORM":           "history-form",
       // Filters
       "START_DATE_INPUT":       "start-date-input",
@@ -20,46 +18,41 @@ class CorrectiveAction
       "SAVE_BUTTON":            "save-button",
       "CANCEL_BUTTON":          "cancel-button",
       "UPDATE_BUTTON":          "update-button",
+      "UPDATE_CORRECTION_BUTTON": "update-correction-button",
       "ATTACH_BUTTON":          "attach-button",
-      "SAVE_ESTIMATE_BUTTON":   "save-estimate-button",
-      "SUBMIT_ESTIMATE_BUTTON": "submit-estimate-button",
-      "REVISE_BUTTON":          "revise-button",
+      "COMMENT_BUTTON":         "comment-button",
       "APPROVE_BUTTON":         "approve-button",
       "UNAPPROVE_BUTTON":       "unapprove-button",
-      "PREVIEW_BUTTON":         "preview-button",
-      "SAVE_DRAFT_BUTTON":      "save-draft-button",
-      "SEND_BUTTON":            "send-button",
-      "RESEND_BUTTON":          "resend-button",
-      "ACCEPT_BUTTON":          "accept-button",
-      "REJECT_BUTTON":          "reject-button",
-      "COMMENT_BUTTON":         "comment-button",
-      "DELETE_ATTACH_BUTTON":   "delete-quote-attachment-button",
+      "COMPLETE_BUTTON":        "complete-button",
+      "CLOSE_BUTTON":           "close-button",
+      "REOPEN_BUTTON":          "reopen-button",
       // Input fields
+      "CORRECTIVE_ACTION_ID_INPUT": "corrective-action-id-input",
       "JOB_ID_INPUT":           "job-id-input",
       "JOB_NUMBER_INPUT":       "job-number-input",
       "WC_NUMBER_INPUT":        "wc-number-input",
       "PAN_TICKET_CODE_INPUT":  "pan-ticket-code-input",
       "EMPLOYEE_NUMBER_INPUT":  "employee-number-input",
       "OCCURANCE_DATE_INPUT":   "occurance-date-input",
-
+      "DIMENSIONAL_DEFECTS_INPUT": "dimensional-defects-input",
+      "PLATING_DEFECTS_INPUT":  "plating-defects-input",
+      "OTHER_DEFECTS_INPUT":    "other-defects-input",
+      "TOTAL_DEFECTS_INPUT":    "total-defects-input",
       "IS_APPROVED_INPUT":      "is-approved-input",
-      "IS_ACCEPTED_INPUT":      "is-accepted-input",
-      "EMAIL_NOTES_INPUT":      "email-notes-input",
       // Panels
       "REQUEST_PANEL":          "request-panel",
       "ATTACHMENTS_PANEL":      "attachments-panel",
-      "ESTIMATES_PANEL":        "estimates-panel",
+      "SHORT_TERM_CORRECTION_PANEL": "short-term-correction-panel",
+      "LONG_TERM_CORRECTION_PANEL":  "long-term-correction-panel",
       "APPROVE_PANEL":          "approve-panel",
-      "SEND_PANEL":             "send-panel",
-      "ACCEPT_PANEL":           "accept-panel",
+      "REVIEW_PANEL":           "review-panel",
       "HISTORY_PANEL":          "history-panel",
-      "PIN_CONFIRM_MODAL":      "pin-confirm-modal"
    };
 
    constructor()
    {      
       this.table = null;
-      this.quoteStatus = QuoteStatus.UNKNOWN;
+      this.status = CorrectiveActionStatus.UNKNOWN;
       
       this.setup();
    }
@@ -126,6 +119,42 @@ class CorrectiveAction
          }.bind(this));
       }
       
+      if (document.getElementById(CorrectiveAction.PageElements.APPROVE_BUTTON) != null)
+      {
+         document.getElementById(CorrectiveAction.PageElements.APPROVE_BUTTON).addEventListener('click', function() {
+            this.onApproveButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(CorrectiveAction.PageElements.UNAPPROVE_BUTTON) != null)
+      {
+         document.getElementById(CorrectiveAction.PageElements.UNAPPROVE_BUTTON).addEventListener('click', function() {
+            this.onUnapproveButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(CorrectiveAction.PageElements.COMPLETE_BUTTON) != null)
+      {
+         document.getElementById(CorrectiveAction.PageElements.COMPLETE_BUTTON).addEventListener('click', function() {
+            this.onCompleteButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(CorrectiveAction.PageElements.CLOSE_BUTTON) != null)
+      {
+         document.getElementById(CorrectiveAction.PageElements.CLOSE_BUTTON).addEventListener('click', function() {
+            this.onCloseButton();
+         }.bind(this));
+      }
+      
+      let buttons = document.getElementsByClassName(CorrectiveAction.PageElements.UPDATE_CORRECTION_BUTTON);
+      for (let button of buttons)
+      {
+         button.addEventListener('click', function(e) {
+            this.onUpdateCorrectionButton(e.target);
+         }.bind(this));
+      }
+      
       if (document.getElementById(CorrectiveAction.PageElements.ATTACH_BUTTON) != null)
       {
          document.getElementById(CorrectiveAction.PageElements.ATTACH_BUTTON).addEventListener('click', function() {
@@ -164,6 +193,34 @@ class CorrectiveAction
          }.bind(this));
       }
       
+      if (document.getElementById(CorrectiveAction.PageElements.DIMENSIONAL_DEFECTS_INPUT) != null)
+      {
+         document.getElementById(CorrectiveAction.PageElements.DIMENSIONAL_DEFECTS_INPUT).addEventListener('change', function() {
+            this.onDefectCountChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(CorrectiveAction.PageElements.PLATING_DEFECTS_INPUT) != null)
+      {
+         document.getElementById(CorrectiveAction.PageElements.PLATING_DEFECTS_INPUT).addEventListener('change', function() {
+            this.onDefectCountChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(CorrectiveAction.PageElements.OTHER_DEFECTS_INPUT) != null)
+      {
+         document.getElementById(CorrectiveAction.PageElements.OTHER_DEFECTS_INPUT).addEventListener('change', function() {
+            this.onDefectCountChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(CorrectiveAction.PageElements.COMMENT_BUTTON) != null)
+      {
+         document.getElementById(CorrectiveAction.PageElements.COMMENT_BUTTON).addEventListener('click', function() {
+            this.onCommentButton();
+         }.bind(this));
+      }
+      
       let deleteCommentIcons = document.getElementsByClassName("delete-comment-icon");
       for (let icon of deleteCommentIcons)
       {
@@ -189,50 +246,6 @@ class CorrectiveAction
             let panelId = event.target.closest(".collapsible-panel").id;
             this.togglePanel(panelId);
          }.bind(this));
-      }      
-      
-      // Estimate selection inputs
-      let inputs = document.getElementsByClassName("estimate-selection-input");
-      for (const element of inputs)
-      {
-         element.addEventListener('change', function() {
-            this.onEstimateSelected();
-         }.bind(this));
-      }
-      this.onEstimateSelected();
-      
-      // Estimate quantity inputs
-      inputs = document.getElementsByClassName("estimate-quantity-input");
-      for (const element of inputs)
-      {
-         element.addEventListener('change', function(event) {
-            CorrectiveAction.recalculateTotalCost(event.target);
-         });
-      }
-      
-      // Unit price inputs
-      inputs = document.getElementsByClassName("unit-price-input");
-      for (const element of inputs)
-      {
-         element.addEventListener('change', function(event) {
-            CorrectiveAction.recalculateTotalCost(event.target);
-         });
-      }
-      
-      // Unit price inputs
-      inputs = document.getElementsByClassName("additional-charge-input");
-      for (const element of inputs)
-      {
-         element.addEventListener('change', function(event) {
-            CorrectiveAction.recalculateTotalCost(event.target);
-         });
-      }
-      
-      // Total cost inputs
-      inputs = document.getElementsByClassName("total-cost-input");
-      for (const element of inputs)
-      {
-         CorrectiveAction.recalculateTotalCost(element);
       }
    }      
    
@@ -262,21 +275,25 @@ class CorrectiveAction
             hozAlign:"left", 
             vertAlign:"middle"
          },
-         persistence:true,
+         persistence:false,
          // Columns
          columns:[
             {                         field:"correctiveActionId",      visible:false},
-            {title:"CA #",            field:"correctiveActionNumber",  headerFilter:true},
-            {title:"Date",            field:"formattedOccuranceDate",  headerFilter:true},
+            {title:"CAR #",           field:"correctiveActionNumber",  headerFilter:true},
+            {title:"Status",          field:"statusLabel",             headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  let label = cell.getRow().getData().statusLabel;
+                  let cssClass = cell.getRow().getData().statusClass;
+                  return ("<div class=\"corrective-action-status " + cssClass + "\">" + label + "</div>");
+               }
+            },
+            {title:"Occurance Date",  field:"formattedOccuranceDate",  headerFilter:true},
             {title:"Customer",        field:"customerName",            headerFilter:true},
             {title:"Customer Part #", field:"customerPartNumber",      headerFilter:true},
             {title:"PPTP Part #",     field:"pptpPartNumber",          headerFilter:true},
             {title:"Location",        field:"locationLabel",           headerFilter:true},
             {title:"Initiated By",    field:"initiatorLabel",          headerFilter:true},
-            {title:"Batch Size",      field:"batchSize",               headerFilter:false},
-            {title:"Dim. Defects",    field:"dimensionalDefectCount",  headerFilter:false},
-            {title:"Plating Defects", field:"platingDefectCount",      headerFilter:false},
-            {title:"Other Defects",   field:"otherDefectCount",        headerFilter:false},
+            {title:"Total Defects",   field:"totalDefectCount",        headerFilter:false},
             {title:"DMR Number",      field:"dmrNumber",               headerFilter:true},
             {title:"",                field:"delete",                  hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
@@ -305,28 +322,11 @@ class CorrectiveAction
       }.bind(this));
    }
    
-   setQuoteStatus(quoteStatus)
+   setStatus(status)
    {
-      this.quoteStatus = quoteStatus;
+      this.status = status;
       
       this.updateControls();
-   }
-   
-   onEstimateSelected()
-   {
-      let inputs = document.getElementsByClassName("estimate-selection-input");
-      
-      for (const element of inputs)
-      {
-         if (element.checked)
-         {
-            element.closest(".estimate-table-column").classList.add("selected");
-         }
-         else
-         {
-            element.closest(".estimate-table-column").classList.remove("selected");
-         }
-      }
    }
    
    // **************************************************************************
@@ -524,6 +524,27 @@ class CorrectiveAction
       }
    }
    
+   onDefectCountChanged()
+   {
+      const inputs = [CorrectiveAction.PageElements.DIMENSIONAL_DEFECTS_INPUT,
+                      CorrectiveAction.PageElements.PLATING_DEFECTS_INPUT,
+                      CorrectiveAction.PageElements.OTHER_DEFECTS_INPUT];
+
+      let totalDefects = 0;
+      
+      for (const inputId of inputs)
+      {
+         let value = get(inputId);
+         
+         if (!isNaN(parseInt(value)))
+         {
+            totalDefects += parseInt(value);
+         }
+      }
+      
+      set(CorrectiveAction.PageElements.TOTAL_DEFECTS_INPUT, totalDefects);
+   }
+   
    // **************************************************************************
    
    updateJobOptions(jobNumbers)
@@ -568,31 +589,6 @@ class CorrectiveAction
    
    // ********************************************************************
    
-   onPreviewButton()
-   {
-      if (this.validateForm())
-      {
-         let form = document.getElementById(CorrectiveAction.PageElements.SEND_FORM);
-         
-         // Rememeber form properties.
-         let target = form.target;
-         let action = form.action;
-         let method = form.method;
-         
-         // Set target to open in new window.
-         form.target = "_blank";
-         form.action = "/quote/quotePreview.php";
-         form.method = "post";
-         
-         form.submit();
-         
-         // Restore form properties.
-         form.target = target;
-         form.action = action;
-         form.method = method;
-      }  
-   }
-
    onSaveButton()
    {
       if (this.validateForm())
@@ -619,10 +615,27 @@ class CorrectiveAction
    {
       if (this.validateRequestForm())
       {
-         submitForm(CorrectiveAction.PageElements.REQUEST_FORM, "/app/page/quote", function (response) {
+         submitForm(CorrectiveAction.PageElements.REQUEST_FORM, "/app/page/correctiveAction", function (response) {
             if (response.success == true)
             {
-               location.href = `/quote/CorrectiveAction.php?quoteId=${response.quoteId}`;
+               location.reload();
+            }
+            else
+            {
+               alert(response.error);
+            }
+         })
+      }      
+   }
+   
+   onUpdateCorrectionButton(button)
+   {
+      if (this.validateRequestForm())
+      {
+         submitForm(button.form.id, "/app/page/correctiveAction", function (response) {
+            if (response.success == true)
+            {
+               location.reload();
             }
             else
             {
@@ -636,10 +649,10 @@ class CorrectiveAction
    {
       if (this.validateRequestForm())
       {
-         submitForm(CorrectiveAction.PageElements.ATTACHMENTS_FORM, "/app/page/quote", function (response) {
+         submitForm(CorrectiveAction.PageElements.ATTACHMENTS_FORM, "/app/page/correctiveAction", function (response) {
             if (response.success == true)
             {
-               location.href = `/quote/CorrectiveAction.php?quoteId=${response.quoteId}`;
+               location.reload();
             }
             else
             {
@@ -652,7 +665,7 @@ class CorrectiveAction
    onDeleteAttachmentButton(attachmentId)
    {
       // AJAX call to delete the attachment.
-      let requestUrl = `/app/page/quote/?request=delete_attachment&attachmentId=${attachmentId}`;
+      let requestUrl = `/app/page/correctiveAction/?request=delete_attachment&attachmentId=${attachmentId}`;
       
       ajaxRequest(requestUrl, function(response) {
          if (response.success == true)
@@ -667,41 +680,45 @@ class CorrectiveAction
       });
    }
    
-   onSaveEstimateButton(submitEstimate)
+   onCommentButton()
    {
-      // Set a form variable to indicate if the estimate is being submitted for approval.
-      document.getElementById(CorrectiveAction.PageElements.SUBMIT_ESTIMATE_INPUT).value = submitEstimate;
-      
-      if (this.validateQuoteForm())
-      {
-         submitForm(CorrectiveAction.PageElements.QUOTE_FORM, "/app/page/quote", function (response) {
-            if (response.success == true)
-            {
-               if (submitEstimate)
-               {
-                  location.href = `/quote/CorrectiveAction.php?quoteId=${response.quoteId}`;
-               }
-               else
-               {
-                  alert("Estimate saved.");  
-               }
-            }
-            else
-            {
-               alert(response.error);
-            }
-         })
-      }      
+      submitForm(CorrectiveAction.PageElements.HISTORY_FORM, "/app/page/correctiveAction", function (response) {
+         if (response.success == true)
+         {
+            location.reload();
+         }
+         else
+         {
+            alert(response.error);
+         }
+      })
    }
    
+   onDeleteCommentButton(activityId)
+   {
+      // AJAX call to delete the component.
+      let requestUrl = `/app/page/correctiveAction/?request=delete_comment&activityId=${activityId}`;
+      
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            location.reload();
+         }
+         else
+         {
+            alert(response.error);
+         }
+      });
+   }
+     
    onApproveButton()
    {
       document.getElementById(CorrectiveAction.PageElements.IS_APPROVED_INPUT).value = "true";
       
-      submitForm(CorrectiveAction.PageElements.APPROVE_FORM, "/app/page/quote", function (response) {
+      submitForm(CorrectiveAction.PageElements.APPROVE_FORM, "/app/page/correctiveAction", function (response) {
          if (response.success == true)
          {
-            location.href = `/quote/CorrectiveAction.php?quoteId=${response.quoteId}`;
+            location.reload();
          }
          else
          {
@@ -714,10 +731,10 @@ class CorrectiveAction
    {
       document.getElementById(CorrectiveAction.PageElements.IS_APPROVED_INPUT).value = "false";
             
-      submitForm(CorrectiveAction.PageElements.APPROVE_FORM, "/app/page/quote", function (response) {
+      submitForm(CorrectiveAction.PageElements.APPROVE_FORM, "/app/page/correctiveAction", function (response) {
          if (response.success == true)
          {
-            location.href = `/quote/CorrectiveAction.php?quoteId=${response.quoteId}`;
+            location.reload();
          }
          else
          {
@@ -726,44 +743,30 @@ class CorrectiveAction
       })
    }
    
-   onSaveDraftButton()
+   onCompleteButton()
    {
-      let quoteId = document.getElementById(CorrectiveAction.PageElements.QUOTE_ID_INPUT).value;
-      let emailNotes = document.getElementById(CorrectiveAction.PageElements.EMAIL_NOTES_INPUT).value;
+      submitForm(CorrectiveAction.PageElements.REVIEW_FORM, "/app/page/correctiveAction", function (response) {
+         if (response.success == true)
+         {
+            location.reload();
+         }
+         else
+         {
+            alert(response.error);
+         }
+      })
+   }
+   
+   onCloseButton()
+   {
+      let correctiveActionId = parseInt(get(CorrectiveAction.PageElements.CORRECTIVE_ACTION_ID_INPUT));
       
-      // AJAX call to delete the component.
-      let requestUrl = `/app/page/quote/?request=save_email_draft&quoteId=${quoteId}&emailNotes=${emailNotes}`;
+      // AJAX call to compmlete the review.
+      let requestUrl = `/app/page/correctiveAction/?request=close_corrective_action&correctiveActionId=${correctiveActionId}`;
       
       ajaxRequest(requestUrl, function(response) {
          if (response.success == true)
          {
-            alert("Draft saved.");
-         }
-         else
-         {
-            console.log("Call to save the email draft.");
-            alert(response.error);
-         }
-      });
-   }
-   
-   onSendButton()
-   {
-      PINPAD.reset();
-      PINPAD.setErrorMessage("Enter employee # to send");
-      
-      showModal(CorrectiveAction.PageElements.PIN_CONFIRM_MODAL, "block");
-   }
-   
-   onPinConfirmed()
-   {
-      hideModal(CorrectiveAction.PageElements.PIN_CONFIRM_MODAL);
-            
-      submitForm(CorrectiveAction.PageElements.SEND_FORM, "/app/page/quote", function (response) {
-         if (response.success == true)
-         {
-            alert("Quote was sent."); 
-            
             location.reload();
          }
          else
@@ -773,44 +776,12 @@ class CorrectiveAction
       });
    }
    
-   onAcceptButton()
-   {
-      document.getElementById(CorrectiveAction.PageElements.IS_ACCEPTED_INPUT).value = "true";
-      
-      submitForm(CorrectiveAction.PageElements.ACCEPT_FORM, "/app/page/quote", function (response) {
-         if (response.success == true)
-         {
-            location.href = `/quote/CorrectiveAction.php?quoteId=${response.quoteId}`;
-         }
-         else
-         {
-            alert(response.error);
-         }
-      })
-   }
-   
-   onRejectButton()
-   {
-      document.getElementById(CorrectiveAction.PageElements.IS_ACCEPTED_INPUT).value = "false";
-            
-      submitForm(CorrectiveAction.PageElements.ACCEPT_FORM, "/app/page/quote", function (response) {
-         if (response.success == true)
-         {
-            location.href = `/quote/CorrectiveAction.php?quoteId=${response.quoteId}`;
-         }
-         else
-         {
-            alert(response.error);
-         }
-      })
-   }
-   
    onCommentButton()
    {
-      submitForm(CorrectiveAction.PageElements.HISTORY_FORM, "/app/page/quote", function (response) {
+      submitForm(CorrectiveAction.PageElements.HISTORY_FORM, "/app/page/correctiveAction", function (response) {
          if (response.success == true)
          {
-            location.href = `/quote/CorrectiveAction.php?quoteId=${response.quoteId}`;
+            location.reload();
          }
          else
          {
@@ -835,26 +806,6 @@ class CorrectiveAction
             alert(response.error);
          }
       });
-   }
-   
-   onCustomerChanged()
-   {
-      let customerId = document.getElementById(CorrectiveAction.PageElements.CUSTOMER_ID_INPUT).value;
-      
-      // AJAX call to delete the component.
-      let requestUrl = `/app/page/customer/?request=fetch_contact&customerId=${customerId}`;
-      
-      ajaxRequest(requestUrl, function(response) {
-         if (response.success == true)
-         {
-            console.log(response);
-            this.updateContactOptions(response.contacts);
-         }
-         else
-         {
-            console.log("Call to fetch contacts failed.");
-         }
-      }.bind(this));      
    }
    
    // **************************************************************************
@@ -907,26 +858,6 @@ class CorrectiveAction
       }
    }
    
-   updateContactOptions(contacts)
-   {
-      let element = document.getElementById(CorrectiveAction.PageElements.CONTACT_ID_INPUT);
-      
-      while (element.firstChild)
-      {
-         element.removeChild(element.firstChild);
-      }
-
-      for (let contact of contacts)
-      {
-         let option = document.createElement('option');
-         option.innerHTML = contact.firstName + " " + contact.lastName;
-         option.value = contact.contactId;
-         element.appendChild(option);
-      }
-   
-      element.value = null;
-   }
-   
    validateForm()
    {
       return (true);
@@ -937,102 +868,62 @@ class CorrectiveAction
       return (true);
    }
    
-   validateQuoteForm()
-   {
-      return (true);
-   }
-   
    // **************************************************************************
    
    updateControls()
    {
-      switch (this.quoteStatus)
+      switch (this.status)
       {
-         case QuoteStatus.REQUESTED:
+         case CorrectiveActionStatus.OPEN:
          {
-            this.hideElement(CorrectiveAction.PageElements.APPROVE_PANEL);
-            this.hideElement(CorrectiveAction.PageElements.SEND_PANEL);
-            this.hideElement(CorrectiveAction.PageElements.ACCEPT_PANEL);
-            
-            this.collapsePanel(CorrectiveAction.PageElements.ATTACHMENTS_PANEL);
-            
-            this.hideElement(CorrectiveAction.PageElements.REVISE_BUTTON);
+            this.hideElement(CorrectiveAction.PageElements.REVIEW_PANEL);
             break;
          }
          
-         case QuoteStatus.ESTIMATED:
-         case QuoteStatus.REVISED:
+         case CorrectiveActionStatus.APPROVED:
          {
-            this.hideElement(CorrectiveAction.PageElements.SEND_PANEL);
-            this.hideElement(CorrectiveAction.PageElements.ACCEPT_PANEL);
+            this.collapsePanel(CorrectiveAction.PageElements.REQUEST_PANEL);
+            this.collapsePanel(CorrectiveAction.PageElements.SHORT_TERM_CORRECTION_PANEL);
+            this.collapsePanel(CorrectiveAction.PageElements.LONG_TERM_CORRECTION_PANEL);
+            this.collapsePanel(CorrectiveAction.PageElements.APPROVE_PANEL);
             
-            this.collapsePanel(CorrectiveAction.PageElements.ATTACHMENTS_PANEL);
-            this.collapsePanel(CorrectiveAction.PageElements.ESTIMATES_PANEL);
-            
-            this.hideElement(CorrectiveAction.PageElements.SAVE_ESTIMATE_BUTTON);
-            this.hideElement(CorrectiveAction.PageElements.SUBMIT_ESTIMATE_BUTTON);
+            this.hideElement(CorrectiveAction.PageElements.APPROVE_BUTTON);
+            this.hideElement(CorrectiveAction.PageElements.CLOSE_BUTTON);
+            this.hideElement(CorrectiveAction.PageElements.REOPEN_BUTTON);
             break;
          }
          
-         case QuoteStatus.UNAPPROVED:
-         case QuoteStatus.REJECTED:
+         case CorrectiveActionStatus.REVIEWED:
          {
-            this.hideElement(CorrectiveAction.PageElements.APPROVE_PANEL);
-            this.hideElement(CorrectiveAction.PageElements.SEND_PANEL);
-            this.hideElement(CorrectiveAction.PageElements.ACCEPT_PANEL);
+            this.collapsePanel(CorrectiveAction.PageElements.REQUEST_PANEL);
+            this.collapsePanel(CorrectiveAction.PageElements.SHORT_TERM_CORRECTION_PANEL);
+            this.collapsePanel(CorrectiveAction.PageElements.LONG_TERM_CORRECTION_PANEL);
+            this.collapsePanel(CorrectiveAction.PageElements.APPROVE_PANEL);
             
-            this.collapsePanel(CorrectiveAction.PageElements.ATTACHMENTS_PANEL);
-            
-            this.hideElement(CorrectiveAction.PageElements.SUBMIT_ESTIMATE_BUTTON);
-            
-            this.accentButton(CorrectiveAction.PageElements.REVISE_BUTTON);
+            this.hideElement(CorrectiveAction.PageElements.APPROVE_BUTTON);
+            this.hideElement(CorrectiveAction.PageElements.COMPLETE_BUTTON);
+            this.hideElement(CorrectiveAction.PageElements.REOPEN_BUTTON);
             break;
          }
          
-         case QuoteStatus.APPROVED:
+         case CorrectiveActionStatus.CLOSED:
          {
-            this.hideElement(CorrectiveAction.PageElements.ACCEPT_PANEL);
-            
-            this.collapsePanel(CorrectiveAction.PageElements.ATTACHMENTS_PANEL);
-            this.collapsePanel(CorrectiveAction.PageElements.ESTIMATES_PANEL);
+            this.collapsePanel(CorrectiveAction.PageElements.REQUEST_PANEL);
+            this.collapsePanel(CorrectiveAction.PageElements.SHORT_TERM_CORRECTION_PANEL);
+            this.collapsePanel(CorrectiveAction.PageElements.LONG_TERM_CORRECTION_PANEL);
             this.collapsePanel(CorrectiveAction.PageElements.APPROVE_PANEL);
 
-            this.hideElement(CorrectiveAction.PageElements.SAVE_ESTIMATE_BUTTON);
-            this.hideElement(CorrectiveAction.PageElements.SUBMIT_ESTIMATE_BUTTON);
+            this.hideElement(CorrectiveAction.PageElements.UPDATE_BUTTON);
             this.hideElement(CorrectiveAction.PageElements.APPROVE_BUTTON);
-            this.hideElement(CorrectiveAction.PageElements.RESEND_BUTTON);
-            break;
-         }
-         
-         case QuoteStatus.SENT:
-         {
-            this.hideElement(CorrectiveAction.PageElements.APPROVE_PANEL);
+            this.hideElement(CorrectiveAction.PageElements.UNAPPROVE_BUTTON);
+            this.hideElement(CorrectiveAction.PageElements.COMPLETE_BUTTON);
+            this.hideElement(CorrectiveAction.PageElements.CLOSE_BUTTON);
             
-            this.collapsePanel(CorrectiveAction.PageElements.ATTACHMENTS_PANEL);
-            this.collapsePanel(CorrectiveAction.PageElements.ESTIMATES_PANEL);
-            this.collapsePanel(CorrectiveAction.PageElements.APPROVE_PANEL);
-            this.collapsePanel(CorrectiveAction.PageElements.SEND_PANEL);
-                        
-            this.hideElement(CorrectiveAction.PageElements.SAVE_ESTIMATE_BUTTON);
-            this.hideElement(CorrectiveAction.PageElements.SUBMIT_ESTIMATE_BUTTON);
-            this.hideElement(CorrectiveAction.PageElements.APPROVE_BUTTON);
-            this.hideElement(CorrectiveAction.PageElements.SEND_BUTTON);
-            break;
-         }
-         
-         case QuoteStatus.ACCEPTED:
-         {
-            this.collapsePanel(CorrectiveAction.PageElements.ATTACHMENTS_PANEL);
-            this.collapsePanel(CorrectiveAction.PageElements.ESTIMATES_PANEL);
-            this.collapsePanel(CorrectiveAction.PageElements.APPROVE_PANEL);
-            this.collapsePanel(CorrectiveAction.PageElements.SEND_PANEL);
-            this.collapsePanel(CorrectiveAction.PageElements.ACCEPT_PANEL);
-            
-            this.hideElement(CorrectiveAction.PageElements.SAVE_ESTIMATE_BUTTON);
-            this.hideElement(CorrectiveAction.PageElements.SUBMIT_ESTIMATE_BUTTON);
-            this.hideElement(CorrectiveAction.PageElements.APPROVE_BUTTON);
-            this.hideElement(CorrectiveAction.PageElements.SEND_BUTTON);
-            this.hideElement(CorrectiveAction.PageElements.ACCEPT_BUTTON);
+            let buttons = document.getElementsByClassName(CorrectiveAction.PageElements.UPDATE_CORRECTION_BUTTON);
+            for (let button of buttons)
+            {
+               this.hideElement(button.id);
+            }
             break;
          }
          
@@ -1042,7 +933,7 @@ class CorrectiveAction
          }
       }
    }
-   
+
    hideElement(panelId)
    {
       document.getElementById(panelId).classList.add("hidden");
@@ -1075,28 +966,5 @@ class CorrectiveAction
    accentButton(buttonId)
    {
       document.getElementById(buttonId).classList.add("accent-button");
-   }
-   
-   static recalculateTotalCost(element)
-   {
-      // Get the parent table column.
-      let parent = element;
-      while ((parent = parent.parentElement) && !parent.classList.contains("estimate-table-column"));
-      
-      if (parent != null)
-      {
-         // Retrieve compoenents.
-         let quantity = parseInt(parent.querySelector(".estimate-quantity-input").value);
-         let unitPrice = parseFloat(parent.querySelector(".unit-price-input").value);
-         let additionalCharge = parseFloat(parent.querySelector(".additional-charge-input").value);
-      
-         // Total cost calculation.
-         let totalCost = ((quantity * unitPrice) + additionalCharge);
-         totalCost = Math.round((totalCost + Number.EPSILON) * 100) / 100;
-         totalCost = totalCost.toFixed(2);
-         
-         // Set new value in input field.
-         parent.querySelector(".total-cost-input").value = totalCost;
-      }
    }
 }

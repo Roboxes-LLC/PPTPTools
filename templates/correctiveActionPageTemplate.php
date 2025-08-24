@@ -4,11 +4,11 @@ Required PHP variables:
    $javascriptFile
    $javascriptClass
    $appPageId
-   $newButtonLabel
-   $reportFileName
-   
-Optional PHP variables:
-   $customCss
+   $timeline
+   $historyPanel
+   $requestPanel
+   $attachmentsPanel
+   $status
  -->
 
 <html>
@@ -17,12 +17,13 @@ Optional PHP variables:
 
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-   <link rel="stylesheet" type="text/css" href="/thirdParty/tabulator/css/tabulator.min.css"/>
+   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined"/>
    
    <link rel="stylesheet" type="text/css" href="/common/theme.css<?php echo $versionQuery ?>"/>
    <link rel="stylesheet" type="text/css" href="/common/common.css<?php echo $versionQuery ?>"/>
-   <?php if (isset($customCss)) {echo $customCss;} ?>
+   <link rel="stylesheet" type="text/css" href="/css/correctiveAction.css<?php echo $versionQuery ?>"/>
+   <link rel="stylesheet" type="text/css" href="/css/modal.css<?php echo $versionQuery ?>"/>
+   <link rel="stylesheet" type="text/css" href="/css/pinPad.css<?php echo $versionQuery ?>"/>
    
    <script src="/thirdParty/tabulator/js/tabulator.min.js"></script>
    <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
@@ -30,7 +31,7 @@ Optional PHP variables:
    <script src="/common/common.js<?php echo $versionQuery ?>"></script>
    <script src="/script/common/common.js<?php echo $versionQuery ?>"></script>
    <script src="/script/common/commonDefs.php<?php echo $versionQuery ?>"></script>
-   <script src="/script/common/menu.js<?php echo $versionQuery ?>"></script>   
+   <script src="/script/common/menu.js<?php echo $versionQuery ?>"></script>
    <script src="/script/page/<?php echo $javascriptFile ?>"></script>
       
 </head>
@@ -51,29 +52,35 @@ Optional PHP variables:
          </div>
          
          <div id="description" class="description"><?php echo $description ?></div>
-
-         <br>
+            
+         <div><?php echo $timeline ?></div>
          
-         <?php if (isset($filterTemplate)) include $root."/templates/filter/$filterTemplate" ?>
-        
-         <br>
-        
-         <button id="add-button" class="accent-button"><?php echo $newButtonLabel ?></button>
+         <div class="flex-horizontal">
+            
+            <div class="flex-vertical">
+               <?php echo $requestPanel ?>
+               
+               <?php echo $shortTermCorrectionPanel ?>
+               
+               <?php echo $longTermCorrectionPanel ?>
+               
+               <?php echo $approvePanel ?>
+               
+               <?php echo $reviewPanel ?>
+            </div>
+            
+            <div class="flex-vertical flex-top flex-left">
+               <?php echo $historyPanel ?>
+               <br><br>
+               <?php echo $attachmentsPanel ?>
+            </div>
 
-         <br>
-        
-         <div id="data-table"></div>
-
-         <br> 
-        
-         <div id="download-link" class="download-link">Download CSV file</div>
-         
-         <div id="print-link" class="download-link">Print</div>
-         
+         </div>
+                  
       </div> <!-- content -->
       
    </div> <!-- main -->
-   
+     
    <script>
       preserveSession();
    
@@ -81,12 +88,14 @@ Optional PHP variables:
       menu.setMenuItemSelected(<?php echo $appPageId ?>);  
          
       var PAGE = new <?php echo $javascriptClass ?>();
-      PAGE.createTable("data-table");
+      PAGE.setStatus(<?php echo $status ?>);
 
       // Setup event handling on all DOM elements.
-      document.getElementById("download-link").onclick = function(){PAGE.table.download("csv", "<?php echo $reportFileName ?>", {delimiter:"."})};
-      document.getElementById("print-link").onclick = function(){PAGE.table.print("active", true);};
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
+
+      // Store the initial state of the form, for change detection.
+      //setInitialFormState(TODO);      
+      
    </script>
    
 </body>

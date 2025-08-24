@@ -89,12 +89,12 @@ function getForm()
 
          <div>
             <div class="form-item">
-               <div class="form-label">Date</div>
+               <div class="form-label">Occurance</div>
                <input id="occurance-date-input" type="date" class="form-input-medium" name="occuranceDate" value="$occuranceDate">
             </div>
 
             <div class="form-item">
-               <div class="form-label">Comments</div>
+               <div class="form-label">Description</div>
                <textarea id="description-input" class="description-input" type="text" name="description" rows="4" maxlength="256" style="width:300px"></textarea>
             </div>
          </div>

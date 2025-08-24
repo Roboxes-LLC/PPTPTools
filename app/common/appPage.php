@@ -108,7 +108,7 @@ class AppPage
             AppPage::SHIPMENT =>            new AppPage(AppPage::SHIPMENT,            "Parts Inventory",      "inventory",            Permission::VIEW_SHIPMENT,            "/shipment/shipments.php"),
             AppPage::SALES_ORDER =>         new AppPage(AppPage::SALES_ORDER,         "Sales Orders",         null,                   Permission::VIEW_SALES_ORDER,         "/salesOrder/salesOrders.php"),
             AppPage::PART =>                new AppPage(AppPage::PART,                "Parts",                null,                   Permission::VIEW_JOB,                 "/part/parts.php"),
-            AppPage::CORRECTIVE_ACTION =>   new AppPage(AppPage::CORRECTIVE_ACTION,   "CA Requests",          null,                   Permission::VIEW_CORRECTIVE_ACTIONS,  "/correctiveAction/correctiveActions.php")
+            AppPage::CORRECTIVE_ACTION =>   new AppPage(AppPage::CORRECTIVE_ACTION,   "CA Requests",          null,                   Permission::VIEW_CORRECTIVE_ACTION,   "/correctiveAction/correctiveActions.php")
          );
       }
       

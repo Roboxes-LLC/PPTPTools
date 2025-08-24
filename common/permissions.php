@@ -53,9 +53,10 @@ class Permission
    const EDIT_SALES_ORDER         = 47;
    const DELETE_SALES_ORDER       = 48;
    const VIEW_PRICES              = 49;
-   const VIEW_CORRECTIVE_ACTIONS  = 50;
-   const EDIT_CORRECTIVE_ACTIONS  = 51;
-   const LAST                     = Permission::EDIT_CORRECTIVE_ACTIONS;
+   const VIEW_CORRECTIVE_ACTION   = 50;
+   const EDIT_CORRECTIVE_ACTION   = 51;
+   const APPROVE_CORRECTIVE_ACTION = 52;
+   const LAST                      = Permission::APPROVE_CORRECTIVE_ACTION;
    
    const NO_PERMISSIONS = 0x0000000000000000;
    const ALL_PERMISSIONS = 0xFFFFFFFFFFFFFFFF;
@@ -120,8 +121,9 @@ class Permission
                   new Permission(Permission::EDIT_SALES_ORDER,         "Edit sales orders"),
                   new Permission(Permission::DELETE_SALES_ORDER,       "Delete sales orders"),
                   new Permission(Permission::VIEW_PRICES,              "View prices"),
-                  new Permission(Permission::VIEW_CORRECTIVE_ACTIONS,  "View corrective actions"),
-                  new Permission(Permission::EDIT_CORRECTIVE_ACTIONS,  "Edit corrective actions")
+                  new Permission(Permission::VIEW_CORRECTIVE_ACTION,   "View corrective actions"),
+                  new Permission(Permission::EDIT_CORRECTIVE_ACTION,   "Edit corrective actions"),
+                  new Permission(Permission::APPROVE_CORRECTIVE_ACTION, "Approve corrective actions"),
             );
       }
       

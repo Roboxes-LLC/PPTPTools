@@ -1,0 +1,38 @@
+@CHARSET "ISO-8859-1";
+
+.corrective-action-status {
+   display: flex;
+   flex-direction: row;
+   align-items: center;
+   justify-content: center;
+   
+   font-size: 14px;
+   color: #fff;
+   text-shadow: -1px 1px #417cb8;
+   
+   line-height: 1.8;
+   appearance: none;
+   box-shadow: none;
+   border-radius: 0;
+   background-color: grey;
+   border: none;
+   
+   width: 90px;
+   height: 20px;  
+}
+
+.corrective-action-status.open {
+   background-color: orange;
+}
+
+.corrective-action-status.approved {
+   background-color: blue;
+}
+
+.corrective-action-status.reviewed {
+   background-color: green;
+}
+
+.corrective-action-status.closed {
+   background-color: grey;
+}

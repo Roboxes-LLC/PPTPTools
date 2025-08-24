@@ -18,6 +18,11 @@ function set(elementId, value)
    document.getElementById(elementId).value = value;
 }
 
+function get(elementId)
+{
+   return (document.getElementById(elementId).value);
+}
+
 function clear(elementId)
 {
    document.getElementById(elementId).value = null;

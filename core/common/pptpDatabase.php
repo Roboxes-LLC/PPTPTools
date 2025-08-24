@@ -116,6 +116,30 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
+   public function getActivitiesForCorrectiveAction($correctiveActionId, $orderAscending = true)
+   {
+      $order = $orderAscending ? "ASC" : "DESC";
+      
+      $questionMarks = array();
+      for ($i = 0; $i < count(ActivityType::$correctiveActionActivites); $i++)
+      {
+         $questionMarks[] = "?";
+      }
+      $activityList = "(" . implode(", ", $questionMarks) . ")";
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM activity " .
+         "WHERE object_0 = ? AND activityType IN $activityList " .
+         "ORDER BY dateTime $order;");
+      
+      $params = [$correctiveActionId];
+      $params = array_merge($params, ActivityType::$correctiveActionActivites);
+      
+      $result = $statement->execute($params) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
    public function addActivity($activity)
    {
       $statement = $this->pdo->prepare(
@@ -1333,11 +1357,11 @@ class PPTPDatabaseAlt extends PDODatabase
       $occuranceDate = $correctiveAction->occuranceDate ? 
                           Time::toMySqlDate($correctiveAction->occuranceDate) : 
                           null;
-      
+
       $statement = $this->pdo->prepare(
          "INSERT INTO correctiveaction " .
-         "(occuranceDate, customerId, jobId, inspectionId, description, employee, batchSize, dimensionalDefectCount, platingDefectCount, otherDefectCount, disposition, rootCause, dmrNumber, initiator, location, shortTermCorrection, longTermCorrection, status) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(occuranceDate, customerId, jobId, inspectionId, description, employee, batchSize, dimensionalDefectCount, platingDefectCount, otherDefectCount, disposition, rootCause, dmrNumber, initiator, location, status) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
    
       $result = $statement->execute(
          [
@@ -1356,8 +1380,6 @@ class PPTPDatabaseAlt extends PDODatabase
             $correctiveAction->dmrNumber,
             $correctiveAction->initiator,
             $correctiveAction->location,
-            $correctiveAction->shortTermCorrection,
-            $correctiveAction->longTermCorrection,
             $correctiveAction->status
          ]);
       
@@ -1370,11 +1392,26 @@ class PPTPDatabaseAlt extends PDODatabase
                           Time::toMySqlDate($correctiveAction->occuranceDate) :
                           null;
       
+     $shortTermDueDate = $correctiveAction->shortTermCorrection->dueDate ?
+        Time::toMySqlDate($correctiveAction->shortTermCorrection->dueDate) :
+        null;
+     
+     $longTermDueDate = $correctiveAction->longTermCorrection->dueDate ?
+        Time::toMySqlDate($correctiveAction->longTermCorrection->dueDate) :
+        null;
+     
+     $reviewDate = $correctiveAction->review->reviewDate ?
+                      Time::toMySqlDate($correctiveAction->review->reviewDate) :
+                      null;
+      
       $statement = $this->pdo->prepare(
          "UPDATE correctiveaction " .
-         "SET occuranceDate = ?, customerId = ?, jobId = ?, inspectionId = ?, description = ?, employee = ?, batchSize = ?, dimensionalDefectCount = ?, platingDefectCount = ?, otherDefectCount = ?, disposition = ?, rootCacuse = ?, dmrNumber = ?, initiator = ?, location = ?, shortTermCorrection = ?, longTermCorrection= ? " .
-         "WHERE correctiveActionId = ?");
-      
+          "SET occuranceDate = ?, customerId = ?, jobId = ?, inspectionId = ?, description = ?, employee = ?, batchSize = ?, dimensionalDefectCount = ?, platingDefectCount = ?, otherDefectCount = ?, disposition = ?, rootCause = ?, dmrNumber = ?, initiator = ?, location = ?, status = ?, " .
+          "shortTerm_description = ?, shortTerm_dueDate = ?, shortTerm_employee = ?, shortTerm_responsibleDetails = ?, " .
+          "longTerm_description = ?, longTerm_dueDate = ?, longTerm_employee = ?, longTerm_responsibleDetails = ?, " .
+          "reviewDate = ?, reviewer = ?, effectiveness = ?, reviewComments = ? " .
+          "WHERE correctiveActionId = ?");
+            
       $result = $statement->execute(
          [
             $occuranceDate,
@@ -1392,11 +1429,31 @@ class PPTPDatabaseAlt extends PDODatabase
             $correctiveAction->dmrNumber,
             $correctiveAction->initiator,
             $correctiveAction->location,
-            $correctiveAction->shortTermCorrection,
-            $correctiveAction->longTermCorrection,
             $correctiveAction->status,
+            $correctiveAction->shortTermCorrection->description,
+            $shortTermDueDate,
+            $correctiveAction->shortTermCorrection->employee,
+            $correctiveAction->shortTermCorrection->responsibleDetails,
+            $correctiveAction->longTermCorrection->description,
+            $longTermDueDate,
+            $correctiveAction->longTermCorrection->employee,
+            $correctiveAction->longTermCorrection->responsibleDetails,
+            $reviewDate,
+            $correctiveAction->review->reviewer,
+            $correctiveAction->review->effectiveness,
+            $correctiveAction->review->comments,
             $correctiveAction->correctiveActionId
          ]);
+                          
+      return ($result);
+   }
+   
+   public function updateCorrectiveActionStatus($correctiveActionId, $status)
+   {
+      $statement = $this->pdo->prepare(
+         "UPDATE correctiveaction SET status = ? WHERE correctiveActionId = ?");
+      
+      $result = $statement->execute([$status, $correctiveActionId]);
       
       return ($result);
    }
@@ -1406,6 +1463,10 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare("DELETE FROM correctiveaction WHERE correctiveActionId = ?");
       
       $result = $statement->execute([$correctiveActionId]);
+      
+      $statement = $this->pdo->prepare("DELETE FROM action WHERE componentType = ? AND componentId = ?");
+      
+      $result &= $statement->execute([ComponentType::CORRECTIVE_ACTION, $correctiveActionId]);
       
       return ($result);
    }
@@ -1442,7 +1503,7 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare(
          "INSERT INTO action " .
          "(componentType, componentId, status, dateTime, userId, notes) " .
-         "VALUES (?, ?, ?, ?, ?)");
+         "VALUES (?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -1464,9 +1525,9 @@ class PPTPDatabaseAlt extends PDODatabase
                      null;
       
       $statement = $this->pdo->prepare(
-            "UPDATE action " .
-            "SET compnentType = ?, componentId = ?, status= ?, dateTime = ?, userId = ?, notes = ? " .
-            "WHERE actionId = ?");
+         "UPDATE action " .
+         "SET compnentType = ?, componentId = ?, status= ?, dateTime = ?, userId = ?, notes = ? " .
+         "WHERE actionId = ?");
       
       $result = $statement->execute(
          [
@@ -1519,7 +1580,7 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare(
          "INSERT INTO attachment " .
          "(componentType, componentId, filename, storedFilename, description) " .
-         "VALUES (?, ?, ?, ?)");
+         "VALUES (?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [

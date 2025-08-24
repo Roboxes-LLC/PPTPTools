@@ -6,18 +6,23 @@ abstract class CorrectiveActionStatus
    const FIRST = 1;
    const OPEN = CorrectiveActionStatus::FIRST;
    const APPROVED = 2;
-   const EVALUATED = 3;
+   const REVIEWED = 3;
    const CLOSED = 4;
    const LAST = 5;
    const COUNT = CorrectiveActionStatus::LAST - CorrectiveActionStatus::FIRST;
 
-   public static $values = array(CorrectiveActionStatus::OPEN, CorrectiveActionStatus::APPROVED, CorrectiveActionStatus::EVALUATED, CorrectiveActionStatus::CLOSED);
+   public static $values = array(CorrectiveActionStatus::OPEN, CorrectiveActionStatus::APPROVED, CorrectiveActionStatus::REVIEWED, CorrectiveActionStatus::CLOSED);
 
    public static function getLabel($status)
    {
-      $labels = array("", "Open", "Approved", "Evaluated", "Closed");
+      $labels = array("", "Open", "Approved", "Reviewed", "Closed");
 
       return ($labels[$status]);
+   }
+   
+   public static function getClass($status)
+   {
+      return (strtolower(CorrectiveActionStatus::getLabel($status)));
    }
 
    public static function getOptions($selectedStatus)
@@ -35,6 +40,26 @@ abstract class CorrectiveActionStatus
 
       return ($html);
    }
+   
+   public static function getJavascript($enumName)
+   {
+      // Note: Keep synced with enum.
+      $varNames = array("UNKNOWN", "OPEN", "APPROVED", "REVIEWED", "CLOSED");
+      
+      $html = "$enumName = {";
+      
+      $html .= "{$varNames[CorrectiveActionStatus::UNKNOWN]}: " . CorrectiveActionStatus::UNKNOWN . ", ";
+      
+      foreach (CorrectiveActionStatus::$values as $status)
+      {
+         $html .= "{$varNames[$status]}: $status";
+         $html .= ($status < (CorrectiveActionStatus::LAST - 1) ? ", " : "");
+      }
+      
+      $html .= "};";
+      
+      return ($html);
+   } 
 }
 
 abstract class CorrectiveActionInitiator
@@ -62,7 +87,7 @@ abstract class CorrectiveActionInitiator
       
       foreach (CorrectiveActionInitiator::$values as $initiator)
       {
-         $label = SalesOrderStatus::getLabel($initiator);
+         $label = CorrectiveActionInitiator::getLabel($initiator);
          $value = $initiator;
          $selected = ($initiator == $selectedInitiator) ? "selected" : "";
          
@@ -112,26 +137,96 @@ abstract class Disposition
             "Scrap",
             "Sort and Rework",
             "Strip",
-            "Other"
+            "Other (Specify Below)"
          );
       
       return ($labels[$disposition]);
    }
    
-   public static function getOptions($selectedDisposition)
+   public static function getOptions($selectedDispositions)
    {
       $html = "<option style=\"display:none\">";
       
       foreach (Disposition::$values as $disposition)
       {
-         $label = Disposition::getLabel($initiator);
+         $label = Disposition::getLabel($disposition);
          $value = $disposition;
-         $selected = ($disposition == $selectedDisposition) ? "selected" : "";
+         $selected = ((array_search($disposition, $selectedDispositions) !== false) ? "selected" : "");
          
          $html .= "<option value=\"$value\" $selected>$label</option>";
       }
       
       return ($html);
+   }
+   
+   public static function setDisposition($disposition, &$bitset)
+   {
+      if (($disposition >= Disposition::FIRST) &&
+          ($disposition < Disposition::LAST))
+      {
+         $bitset |= (1 << ($disposition - 1));
+      }
+   }
+   
+   public static function hasDisposition($disposition, $bitset)
+   {
+      $hasDisposition = false;
+
+      if (($disposition >= Disposition::FIRST) &&
+          ($disposition < Disposition::LAST))
+      {
+         $hasDisposition = (($bitset & (1 << ($disposition - 1))) > 0);
+      }
+      
+      return ($hasDisposition);
+   }
+   
+   public static function getDispositions($bitset)
+   {
+      $dispositions = [];
+      
+      foreach (Disposition::$values as $disposition)
+      {
+         if (Disposition::hasDisposition($disposition, $bitset))
+         {
+            $dispositions[] = $disposition;
+         }
+      }
+      
+      return ($dispositions);
+   }
+}
+
+abstract class CorrectionType
+{
+   const UNKNOWN = 0;
+   const FIRST = 1;
+   const SHORT_TERM = CorrectionType::FIRST;
+   const LONG_TERM = 2;
+   const LAST = 3;
+   const COUNT = CorrectionType::LAST - CorrectionType::FIRST;
+   
+   public static $values = array(CorrectionType::SHORT_TERM, CorrectionType::LONG_TERM);
+   
+   public static function getLabel($correctionType)
+   {
+      $labels = array("", "Short Term", "Long Term");
+      
+      return ($labels[$correctionType]);
+   }
+   
+   public static function getInputPrefix($correctionType)
+   {
+      $prefixes = array("", "shortTerm_", "longTerm_");
+      
+      return ($prefixes[$correctionType]);
+   }
+   
+   public static function getClassPrefix($correctionType)
+   {
+      $prefixes = array("", "short-term", "long-term");
+      
+      return ($prefixes[$correctionType]);
    }
 }
 

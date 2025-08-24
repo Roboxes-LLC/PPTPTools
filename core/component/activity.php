@@ -328,7 +328,7 @@ class Activity
                // Turn "toolongfilename.txt" into "tool...txt".
                $filename = substr($filename, 0, (Activity::MAX_FILENAME_LENGTH - 6)) .  // first 4 characters 
                            "..." .                                                      // ellipses                         
-                           substr($filename, -3);                                    // extension
+                           substr($filename, -3);                                       // extension
             }
             
             $description = "User $authorUsername attached \"$filename\" to quote $quoteNumber";
@@ -352,6 +352,93 @@ class Activity
             }
             
             $description = "User $authorUsername removed \"$filename\" from quote $quoteNumber";
+            break;
+         }
+         
+         case ActivityType::ADD_CORRECTIVE_ACTION:
+         {
+            $correctiveActionNumber = CorrectiveAction::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername created corrective action request $correctiveActionNumber";
+            break;
+         }
+            
+         case ActivityType::EDIT_CORRECTIVE_ACTION:
+            {
+               $correctiveActionNumber = CorrectiveAction::getLink(intval($this->objects[0]));
+               
+               $description = "User $authorUsername edited corrective action request $correctiveActionNumber";
+               break;
+            }
+            
+         case ActivityType::DELETE_CORRECTIVE_ACTION:
+         {
+            $correctiveActionNumber = CorrectiveAction::getLink(intval($this->objects[1]));
+            
+            $description = "User $authorUsername deleted quote $correctiveActionNumber";
+            break;
+         }
+
+         case ActivityType::ADD_CORRECTIVE_ACTION_ATTACHMENT:
+         {
+            $correctiveActionId = intval($this->objects[0]);
+            
+            $correctiveActionNumber = CorrectiveAction::getLink($correctiveActionId);
+            
+            $filename = $this->objects[2];
+            if (strlen($filename) > Activity::MAX_FILENAME_LENGTH)
+            {
+               // Turn "toolongfilename.txt" into "tool...txt".
+               $filename = substr($filename, 0, (Activity::MAX_FILENAME_LENGTH - 6)) .  // first 4 characters
+               "..." .                                                      // ellipses
+               substr($filename, -3);                                       // extension
+            }
+            
+            $description = "User $authorUsername attached \"$filename\" to CAR $correctiveActionNumber";
+            break;
+         }
+            
+         case ActivityType::DELETE_CORRECTIVE_ACTION_ATTACHMENT:
+         {
+            $correctiveActionId = intval($this->objects[0]);
+            
+            $correctiveActionNumber = CorrectiveAction::getLink($correctiveActionId);
+            
+            $filename = $this->objects[2];
+            if (strlen($filename) > Activity::MAX_FILENAME_LENGTH)
+            {
+               // Turn "toolongfilename.txt" into "tool...txt".
+               $filename = substr($filename, 0, (Activity::MAX_FILENAME_LENGTH - 6)) .  // first 4 characters
+               "..." .                                                      // ellipses
+               substr($filename, -3);                                       // extension
+            }
+            
+            $description = "User $authorUsername removed \"$filename\" from CAR $correctiveActionNumber";
+            break;
+         }
+         
+         case ActivityType::APPROVE_CORRECTIVE_ACTION:
+         {
+            $correctiveActionNumber = CorrectiveAction::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername approved corrective action request $correctiveActionNumber";
+            break;
+         }
+            
+         case ActivityType::UNAPPROVE_CORRECTIVE_ACTION:
+         {
+            $correctiveActionNumber = CorrectiveAction::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername marked $correctiveActionNumber as unapproved";
+            break;
+         }
+         
+         case ActivityType::ANNOTATE_CORRECTIVE_ACTION:
+         {
+            $correctiveActionNumber = CorrectiveAction::getLink(intval($this->objects[0]));
+            $comments = $this->objects[1];
+            
+            $description = "$authorUsername: \"$comments\"";
             break;
          }
             

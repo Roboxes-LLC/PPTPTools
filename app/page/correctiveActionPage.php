@@ -45,7 +45,7 @@ class CorrectiveActionPage extends Page
                       
                       if ($newCorrectiveAction)
                       {
-                         $correctiveAction->create(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                         $correctiveAction->open(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
                       }
                       
                       ActivityLog::logComponentActivity(
@@ -63,9 +63,59 @@ class CorrectiveActionPage extends Page
              break;
           }
           
+          case "save_correction":
+          {
+             if (Page::requireParams($params, ["correctiveActionId", "correctionType", "description", "dueDate", "employee", "responsibleDetails"]))
+             {
+                $correctiveActionId = $params->getInt("correctiveActionId");
+                $correctionType = $params->getInt("correctionType");
+
+                $correctiveAction = CorrectiveAction::load($correctiveActionId);
+                
+                if ($correctiveAction)
+                {
+                   if (($correctionType >= CorrectionType::FIRST) &&
+                       ($correctionType < CorrectionType::LAST))
+                   {
+                      $correction = ($correctionType == CorrectionType::LONG_TERM) ?
+                                       $correctiveAction->longTermCorrection :
+                                       $correctiveAction->shortTermCorrection;
+                   
+                      CorrectiveActionPage::getCorrectionParams($correction, $correctionType, $params);
+                      
+                      if (CorrectiveAction::save($correctiveAction))
+                      {
+                         $this->result->correctiveActionId = $correctiveAction->correctiveActionId;
+                         $this->result->correctiveAction = $correctiveAction;
+                         $this->result->success = true;
+                         
+                         ActivityLog::logComponentActivity(
+                            Authentication::getAuthenticatedUser()->employeeNumber,
+                            ActivityType::EDIT_CORRECTIVE_ACTION,
+                            $correctiveAction->correctiveActionId,
+                            $correctiveAction->getCorrectiveActionNumber());
+                      }
+                      else
+                      {
+                         $this->error("Database error");
+                      }
+                   }
+                   else
+                   {
+                      $this->error("Invalid correction type [$correctionType]");
+                   }
+                }
+                else
+                {
+                   $this->error("Invalid corrective action id [$correctiveActionId]");
+                }
+             }
+             break;
+          }
+          
           case "delete_corrective_action":
           {
-             if ($this->authenticate([Permission::EDIT_CORRECTIVE_ACTIONS]))
+             if ($this->authenticate([Permission::EDIT_CORRECTIVE_ACTION]))
              {
                 if (Page::requireParams($params, ["correctiveActionId"]))
                 {
@@ -93,11 +143,235 @@ class CorrectiveActionPage extends Page
                 }
              }
              break;
-          }                   
+          }
+          
+          case "approve_corrective_action":
+          {
+             if (Page::authenticate([Permission::APPROVE_CORRECTIVE_ACTION]))
+             {
+                if (Page::requireParams($params, ["correctiveActionId", "approveNotes", "isApproved"]))
+                {
+                   $correctiveActionId = $params->getInt("correctiveActionId");
+                   
+                   $correctiveAction = CorrectiveAction::load($correctiveActionId);
+                   
+                   if ($correctiveAction)
+                   {
+                      $isApproved = $params->getBool("isApproved");
+                      
+                      $notes = $params->get("approveNotes");
+                      // Don't store empty notes.
+                      if (empty($notes))
+                      {
+                         $notes = null;
+                      }
+                      
+                      if ($isApproved)
+                      {
+                         if ($correctiveAction->approve(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
+                         {
+                            $this->result->correctiveActionId = $correctiveAction->correctiveActionId;
+                            $this->result->correctiveAction = $correctiveAction;
+                            $this->result->success = true;
+                            
+                            ActivityLog::logApproveCorrectiveAction(
+                                  Authentication::getAuthenticatedUser()->employeeNumber,
+                                  $correctiveAction->correctiveActionId,
+                                  $correctiveAction->getCorrectiveActionNumber(),
+                                  $notes);
+                         }
+                         else
+                         {
+                            $this->error("Database error");
+                         }
+                      }
+                      else
+                      {
+                         if ($correctiveAction->unapprove(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, $notes))
+                         {
+                            $this->result->correctiveActionId = $correctiveAction->correctiveActionId;
+                            $this->result->correctiveAction = $correctiveAction;
+                            $this->result->success = true;
+                            
+                            ActivityLog::logUnapproveCorrectiveAction(
+                                  Authentication::getAuthenticatedUser()->employeeNumber,
+                                  $correctiveAction->correctiveActionId,
+                                  $correctiveAction->getCorrectiveActionNumber(),
+                                  $notes);
+                         }
+                         else
+                         {
+                            $this->error("Database error");
+                         }
+                      }
+                   }
+                   else
+                   {
+                      $this->error("Invalid corrective action id [$correctiveActionId]");
+                   }
+                }
+             }
+             break;
+          }
+          
+          case "review_corrective_action":
+          {
+             if (Page::authenticate([Permission::APPROVE_CORRECTIVE_ACTION]))
+             {
+                if (Page::requireParams($params, ["correctiveActionId", "reviewDate", "reviewer", "effectiveness", "comments"]))
+                {
+                   $correctiveActionId = $params->getInt("correctiveActionId");
+                   
+                   $correctiveAction = CorrectiveAction::load($correctiveActionId);
+                   
+                   if ($correctiveAction)
+                   {
+                      if ($correctiveAction->status != CorrectiveActionStatus::APPROVED)
+                      {
+                         $this->error("Incorrect state for review");
+                      }
+                      else
+                      {
+                         $review = $correctiveAction->review;
+                         
+                         CorrectiveActionPage::getReviewParams($review, $params);
+                         
+                         if (CorrectiveAction::save($correctiveAction))
+                         {
+                            $this->result->correctiveActionId = $correctiveAction->correctiveActionId;
+                            $this->result->correctiveAction = $correctiveAction;
+                            $this->result->success = true;
+                            
+                            $correctiveAction->review(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                               
+                            ActivityLog::logReviewCorrectiveAction(
+                                  Authentication::getAuthenticatedUser()->employeeNumber,
+                                  $correctiveAction->correctiveActionId,
+                                  $correctiveAction->getCorrectiveActionNumber(),
+                                  null);
+                         }
+                         else
+                         {
+                            $this->error("Database error");
+                         }
+                      }
+                   }
+                   else
+                   {
+                      $this->error("Invalid corrective action id [$correctiveActionId]");
+                   }
+                }
+             }
+             break;
+          }
+          
+          case "close_corrective_action":
+          {
+             if (Page::authenticate([Permission::APPROVE_CORRECTIVE_ACTION]))
+             {
+                if (Page::requireParams($params, ["correctiveActionId"]))
+                {
+                   $correctiveActionId = $params->getInt("correctiveActionId");
+                   
+                   $correctiveAction = CorrectiveAction::load($correctiveActionId);
+                   
+                   if ($correctiveAction)
+                   {
+                      if ($correctiveAction->status != CorrectiveActionStatus::REVIEWED)
+                      {
+                         $this->error("Incorrect state for closing");
+                      }
+                      else if ($correctiveAction->close(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null))
+                      {
+                         $this->result->correctiveActionId = $correctiveAction->correctiveActionId;
+                         $this->result->correctiveAction = $correctiveAction;
+                         $this->result->success = true;
+                         
+                         ActivityLog::logCloseCorrectiveAction(
+                               Authentication::getAuthenticatedUser()->employeeNumber,
+                               $correctiveAction->correctiveActionId,
+                               $correctiveAction->getCorrectiveActionNumber(),
+                               null);
+                      }
+                      else
+                      {
+                         $this->error("Database error");
+                      }
+                   }
+                   else
+                   {
+                      $this->error("Invalid corrective action id [$correctiveActionId]");
+                   }
+                }
+             }
+             break;
+          }
+          
+          case "add_comment":
+          {
+             if (Page::requireParams($params, ["correctiveActionId", "comments"]))
+             {
+                $correctiveActionId = $params->getInt("correctiveActionId");
+                $comments = $params->get("comments");
+                
+                $correctiveAction = CorrectiveAction::load($correctiveActionId);
+                
+                if ($correctiveAction)
+                {
+                   ActivityLog::logComponentActivity(
+                      Authentication::getAuthenticatedUser()->employeeNumber,
+                      ActivityType::ANNOTATE_CORRECTIVE_ACTION,
+                      $correctiveAction->correctiveActionId,
+                      $comments);
+                   
+                   $this->result->correctiveActionId = $correctiveAction->correctiveActionId;
+                   $this->result->success = true;
+                }
+                else
+                {
+                   $this->error("Invalid corrective action id [$correctiveActionId]");
+                }
+             }
+             break;
+          }
+             
+          case "delete_comment":
+          {
+             if (Page::requireParams($params, ["activityId"]))
+             {
+                $activityId = $params->getInt("activityId");
+                
+                $activity = Activity::load($activityId);
+                
+                if ($activity)
+                {
+                   if ($activity->author == Authentication::getAuthenticatedUser()->employeeNumber)
+                   {
+                      if (ActivityLog::deleteActivity($activityId))
+                      {
+                         $this->result->success = true;
+                      }
+                      else
+                      {
+                         $this->error("Database error");
+                      }
+                   }
+                   else
+                   {
+                      $this->error("Authentication error");
+                   }
+                }
+                else
+                {
+                   $this->error("Invalid activity id [$activityId]");
+                }
+             }
+             break;
+          }
              
           case "fetch":
           {
-             if ($this->authenticate([Permission::VIEW_CORRECTIVE_ACTIONS]))
+             if ($this->authenticate([Permission::VIEW_CORRECTIVE_ACTION]))
              {
                 // Fetch single component.
                 if (isset($params["correctiveActionId"]))
@@ -131,7 +405,7 @@ class CorrectiveActionPage extends Page
                    if (isset($params["dateType"]))
                    {
                       $dateType = $params->getInt("dateType");
-                   }
+                   }                      
                    
                    if (isset($params["startDate"]))
                    {
@@ -158,8 +432,112 @@ class CorrectiveActionPage extends Page
                    }
                 }
              }
+             break;             
+          }
+          
+          case "attach_file":
+          {
+             if (Page::requireParams($params, ["correctiveActionId", "filename", "description"]))
+             {
+                if (isset($_FILES["attachment"]) &&
+                          ($_FILES["attachment"]["name"] != ""))
+                {
+                   $correctiveActionId = $params->getInt("correctiveActionId");
+                   $file = $_FILES["attachment"];
+                   $filename = $params->get("filename");
+                   $description = $params->get("description");
+                   
+                   // Use the actual filename if an alternate wasn't provided.
+                   if (empty($filename))
+                   {
+                      $filename = $_FILES["attachment"]["name"];
+                   }
+                   
+                   // Constrain the filename to an appropriate size.
+                   $filename = Upload::shortenFilename($filename, Attachment::MAX_FILENAME_SIZE);
+                   
+                   $storedFilename = null;
+                   $uploadStatus = Upload::uploadAttachment($file, $storedFilename);
+                   
+                   switch ($uploadStatus)
+                   {
+                      case UploadStatus::UPLOADED:
+                      {
+                         $attachment = new Attachment();
+                         $attachment->componentId = $correctiveActionId;
+                         $attachment->componentType = ComponentType::CORRECTIVE_ACTION;
+                         $attachment->filename = $filename;
+                         $attachment->storedFilename = $storedFilename;
+                         $attachment->description = $description;
+                         
+                         if (Attachment::save($attachment))
+                         {
+                            $this->result->success = true;
+                            $this->result->correctiveActionId = $correctiveActionId;
+                            $this->result->attachment = $attachment;
+                            
+                            ActivityLog::logAddCorrectiveActionAttachment(
+                               Authentication::getAuthenticatedUser()->employeeNumber,
+                               $attachment->componentId,
+                               $attachment->attachmentId,
+                               $attachment->filename);
+                         }
+                         else
+                         {
+                            $this->error("Database error");
+                         }
+                         break;
+                      }
+                         
+                      default:
+                      {
+                         $this->error("Upload error [" . UploadStatus::toString($uploadStatus) . "]");
+                      }
+                   }
+                }
+                else
+                {
+                   $this->error("Failed to upload file");
+                }
+             }
              break;
-             
+          }
+          
+          case "delete_attachment":
+          {
+             if (Page::requireParams($params, ["attachmentId"]))
+             {
+                $attachmentId = $params->getInt("attachmentId");
+                
+                $attachment = Attachment::load($attachmentId);
+                
+                if ($attachment)
+                {
+                   if (Attachment::delete($attachmentId))
+                   {
+                      // Delete file
+                      Upload::deleteFile($attachment->storedFilename);
+                      
+                      $this->result->success = true;
+                      $this->attachmentId = $attachmentId;
+                      
+                      ActivityLog::logDeleteCorrectiveActionAttachment(
+                         Authentication::getAuthenticatedUser()->employeeNumber,
+                         $attachment->componentId,
+                         $attachmentId,
+                         $attachment->filename);
+                   }
+                   else
+                   {
+                      $this->error("Database error");
+                   }
+                }
+                else
+                {
+                   $this->error("Invalid attachment [$attachmentId]");
+                }
+             }
+             break;
           }
           
           default:
@@ -174,15 +552,88 @@ class CorrectiveActionPage extends Page
     
     private function getCorrectiveActionParams(&$correctiveAction, $params)
     {
+       // Required parameters.
        $correctiveAction->jobId = $params->getInt("jobId");
        $correctiveAction->employee = $params->getInt("employeeNumber");
        $correctiveAction->occuranceDate = $params->get("occuranceDate");
        $correctiveAction->description = $params->get("description");
+       
+       // Optional parameters.
+       
+       if ($params->keyExists("batchSize"))
+       {
+          $correctiveAction->batchSize = $params->getInt("batchSize");
+       }
+       
+       if ($params->keyExists("dimensionalDefectCount"))
+       {
+          $correctiveAction->dimensionalDefectCount = $params->getInt("dimensionalDefectCount");
+       }
+       
+       if ($params->keyExists("platingDefectCount"))
+       {
+          $correctiveAction->platingDefectCount = $params->getInt("platingDefectCount");
+       }
+       
+       if ($params->keyExists("otherDefectCount"))
+       {
+          $correctiveAction->otherDefectCount = $params->getInt("otherDefectCount");
+       }
+       
+       // Disposition
+       if ($params->keyExists("disposition"))
+       {
+          $correctiveAction->disposition = CorrectiveAction::NO_DISPOSITION;
+          
+          foreach ($params->get("disposition") as $disposition)
+          {
+             Disposition::setDisposition($disposition, $correctiveAction->disposition);
+          }
+       }
+       
+       if ($params->keyExists("rootCause"))
+       {
+          $correctiveAction->rootCause = $params->get("rootCause");
+       }
+       
+       if ($params->keyExists("dmrNumber"))
+       {
+          $correctiveAction->dmrNumber = $params->get("dmrNumber");
+       }
+       
+       if ($params->keyExists("initiator"))
+       {
+          $correctiveAction->initiator = $params->getInt("initiator");
+       }
+       
+       if ($params->keyExists("location"))
+       {
+          $correctiveAction->location = $params->getInt("location");
+       }
+    }
+    
+    private static function getCorrectionParams(&$correction, $correctionType, $params)
+    {
+       $correction->description = $params->get("description");
+       $correction->dueDate = $params->get("dueDate");
+       $correction->employee = $params->getInt("employee");
+       $correction->responsibleDetails = $params->get("responsibleDetails");
+    }
+    
+    private static function getReviewParams(&$review, $params)
+    {
+       $review->reviewDate = $params->get("reviewDate");
+       $review->reviewer = $params->getInt("reviewer");
+       $review->effectiveness = $params->get("effectiveness");
+       $review->comments = $params->get("comments");
     }
     
     private static function augmentCorrectiveAction(&$correctiveAction)
     {
        $correctiveAction->correctiveActionNumber = $correctiveAction->getCorrectiveActionNumber();
+     
+       $correctiveAction->statusLabel = CorrectiveActionStatus::getLabel($correctiveAction->status);
+       $correctiveAction->statusClass = CorrectiveActionStatus::getClass($correctiveAction->status);
        
        $correctiveAction->formattedOccuranceDate = $correctiveAction->occuranceDate ? Time::dateTimeObject($correctiveAction->occuranceDate)->format("n/j/Y") : "";
        
@@ -206,6 +657,8 @@ class CorrectiveActionPage extends Page
              $correctiveAction->customerPartNumber = $part->customerNumber;
           }
        }
+       
+       $correctiveAction->totalDefectCount = $correctiveAction->getTotalDefectCount();
        
        $correctiveAction->locationLabel = 
           ($correctiveAction->location != ShipmentLocation::UNKNOWN) ? 

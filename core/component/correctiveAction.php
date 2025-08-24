@@ -12,12 +12,66 @@ require_once ROOT.'/core/component/attachment.php';
 require_once ROOT.'/core/component/customer.php';
 require_once ROOT.'/core/component/shipment.php';
 
+class Correction
+{
+   public $description;   
+   public $dueDate;
+   public $employee;
+   public $responsibleDetails;
+
+   public function __construct()
+   {
+      $this->description = null;
+      $this->dueDate = null;
+      $this->employee = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->responsibleDetails = null;
+   }
+   
+   public function initialize($row, $prefix)
+   {
+      $this->description = $row[$prefix."description"];
+      $this->dueDate = $row[$prefix."dueDate"] ?
+                          Time::fromMySqlDate($row[$prefix."dueDate"]) :
+                          null;
+      $this->employee = intval($row[$prefix."employee"]);
+      $this->responsibleDetails = $row[$prefix."responsibleDetails"];
+   }
+}
+
+class Review
+{
+   public $reviewDate;
+   public $reviewer;
+   public $effectiveness;
+   public $comments;
+   
+   public function __construct()
+   {
+      $this->reviewDate = null;
+      $this->reviewer = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+      $this->effectiveness = null;
+      $this->comments = null;
+   }
+   
+   public function initialize($row)
+   {
+      $this->reviewDate = $row["reviewDate"] ?
+         Time::fromMySqlDate($row["reviewDate"]) :
+         null;
+      $this->reviewer = intval($row["reviewer"]);
+      $this->effectiveness = $row["effectiveness"];
+      $this->comments = $row["reviewComments"];
+   }
+}
+
 class CorrectiveAction
 {
    const UNKNOWN_CA_ID = 0;
    
    // Corrective action formatting constants.
    const CA_NUMBER_PREFIX = "CA";
+   
+   const NO_DISPOSITION = 0;
    
    public $correctiveActionId;
    public $occuranceDate;
@@ -38,6 +92,7 @@ class CorrectiveAction
    
    public $shortTermCorrection;
    public $longTermCorrection;
+   public $review;
    
    public $status;
    
@@ -64,13 +119,15 @@ class CorrectiveAction
       $this->dimensionalDefectCount = 0;
       $this->platingDefectCount = 0;
       $this->otherDefectCount = 0;
-      $this->disposition = Disposition::UNKNOWN;
+      $this->disposition = CorrectiveAction::NO_DISPOSITION;
       $this->rootCause = null;
       $this->dmrNumber = null;
       $this->initiator = CorrectiveActionInitiator::UNKNOWN;
       $this->location = ShipmentLocation::UNKNOWN;
-      $this->shortTermCorrection = null;
-      $this->longTermCorrection = null;
+      
+      $this->shortTermCorrection = new Correction();
+      $this->longTermCorrection = new Correction();
+      $this->review = new Review();
       
       $this->status = CorrectiveActionStatus::UNKNOWN;
       
@@ -104,8 +161,10 @@ class CorrectiveAction
       $this->dmrNumber = $row["dmrNumber"];
       $this->initiator = intval($row["initiator"]);
       $this->location = intval($row["location"]);
-      $this->shortTermCorrection = $row["shortTermCorrection"];
-      $this->longTermCorrection = $row["longTermCorrection"];
+      
+      $this->shortTermCorrection->initialize($row, CorrectionType::getInputPrefix(CorrectionType::SHORT_TERM));
+      $this->longTermCorrection->initialize($row, CorrectionType::getInputPrefix(CorrectionType::LONG_TERM));
+      $this->review->initialize($row);
       
       $this->status = intval($row["status"]);
    }
@@ -203,6 +262,21 @@ class CorrectiveAction
       return (sprintf('%s%05d', CorrectiveAction::CA_NUMBER_PREFIX, $this->correctiveActionId));
    }
    
+   public static function getLink($correctiveActionId)
+   {
+      $html = "";
+      
+      $correctiveAction = CorrectiveAction::load($correctiveActionId);
+      if ($correctiveAction)
+      {
+         $label = $correctiveAction->getCorrectiveActionNumber();
+         
+         $html = "<a href=\"/correctiveAction/correctiveAction.php?correctiveActionId=$correctiveActionId\">$label</a>";
+      }
+      
+      return ($html);
+   }
+   
    public function getTotalDefectCount()
    {
       return ($this->dimensionalDefectCount +
@@ -210,8 +284,103 @@ class CorrectiveAction
               $this->otherDefectCount);
    }
    
-   public function create()
+   public function open($dateTime, $userId, $notes)
    {
-      // TODO: 
+      return ($this->addAction(CorrectiveActionStatus::OPEN, $dateTime, $userId, $notes));
+   }
+   
+   public function approve($dateTime, $userId, $notes)
+   {
+      return ($this->addAction(CorrectiveActionStatus::APPROVED, $dateTime, $userId, $notes));
+   }
+   
+   public function unapprove($dateTime, $userId, $notes)
+   {
+      return ($this->addAction(CorrectiveActionStatus::OPEN, $dateTime, $userId, $notes));
+   }
+   
+   public function review($dateTime, $userId, $notes)
+   {
+      return ($this->addAction(CorrectiveActionStatus::REVIEWED, $dateTime, $userId, $notes));
+   }
+   
+   public function close($dateTime, $userId, $notes)
+   {
+      return ($this->addAction(CorrectiveActionStatus::CLOSED, $dateTime, $userId, $notes));
+   }
+   
+   public function addDisposition($disposition)
+   {
+      if (($disposition > Disposition::UNKNOWN) &&
+          ($disposition < Disposition::LAST))
+      {
+         $this->disposition |= (1 << ($disposition - 1));
+      }
+   }
+   
+   public function hasDisposition($disposition)
+   {
+      $hasDisposition = false;
+      
+      if (($disposition > Disposition::UNKNOWN) &&
+          ($disposition < Disposition::LAST))
+      {
+         $hasDisposition = ($this->disposition & (1 << ($disposition - 1)) > 0);
+      }
+      
+      return ($hasDisposition);
+   }
+   
+   public function getDispositions()
+   {
+      $dispositions = [];
+      
+      foreach (Disposition::$values as $disposition)
+      {
+         
+      }
+      
+      
+   }
+   
+   // **************************************************************************
+   
+   private function addAction($status, $dateTime, $userId, $notes, $attachment = null)
+   {
+      $action = new Action();
+      $action->componentType = ComponentType::CORRECTIVE_ACTION;
+      $action->componentId = $this->correctiveActionId;
+      $action->status = $status;
+      $action->dateTime = $dateTime;
+      $action->userId = $userId;
+      $action->notes = $notes;
+      
+      $success = Action::save($action);
+      
+      if ($success)
+      {
+         $this->actions[] = $action;
+         
+         $this->recalculateStatus();
+         
+         $success &= PPTPDatabaseAlt::getInstance()->updateCorrectiveActionStatus($this->correctiveActionId, $this->status);
+      }
+      
+      return ($success);
+   }
+   
+   private function recalculateStatus()
+   {
+      if (count($this->actions) > 0)
+      {
+         // The status is determined by the last quote action.
+         $this->status = end($this->actions)->status;
+      }
+      else
+      {
+         $this->status = CorrectiveActionStatus::UNKNOWN;
+      }
+      
+      return ($this->status);
    }
 }
