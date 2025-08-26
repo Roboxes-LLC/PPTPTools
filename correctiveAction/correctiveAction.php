@@ -9,6 +9,7 @@ require_once ROOT.'/core/manager/activityLog.php';
 require_once ROOT.'/core/manager/partManager.php';
 require_once ROOT.'/core/manager/userManager.php';
 require_once ROOT.'/common/authentication.php';
+require_once ROOT.'/common/isoInfo.php';
 require_once ROOT.'/common/header.php';
 require_once ROOT.'/common/version.php';
 
@@ -208,7 +209,7 @@ function getRequestPanel()
    
    $employeeOptions = UserInfo::getOptions(Role::$allRoles, [], $correctiveAction->employee);
    
-   $customerOptions = Customer::getOptions($correctiveAction->customerId);
+   $customerOptions = Customer::getOptions($correctiveAction->getCustomerId());
    
    $batchSize = $correctiveAction->batchSize ? $correctiveAction->batchSize : null;
    $dimensionalDefectCount = $correctiveAction->dimensionalDefectCount ? $correctiveAction->dimensionalDefectCount : null;
@@ -317,7 +318,7 @@ function getRequestPanel()
 
             <div class="form-item">
                <div class="form-label">Other Defects</div>
-               <input id="other-defects-input" type="number" name="platingDefectCount" style="width:50px" value="$platingDefectCount" {$getDisabled(InputField::DEFECT_COUNT)} />            
+               <input id="other-defects-input" type="number" name="otherDefectCount" style="width:50px" value="$otherDefectCount" {$getDisabled(InputField::DEFECT_COUNT)} />            
             </div>
 
             <div class="form-item">
@@ -830,6 +831,7 @@ $javascriptFile = "correctiveAction.js";
 $javascriptClass = "CorrectiveAction";
 $appPageId = AppPage::CORRECTIVE_ACTION;
 $heading = getHeading();
+$iso = IsoInfo::getIsoNumber(IsoDoc::CORRECTIVE_ACTION_REQUEST);
 $description = getDescription();
 $formId = "input-form";
 $timeline = getTimeline();

@@ -252,7 +252,7 @@ if (!Authentication::isAuthenticated())
          // Print
          printAsHtml:true,
          printRowRange:"all",
-         printHeader:"<h1>Part Washer Log<h1>",
+         printHeader:"<h1>Part Weight Log<h1>",
          // Columns
          columns:[
             {title:"Id",                field:"partWeightEntryId", visible:false},

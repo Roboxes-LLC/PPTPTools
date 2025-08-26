@@ -103,7 +103,7 @@ function isEditable($field)
    
    // Start with the edit mode, as dictated by the view.
    $isEditable = (($view == View::NEW_PART_WASHER_ENTRY) ||
-      ($view == View::EDIT_PART_WASHER_ENTRY));
+                  ($view == View::EDIT_PART_WASHER_ENTRY));
    
    switch ($field)
    {
@@ -127,7 +127,8 @@ function isEditable($field)
       case PartWasherLogInputField::WASH_DATE:
       {
          // Wash date is restricted to current date/time.
-         $isEditable = false;
+         // Note: Customer request to enable this field on 8/25/2025.
+         //$isEditable = false;
          break;
       }
          
@@ -628,7 +629,7 @@ if (!Authentication::isAuthenticated())
                <!--  Purely for display -->
                <div class="form-item">
                   <div class="form-label">Wash Date</div>
-                  <input type="date" value="<?php echo getWashDate(); ?>" <?php echo getDisabled(PartWasherLogInputField::WASH_DATE); ?>>
+                  <input type="date" name="washDate" form="input-form" value="<?php echo getWashDate(); ?>" <?php echo getDisabled(PartWasherLogInputField::WASH_DATE); ?>>
                </div>
                            
                <div class="form-item">

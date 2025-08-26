@@ -638,7 +638,7 @@ class CorrectiveActionPage extends Page
        $correctiveAction->formattedOccuranceDate = $correctiveAction->occuranceDate ? Time::dateTimeObject($correctiveAction->occuranceDate)->format("n/j/Y") : "";
        
        // customerName
-       $customer = JobManager::getCustomer($correctiveAction->jobId);
+       $customer = Customer::load($correctiveAction->getCustomerId());
        if ($customer)
        {
           $correctiveAction->customerName = $customer->customerName;

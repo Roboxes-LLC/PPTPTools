@@ -47,9 +47,11 @@ Required PHP variables:
       <div class="content flex-vertical flex-top flex-left">
       
          <div class="flex-horizontal flex-v-center flex-h-center">
-            <div class="heading"><?php echo $heading ?></div>&nbsp;&nbsp;
+            <div class="heading-with-iso"><?php echo $heading ?></div>&nbsp;&nbsp;
             <i id="help-icon" class="material-icons icon-button">help</i>
          </div>
+         
+         <div class="iso-number">ISO <?php echo $iso ?></div>
          
          <div id="description" class="description"><?php echo $description ?></div>
             

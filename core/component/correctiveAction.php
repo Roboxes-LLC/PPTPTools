@@ -11,6 +11,7 @@ require_once ROOT.'/core/component/action.php';
 require_once ROOT.'/core/component/attachment.php';
 require_once ROOT.'/core/component/customer.php';
 require_once ROOT.'/core/component/shipment.php';
+require_once ROOT.'/core/manager/jobManager.php';
 
 class Correction
 {
@@ -282,6 +283,22 @@ class CorrectiveAction
       return ($this->dimensionalDefectCount +
               $this->platingDefectCount +
               $this->otherDefectCount);
+   }
+   
+   public function getCustomerId()
+   {
+      $customerId = Customer::UNKNOWN_CUSTOMER_ID;
+      
+      if ($this->jobId != JobInfo::UNKNOWN_JOB_ID)
+      {
+         $customer = JobManager::getCustomer($this->jobId);
+         if ($customer)
+         {
+            $customerId = $customer->customerId;
+         }
+      }
+      
+      return ($customerId);
    }
    
    public function open($dateTime, $userId, $notes)

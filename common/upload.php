@@ -113,11 +113,11 @@ class Upload
 
       $target = $UPLOADS . $storedFilename;
       
-      if (!Upload::validateFileFormat($file, array("pdf")))
+      if (!Upload::validateFileFormat($file, array("pdf", "png", "jpg")))
       {
          $returnStatus = UploadStatus::BAD_FILE_TYPE;
       }
-      else if (!Upload::validateFileSize($file, 2000000))  // 2MB
+      else if (!Upload::validateFileSize($file, 10000000))  // 10MB
       {
          $returnStatus = UploadStatus::BAD_FILE_SIZE;
       }

@@ -49,7 +49,7 @@ $newButtonLabel = "Add CAR";
 $reportFileName = "correctiveActions.csv";
 $customCss = 
 <<<HEREDOC
-   <link rel="stylesheet" type="text/css" href="/css/correctiveAction.css{$versionQuery}"/>";
+   <link rel="stylesheet" type="text/css" href="/css/correctiveAction.css{$versionQuery}"/>
 HEREDOC;
 
 include ROOT.'/templates/tablePageTemplate.php'

@@ -1129,9 +1129,6 @@ $router->add("savePartWasherEntry", function($params) {
    {
       // New entry.
       $partWasherEntry = new PartWasherEntry();
-      
-      // Use current date/time as entry time.
-      $partWasherEntry->dateTime = Time::now("Y-m-d h:i:s A");
    }
    
    if ($result->success)
@@ -1187,10 +1184,12 @@ $router->add("savePartWasherEntry", function($params) {
       
       if ($result->success)
       {
-         if (isset($params["washer"]) &&
+         if (isset($params["washDate"]) &&
+             isset($params["washer"]) &&
              isset($params["panCount"]) &&
              isset($params["partCount"]))
          {
+            $partWasherEntry->dateTime = $params["washDate"];
             $partWasherEntry->employeeNumber = intval($params["washer"]);
             $partWasherEntry->panCount = intval($params["panCount"]);
             $partWasherEntry->partCount = intval($params["partCount"]);
@@ -1421,9 +1420,6 @@ $router->add("savePartWeightEntry", function($params) {
    {
       // New entry.
       $partWeightEntry = new PartWeightEntry();
-      
-      // Use current date/time as entry time.
-      $partWeightEntry->dateTime = Time::now("Y-m-d h:i:s A");
    }
    
    if ($result->success)
@@ -1481,10 +1477,12 @@ $router->add("savePartWeightEntry", function($params) {
       
       if ($result->success)
       {
-         if (isset($params["laborer"]) &&
+         if (isset($params["weighDate"]) &&
+             isset($params["laborer"]) &&
              isset($params["panCount"]) &&
              isset($params["partWeight"]))
          {
+            $partWeightEntry->dateTime = $params["weighDate"];
             $partWeightEntry->employeeNumber = intval($params["laborer"]);
             $partWeightEntry->panCount = intval($params["panCount"]);
             $partWeightEntry->weight = floatval($params["partWeight"]);
