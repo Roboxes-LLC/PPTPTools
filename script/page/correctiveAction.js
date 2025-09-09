@@ -247,6 +247,12 @@ class CorrectiveAction
             this.togglePanel(panelId);
          }.bind(this));
       }
+      
+      // Forms.
+      if (document.getElementsByTagName("form").length > 0)
+      {               
+         InputValidator.setupValidation();
+      }
    }      
    
    createTable(tableElementId)
@@ -591,7 +597,7 @@ class CorrectiveAction
    
    onSaveButton()
    {
-      if (this.validateForm())
+      if (InputValidator.validateForm(document.getElementById(CorrectiveAction.PageElements.INPUT_FORM)))
       {
          submitForm(CorrectiveAction.PageElements.INPUT_FORM, "/app/page/correctiveAction", function (response) {
             if (response.success == true)
@@ -858,11 +864,6 @@ class CorrectiveAction
       }
    }
    
-   validateForm()
-   {
-      return (true);
-   }
-   
    validateRequestForm()
    {
       return (true);
@@ -966,5 +967,35 @@ class CorrectiveAction
    accentButton(buttonId)
    {
       document.getElementById(buttonId).classList.add("accent-button");
+   }
+}
+
+// *****************************************************************************
+//                                 Input validators
+
+class JobIdValidator extends InputValidator
+{
+   constructor(input)
+   {
+      super(input);
+   }
+      
+   validate()
+   {
+      // Clear any previous custom validity.
+      this.input.setCustomValidity("");
+      
+      let jobId = parseInt(document.getElementById(CorrectiveAction.PageElements.JOB_ID_INPUT).value);
+      
+      // Verify a valid job has been determined.
+      let isValid = (jobId > 0);
+      
+      if (!isValid)
+      {
+         alert("Start by selecting a valid pan ticket or active job.");
+      }
+      
+      // Verify a valid job has been determined.
+      return (isValid);
    }
 }

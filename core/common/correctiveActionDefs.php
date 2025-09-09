@@ -230,4 +230,64 @@ abstract class CorrectionType
    }
 }
 
+
+abstract class CorrectiveActionLocation
+{
+   const UNKNOWN = 0;
+   const FIRST = 1;
+   const PPTP = CorrectiveActionLocation::FIRST;
+   const PLATER = 2;
+   const CUSTOMER = 3;
+   const VENDOR = 4;
+   const LAST = 5;
+   const COUNT = CorrectiveActionLocation::LAST - CorrectiveActionLocation::FIRST;
+   
+   public static $values = array(CorrectiveActionLocation::PPTP, CorrectiveActionLocation::PLATER, CorrectiveActionLocation::CUSTOMER, CorrectiveActionLocation::VENDOR);
+   
+   public static $activeLocations = [CorrectiveActionLocation::PPTP, CorrectiveActionLocation::PLATER];
+   
+   public static function getLabel($location)
+   {
+      $labels = array("", "Pittsburgh Precision", "Plater", "Customer", "Vendor");
+      
+      return ($labels[$location]);
+   }
+   
+   public static function getOptions($selectedLocation)
+   {
+      $html = "<option style=\"display:none\">";
+      
+      foreach (CorrectiveActionLocation::$values as $location)
+      {
+         $label = CorrectiveActionLocation::getLabel($location);
+         $value = $location;
+         $selected = ($location == $selectedLocation) ? "selected" : "";
+         
+         $html .= "<option value=\"$value\" $selected>$label</option>";
+      }
+      
+      return ($html);
+   }
+   
+   public static function getJavascript($enumName)
+   {
+      // Note: Keep synced with enum.
+      $varNames = array("UNKNOWN", "PPTP", "PLATER", "CUSTOMER", "VENDOR");
+      
+      $html = "$enumName = {";
+      
+      $html .= "{$varNames[CorrectiveActionLocation::UNKNOWN]}: " . CorrectiveActionLocation::UNKNOWN . ", ";
+      
+      foreach (CorrectiveActionLocation::$values as $location)
+      {
+         $html .= "{$varNames[$location]}: $location";
+         $html .= ($location < (CorrectiveActionLocation::LAST - 1) ? ", " : "");
+      }
+      
+      $html .= "};";
+      
+      return ($html);
+   }
+}
+
 ?>

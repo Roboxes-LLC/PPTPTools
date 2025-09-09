@@ -82,6 +82,23 @@ function onDeleteInspection(inspectionId)
    }
 }
 
+function onGenerateCorrectiveAction(inspectionId)
+{
+   requestUrl = `/app/page/correctiveAction/?request=corrective_action_from_inspection&inspectionId=${inspectionId}`;
+   
+   ajaxRequest(requestUrl, function(response) {
+      console.log(response);
+      if (response.success == true)
+      {
+         location.href = `/correctiveAction/correctiveAction/?correctiveActionId=${response.correctiveActionId}`;   
+      }
+      else
+      {
+         alert(response.error);
+      }
+   }.bind(this));
+}
+
 function isJobBasedInspection(inspectionType)
 {
    return((inspectionType == InspectionType.OASIS) ||

@@ -41,7 +41,7 @@ function getDescription()
 function getForm()
 {   
    $unknownCorrectiveActionId = CorrectiveAction::UNKNOWN_CA_ID;
-   $occuranceDate = Time::now();
+   $occuranceDate = Time::toJavascriptDate(Time::now());
    $customerOptions = Customer::getOptions();
    $jobNumberOptions = JobManager::getJobNumberOptions(null, true);
    $employeeOptions = UserInfo::getOptions(Role::$allRoles, [], null);
@@ -51,7 +51,7 @@ function getForm()
    <form id="input-form" style="display: block">
       <input type="hidden" name="request" value="save_corrective_action"/>
       <input type="hidden" name="correctiveActionId"/>
-      <input id="job-id-input" type="hidden" name="jobId"/>
+      <input id="job-id-input" type="hidden" name="jobId" data-validator="JobIdValidator"/>
 
       <div class="flex-horizontal" style="justify-content: space-evenly">
          <div class="flex-vertical" style="margin-right: 20px;">
@@ -79,7 +79,7 @@ function getForm()
             <div class="form-item">
                <div class="form-label">Employee</div>
                <div class="flex-horizontal">
-                  <select id="employee-number-input" name="employeeNumber">
+                  <select id="employee-number-input" name="employeeNumber" required>
                      $employeeOptions
                   </select>
                </div>
@@ -90,12 +90,12 @@ function getForm()
          <div>
             <div class="form-item">
                <div class="form-label">Occurance</div>
-               <input id="occurance-date-input" type="date" class="form-input-medium" name="occuranceDate" value="$occuranceDate">
+               <input id="occurance-date-input" type="date" class="form-input-medium" name="occuranceDate" value="$occuranceDate" required>
             </div>
 
             <div class="form-item">
                <div class="form-label">Description</div>
-               <textarea id="description-input" class="description-input" type="text" name="description" rows="4" maxlength="256" style="width:300px"></textarea>
+               <textarea id="description-input" class="description-input" type="text" name="description" rows="4" maxlength="256" style="width:300px" required></textarea>
             </div>
          </div>
 

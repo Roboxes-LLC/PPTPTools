@@ -10,6 +10,58 @@ class CorrectiveActionPage extends Page
     {
        switch ($this->getRequest($params))
        {
+          case "corrective_action_from_inspection":
+          {
+             if (Page::requireParams($params, ["inspectionId"]))
+             {
+                $inspectionId = $params->getInt("inspectionId");
+                $inspection = Inspection::load($inspectionId, false);  // Don't load results.
+                
+                if ($inspection)
+                {
+                   $correctiveAction = new CorrectiveAction();
+                   
+                   $correctiveAction->occuranceDate = Time::now();
+                   $correctiveAction->jobId = $inspection->getJobId();
+                   $correctiveAction->description = "Defect found in QC";
+                   $correctiveAction->employee = $inspection->getOperator();
+                   $correctiveAction->initiator = CorrectiveActionInitiator::INTERNAL;
+                   $correctiveAction->location = ShipmentLocation::PPTP;
+                   
+                   if ($correctiveAction->jobId != JobInfo::UNKNOWN_JOB_ID)
+                   {
+                      if (CorrectiveAction::save($correctiveAction))
+                      {
+                         $this->result->success = true;
+                         $this->result->correctiveActionId = $correctiveAction->correctiveActionId;
+                         $this->result->correctiveAction = $correctiveAction;
+                         
+                         $correctiveAction->open(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                         
+                         ActivityLog::logComponentActivity(
+                               Authentication::getAuthenticatedUser()->employeeNumber,
+                               ActivityType::ADD_CORRECTIVE_ACTION,
+                               $correctiveAction->correctiveActionId,
+                               $correctiveAction->getCorrectiveActionNumber());
+                      }
+                      else
+                      {
+                         $this->error("Database error");
+                      }
+                   }
+                   else
+                   {
+                      $this->error("No associated job.");
+                   }
+                }
+                else
+                {
+                   $this->error("Invalid inspection id [$inspectionId]");
+                }
+             }
+             break;
+          }
+          
           case "save_corrective_action":
           {
              if (Page::requireParams($params, ["correctiveActionId", "jobId", "employeeNumber", "occuranceDate", "description"]))

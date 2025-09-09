@@ -50,7 +50,7 @@ function validate(elementId)
 
 function setSession(key, value)
 {
-   requestUrl = "../api/setSession/?key=" + key + "&value=" + value;
+   requestUrl = "/api/setSession/?key=" + key + "&value=" + value;
    
    var xhttp = new XMLHttpRequest();
    xhttp.onreadystatechange = function()
@@ -84,8 +84,7 @@ function setSession(key, value)
 function preserveSession()
 {
    setInterval(function(){ 
-      // AJAX call to populate WC numbers based on selected job number.
-      requestUrl = "../api/ping/";
+      requestUrl = "/api/ping/";
    
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function()

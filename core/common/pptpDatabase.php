@@ -1127,7 +1127,7 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare(
          "INSERT INTO shipment " .
          "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, vendorPackingList, customerPackingList, location, shippedDate) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
