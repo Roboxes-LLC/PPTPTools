@@ -126,7 +126,7 @@ class Shipment
             hozAlign:"left", 
             vertAlign:"middle"
          },
-         persistence:true,
+         persistence:false,
          // Columns
          columns:[
             {                           field:"shipmentId",           visible:false},
@@ -160,12 +160,28 @@ class Shipment
             }, 
             {title:"Location",          field:"locationLabel",       headerFilter:true},
             {title:"Packing #",         field:"packingListNumber",   headerFilter:true},
-            {title:"Packing List",      field:"packingList",         hozAlign:"left",
+            {title:"Vendor Packing List", field:"vendorPackingList",         hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
                   let cellValue = "";
                   
                   let filename = cell.getValue();
-                  let url = cell.getRow().getData().packingListUrl;
+                  let url = cell.getRow().getData().vendorPackingListUrl;
+                  
+                  if (filename != null)
+                  {
+                     var truncatedFilename = (filename.length > 20) ? filename.substr(0, 20) + "..." : filename; 
+                     cellValue = `<a href="${url}" target="_blank">${truncatedFilename}</a>`;
+                  }
+                  
+                  return (cellValue);
+                }
+            },
+            {title:"Customer Packing List", field:"customerPackingList",         hozAlign:"left",
+               formatter:function(cell, formatterParams, onRendered){
+                  let cellValue = "";
+                  
+                  let filename = cell.getValue();
+                  let url = cell.getRow().getData().customerPackingListUrl;
                   
                   if (filename != null)
                   {
@@ -208,7 +224,8 @@ class Shipment
             }
             e.stopPropagation();
          }
-         else if (cell.getColumn().getField() == "packingList")
+         else if ((cell.getColumn().getField() == "vendorPackingList") ||
+                  (cell.getColumn().getField() == "customerPackingList"))
          {
             e.stopPropagation();
          }

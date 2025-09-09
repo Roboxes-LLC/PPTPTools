@@ -1126,7 +1126,7 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "INSERT INTO shipment " .
-         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, packingList, location, shippedDate) " .
+         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, vendorPackingList, customerPackingList, location, shippedDate) " .
          "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
@@ -1137,7 +1137,8 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->inspectionId,
             $shipment->quantity,
             $shipment->packingListNumber,
-            $shipment->packingList,
+            $shipment->vendorPackingList,
+            $shipment->customerPackingList,
             $shipment->location,
             $shippedDate
          ]);
@@ -1152,7 +1153,7 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "UPDATE shipment " .
-         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, packingList = ?, location = ?, shippedDate = ? " .
+         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, vendorPackingList = ?, customerPackingList = ?, location = ?, shippedDate = ? " .
          "WHERE shipmentId = ?");
       
       $result = $statement->execute(
@@ -1163,7 +1164,8 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->inspectionId,
             $shipment->quantity,
             $shipment->packingListNumber,
-            $shipment->packingList,
+            $shipment->vendorPackingList,
+            $shipment->customerPackingList,
             $shipment->location,
             $shippedDate,
             $shipment->shipmentId
@@ -1360,13 +1362,12 @@ class PPTPDatabaseAlt extends PDODatabase
 
       $statement = $this->pdo->prepare(
          "INSERT INTO correctiveaction " .
-         "(occuranceDate, customerId, jobId, inspectionId, description, employee, batchSize, dimensionalDefectCount, platingDefectCount, otherDefectCount, disposition, rootCause, dmrNumber, initiator, location, status) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(occuranceDate, jobId, inspectionId, description, employee, batchSize, dimensionalDefectCount, platingDefectCount, otherDefectCount, disposition, rootCause, dmrNumber, initiator, location, status) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
    
       $result = $statement->execute(
          [
             $occuranceDate,
-            $correctiveAction->customerId,
             $correctiveAction->jobId,
             $correctiveAction->inspectionId,
             $correctiveAction->description,
@@ -1406,7 +1407,7 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "UPDATE correctiveaction " .
-          "SET occuranceDate = ?, customerId = ?, jobId = ?, inspectionId = ?, description = ?, employee = ?, batchSize = ?, dimensionalDefectCount = ?, platingDefectCount = ?, otherDefectCount = ?, disposition = ?, rootCause = ?, dmrNumber = ?, initiator = ?, location = ?, status = ?, " .
+          "SET occuranceDate = ?, jobId = ?, inspectionId = ?, description = ?, employee = ?, batchSize = ?, dimensionalDefectCount = ?, platingDefectCount = ?, otherDefectCount = ?, disposition = ?, rootCause = ?, dmrNumber = ?, initiator = ?, location = ?, status = ?, " .
           "shortTerm_description = ?, shortTerm_dueDate = ?, shortTerm_employee = ?, shortTerm_responsibleDetails = ?, " .
           "longTerm_description = ?, longTerm_dueDate = ?, longTerm_employee = ?, longTerm_responsibleDetails = ?, " .
           "reviewDate = ?, reviewer = ?, effectiveness = ?, reviewComments = ? " .
@@ -1415,7 +1416,6 @@ class PPTPDatabaseAlt extends PDODatabase
       $result = $statement->execute(
          [
             $occuranceDate,
-            $correctiveAction->customerId,
             $correctiveAction->jobId,
             $correctiveAction->inspectionId,
             $correctiveAction->description,

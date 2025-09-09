@@ -39,6 +39,12 @@ abstract class View
    const EDIT_SHIPMENT = 2;
 }
 
+abstract class PackingList
+{
+   const VENDOR = 0;
+   const CUSTOMER = 1;
+}
+
 function getParams()
 {
    static $params = null;
@@ -205,23 +211,26 @@ function getDescription()
    return ($description);
 }
 
-function getPackingListInput()
+function getPackingListInput($packingList)
 {
    global $PACKING_LISTS_DIR;
-   
+      
    $packingListInput = "";
    
-   $packingList = getShipment()->packingList;
+   $shipment = getShipment();
+   
+   $names = ["vendorPackingList", "customerPackingList"];
+   $values = [$shipment->vendorPackingList, $shipment->customerPackingList];
    
    $disabled = getDisabled(InputField::PACKING_LIST);
    
-   if ($packingList)
+   if ($values[$packingList])
    {
       $packingListInput =
 <<<HEREDOC
          <div class="flex-vertical flex-top">
-            <a href="{$PACKING_LISTS_DIR}{$packingList}" style="margin-bottom: 10px;" target="_blank">$packingList</a>
-            <input type="file" name="packingList" form="input-form" $disabled>
+            <a href="{$PACKING_LISTS_DIR}{$values[$packingList]}" style="margin-bottom: 10px;" target="_blank">$values[$packingList]</a>
+            <input type="file" name="{$names[$packingList]}}" form="input-form" $disabled>
          </div>
 HEREDOC;
    }
@@ -229,7 +238,7 @@ HEREDOC;
    {
       $packingListInput =
 <<<HEREDOC
-         <input type="file" name="packingList" form="input-form" $disabled>
+         <input type="file" name="{$names[$packingList]}" form="input-form" $disabled>
 HEREDOC;
    }
    
@@ -244,7 +253,7 @@ function getForm()
    $shipment = getShipment();
    $authorName = getAuthorName();
    $entryDate = $shipment->dateTime ? Time::dateTimeObject($shipment->dateTime)->format("n/j/Y h:i A") : null;
-   $packingListInput = getPackingListInput();
+   $packingListInputs = [getPackingListInput(PackingList::VENDOR), getPackingListInput(PackingList::CUSTOMER)];
    $jobNumberOptions = JobManager::getJobNumberOptions($shipment->jobNumber, JobManager::ACTIVE_JOBS);
    $pptpPartNumber = JobInfo::getJobPrefix($shipment->jobNumber);
    $locationOptions = ShipmentLocation::getOptions($shipment->location);
@@ -323,8 +332,13 @@ function getForm()
       </div>
 
       <div class="form-item">
-         <div class="form-label">Packing List</div>
-         $packingListInput
+         <div class="form-label-long">Vendor Packing List</div>
+         {$packingListInputs[PackingList::VENDOR]}
+      </div>
+
+      <div class="form-item">
+         <div class="form-label-long">Customer Packing List</div>
+         {$packingListInputs[PackingList::CUSTOMER]}
       </div>
 
       <div class="form-item">

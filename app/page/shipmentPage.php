@@ -51,18 +51,39 @@ class ShipmentPage extends Page
                         $this->result->success = true;
                         
                         //
-                        // Process uploaded packing list.
+                        // Process uploaded packing lists.
                         //
                         
-                        if (isset($_FILES["packingList"]) && ($_FILES["packingList"]["name"] != ""))
+                        if (isset($_FILES["vendorPackingList"]) && ($_FILES["vendorPackingList"]["name"] != ""))
                         {
-                           $uploadStatus = Upload::uploadPackingList($_FILES["packingList"]);
+                           $uploadStatus = Upload::uploadPackingList($_FILES["vendorPackingList"]);
                            
                            if ($uploadStatus == UploadStatus::UPLOADED)
                            {
-                              $filename = basename($_FILES["packingList"]["name"]);
+                              $filename = basename($_FILES["vendorPackingList"]["name"]);
                               
-                              $shipment->packingList = $filename;
+                              $shipment->vendorPackingList = $filename;
+                              
+                              if (!Shipment::save($shipment))
+                              {
+                                 $this->error("Database error");
+                              }
+                           }
+                           else
+                           {
+                              $this->error("File upload failed! " . UploadStatus::toString($uploadStatus));
+                           }
+                        }
+                        
+                        if (isset($_FILES["customerPackingList"]) && ($_FILES["customerPackingList"]["name"] != ""))
+                        {
+                           $uploadStatus = Upload::uploadPackingList($_FILES["customerPackingList"]);
+                           
+                           if ($uploadStatus == UploadStatus::UPLOADED)
+                           {
+                              $filename = basename($_FILES["customerPackingList"]["name"]);
+                              
+                              $shipment->customerPackingList = $filename;
                               
                               if (!Shipment::save($shipment))
                               {
@@ -351,7 +372,8 @@ class ShipmentPage extends Page
       $shipment->shipmentTicketCode = ShipmentTicket::getShipmentTicketCode($shipment->shipmentId);
       $shipment->locationLabel = ShipmentLocation::getLabel($shipment->location);
       $shipment->formattedDateTime = ($shipment->dateTime) ? Time::dateTimeObject($shipment->dateTime)->format("n/j/Y h:i A") : null;
-      $shipment->packingListUrl = $shipment->packingList ? $PACKING_LISTS_DIR . $shipment->packingList : null;
+      $shipment->vendorPackingListUrl = $shipment->vendorPackingList ? $PACKING_LISTS_DIR . $shipment->vendorPackingList : null;
+      $shipment->customerPackingListUrl = $shipment->customerPackingList ? $PACKING_LISTS_DIR . $shipment->customerPackingList : null;
       $shipment->formattedShippedDate = ($shipment->shippedDate) ? Time::dateTimeObject($shipment->shippedDate)->format("n/j/Y") : null;
       
       // Inspection status.

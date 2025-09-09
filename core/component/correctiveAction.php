@@ -31,9 +31,7 @@ class Correction
    public function initialize($row, $prefix)
    {
       $this->description = $row[$prefix."description"];
-      $this->dueDate = $row[$prefix."dueDate"] ?
-                          Time::fromMySqlDate($row[$prefix."dueDate"]) :
-                          null;
+      $this->dueDate = $row[$prefix."dueDate"];  // Note: When reading from a MYSQL DATE field, Time::fromMySqlDate() is not required.
       $this->employee = intval($row[$prefix."employee"]);
       $this->responsibleDetails = $row[$prefix."responsibleDetails"];
    }
@@ -56,9 +54,7 @@ class Review
    
    public function initialize($row)
    {
-      $this->reviewDate = $row["reviewDate"] ?
-         Time::fromMySqlDate($row["reviewDate"]) :
-         null;
+      $this->reviewDate = $row["reviewDate"];  // Note: When reading from a MYSQL DATE field, Time::fromMySqlDate() is not required.
       $this->reviewer = intval($row["reviewer"]);
       $this->effectiveness = $row["effectiveness"];
       $this->comments = $row["reviewComments"];
@@ -76,7 +72,6 @@ class CorrectiveAction
    
    public $correctiveActionId;
    public $occuranceDate;
-   public $customerId;
    public $jobId;
    public $inspectionId;
    public $description;
@@ -110,7 +105,6 @@ class CorrectiveAction
    {
       $this->correctiveActionId = CorrectiveAction::UNKNOWN_CA_ID;
       $this->occuranceDate = null;
-      $this->customerId = Customer::UNKNOWN_CUSTOMER_ID;
       $this->jobId = JobInfo::UNKNOWN_JOB_ID;
       $this->inspectionId = Inspection::UNKNOWN_INSPECTION_ID;
       $this->shipmentId = Shipment::UNKNOWN_SHIPMENT_ID;
@@ -144,10 +138,7 @@ class CorrectiveAction
    public function initialize($row)
    {
       $this->correctiveActionId = $row["correctiveActionId"];
-      $this->occuranceDate = $row["occuranceDate"] ?
-                                Time::fromMySqlDate($row["occuranceDate"]) :
-                                null;
-      $this->customerId = intval($row["customerId"]);
+      $this->occuranceDate = $row["occuranceDate"];  // Note: When reading from a MYSQL DATE field, Time::fromMySqlDate() is not required.
       $this->jobId = intval($row["jobId"]);
       $this->inspectionId = intval($row["inspectionId"]);
       $this->inspectionId = intval($row["inspectionId"]);
@@ -186,7 +177,7 @@ class CorrectiveAction
          $correctiveAction->initialize($row);
          
          $correctiveAction->jobInfo = JobInfo::load($correctiveAction->jobId);
-         $correctiveAction->customer = Customer::load($correctiveAction->customerId);
+         $correctiveAction->customer = Customer::load($correctiveAction->getCustomerId());
          $correctiveAction->inspection = Customer::load($correctiveAction->inspectionId);
          $correctiveAction->shipment = Customer::load($correctiveAction->shipmentId);
          
