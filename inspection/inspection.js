@@ -90,7 +90,7 @@ function onGenerateCorrectiveAction(inspectionId)
       console.log(response);
       if (response.success == true)
       {
-         location.href = `/correctiveAction/correctiveAction/?correctiveActionId=${response.correctiveActionId}`;   
+         location.href = `/correctiveAction/correctiveAction.php/?correctiveActionId=${response.correctiveActionId}`;   
       }
       else
       {
