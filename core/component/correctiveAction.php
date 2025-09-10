@@ -6,7 +6,6 @@ require_once ROOT.'/common/jobInfo.php';
 require_once ROOT.'/common/userInfo.php';
 require_once ROOT.'/core/common/correctiveActionDefs.php';
 require_once ROOT.'/core/common/pptpDatabase.php';
-require_once ROOT.'/core/common/shipmentDefs.php';
 require_once ROOT.'/core/component/action.php';
 require_once ROOT.'/core/component/attachment.php';
 require_once ROOT.'/core/component/customer.php';
@@ -118,7 +117,7 @@ class CorrectiveAction
       $this->rootCause = null;
       $this->dmrNumber = null;
       $this->initiator = CorrectiveActionInitiator::UNKNOWN;
-      $this->location = ShipmentLocation::UNKNOWN;
+      $this->location = CorrectiveActionLocation::UNKNOWN;
       
       $this->shortTermCorrection = new Correction();
       $this->longTermCorrection = new Correction();

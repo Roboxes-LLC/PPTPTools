@@ -10,7 +10,7 @@ require_once ROOT.'/core/component/shipment.php';
 
 function getFilterShipmentLocation()
 {
-   $shipmentLocation = ShipmentLocation::PPTP;
+   $shipmentLocation = ShipmentLocation::WIP;
    
    if (Session::isset(Session::SHIPMENT_SHIPMENT_LOCATION))
    {

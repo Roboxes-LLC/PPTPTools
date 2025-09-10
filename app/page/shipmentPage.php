@@ -27,7 +27,7 @@ class ShipmentPage extends Page
                      $shipment = new Shipment();
                      $shipment->author = Authentication::getAuthenticatedUser()->employeeNumber;
                      $shipment->dateTime = Time::now();
-                     $shipment->location = ShipmentLocation::PPTP;
+                     $shipment->location = ShipmentLocation::WIP;
                   }
                   else
                   {
@@ -185,7 +185,7 @@ class ShipmentPage extends Page
                // Fetch all components.
                else
                {
-                  $shipmentLocation = ShipmentLocation::PPTP;
+                  $shipmentLocation = ShipmentLocation::WIP;
                   $startDate = null;
                   $endDate = null;
                   

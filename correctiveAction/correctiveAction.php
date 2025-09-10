@@ -233,7 +233,7 @@ function getRequestPanel()
    
    $initiatorOptions = CorrectiveActionInitiator::getOptions($correctiveAction->initiator);
    
-   $locationOptions = ShipmentLocation::getOptions($correctiveAction->location);
+   $locationOptions = CorrectiveActionLocation::getOptions($correctiveAction->location);
    
    $html = 
 <<< HEREDOC

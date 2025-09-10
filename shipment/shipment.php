@@ -104,7 +104,7 @@ function getShipment()
          $shipment = new Shipment();
          $shipment->dateTime = Time::now();
          $shipment->author = Authentication::getAuthenticatedUser()->employeeNumber;
-         $shipment->location = ShipmentLocation::PPTP;
+         $shipment->location = ShipmentLocation::WIP;
       }
    }
    
