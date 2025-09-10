@@ -55,6 +55,23 @@ class ActivityLog
       
       return ($activities);
    }
+   
+   public static function getActivitiesForCorrectiveAction($correctiveActionId)
+   {
+      $activities = array();
+      
+      $result = PPTPDatabaseAlt::getInstance()->getActivitiesForCorrectiveAction($correctiveActionId);
+      
+      foreach ($result as $row)
+      {
+         $activity = new Activity();
+         $activity->initialize($row);
+         
+         $activities[] = $activity;
+      }
+      
+      return ($activities);
+   }
       
    public static function logComponentActivity($author, $activityType, $componentId, $componentLabel = null)
    {
@@ -99,6 +116,36 @@ class ActivityLog
    public static function logRejectQuote($author, $componentId, $componentLabel, $notes)
    {
       return (ActivityLog::createLogEntry($author, ActivityType::REJECT_QUOTE, array($componentId, $componentLabel, $notes)));
+   }
+   
+   public static function logAddCorrectiveActionAttachment($author, $componentId, $componentLabel, $filename)
+   {
+      return (ActivityLog::createLogEntry($author, ActivityType::ADD_CORRECTIVE_ACTION_ATTACHMENT, array($componentId, $componentLabel, $filename)));
+   }
+   
+   public static function logDeleteCorrectiveActionAttachment($author, $componentId, $componentLabel, $filename)
+   {
+      return (ActivityLog::createLogEntry($author, ActivityType::DELETE_CORRECTIVE_ACTION_ATTACHMENT, array($componentId, $componentLabel, $filename)));
+   }
+   
+   public static function logApproveCorrectiveAction($author, $componentId, $componentLabel, $notes)
+   {
+      return (ActivityLog::createLogEntry($author, ActivityType::APPROVE_CORRECTIVE_ACTION, array($componentId, $componentLabel, $notes)));
+   }
+   
+   public static function logUnapproveCorrectiveAction($author, $componentId, $componentLabel, $notes)
+   {
+      return (ActivityLog::createLogEntry($author, ActivityType::UNAPPROVE_CORRECTIVE_ACTION, array($componentId, $componentLabel, $notes)));
+   }
+   
+   public static function logReviewCorrectiveAction($author, $componentId, $componentLabel, $notes)
+   {
+      //return (ActivityLog::createLogEntry($author, ActivityType::UNAPPROVE_CORRECTIVE_ACTION, array($componentId, $componentLabel, $notes)));
+   }
+   
+   public static function logCloseCorrectiveAction($author, $componentId, $componentLabel, $notes)
+   {
+      //return (ActivityLog::createLogEntry($author, ActivityType::UNAPPROVE_CORRECTIVE_ACTION, array($componentId, $componentLabel, $notes)));
    }
    
    public static function deleteActivity($activityId)

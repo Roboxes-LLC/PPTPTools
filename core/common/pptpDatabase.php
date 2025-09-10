@@ -116,6 +116,30 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
+   public function getActivitiesForCorrectiveAction($correctiveActionId, $orderAscending = true)
+   {
+      $order = $orderAscending ? "ASC" : "DESC";
+      
+      $questionMarks = array();
+      for ($i = 0; $i < count(ActivityType::$correctiveActionActivites); $i++)
+      {
+         $questionMarks[] = "?";
+      }
+      $activityList = "(" . implode(", ", $questionMarks) . ")";
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM activity " .
+         "WHERE object_0 = ? AND activityType IN $activityList " .
+         "ORDER BY dateTime $order;");
+      
+      $params = [$correctiveActionId];
+      $params = array_merge($params, ActivityType::$correctiveActionActivites);
+      
+      $result = $statement->execute($params) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
    public function addActivity($activity)
    {
       $statement = $this->pdo->prepare(
@@ -1102,8 +1126,8 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "INSERT INTO shipment " .
-         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, packingList, location, shippedDate) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, vendorPackingList, customerPackingList, location, shippedDate) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -1113,7 +1137,8 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->inspectionId,
             $shipment->quantity,
             $shipment->packingListNumber,
-            $shipment->packingList,
+            $shipment->vendorPackingList,
+            $shipment->customerPackingList,
             $shipment->location,
             $shippedDate
          ]);
@@ -1128,7 +1153,7 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "UPDATE shipment " .
-         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, packingList = ?, location = ?, shippedDate = ? " .
+         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, vendorPackingList = ?, customerPackingList = ?, location = ?, shippedDate = ? " .
          "WHERE shipmentId = ?");
       
       $result = $statement->execute(
@@ -1139,7 +1164,8 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->inspectionId,
             $shipment->quantity,
             $shipment->packingListNumber,
-            $shipment->packingList,
+            $shipment->vendorPackingList,
+            $shipment->customerPackingList,
             $shipment->location,
             $shippedDate,
             $shipment->shipmentId
@@ -1281,6 +1307,327 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare("DELETE FROM salesorder WHERE salesOrderId = ?");
       
       $result = $statement->execute([$salesOrderId]);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                              Corrective Action
+   
+   public function getCorrectiveAction($correctiveActionId)
+   {
+      $statement = $this->pdo->prepare("SELECT * FROM correctiveaction WHERE correctiveActionId = ?;");
+      
+      $result = $statement->execute([$correctiveActionId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getCorrectiveActions($dateType, $startDate, $endDate, $allActive)
+   {
+      $dateField = "occuranceDate";
+      switch ($dateType)
+      {
+         case FilterDateType::OCCURANCE_DATE:
+         {
+            $dateField = "occuranceDate";
+            break;
+         }
+
+         // TODO: Add other date filters.
+         default:
+         {
+            break;
+         }
+      }
+      
+      $startDate = $startDate ? Time::dateTimeObject($startDate)->format(Time::MYSQL_DATE_FORMAT) : null;
+      $endDate = $endDate ? Time::dateTimeObject($endDate)->format(Time::MYSQL_DATE_FORMAT) : null;
+      
+      $dateClause = ($startDate && $endDate && !$allActive) ? "($dateField BETWEEN '$startDate' AND '$endDate')" : "TRUE";
+      $statusClause = (!$allActive) ? "TRUE" : "(status != " . CorrectiveActionStatus::CLOSED . ")";
+      
+      $statement = $this->pdo->prepare("SELECT * FROM correctiveaction WHERE $dateClause AND $statusClause ORDER BY occuranceDate ASC;");
+      
+      $result = $statement->execute() ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getCorrectiveActionsForInspection($inspectionId)
+   {
+      $statement = $this->pdo->prepare("SELECT * FROM correctiveaction WHERE inspectionId = ? ORDER BY occuranceDate ASC;");
+      
+      $result = $statement->execute([$inspectionId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+      
+   public function addCorrectiveAction($correctiveAction)
+   {
+      $occuranceDate = $correctiveAction->occuranceDate ? 
+                          Time::toMySqlDate($correctiveAction->occuranceDate) : 
+                          null;
+
+      $statement = $this->pdo->prepare(
+         "INSERT INTO correctiveaction " .
+         "(occuranceDate, jobId, inspectionId, description, employee, batchSize, dimensionalDefectCount, platingDefectCount, otherDefectCount, disposition, rootCause, dmrNumber, initiator, location, status) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+   
+      $result = $statement->execute(
+         [
+            $occuranceDate,
+            $correctiveAction->jobId,
+            $correctiveAction->inspectionId,
+            $correctiveAction->description,
+            $correctiveAction->employee,
+            $correctiveAction->batchSize,
+            $correctiveAction->dimensionalDefectCount,
+            $correctiveAction->platingDefectCount,
+            $correctiveAction->otherDefectCount,
+            $correctiveAction->disposition,
+            $correctiveAction->rootCause,
+            $correctiveAction->dmrNumber,
+            $correctiveAction->initiator,
+            $correctiveAction->location,
+            $correctiveAction->status
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateCorrectiveAction($correctiveAction)
+   {
+      $occuranceDate = $correctiveAction->occuranceDate ?
+                          Time::toMySqlDate($correctiveAction->occuranceDate) :
+                          null;
+      
+     $shortTermDueDate = $correctiveAction->shortTermCorrection->dueDate ?
+        Time::toMySqlDate($correctiveAction->shortTermCorrection->dueDate) :
+        null;
+     
+     $longTermDueDate = $correctiveAction->longTermCorrection->dueDate ?
+        Time::toMySqlDate($correctiveAction->longTermCorrection->dueDate) :
+        null;
+     
+     $reviewDate = $correctiveAction->review->reviewDate ?
+                      Time::toMySqlDate($correctiveAction->review->reviewDate) :
+                      null;
+      
+      $statement = $this->pdo->prepare(
+         "UPDATE correctiveaction " .
+          "SET occuranceDate = ?, jobId = ?, inspectionId = ?, description = ?, employee = ?, batchSize = ?, dimensionalDefectCount = ?, platingDefectCount = ?, otherDefectCount = ?, disposition = ?, rootCause = ?, dmrNumber = ?, initiator = ?, location = ?, status = ?, " .
+          "shortTerm_description = ?, shortTerm_dueDate = ?, shortTerm_employee = ?, shortTerm_responsibleDetails = ?, " .
+          "longTerm_description = ?, longTerm_dueDate = ?, longTerm_employee = ?, longTerm_responsibleDetails = ?, " .
+          "reviewDate = ?, reviewer = ?, effectiveness = ?, reviewComments = ? " .
+          "WHERE correctiveActionId = ?");
+            
+      $result = $statement->execute(
+         [
+            $occuranceDate,
+            $correctiveAction->jobId,
+            $correctiveAction->inspectionId,
+            $correctiveAction->description,
+            $correctiveAction->employee,
+            $correctiveAction->batchSize,
+            $correctiveAction->dimensionalDefectCount,
+            $correctiveAction->platingDefectCount,
+            $correctiveAction->otherDefectCount,
+            $correctiveAction->disposition,
+            $correctiveAction->rootCause,
+            $correctiveAction->dmrNumber,
+            $correctiveAction->initiator,
+            $correctiveAction->location,
+            $correctiveAction->status,
+            $correctiveAction->shortTermCorrection->description,
+            $shortTermDueDate,
+            $correctiveAction->shortTermCorrection->employee,
+            $correctiveAction->shortTermCorrection->responsibleDetails,
+            $correctiveAction->longTermCorrection->description,
+            $longTermDueDate,
+            $correctiveAction->longTermCorrection->employee,
+            $correctiveAction->longTermCorrection->responsibleDetails,
+            $reviewDate,
+            $correctiveAction->review->reviewer,
+            $correctiveAction->review->effectiveness,
+            $correctiveAction->review->comments,
+            $correctiveAction->correctiveActionId
+         ]);
+                          
+      return ($result);
+   }
+   
+   public function updateCorrectiveActionStatus($correctiveActionId, $status)
+   {
+      $statement = $this->pdo->prepare(
+         "UPDATE correctiveaction SET status = ? WHERE correctiveActionId = ?");
+      
+      $result = $statement->execute([$status, $correctiveActionId]);
+      
+      return ($result);
+   }
+   
+   public function deleteCorrectiveAction($correctiveActionId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM correctiveaction WHERE correctiveActionId = ?");
+      
+      $result = $statement->execute([$correctiveActionId]);
+      
+      $statement = $this->pdo->prepare("DELETE FROM action WHERE componentType = ? AND componentId = ?");
+      
+      $result &= $statement->execute([ComponentType::CORRECTIVE_ACTION, $correctiveActionId]);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                   Action
+   
+   public function getAction($actionId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM action WHERE actionId = ?;");
+      
+      $result = $statement->execute([$actionId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getActions($componentType, $componentId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM action WHERE componentType = ? AND componentId = ? ORDER BY dateTime ASC;");
+      
+      $result = $statement->execute([$componentType, $componentId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addAction($action)
+   {
+      $dateTime = ($action->dateTime) ?
+      Time::toMySqlDate($action->dateTime) :
+                     null;
+      
+      $statement = $this->pdo->prepare(
+         "INSERT INTO action " .
+         "(componentType, componentId, status, dateTime, userId, notes) " .
+         "VALUES (?, ?, ?, ?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $action->componentType,
+            $action->componentId,
+            $action->status,
+            $dateTime,
+            $action->userId,
+            $action->notes,
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateComponentAction($table, $action)
+   {
+      $dateTime = ($action->dateTime) ?
+                     Time::toMySqlDate($action->dateTime) :
+                     null;
+      
+      $statement = $this->pdo->prepare(
+         "UPDATE action " .
+         "SET compnentType = ?, componentId = ?, status= ?, dateTime = ?, userId = ?, notes = ? " .
+         "WHERE actionId = ?");
+      
+      $result = $statement->execute(
+         [
+            $action->componentType,
+            $action->componentId,
+            $action->status,
+            $dateTime,
+            $action->userId,
+            $action->notes,
+            $action->actionId
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteAction($actionId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM action WHERE actionId = ?");
+      
+      $result = $statement->execute([$table, $actionId]);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                  Attachment
+   
+   public function getAttachment($attachmentId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM attachment WHERE attachmentId = ?;");
+      
+      $result = $statement->execute([$attachmentId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getAttachments($componentType, $componentId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM attachment WHERE componentType = ? AND componentId = ? ORDER BY attachmentId ASC;");
+      
+      $result = $statement->execute([$componentType, $componentId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addAttachment($attachment)
+   {
+      $statement = $this->pdo->prepare(
+         "INSERT INTO attachment " .
+         "(componentType, componentId, filename, storedFilename, description) " .
+         "VALUES (?, ?, ?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $attachment->componentType,
+            $attachment->componentId,
+            $attachment->filename,
+            $attachment->storedFilename,
+            $attachment->description
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateAttachment($attachment)
+   {
+      $statement = $this->pdo->prepare(
+         "UPDATE attachment " .
+         "SET componentType = ?, componentId = ?, filename = ?, storedFilename = ?, description = ? " .
+         "WHERE attachmentId = ?");
+      
+      $result = $statement->execute(
+         [
+            $attachment->componentType,
+            $attachment->componentId,
+            $attachment->filename,
+            $attachment->storedFilename,
+            $attachment->storedFilename,
+            $attachment->attachmentId
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteAttachment($attachmentId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM attachment WHERE attachmentId = ?");
+      
+      $result = $statement->execute([$attachmentId]);
       
       return ($result);
    }

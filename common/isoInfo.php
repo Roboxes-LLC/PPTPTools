@@ -18,6 +18,7 @@ abstract class IsoDoc
    const MATERIAL_LOG = 10;
    const FIRST_PART_INSPECTION = 11;
    const FINAL_INSPECTION = 12;
+   const CORRECTIVE_ACTION_REQUEST = 13;
    const LAST = 13;
    const COUNT = IsoDoc::LAST - IsoDoc::FIRST;
 }

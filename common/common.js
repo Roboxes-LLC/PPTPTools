@@ -18,6 +18,11 @@ function set(elementId, value)
    document.getElementById(elementId).value = value;
 }
 
+function get(elementId)
+{
+   return (document.getElementById(elementId).value);
+}
+
 function clear(elementId)
 {
    document.getElementById(elementId).value = null;
@@ -45,7 +50,7 @@ function validate(elementId)
 
 function setSession(key, value)
 {
-   requestUrl = "../api/setSession/?key=" + key + "&value=" + value;
+   requestUrl = "/api/setSession/?key=" + key + "&value=" + value;
    
    var xhttp = new XMLHttpRequest();
    xhttp.onreadystatechange = function()
@@ -79,8 +84,7 @@ function setSession(key, value)
 function preserveSession()
 {
    setInterval(function(){ 
-      // AJAX call to populate WC numbers based on selected job number.
-      requestUrl = "../api/ping/";
+      requestUrl = "/api/ping/";
    
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function()
@@ -219,6 +223,18 @@ function formatDate(date)
       var formattedDate = [month, day, year].join('/'); 
    }
    
+   return (formattedDate);
+}
+
+function formatInputDate(date)
+{
+   // Convert to Y-M-D format, per HTML5 Date control.
+   // https://stackoverflow.com/questions/12346381/set-date-in-input-type-date
+   var day = ("0" + date.getDate()).slice(-2);
+   var month = ("0" + (date.getMonth() + 1)).slice(-2);
+   
+   var formattedDate = date.getFullYear() + "-" + (month) + "-" + (day);
+
    return (formattedDate);
 }
 

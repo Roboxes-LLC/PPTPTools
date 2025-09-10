@@ -328,6 +328,28 @@ if (!Authentication::isAuthenticated())
                   return (passCount + "/" + (count - naCount));
                }
             },
+            {title:"",                field:"car",              hozAlign:"center", print:false,
+               <?php echo !Authentication::checkPermissions(Permission::EDIT_CORRECTIVE_ACTION) ? "visible:false, " : "" ?>
+            
+               formatter:function(cell, formatterParams, onRendered){
+                  let cellValue = "";
+                  
+                  let correctiveActionId = parseInt(cell.getRow().getData().correctiveActionId);
+               
+                  if (correctiveActionId > 0)
+                  {
+                     let correctiveActionNumber = cell.getRow().getData().correctiveActionNumber;
+                     
+                     cellValue = `<a href="/correctiveAction/correctiveAction.php?correctiveActionId=${correctiveActionId}\">${correctiveActionNumber}</a>`;
+                  }
+                  else
+                  {
+                     cellValue =`<button class=\"small-button accent-button\" style=\"width:50px;\">CAR</button>`;
+                  }
+                  
+                  return (cellValue);
+               }
+            },
             {title:"",                field:"delete",           hozAlign:"center", print:false,
                <?php echo !Authentication::checkPermissions(Permission::DELETE_INSPECTION) ? "visible:false, " : "" ?>
                formatter:function(cell, formatterParams, onRendered){
@@ -351,7 +373,11 @@ if (!Authentication::isAuthenticated())
          {               
             shipmentId = parseInt(cell.getRow().getData().shipmentId);
             document.location = "<?php echo $ROOT?>/shipment/printShipmentTicket.php?shipmentTicketId=" + shipmentId;
-         }  
+         }
+         else if (cell.getColumn().getField() == "car")
+         {
+            onGenerateCorrectiveAction(inspectionId);
+         }
          else if (cell.getColumn().getField() == "delete")
          {
             onDeleteInspection(inspectionId);

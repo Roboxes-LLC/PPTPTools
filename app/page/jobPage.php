@@ -173,6 +173,24 @@ class JobPage extends Page
                      $this->error("Invalid job id [$jobId]");
                   }
                }
+               // Fetch single component by components.
+               else if (isset($params["jobNumber"]) && isset($params["wcNumber"]))
+               {
+                  $jobNumber = $params["jobNumber"];
+                  $wcNumber = $params["wcNumber"];
+                  
+                  $jobInfo = JobInfo::load(JobInfo::getJobIdByComponents($jobNumber, $wcNumber));
+                  
+                  if ($jobInfo)
+                  {
+                     $this->result->success = true;
+                     $this->result->jobInfo = $jobInfo;
+                  }
+                  else
+                  {
+                     $this->error("Invalid job [$jobNumber, $wcNumber]");
+                  }
+               }
                // Fetch all components.
                else
                {

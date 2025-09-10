@@ -29,7 +29,8 @@ Required PHP variables:
    <script src="/common/validate.js<?php echo $versionQuery ?>"></script>
    <script src="/script/common/common.js<?php echo $versionQuery ?>"></script>
    <script src="/script/common/commonDefs.php<?php echo $versionQuery ?>"></script>
-   <script src="/script/common/menu.js<?php echo $versionQuery ?>"></script>   
+   <script src="/script/common/menu.js<?php echo $versionQuery ?>"></script>
+   <script src="/script/common/validator.js<?php echo $versionQuery ?>"></script>   
    <script src="/script/page/<?php echo $javascriptFile ?>"></script>
       
 </head>

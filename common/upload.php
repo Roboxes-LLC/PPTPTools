@@ -83,7 +83,9 @@ class Upload
       
       $returnStatus = UploadStatus::UPLOADED;
       
-      $target = $UPLOADS . basename($file["name"]);
+      $storedFilename = basename($file["name"]);
+      
+      $target = $UPLOADS . $storedFilename;
       
       if (!Upload::validateFileFormat($file, array("pdf")))
       {
@@ -98,6 +100,31 @@ class Upload
          $returnStatus = UploadStatus::FILE_ERROR;
       }
       
+      return ($returnStatus);
+   }
+   
+   static function uploadAttachment($file, &$storedFilename)
+   {
+      global $UPLOADS;
+      
+      $returnStatus = UploadStatus::UPLOADED;
+      
+      $storedFilename = basename($file["name"]);
+
+      $target = $UPLOADS . $storedFilename;
+      
+      if (!Upload::validateFileFormat($file, array("pdf", "png", "jpg")))
+      {
+         $returnStatus = UploadStatus::BAD_FILE_TYPE;
+      }
+      else if (!Upload::validateFileSize($file, 10000000))  // 10MB
+      {
+         $returnStatus = UploadStatus::BAD_FILE_SIZE;
+      }
+      else if (!move_uploaded_file($file["tmp_name"], $target))
+      {
+         $returnStatus = UploadStatus::FILE_ERROR;
+      }      
       
       return ($returnStatus);
    }

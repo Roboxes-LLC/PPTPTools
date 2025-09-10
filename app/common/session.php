@@ -23,6 +23,9 @@ class Session
    const SHIPMENT_SHIPMENT_LOCATION = "shipment.shipmentLocation";
    const SHIPMENT_START_DATE = "shipment.startDate";
    const SHIPMENT_END_DATE = "shipment.endDate";
+   const CA_ACTIVE_ACTIONS = "correctiveAction.activeActions";
+   const CA_START_DATE = "correctiveAction.startDate";
+   const CA_END_DATE = "correctiveAction.endDate";
       
    public static function isset($key)
    {

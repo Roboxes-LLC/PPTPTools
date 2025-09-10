@@ -34,8 +34,17 @@ abstract class ActivityType
    const ANNOTATE_QUOTE = 26;
    const ADD_QUOTE_ATTACHMENT = 27;
    const DELETE_QUOTE_ATTACHMENT = 28;
+   // Corrective Action
+   const ADD_CORRECTIVE_ACTION = 29;
+   const EDIT_CORRECTIVE_ACTION = 30;
+   const DELETE_CORRECTIVE_ACTION = 31;
+   const ADD_CORRECTIVE_ACTION_ATTACHMENT = 32;
+   const DELETE_CORRECTIVE_ACTION_ATTACHMENT = 33;
+   const APPROVE_CORRECTIVE_ACTION = 34;
+   const UNAPPROVE_CORRECTIVE_ACTION = 35;
+   const ANNOTATE_CORRECTIVE_ACTION = 36;
    //
-   const LAST = 29;
+   const LAST = 37;
    const COUNT = ActivityType::LAST - ActivityType::FIRST;
    
    public static $quoteActivites = 
@@ -54,12 +63,26 @@ abstract class ActivityType
          ActivityType::ANNOTATE_QUOTE,
       );
       
+   public static $correctiveActionActivites =
+      array(
+         ActivityType::ADD_CORRECTIVE_ACTION,
+         ActivityType::EDIT_CORRECTIVE_ACTION,
+         ActivityType::DELETE_CORRECTIVE_ACTION,
+         ActivityType::ADD_CORRECTIVE_ACTION_ATTACHMENT,
+         ActivityType::DELETE_CORRECTIVE_ACTION_ATTACHMENT,
+         ActivityType::APPROVE_CORRECTIVE_ACTION,
+         ActivityType::UNAPPROVE_CORRECTIVE_ACTION,
+         ActivityType::ANNOTATE_CORRECTIVE_ACTION,
+      );
+      
    public static $activitiesWithNotes =
       array(
          ActivityType::APPROVE_QUOTE,
          ActivityType::UNAPPROVE_QUOTE,
          ActivityType::ACCEPT_QUOTE,
          ActivityType::REJECT_QUOTE,
+         ActivityType::APPROVE_CORRECTIVE_ACTION,
+         ActivityType::UNAPPROVE_CORRECTIVE_ACTION
       );
       
    public static function getLabel($activityType)
@@ -89,8 +112,16 @@ abstract class ActivityType
             "Reject Quote",
             "Revise Quote",
             "Pass On Quote",
+            "Annotate Quote",
             "Add Attachment",
-            "Remove Attachment"
+            "Remove Attachment",
+            "Add Corrective Action Request",
+            "Edit Corrective Action Request",
+            "Add Attachment",
+            "Remove Attachment",
+            "Approve Corrective Action Request",
+            "Unapprove Corrective Action Request",
+            "Annotate Corrective Action Request"
          );
       
       return ($labels[$activityType]);
@@ -115,6 +146,7 @@ abstract class ActivityType
          }
          
          case ActivityType::ADD_QUOTE:
+         case ActivityType::ADD_CORRECTIVE_ACTION:
          {
             $icon = "add";
             break;
@@ -122,6 +154,7 @@ abstract class ActivityType
          
          case ActivityType::EDIT_QUOTE:
          case ActivityType::REVISE_QUOTE:
+         case ActivityType::EDIT_CORRECTIVE_ACTION:
          {
             $icon = "edit";
             break;
@@ -134,12 +167,15 @@ abstract class ActivityType
          }
          
          case ActivityType::APPROVE_QUOTE:
+         case ActivityType::APPROVE_CORRECTIVE_ACTION:
+            
          {
             $icon = "thumb_up_alt";
             break;
          }
          
          case ActivityType::UNAPPROVE_QUOTE:
+         case ActivityType::UNAPPROVE_CORRECTIVE_ACTION:
          {
             $icon = "thumb_down_alt";
             break;
@@ -164,18 +200,21 @@ abstract class ActivityType
          }
          
          case ActivityType::ANNOTATE_QUOTE:
+         case ActivityType::ANNOTATE_CORRECTIVE_ACTION:
          {
             $icon = "chat";
             break;
          }
          
          case ActivityType::ADD_QUOTE_ATTACHMENT:
+         case ActivityType::ADD_CORRECTIVE_ACTION_ATTACHMENT:
          {
             $icon = "attachment";
             break;
          }
          
          case ActivityType::DELETE_QUOTE_ATTACHMENT:
+         case ActivityType::DELETE_CORRECTIVE_ACTION_ATTACHMENT:
          {
             $icon = "link_off";
             break;

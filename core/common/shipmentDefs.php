@@ -4,19 +4,20 @@ abstract class ShipmentLocation
 {
    const UNKNOWN = 0;
    const FIRST = 1;
-   const PPTP = ShipmentLocation::FIRST;
-   const PLATER = 2;
-   const CUSTOMER = 3;
-   const LAST = 4;
+   const WIP = ShipmentLocation::FIRST;
+   const VENDOR = 2;
+   const FINISHED_GOODS = 3;
+   const CUSTOMER = 4;
+   const LAST = 5;
    const COUNT = ShipmentLocation::LAST - ShipmentLocation::FIRST;
    
-   public static $values = array(ShipmentLocation::PPTP, ShipmentLocation::PLATER, ShipmentLocation::CUSTOMER);
+   public static $values = array(ShipmentLocation::WIP, ShipmentLocation::VENDOR, ShipmentLocation::FINISHED_GOODS, ShipmentLocation::CUSTOMER);
    
-   public static $activeLocations = [ShipmentLocation::PPTP, ShipmentLocation::PLATER];
+   public static $activeLocations = [ShipmentLocation::WIP, ShipmentLocation::VENDOR, ShipmentLocation::FINISHED_GOODS];
    
    public static function getLabel($location)
    {
-      $labels = array("", "Pittsburgh Precision", "Plater", "Customer");
+      $labels = array("", "WIP", "Vendor", "Finished Goods", "Customer");
       
       return ($labels[$location]);
    }
@@ -40,7 +41,7 @@ abstract class ShipmentLocation
    public static function getJavascript($enumName)
    {
       // Note: Keep synced with enum.
-      $varNames = array("UNKNOWN", "PPTP", "PLATER", "CUSTOMER");
+      $varNames = array("UNKNOWN", "WIP", "VENDOR", "FINISHED_GOODS", "CUSTOMER");
       
       $html = "$enumName = {";
       
