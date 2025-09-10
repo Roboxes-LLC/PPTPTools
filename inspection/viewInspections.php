@@ -330,8 +330,24 @@ if (!Authentication::isAuthenticated())
             },
             {title:"",                field:"car",              hozAlign:"center", print:false,
                <?php echo !Authentication::checkPermissions(Permission::EDIT_CORRECTIVE_ACTION) ? "visible:false, " : "" ?>
+            
                formatter:function(cell, formatterParams, onRendered){
-                  return (`<button class=\"small-button accent-button\" style=\"width:50px;\">CAR</button>`);
+                  let cellValue = "";
+                  
+                  let correctiveActionId = parseInt(cell.getRow().getData().correctiveActionId);
+               
+                  if (correctiveActionId > 0)
+                  {
+                     let correctiveActionNumber = cell.getRow().getData().correctiveActionNumber;
+                     
+                     cellValue = `<a href="/correctiveAction/correctiveAction.php?correctiveActionId=${correctiveActionId}\">${correctiveActionNumber}</a>`;
+                  }
+                  else
+                  {
+                     cellValue =`<button class=\"small-button accent-button\" style=\"width:50px;\">CAR</button>`;
+                  }
+                  
+                  return (cellValue);
                }
             },
             {title:"",                field:"delete",           hozAlign:"center", print:false,

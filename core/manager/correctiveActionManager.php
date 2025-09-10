@@ -20,4 +20,18 @@ class CorrectiveActionManager
       
       return ($correctiveActions);
    }
+   
+   public static function getCorrectiveActionsForInspection($inspectionId)
+   {
+      $correctiveActions = array();
+      
+      $result = PPTPDatabaseAlt::getInstance()->getCorrectiveActionsForInspection($inspectionId);
+      
+      foreach ($result as $row)
+      {
+         $correctiveActions[] = CorrectiveAction::load(intval($row["correctiveActionId"]));
+      }
+      
+      return ($correctiveActions);
+   }
 }

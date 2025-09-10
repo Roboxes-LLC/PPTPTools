@@ -11,6 +11,9 @@ class Time
    // Date format required for initializing time inputs.
    public const JAVASCRIPT_TIME_FORMAT = "H:i";
    
+   // Date format required for initializing time inputs.
+   public const MYSQL_DATE_FORMAT = "Y-m-d";
+   
    static public function init()
    {
       date_default_timezone_set(Time::DEFAULT_TIME_ZONE);

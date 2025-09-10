@@ -27,6 +27,7 @@ require_once '../common/upload.php';
 require_once '../common/userInfo.php';
 require_once '../common/weeklySummaryReport.php';
 require_once '../core/job/cronJobManager.php';
+require_once '../core/manager/correctiveActionManager.php';
 require_once '../core/manager/inspectionManager.php';
 require_once '../core/manager/jobManager.php';
 require_once '../core/manager/notificationManager.php';
@@ -1728,6 +1729,18 @@ $router->add("inspectionData", function($params) {
          $row["passCount"] = $inspection->getCountByStatus(InspectionStatus::PASS);
          $row["warningCount"] = $inspection->getCountByStatus(InspectionStatus::WARNING);
          $row["failCount"] = $inspection->getCountByStatus(InspectionStatus::FAIL);
+         
+         $correctiveActions = CorrectiveActionManager::getCorrectiveActionsForInspection($inspection->inspectionId);
+         if (count($correctiveActions) > 0)
+         {
+            $row["correctiveActionId"] = $correctiveActions[0]->correctiveActionId;
+            $row["correctiveActionNumber"] = $correctiveActions[0]->getCorrectiveActionNumber();
+         }
+         else
+         {
+            $row["correctiveActionId"] = CorrectiveAction::UNKNOWN_CA_ID;
+            $row["correctiveActionNumber"] = null;
+         }
          
          $result[] = $row;
       }

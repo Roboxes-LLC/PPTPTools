@@ -365,9 +365,9 @@ class CorrectiveAction
    
    onActiveActionsChanged()
    {
-      var activeQuotes = document.getElementById(CorrectiveAction.PageElements.ACTIVE_ACTIONS_INPUT).checked;
+      var activeActions = document.getElementById(CorrectiveAction.PageElements.ACTIVE_ACTIONS_INPUT).checked;
       
-      if (activeQuotes)
+      if (activeActions)
       {
          disable(CorrectiveAction.PageElements.START_DATE_INPUT);
          disable(CorrectiveAction.PageElements.END_DATE_INPUT);
@@ -380,7 +380,7 @@ class CorrectiveAction
       
       this.onFilterUpdate();
       
-      setSession("correctiveAction.activeActions", (activeQuotes ? "true" : "false"));
+      setSession("correctiveAction.activeActions", (activeActions ? "true" : "false"));
    }
    
    onAddButton()
@@ -831,10 +831,7 @@ class CorrectiveAction
       
       params.endDate =  document.getElementById(CorrectiveAction.PageElements.END_DATE_INPUT).value;
       
-      if (document.getElementById(CorrectiveAction.PageElements.ACTIVE_ACTIONS_INPUT).checked)
-      {
-         params.activeActions = true;
-      }
+      params.activeActions = document.getElementById(CorrectiveAction.PageElements.ACTIVE_ACTIONS_INPUT).checked;
 
       return (params);
    }

@@ -23,10 +23,11 @@ class CorrectiveActionPage extends Page
                    
                    $correctiveAction->occuranceDate = Time::now();
                    $correctiveAction->jobId = $inspection->getJobId();
+                   $correctiveAction->inspectionId = $inspection->inspectionId;
                    $correctiveAction->description = "Defect found in QC";
                    $correctiveAction->employee = $inspection->getOperator();
                    $correctiveAction->initiator = CorrectiveActionInitiator::INTERNAL;
-                   $correctiveAction->location = ShipmentLocation::PPTP;
+                   $correctiveAction->location = CorrectiveActionLocation::PPTP;
                    
                    if ($correctiveAction->jobId != JobInfo::UNKNOWN_JOB_ID)
                    {
@@ -713,8 +714,8 @@ class CorrectiveActionPage extends Page
        $correctiveAction->totalDefectCount = $correctiveAction->getTotalDefectCount();
        
        $correctiveAction->locationLabel = 
-          ($correctiveAction->location != ShipmentLocation::UNKNOWN) ? 
-             ShipmentLocation::getLabel($correctiveAction->location) : 
+          ($correctiveAction->location != CorrectiveActionLocation::UNKNOWN) ? 
+             CorrectiveActionLocation::getLabel($correctiveAction->location) : 
              null;
        
        $correctiveAction->initiatorLabel =

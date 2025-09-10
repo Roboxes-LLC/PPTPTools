@@ -207,6 +207,10 @@ function getRequestPanel()
    
    $occuranceDate = $correctiveAction->occuranceDate ? Time::toJavascriptDate($correctiveAction->occuranceDate) : null;
    
+   $ispectionLink = ($correctiveAction->inspectionId != Inspection::UNKNOWN_INSPECTION_ID) ?
+                       "<a href=\"/inspection/viewInspection.php?inspectionId=$correctiveAction->inspectionId\">Inspection</a>" :
+                       "";
+   
    $employeeOptions = UserInfo::getOptions(Role::$allRoles, [], $correctiveAction->employee);
    
    $customerOptions = Customer::getOptions($correctiveAction->getCustomerId());
@@ -256,9 +260,14 @@ function getRequestPanel()
                <input type="text" value="{$correctiveAction->getCorrectiveActionNumber()}" {$getDisabled(InputField::CAR_NUMBER)}>
             </div>
 
-            <div class="form-item">
-               <div class="form-label">Occurance</div>
-               <input type="date" class="form-input-medium" name="occuranceDate" value="$occuranceDate" {$getDisabled(InputField::OCCURANCE_DATE)}>
+            <div class="flex-horizontal">
+               <div class="form-item" style="margin-right: 25px">
+                  <div class="form-label">Occurance</div>
+                  <input type="date" class="form-input-medium" name="occuranceDate" value="$occuranceDate" {$getDisabled(InputField::OCCURANCE_DATE)}>
+               </div>
+               <div class="form-item" style="margin-right: 25px">
+                  $ispectionLink
+               </div>
             </div>
 
             <div class="form-item">

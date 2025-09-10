@@ -1341,8 +1341,8 @@ class PPTPDatabaseAlt extends PDODatabase
          }
       }
       
-      $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
-      $endDate = $endDate ? Time::toMySqlDate(Time::endOfDay($endDate)) : null;
+      $startDate = $startDate ? Time::dateTimeObject($startDate)->format(Time::MYSQL_DATE_FORMAT) : null;
+      $endDate = $endDate ? Time::dateTimeObject($endDate)->format(Time::MYSQL_DATE_FORMAT) : null;
       
       $dateClause = ($startDate && $endDate && !$allActive) ? "($dateField BETWEEN '$startDate' AND '$endDate')" : "TRUE";
       $statusClause = (!$allActive) ? "TRUE" : "(status != " . CorrectiveActionStatus::CLOSED . ")";
@@ -1350,6 +1350,15 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare("SELECT * FROM correctiveaction WHERE $dateClause AND $statusClause ORDER BY occuranceDate ASC;");
       
       $result = $statement->execute() ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getCorrectiveActionsForInspection($inspectionId)
+   {
+      $statement = $this->pdo->prepare("SELECT * FROM correctiveaction WHERE inspectionId = ? ORDER BY occuranceDate ASC;");
+      
+      $result = $statement->execute([$inspectionId]) ? $statement->fetchAll() : null;
       
       return ($result);
    }
