@@ -258,7 +258,8 @@ function getForm()
    $pptpPartNumber = JobInfo::getJobPrefix($shipment->jobNumber);
    $locationOptions = ShipmentLocation::getOptions($shipment->location);
    $quantity = ($shipment->quantity > 0) ? $shipment->quantity : null;
-   $shippedDate = $shipment->shippedDate ? Time::toJavascriptDate($shipment->shippedDate) : null;
+   $vendorShippedDate = $shipment->vendorShippedDate ? Time::toJavascriptDate($shipment->vendorShippedDate) : null;
+   $customerShippedDate = $shipment->customerShippedDate ? Time::toJavascriptDate($shipment->customerShippedDate) : null;
    
    $part = Part::load($pptpPartNumber, Part::USE_PPTP_NUMBER);
    
@@ -342,8 +343,13 @@ function getForm()
       </div>
 
       <div class="form-item">
-         <div class="form-label">Shipped Date</div>
-         <input id="shipped-date-input" type="date" name="shippedDate" value="$shippedDate" {$getDisabled(InputField::SHIPPED_DATE)} />
+         <div class="form-label">Vendor Shipped Date</div>
+         <input id="vendor-shipped-date-input" type="date" name="vendorShippedDate" value="$vendorShippedDate" {$getDisabled(InputField::SHIPPED_DATE)} />
+      </div>
+
+      <div class="form-item">
+         <div class="form-label">Customer Shipped Date</div>
+         <input id="customer-shipped-date-input" type="date" name="customerShippedDate" value="$customerShippedDate" {$getDisabled(InputField::SHIPPED_DATE)} />
       </div>
 
    </form>

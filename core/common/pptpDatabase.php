@@ -1122,12 +1122,13 @@ class PPTPDatabaseAlt extends PDODatabase
    public function addShipment($shipment)
    {
       $dateTime = $shipment->dateTime ? Time::toMySqlDate($shipment->dateTime) : null;
-      $shippedDate = $shipment->shippedDate ? Time::toMySqlDate($shipment->shippedDate) : null;
+      $vendorShippedDate = $shipment->vendorShippedDate ? Time::toMySqlDate($shipment->vendorShippedDate) : null;
+      $customerShippedDate = $shipment->customerShippedDate ? Time::toMySqlDate($shipment->customerShippedDate) : null;
       
       $statement = $this->pdo->prepare(
          "INSERT INTO shipment " .
-         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, vendorPackingList, customerPackingList, location, shippedDate) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, vendorPackingList, customerPackingList, location, vendorShippedDate, customerShippedDate) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -1140,7 +1141,8 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->vendorPackingList,
             $shipment->customerPackingList,
             $shipment->location,
-            $shippedDate
+            $vendorShippedDate,
+            $customerShippedDate
          ]);
       
       return ($result);
@@ -1149,11 +1151,12 @@ class PPTPDatabaseAlt extends PDODatabase
    public function updateShipment($shipment)
    {
       $dateTime = $shipment->dateTime ? Time::toMySqlDate($shipment->dateTime) : null;
-      $shippedDate = $shipment->shippedDate ? Time::toMySqlDate($shipment->shippedDate) : null;
+      $vendorShippedDate = $shipment->vendorShippedDate ? Time::toMySqlDate($shipment->vendorShippedDate) : null;
+      $customerShippedDate = $shipment->customerShippedDate ? Time::toMySqlDate($shipment->customerShippedDate) : null;
       
       $statement = $this->pdo->prepare(
          "UPDATE shipment " .
-         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, vendorPackingList = ?, customerPackingList = ?, location = ?, shippedDate = ? " .
+         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, vendorPackingList = ?, customerPackingList = ?, location = ?, vendorShippedDate = ?, customerShippedDate = ? " .
          "WHERE shipmentId = ?");
       
       $result = $statement->execute(
@@ -1167,7 +1170,8 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->vendorPackingList,
             $shipment->customerPackingList,
             $shipment->location,
-            $shippedDate,
+            $vendorShippedDate,
+            $customerShippedDate,
             $shipment->shipmentId
          ]);
       

@@ -22,7 +22,8 @@ class Shipment
    public $vendorPackingList;
    public $customerPackingList;
    public $location;
-   public $shippedDate;
+   public $vendorShippedDate;
+   public $customerShippedDate;
    
    public $inspection;
   
@@ -38,7 +39,8 @@ class Shipment
       $this->vendorPackingList = null;
       $this->customerPackingList = null;
       $this->location = ShipmentLocation::UNKNOWN;
-      $this->shippedDate = null;
+      $this->vendorShippedDate = null;
+      $this->customerShippedDate = null;
       
       $this->inspection = null;
    }
@@ -57,7 +59,8 @@ class Shipment
       $this->vendorPackingList = $row["vendorPackingList"];
       $this->customerPackingList = $row["customerPackingList"];
       $this->location = intval($row["location"]);
-      $this->shippedDate = $row["shippedDate"];
+      $this->vendorShippedDate = $row["vendorShippedDate"];
+      $this->customerShippedDate = $row["customerShippedDate"];
    }
    
    // **************************************************************************

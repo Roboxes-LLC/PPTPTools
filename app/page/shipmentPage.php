@@ -16,7 +16,7 @@ class ShipmentPage extends Page
          {
             if ($this->authenticate([Permission::EDIT_SHIPMENT]))
             {
-               if (Page::requireParams($params, ["shipmentId", "quantity", "packingListNumber", "location", "shippedDate"]))
+               if (Page::requireParams($params, ["shipmentId", "quantity", "packingListNumber", "location", "vendorShippedDate", "customerShippedDate"]))
                {
                   $shipmentId = $params->getInt("shipmentId");
                   $newShipment = ($shipmentId == Shipment::UNKNOWN_SHIPMENT_ID);
@@ -356,7 +356,8 @@ class ShipmentPage extends Page
       $shipment->quantity = $params->getInt("quantity");
       $shipment->packingListNumber = $params->get("packingListNumber");
       $shipment->location = $params->getInt("location");
-      $shipment->shippedDate = $params->get("shippedDate");
+      $shipment->vendorShippedDate = $params->get("vendorShippedDate");
+      $shipment->customerShippedDate = $params->get("customerShippedDate");
       
       // New entries specify the jobNumber manually.
       if ($params->keyExists("jobNumber"))
@@ -374,7 +375,8 @@ class ShipmentPage extends Page
       $shipment->formattedDateTime = ($shipment->dateTime) ? Time::dateTimeObject($shipment->dateTime)->format("n/j/Y h:i A") : null;
       $shipment->vendorPackingListUrl = $shipment->vendorPackingList ? $PACKING_LISTS_DIR . $shipment->vendorPackingList : null;
       $shipment->customerPackingListUrl = $shipment->customerPackingList ? $PACKING_LISTS_DIR . $shipment->customerPackingList : null;
-      $shipment->formattedShippedDate = ($shipment->shippedDate) ? Time::dateTimeObject($shipment->shippedDate)->format("n/j/Y") : null;
+      $shipment->formattedVendorShippedDate = ($shipment->vendorShippedDate) ? Time::dateTimeObject($shipment->vendorShippedDate)->format("n/j/Y") : null;
+      $shipment->formattedCustomerShippedDate = ($shipment->customerShippedDate) ? Time::dateTimeObject($shipment->customerShippedDate)->format("n/j/Y") : null;
       
       // Inspection status.
       $shipment->inspectionStatus = InspectionStatus::UNKNOWN;
@@ -395,6 +397,12 @@ class ShipmentPage extends Page
       if ($part)
       {
          $shipment->part = $part;
+         
+         $customer = Customer::load($part->customerId);
+         if ($customer)
+         {
+            $shipment->part->customerName = $customer->customerName;
+         }
       }
    }
    

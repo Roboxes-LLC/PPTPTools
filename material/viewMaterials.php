@@ -271,6 +271,7 @@ if (!Authentication::isAuthenticated())
             {title:"Location",    field:"locationLabel",                            headerFilter:true},
             {title:"Type",        field:"materialHeatInfo.materialInfo.typeLabel",  headerFilter:true},
             {title:"Size",        field:"materialHeatInfo.materialInfo.size",       headerFilter:true},
+            {title:"Shape",       field:"materialHeatInfo.materialInfo.shapeLabel", headerFilter:true},
             {title:"Length",      field:"materialHeatInfo.materialInfo.length",     headerFilter:true},
             {title:"Pieces",      field:"pieces"},            
             {title:"Quantity",    field:"quantity"},

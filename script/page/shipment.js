@@ -143,6 +143,7 @@ class Shipment
                   return (cell.getRow().getData().formattedDateTime);
                }
             },
+            {title:"Customer",          field:"part.customerName",   headerFilter:true},
             {title:"Part #",            field:"part.customerNumber", headerFilter:true},
             {title:"Job #",             field:"jobNumber",           headerFilter:true},
             {title:"Quantity",          field:"quantity",            headerFilter:true},
@@ -160,7 +161,7 @@ class Shipment
             }, 
             {title:"Location",          field:"locationLabel",       headerFilter:true},
             {title:"Packing #",         field:"packingListNumber",   headerFilter:true},
-            {title:"Vendor Packing List", field:"vendorPackingList",         hozAlign:"left",
+            {title:"Vendor<br>Packing List", field:"vendorPackingList",         hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
                   let cellValue = "";
                   
@@ -176,7 +177,7 @@ class Shipment
                   return (cellValue);
                 }
             },
-            {title:"Customer Packing List", field:"customerPackingList",         hozAlign:"left",
+            {title:"Customer<br>Packing List", field:"customerPackingList",         hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
                   let cellValue = "";
                   
@@ -192,9 +193,14 @@ class Shipment
                   return (cellValue);
                 }
             },
-            {title:"Shipped",           field:"dateTime",            headerFilter:true,
+            {title:"Vendor<br>Shipped",    field:"dateTime",            headerFilter:true,
                formatter:function(cell, formatterParams, onRendered) {
-                  return (cell.getRow().getData().formattedShippedDate);
+                  return (cell.getRow().getData().formattedVendorShippedDate);
+               }
+            },
+            {title:"Customer<br>Shipped",  field:"dateTime",            headerFilter:true,
+               formatter:function(cell, formatterParams, onRendered) {
+                  return (cell.getRow().getData().formattedCustomerShippedDate);
                }
             },
             {title:"",                  field:"delete",              hozAlign:"center", print:false,
@@ -238,7 +244,7 @@ class Shipment
          {
             document.location = `/shipment/shipment.php?shipmentId=${shipmentId}`;
          }
-      });
+      }.bind(this));
    }
    
    createTimeCardTable(tableElementId)
