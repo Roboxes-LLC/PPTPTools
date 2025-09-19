@@ -50,7 +50,7 @@ class OasisReport
          
          if (!$oasisReport->parse($line))
          {
-            echo "Parse failure";
+            echo "Parse failure: $line";
             $oasisReport = null;
             break;
          }
@@ -436,6 +436,12 @@ class OasisReport
                   
                   $success = $this->userFields[$userFieldType]->parse($line);
                }
+               break;
+            }
+            
+            case ReportLineType::ENCODING:
+            {
+               // Ignore encoding line.
                break;
             }
                

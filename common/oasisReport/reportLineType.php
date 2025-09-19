@@ -9,7 +9,8 @@ class ReportLineType
    const PART_INSPECTION_END = 3;
    const USER_FIELD_LABEL = 4;
    const USER_FIELD_VALUE = 5;
-   const LAST = ReportLineType::USER_FIELD_VALUE;
+   const ENCODING = 6;
+   const LAST = ReportLineType::ENCODING;
    
    private static $LABELS = array(
       "UNKNOWN",
@@ -17,7 +18,9 @@ class ReportLineType
       "DATA",
       "END",
       "UserField",
-      "UserData");
+      "UserData",
+      "ENCODING"
+   );
    
    private static $TOKEN_COUNT = array(
       0,
@@ -25,14 +28,18 @@ class ReportLineType
       8,
       3,
       2,
-      2);
+      2,
+      2
+   );
    
    public static $VALUES = array(
       ReportLineType::PART_INSPECTION_START,
       ReportLineType::PART_INSPECTION_DATA,
       ReportLineType::PART_INSPECTION_END,
       ReportLineType::USER_FIELD_LABEL,
-      ReportLineType::USER_FIELD_VALUE);
+      ReportLineType::USER_FIELD_VALUE,
+      ReportLineType::ENCODING
+   );
    
    public static function valueOf($token)
    {
