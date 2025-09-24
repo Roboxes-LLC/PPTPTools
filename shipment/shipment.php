@@ -343,12 +343,12 @@ function getForm()
       </div>
 
       <div class="form-item">
-         <div class="form-label">Vendor Shipped Date</div>
+         <div class="form-label-long">Vendor Shipped Date</div>
          <input id="vendor-shipped-date-input" type="date" name="vendorShippedDate" value="$vendorShippedDate" {$getDisabled(InputField::SHIPPED_DATE)} />
       </div>
 
       <div class="form-item">
-         <div class="form-label">Customer Shipped Date</div>
+         <div class="form-label-long">Customer Shipped Date</div>
          <input id="customer-shipped-date-input" type="date" name="customerShippedDate" value="$customerShippedDate" {$getDisabled(InputField::SHIPPED_DATE)} />
       </div>
 

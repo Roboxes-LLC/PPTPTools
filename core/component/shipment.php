@@ -13,6 +13,8 @@ class Shipment
    const UNKNOWN_PACKING_LIST_NUMBER = null;
    
    public $shipmentId;
+   public $parentShipmentId;
+   public $childIndex;
    public $dateTime;
    public $author;
    public $jobNumber;
@@ -30,6 +32,8 @@ class Shipment
    public function __construct()
    {
       $this->shipmentId = Shipment::UNKNOWN_SHIPMENT_ID;
+      $this->parentShipmentId = Shipment::UNKNOWN_SHIPMENT_ID;
+      $this->childIndex = 0;
       $this->dateTime = null;
       $this->author = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
@@ -48,6 +52,8 @@ class Shipment
    public function initialize($row)
    {
       $this->shipmentId = intval($row["shipmentId"]);
+      $this->parentShipmentId = intval($row["parentShipmentId"]);
+      $this->childIndex = intval($row["childIndex"]);
       $this->dateTime = $row["dateTime"] ?
                            Time::fromMySqlDate($row["dateTime"]) :
                            null;
@@ -91,6 +97,8 @@ class Shipment
       if ($shipment->shipmentId == Shipment::UNKNOWN_SHIPMENT_ID)
       {
          $success = PPTPDatabaseAlt::getInstance()->addShipment($shipment);
+         
+         $shipment->shipmentId = intval(PPTPDatabaseAlt::getInstance()->lastInsertId());
       }
       else
       {
@@ -103,5 +111,31 @@ class Shipment
    public static function delete($shipmentId)
    {
       return (PPTPDatabaseAlt::getInstance()->deleteShipment($shipmentId));
+   }
+   
+   public function getParent()
+   {
+      $parent = null;
+      
+      if ($this->parentShipmentId  != Shipment::UNKNOWN_SHIPMENT_ID)
+      {
+         $parent = Shipment::load($this->parentShipmentId);
+      }
+      
+      return ($parent);
+   }
+   
+   public function getChildren()
+   {
+      $children = [];
+      
+      $result = PPTPDatabaseAlt::getInstance()->getChildShipments($this->shipmentId);
+      
+      foreach ($result as $row)
+      {
+         $children[] = Shipment::load(intval($row["shipmentId"]));
+      }
+      
+      return ($children);
    }
 }

@@ -62,7 +62,7 @@ class ShipmentTicket
       
       if ($shipmentEntry)
       {      
-         $shipmentTicketCode = ShipmentTicket::getShipmentTicketCode($this->materialTicketId);
+         $shipmentTicketCode = ShipmentManager::getShipmentTicketCode($this->materialTicketId);
          
          $shipmentDescription = "";
          if ($shipmentEntry->materialHeatInfo)
@@ -137,20 +137,18 @@ HEREDOC;
       }
    }
    */
-   
-   public static function getShipmentTicketCode($shipmentTicketId)
-   {
-      return (sprintf('%04X', $shipmentTicketId));
-   }
-   
+
+   // TODO: Rewrite in ShipmentManager
+   /*
    public static function getShipmentTicketId($shipmentTicketCode)
    {
       return (ctype_xdigit($shipmentTicketCode) ? hexdec($shipmentTicketCode) : ShipmentTicket::UNKNOWN_MATERIAL_TICKET_ID);
    }
+   */
    
    private static function generatePrintDescription($shipmentTicketCode)
    {
-      $description = "ShipmentTicket_" . ShipmentTicket::getShipmentTicketCode($shipmentTicketCode) . ".label";
+      $description = "ShipmentTicket_" . ShipmentManager::getShipmentTicketCode($shipmentTicketCode) . ".label";
       
       return ($description);
    }
@@ -163,7 +161,7 @@ HEREDOC;
             
       if ($shipment)
       {
-         $shipmentTicketCode = ShipmentTicket::getShipmentTicketCode($shipmentId);
+         $shipmentTicketCode = ShipmentManager::getShipmentTicketCode($shipmentId);
 
          $partNumber = "";
          $customer = null;

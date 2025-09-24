@@ -21,7 +21,10 @@ class Shipment
       "JOB_NUMBER_INPUT": "job-number-input",
       "PPTP_PART_NUMBER_INPUT": "pptp-part-number-input",
       "CUSTOMER_NAME_INPUT": "customer-name-input",
-      "CUSTOMER_PART_NUMBER_INPUT": "customer-part-number-input"
+      "CUSTOMER_PART_NUMBER_INPUT": "customer-part-number-input",
+      "QUANTITY_INPUT": "quantity-input",
+      "PARENT_QUANTITY_INPUT": "parent-quantity-input",
+      "CHILD_QUANTITY_INPUT": "child-quantity-input",
    };
 
    constructor()
@@ -96,6 +99,13 @@ class Shipment
       {
          document.getElementById(Shipment.PageElements.JOB_NUMBER_INPUT).addEventListener('change', function() {
             this.onJobNumberChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Shipment.PageElements.CHILD_QUANTITY_INPUT) != null)
+      {
+         document.getElementById(Shipment.PageElements.CHILD_QUANTITY_INPUT).addEventListener('input', function() {
+            this.onChildQuantityChanged();
          }.bind(this));
       }
    }      
@@ -203,7 +213,12 @@ class Shipment
                   return (cell.getRow().getData().formattedCustomerShippedDate);
                }
             },
-            {title:"",                  field:"delete",              hozAlign:"center", print:false,
+            {title:"",                  field:"split", tooltip:"Split",   hozAlign:"center", print:false,
+               formatter:function(cell, formatterParams, onRendered){
+                  return ("<i class=\"material-icons icon-button\">call_split</i>");
+               }
+            },
+            {title:"",                  field:"delete", tooltip:"Delete", hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
@@ -233,6 +248,15 @@ class Shipment
          else if ((cell.getColumn().getField() == "vendorPackingList") ||
                   (cell.getColumn().getField() == "customerPackingList"))
          {
+            e.stopPropagation();
+         }
+         else if (cell.getColumn().getField() == "split")
+         {
+            let shipmentId = parseInt(cell.getRow().getData().shipmentId);
+            if (shipmentId != 0)
+            {
+               document.location = `/shipment/splitShipment.php?shipmentId=${shipmentId}`;
+            }
             e.stopPropagation();
          }
          else if (cell.getColumn().getField() == "delete")
@@ -479,7 +503,20 @@ class Shipment
          }.bind(this));
       }
    }
-
+   
+   onChildQuantityChanged()
+   {
+      let quantity = parseInt(get(Shipment.PageElements.QUANTITY_INPUT));
+      let childQuantity = parseInt(get(Shipment.PageElements.CHILD_QUANTITY_INPUT));
+      
+      if (childQuantity > quantity)
+      {
+         childQuantity = quantity;
+      }
+      
+      set(Shipment.PageElements.CHILD_QUANTITY_INPUT, childQuantity);
+      set(Shipment.PageElements.PARENT_QUANTITY_INPUT, (quantity - childQuantity));
+   }
       
    // **************************************************************************
    

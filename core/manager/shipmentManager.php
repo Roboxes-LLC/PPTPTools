@@ -155,6 +155,83 @@ class ShipmentManager
       
       return ($shipments);
    }
+   
+   public static function getShipmentTicketCode($shipmentId)
+   {
+      $shipmentTicketCode = null;
+      
+      $shipment = Shipment::load($shipmentId);
+      
+      // Build a code that looks like <ancestorHexId>.<childId>.<childId> ...
+      while ($shipment && ($shipment->parentShipmentId != Shipment::UNKNOWN_SHIPMENT_ID))
+      {
+         $shipmentTicketCode .= "." . ($shipment->childIndex + 1);
+         
+         $shipment = $shipment->getParent();
+      }
+      
+      if ($shipment)
+      {
+         $shipmentTicketCode = sprintf('%04X', $shipment->shipmentId) . $shipmentTicketCode;
+      }
+      
+      return ($shipmentTicketCode);
+   }
+   
+   public static function getNextChildTicketCode($shipmentId)
+   {
+      $shipmentTicketCode = null;
+      
+      $shipment = Shipment::load($shipmentId);
+      
+      if ($shipment)
+      {
+         $nextChildIndex = 0;
+
+         $children = $shipment->getChildren();
+         $nextChildIndex = (count($children) > 0) ? (end($children)->childIndex + 1) : 0;
+
+         $shipmentTicketCode .=  ShipmentManager::getShipmentTicketCode($shipment->shipmentId) . "." . ($nextChildIndex + 1);
+      }
+      
+      return ($shipmentTicketCode);
+   }
+   
+   public static function split($shipmentId, $author, $childQuantity, $childLocation)
+   {
+      $childShipmentId = Shipment::UNKNOWN_SHIPMENT_ID;
+      
+      $shipment = Shipment::load($shipmentId);
+      
+      if ($shipment)
+      {
+         $childShipment = new Shipment();
+         $childShipment->parentShipmentId = $shipment->shipmentId;
+         
+         $siblings = $shipment->getChildren();
+         $childShipment->childIndex = count($siblings);
+         
+         $childShipment->dateTime = Time::now();
+         $childShipment->author = $author;
+         $childShipment->jobNumber = $shipment->jobNumber;
+         $childShipment->inspectionId = $shipment->inspectionId;
+         $childShipment->quantity =  $childQuantity;
+         $childShipment->location = $childLocation;
+         $childShipment->packingListNumber = $shipment->packingListNumber;
+         $childShipment->vendorPackingList = $shipment->vendorPackingList;
+         $childShipment->customerPackingList = $shipment->customerPackingList;
+         $childShipment->vendorShippedDate = $shipment->vendorShippedDate;
+         $childShipment->customerShippedDate = $shipment->customerShippedDate;
+         
+         Shipment::save($childShipment);
+         $childShipmentId = $childShipment->shipmentId;
+         
+         $shipment->quantity = ($shipment->quantity - $childQuantity);
+         Shipment::save($shipment);
+      }
+      
+      return ($childShipmentId);
+   }
 }
 
 ?>

@@ -1096,6 +1096,16 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
+   public function getChildShipments($shipmentId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM shipment WHERE parentShipmentId = ? ORDER BY shipmentId ASC;");
+      
+      $result = $statement->execute([$shipmentId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
    public function getActiveShipmentsByPart($partNumber)
    {
       $questionMarks = array();
@@ -1127,11 +1137,13 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "INSERT INTO shipment " .
-         "(jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, vendorPackingList, customerPackingList, location, vendorShippedDate, customerShippedDate) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(parentShipmentId, childIndex, jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, vendorPackingList, customerPackingList, location, vendorShippedDate, customerShippedDate) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
+            $shipment->parentShipmentId,
+            $shipment->childIndex,
             $shipment->jobNumber,
             $dateTime,      
             $shipment->author,
@@ -1156,11 +1168,13 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "UPDATE shipment " .
-         "SET jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, vendorPackingList = ?, customerPackingList = ?, location = ?, vendorShippedDate = ?, customerShippedDate = ? " .
+         "SET parentShipmentId = ?, childIndex = ?, jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, vendorPackingList = ?, customerPackingList = ?, location = ?, vendorShippedDate = ?, customerShippedDate = ? " .
          "WHERE shipmentId = ?");
       
       $result = $statement->execute(
          [
+            $shipment->parentShipmentId,
+            $shipment->childIndex,
             $shipment->jobNumber,
             $dateTime,      
             $shipment->author,

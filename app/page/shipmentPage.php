@@ -340,6 +340,42 @@ class ShipmentPage extends Page
             }
             break;
          }
+         
+         case "split_shipment":
+         {
+            if ($this->authenticate([Permission::EDIT_SHIPMENT]))
+            {
+               if (Page::requireParams($params, ["shipmentId", "childQuantity", "childLocation"]))
+               {
+                  $shipmentId = $params->getInt("shipmentId");
+                  $childQuantity = $params->getInt("childQuantity");
+                  $childLocation = $params->getInt("childLocation");
+                  $author = Authentication::getAuthenticatedUser()->employeeNumber;
+                  
+                  $shipment = Shipment::load($shipmentId);
+                  if ($shipment)
+                  {
+                     $childShipmentId = ShipmentManager::split($shipmentId, $author, $childQuantity, $childLocation);
+                     
+                     if ($childShipmentId != Shipment::UNKNOWN_SHIPMENT_ID)
+                     {
+                        $this->result->success = true;
+                        $this->result->shipmentId = $shipmentId;
+                        $this->result->childShipmentId = $childShipmentId;
+                     }
+                     else
+                     {
+                        $this->error("Database error");
+                     }
+                  }
+                  else
+                  {
+                     $this->error("Invalid shipment id [$shipmentId]");
+                  }
+               }
+            }
+            break;
+         }
       
          default:
          {
@@ -370,7 +406,7 @@ class ShipmentPage extends Page
    {
       global $PACKING_LISTS_DIR;
       
-      $shipment->shipmentTicketCode = ShipmentTicket::getShipmentTicketCode($shipment->shipmentId);
+      $shipment->shipmentTicketCode = ShipmentManager::getShipmentTicketCode($shipment->shipmentId);
       $shipment->locationLabel = ShipmentLocation::getLabel($shipment->location);
       $shipment->formattedDateTime = ($shipment->dateTime) ? Time::dateTimeObject($shipment->dateTime)->format("n/j/Y h:i A") : null;
       $shipment->vendorPackingListUrl = $shipment->vendorPackingList ? $PACKING_LISTS_DIR . $shipment->vendorPackingList : null;

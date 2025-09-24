@@ -757,3 +757,9 @@ form.show-invalid select:invalid
 .inspection-status.incomplete {
    background-color: grey;
 }
+
+.split-icon {
+   font-size: 48px;
+   font-weight: bold;
+   color: #417cb8
+}
