@@ -170,7 +170,6 @@ class Shipment
                }
             }, 
             {title:"Location",          field:"locationLabel",       headerFilter:true},
-            {title:"Packing #",         field:"packingListNumber",   headerFilter:true},
             {title:"Vendor<br>Packing List", field:"vendorPackingList",         hozAlign:"left",
                formatter:function(cell, formatterParams, onRendered){
                   let cellValue = "";

@@ -21,14 +21,13 @@ abstract class InputField
    const JOB_ID = 2;
    const CUSTOMER_PART_NUMBER = 3;
    const QUANTITY = 4;
-   const PACKING_LIST_NUMBER = 5;
-   const PACKING_LIST = 6;
-   const PPTP_PART_NUMBER = 7;
-   const CUSTOMER_NAME = 8;
-   const LOCATION = 9;
-   const JOB_NUMBER = 10;
-   const SHIPPED_DATE = 11;
-   const LAST = 12;
+   const PACKING_LIST = 5;
+   const PPTP_PART_NUMBER = 6;
+   const CUSTOMER_NAME = 7;
+   const LOCATION = 8;
+   const JOB_NUMBER = 9;
+   const SHIPPED_DATE = 10;
+   const LAST = 11;
    const COUNT = InputField::LAST - InputField::FIRST;
 }
 
@@ -325,11 +324,6 @@ function getForm()
                $locationOptions
             </select>
          </div>
-      </div>
-
-      <div class="form-item">
-         <div class="form-label">Packing #</div>
-         <input id="address-line-1-input" type="text" name="packingListNumber" maxlength="32" style="width:150px;" value="{$shipment->packingListNumber}" {$getDisabled(InputField::PACKING_LIST_NUMBER)} />
       </div>
 
       <div class="form-item">

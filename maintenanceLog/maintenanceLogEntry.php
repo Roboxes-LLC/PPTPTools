@@ -306,7 +306,7 @@ if (!Authentication::isAuthenticated())
             <div class="form-label-long">Technician</div>
             <div class="flex-horizontal">
                <select id="employee-number-input" name="employeeNumber" form="input-form" oninput="" <?php echo getDisabled(MaintenanceLogInputField::EMPLOYEE_NUMBER); ?>>
-                  <?php echo UserInfo::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber], getMaintenanceEntry()->employeeNumber); ?>
+                  <?php echo UserManager::getOptions([Role::MAINTENANCE], [Authentication::getAuthenticatedUser()->employeeNumber], getMaintenanceEntry()->employeeNumber); ?>
                </select>
             </div>
          </div>

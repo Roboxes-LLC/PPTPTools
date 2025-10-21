@@ -162,17 +162,18 @@ class ShipmentManager
       
       $shipment = Shipment::load($shipmentId);
       
-      // Build a code that looks like <ancestorHexId>.<childId>.<childId> ...
-      while ($shipment && ($shipment->parentShipmentId != Shipment::UNKNOWN_SHIPMENT_ID))
-      {
-         $shipmentTicketCode .= "." . ($shipment->childIndex + 1);
-         
-         $shipment = $shipment->getParent();
-      }
-      
       if ($shipment)
       {
-         $shipmentTicketCode = sprintf('%04X', $shipment->shipmentId) . $shipmentTicketCode;
+         if ($shipment->parentShipmentId != Shipment::UNKNOWN_SHIPMENT_ID)
+         {
+            // <hex ancestorId>.<childIndex>
+            $shipmentTicketCode = sprintf('%04X', $shipment->parentShipmentId) . "." . ($shipment->childIndex + 1);
+         }
+         else
+         {
+            // <hex shipmentId>
+            $shipmentTicketCode = sprintf('%04X', $shipment->shipmentId);
+         }
       }
       
       return ($shipmentTicketCode);
@@ -186,12 +187,16 @@ class ShipmentManager
       
       if ($shipment)
       {
+         $parentShipmentId = ($shipment->parentShipmentId != Shipment::UNKNOWN_SHIPMENT_ID) ?
+                                $shipment->parentShipmentId :
+                                $shipment->shipmentId;
+         
          $nextChildIndex = 0;
 
-         $children = $shipment->getChildren();
+         $children = Shipment::getChildren($parentShipmentId);
          $nextChildIndex = (count($children) > 0) ? (end($children)->childIndex + 1) : 0;
 
-         $shipmentTicketCode .=  ShipmentManager::getShipmentTicketCode($shipment->shipmentId) . "." . ($nextChildIndex + 1);
+         $shipmentTicketCode .=  ShipmentManager::getShipmentTicketCode($parentShipmentId) . "." . ($nextChildIndex + 1);
       }
       
       return ($shipmentTicketCode);
@@ -206,10 +211,12 @@ class ShipmentManager
       if ($shipment)
       {
          $childShipment = new Shipment();
-         $childShipment->parentShipmentId = $shipment->shipmentId;
+         $childShipment->parentShipmentId = ($shipment->parentShipmentId != Shipment::UNKNOWN_SHIPMENT_ID) ?
+                                               $shipment->parentShipmentId :
+                                               $shipment->shipmentId;
          
-         $siblings = $shipment->getChildren();
-         $childShipment->childIndex = count($siblings);
+         $siblings = Shipment::getChildren($shipment->parentShipmentId);
+         $childShipment->childIndex = (count($siblings) > 0) ? (end($siblings)->childIndex + 1) : 0;
          
          $childShipment->dateTime = Time::now();
          $childShipment->author = $author;
@@ -217,7 +224,6 @@ class ShipmentManager
          $childShipment->inspectionId = $shipment->inspectionId;
          $childShipment->quantity =  $childQuantity;
          $childShipment->location = $childLocation;
-         $childShipment->packingListNumber = $shipment->packingListNumber;
          $childShipment->vendorPackingList = $shipment->vendorPackingList;
          $childShipment->customerPackingList = $shipment->customerPackingList;
          $childShipment->vendorShippedDate = $shipment->vendorShippedDate;

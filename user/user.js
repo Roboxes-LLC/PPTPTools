@@ -94,20 +94,41 @@ function onDeleteUser(employeeNumber)
 
 function onRoleChange()
 {
-   var roleId = parseInt(document.getElementById("role-input").value);
-   var permissions = defaultPermissions[roleId - 1];
-   
-   var elements = document.getElementsByClassName("permission-checkbox");
-   
-   for (element of elements)
-   {
-      var name = element.name;
-      var permissionId = parseInt(name.substring(name.indexOf("-") + 1));
+    let selectedRoles = [];
+    for (const option of document.getElementById("role-input").options)
+    {
+       if (option.selected)
+       {
+            selectedRoles.push(option.value);
+       }
+    }
+    
+    var elements = document.getElementsByClassName("permission-checkbox");
+    
+    // Uncheck all.
+    for (element of elements)
+    {
+       element.checked = false;
+    }
+
+    
+    for (const roleId of selectedRoles)
+    {
+      var permissions = defaultPermissions[roleId - 1];
       
-      var mask = (1 << (permissionId - 1));
-      var isSet = ((permissions & mask) != 0);
-      
-      element.checked = isSet;
+      for (element of elements)
+      {
+         var name = element.name;
+         var permissionId = parseInt(name.substring(name.indexOf("-") + 1));
+         
+         var mask = (1 << (permissionId - 1));
+         var isSet = ((permissions & mask) != 0);
+         
+         if (isSet)
+         {
+            element.checked = true;
+         }
+      }
    }
 }
 

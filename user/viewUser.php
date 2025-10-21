@@ -183,21 +183,6 @@ function getDescription()
    return ($description);
 }
 
-function getRoleOptions()
-{
-   $options = "<option style=\"display:none\">";
-   
-   $selectedRole = getUserInfo()->roles;
-   
-   foreach (Role::getRoles() as $role)
-   {
-      $selected = ($role->roleId == $selectedRole) ? "selected" : "";
-      $options.= "<option $selected value=\"" . $role->roleId . "\">" . $role->roleName . "</option>";
-   }
-   
-   return ($options);
-}
-
 function getPermissionInputs()
 {
    $html = "";
@@ -279,6 +264,7 @@ if (!Authentication::isAuthenticated())
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
    
    <script src="/common/common.js"></script>
+   <script src="/script/common/common.js<?php echo versionQuery();?>"></script> 
    <script src="/script/common/menu.js<?php echo versionQuery();?>"></script> 
    <script src="/common/validate.js"></script>
    <script src="/user/user.js"></script>
@@ -335,8 +321,8 @@ if (!Authentication::isAuthenticated())
                </div>
       
                <div class="form-item">
-                  <div class="form-label">Role</div>
-                  <div><select id="role-input" name="roles" form="input-form" <?php echo !isEditable(UserInputField::PERMISSIONS) ? "disabled" : ""; ?>><?php echo getRoleOptions(); ?></select></div>
+                  <div class="form-label">Roles</div>
+                  <div><select id="role-input" name="roles[]" form="input-form" multiple style="height: 160px" <?php echo !isEditable(UserInputField::PERMISSIONS) ? "disabled" : ""; ?>><?php echo Role::getOptions(Role::getRolesFromBitset(getUserInfo()->roles)); ?></select></div>
                </div>
       
                <div class="form-section-header">Login</div>

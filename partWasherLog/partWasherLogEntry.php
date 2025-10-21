@@ -272,82 +272,12 @@ function getWashDate()
 
 function getOperatorOptions()
 {
-   $options = "<option style=\"display:none\">";
-   
-   $operators = PPTPDatabase::getInstance()->getUsersByRole(Role::OPERATOR);
-   
-   // Create an array of employee numbers.
-   $employeeNumbers = array();
-   foreach ($operators as $operator)
-   {
-      $employeeNumbers[] = intval($operator["employeeNumber"]);
-   }
-   
-   $selectedOperator = getOperator();
-   
-   // Add selected job number, if not already in the array.
-   // Note: This handles the case of viewing an entry with an operator that is not assigned to the OPERATOR role.
-   if (($selectedOperator != UserInfo::UNKNOWN_EMPLOYEE_NUMBER) &&
-      (!in_array($selectedOperator, $employeeNumbers)))
-   {
-      $employeeNumbers[] = $selectedOperator;
-      sort($employeeNumbers);
-   }
-   
-   foreach ($employeeNumbers as $employeeNumber)
-   {
-      $userInfo = UserInfo::load($employeeNumber);
-      if ($userInfo)
-      {
-         $selected = ($employeeNumber == $selectedOperator) ? "selected" : "";
-         
-         $name = $employeeNumber . " - " . $userInfo->getFullName();
-         
-         $options .= "<option value=\"$employeeNumber\" $selected>$name</option>";
-      }
-   }
-   
-   return ($options);
+   return (UserManager::getOptions([Role::OPERATOR], [], getOperator()));
 }
 
 function getWasherOptions()
 {
-   $options = "<option style=\"display:none\">";
-   
-   $washers = PPTPDatabase::getInstance()->getUsersByRole(Role::PART_WASHER);
-   
-   // Create an array of employee numbers.
-   $employeeNumbers = array();
-   foreach ($washers as $washer)
-   {
-      $employeeNumbers[] = intval($washer["employeeNumber"]);
-   }
-   
-   $selectedWasher = getWasher();
-   
-   // Add selected washer, if not already in the array.
-   // Note: This handles the case of viewing an entry with a washer that is not assigned to the PART_WASHER role.
-   if (($selectedWasher != UserInfo::UNKNOWN_EMPLOYEE_NUMBER) &&
-      (!in_array($selectedWasher, $employeeNumbers)))
-   {
-      $employeeNumbers[] = $selectedWasher;
-      sort($employeeNumbers);
-   }
-   
-   foreach ($employeeNumbers as $employeeNumber)
-   {
-      $userInfo = UserInfo::load($employeeNumber);
-      if ($userInfo)
-      {
-         $selected = ($employeeNumber == $selectedWasher) ? "selected" : "";
-         
-         $name = $employeeNumber . " - " . $userInfo->getFullName();
-         
-         $options .= "<option value=\"$employeeNumber\" $selected>$name</option>";
-      }
-   }
-   
-   return ($options);
+   return (UserManager::getOptions([Role::PART_WASHER], [], getWasher()));
 }
 
 function getTimeCardId()

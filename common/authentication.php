@@ -1,7 +1,8 @@
 <?php
 
-require_once 'params.php';
-require_once 'userInfo.php';
+if (!defined('ROOT')) require_once '../root.php';
+require_once ROOT.'/common/params.php';
+require_once ROOT.'/core/manager/userManager.php';
 
 abstract class AuthenticationResult
 {
@@ -93,7 +94,7 @@ class Authentication
    {
       $result = AuthenticationResult::INVALID_AUTH_TOKEN;
       
-      $users = UserInfo::getUsersByRole(Role::UNKNOWN);
+      $users = UserManager::getUsers();
       
       foreach ($users as $user)
       {

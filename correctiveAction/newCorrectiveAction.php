@@ -3,12 +3,12 @@
 if (!defined('ROOT')) require_once '../root.php';
 require_once ROOT.'/app/common/appPage.php';
 require_once ROOT.'/app/common/menu.php';
-require_once ROOT.'/core/component/correctiveAction.php';
-require_once ROOT.'/core/manager/jobManager.php';
 require_once ROOT.'/common/authentication.php';
 require_once ROOT.'/common/header.php';
-require_once ROOT.'/common/roles.php';
 require_once ROOT.'/common/version.php';
+require_once ROOT.'/core/common/role.php';
+require_once ROOT.'/core/component/correctiveAction.php';
+require_once ROOT.'/core/manager/jobManager.php';
 
 abstract class InputField
 {
@@ -44,7 +44,7 @@ function getForm()
    $occuranceDate = Time::toJavascriptDate(Time::now());
    $customerOptions = Customer::getOptions();
    $jobNumberOptions = JobManager::getJobNumberOptions(null, true);
-   $employeeOptions = UserInfo::getOptions(Role::$allRoles, [], null);
+   $employeeOptions = UserManager::getOptions(Role::$values, [], null);
    
    $html = 
 <<< HEREDOC

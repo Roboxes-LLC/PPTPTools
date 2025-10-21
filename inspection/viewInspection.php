@@ -815,90 +815,17 @@ function getAuthorOptions()
 
 function getInspectorOptions()
 {
-   $options = "<option style=\"display:none\">";
-
-   // Create an array of employee numbers.
-   $employeeNumbers = array();
-   
    // Multiple roles requested by customer in 10/2023.
    $inspectorRoles = [Role::INSPECTOR, Role::ADMIN, Role::SUPER_USER];
    
-   foreach ($inspectorRoles as $role)
-   {
-      $users = PPTPDatabase::getInstance()->getUsersByRole($role);
-
-      foreach ($users as $user)
-      {
-         $employeeNumbers[] = intval($user["employeeNumber"]);
-      }
-   }
-   
-   $selectedInspector = getInspector();
-   
-   // Add selected inspector, if not already in the array.
-   // Note: This handles the case of viewing an entry with an inspector that is not assigned to the INSPECTOR role.
-   if (($selectedInspector != UserInfo::UNKNOWN_EMPLOYEE_NUMBER) &&
-       (!in_array($selectedInspector, $employeeNumbers)))
-   {
-      $employeeNumbers[] = $selectedInspector;
-   }
-   
-   sort($employeeNumbers);
-   
-   foreach ($employeeNumbers as $employeeNumber)
-   {
-      $userInfo = UserInfo::load($employeeNumber);
-      if ($userInfo)
-      {
-         $selected = ($employeeNumber == $selectedInspector) ? "selected" : "";
-         
-         $name = $employeeNumber . " - " . $userInfo->getFullName();
-         
-         $options .= "<option value=\"$employeeNumber\" $selected>$name</option>";
-      }
-   }
+   $options = UserManager::getOptions($inspectorRoles, [], getInspector());
    
    return ($options);
 }
 
 function getOperatorOptions()
 {
-   $options = "<option style=\"display:none\">";
-   
-   $operators = PPTPDatabase::getInstance()->getUsersByRole(Role::OPERATOR);
-   
-   // Create an array of employee numbers.
-   $employeeNumbers = array();
-   foreach ($operators as $operator)
-   {
-      $employeeNumbers[] = intval($operator["employeeNumber"]);
-   }
-   
-   $selectedOperator = getOperator();
-   
-   // Add selected job number, if not already in the array.
-   // Note: This handles the case of viewing an entry with an operator that is not assigned to the OPERATOR role.
-   if (($selectedOperator != UserInfo::UNKNOWN_EMPLOYEE_NUMBER) &&
-       (!in_array($selectedOperator, $employeeNumbers)))
-   {
-      $employeeNumbers[] = $selectedOperator;
-      sort($employeeNumbers);
-   }
-   
-   foreach ($employeeNumbers as $employeeNumber)
-   {
-      $userInfo = UserInfo::load($employeeNumber);
-      if ($userInfo)
-      {
-         $selected = ($employeeNumber == $selectedOperator) ? "selected" : "";
-         
-         $name = $employeeNumber . " - " . $userInfo->getFullName();
-         
-         $options .= "<option value=\"$employeeNumber\" $selected>$name</option>";
-      }
-   }
-   
-   return ($options);
+   return (UserManager::getOptions([Role::OPERATOR], [], getOperator()));
 }
 
 // ********************************** BEGIN ************************************

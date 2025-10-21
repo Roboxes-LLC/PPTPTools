@@ -16,7 +16,7 @@ class ShipmentPage extends Page
          {
             if ($this->authenticate([Permission::EDIT_SHIPMENT]))
             {
-               if (Page::requireParams($params, ["shipmentId", "quantity", "packingListNumber", "location", "vendorShippedDate", "customerShippedDate"]))
+               if (Page::requireParams($params, ["shipmentId", "quantity", "location", "vendorShippedDate", "customerShippedDate"]))
                {
                   $shipmentId = $params->getInt("shipmentId");
                   $newShipment = ($shipmentId == Shipment::UNKNOWN_SHIPMENT_ID);
@@ -390,7 +390,6 @@ class ShipmentPage extends Page
    private function getShipmentParams(&$shipment, $params)
    {
       $shipment->quantity = $params->getInt("quantity");
-      $shipment->packingListNumber = $params->get("packingListNumber");
       $shipment->location = $params->getInt("location");
       $shipment->vendorShippedDate = $params->get("vendorShippedDate");
       $shipment->customerShippedDate = $params->get("customerShippedDate");

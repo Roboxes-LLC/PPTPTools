@@ -472,53 +472,7 @@ class PPTPDatabase extends MySqlDatabase
       
       return ($result);
    }
-   
-   public function getUsersByRole($role)
-   {
-      $roleClause = "";
-      if ($role != Role::UNKNOWN)
-      {
-         $roleClause = "WHERE roles = $role";
-      }
       
-      $query = "SELECT * FROM user $roleClause ORDER BY firstName ASC;";
-
-      $result = $this->query($query);
-      
-      return ($result);
-   }
-   
-   public function getUsersByRoles($roles)
-   {
-      $result = null;
-      
-      if (sizeof($roles) > 0)
-      {
-         $rolesClause = "roles in (";
-         
-         $count = 0;
-         foreach ($roles as $role)
-         {
-            $rolesClause .= "'$role'";
-            
-            $count++;
-            
-            if ($count < sizeof($roles))
-            {
-               $rolesClause .= ", ";
-            }
-         }
-         
-         $rolesClause .= ")";
-         
-         $query = "SELECT * FROM user WHERE $rolesClause ORDER BY firstName ASC;";
-
-         $result = $this->query($query);
-      }
-      
-      return ($result);
-   }
-   
    public function newUser($userInfo)
    {
       $query =

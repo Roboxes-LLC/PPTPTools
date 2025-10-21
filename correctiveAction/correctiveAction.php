@@ -211,7 +211,7 @@ function getRequestPanel()
                        "<a href=\"/inspection/viewInspection.php?inspectionId=$correctiveAction->inspectionId\">Inspection</a>" :
                        "";
    
-   $employeeOptions = UserInfo::getOptions(Role::$allRoles, [], $correctiveAction->employee);
+   $employeeOptions = UserManager::getOptions(Role::$values, [], $correctiveAction->employee);
    
    $customerOptions = Customer::getOptions($correctiveAction->getCustomerId());
    
@@ -422,7 +422,7 @@ function getCorrectionPanel($correctionType)
    
    $dueDate = $correction->dueDate ? Time::toJavascriptDate($correction->dueDate) : null;
    
-   $employeeOptions = UserInfo::getOptions(Role::$allRoles, [], $correction->employee);
+   $employeeOptions = UserManager::getOptions(Role::$values, [], $correction->employee);
    
    $html =
 <<< HEREDOC
@@ -540,7 +540,7 @@ function getReviewPanel()
                   Authentication::getAuthenticatedUser()->employeeNumber;
                           
    
-   $employeeOptions = UserInfo::getOptions([Role::ADMIN], [$reviewer], $reviewer);
+   $employeeOptions = UserManager::getOptions([Role::ADMIN], [$reviewer], $reviewer);
    
    $html =
 <<< HEREDOC

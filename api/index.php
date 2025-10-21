@@ -441,40 +441,23 @@ $router->add("user", function($params) {
 $router->add("users", function($params) {
    $result = new stdClass();
    
-   $database = PPTPDatabase::getInstance();
-   $dbaseResult = null;
+   $result->success = true;
+   $result->users = [];
    
    if (isset($params["role"]))
    {
-      $dbaseResult = $database->getUsersByRole(intval($params["role"]));
+      $result->users = UserManager::getUsersByRole($params->getInt("role"));
    }
    else
    {
-      $dbaseResult = $database->getUsers();
+      $result->users = UserManager::getUsers();
    }
-   
-   if ($dbaseResult)
+
+   // Augment data.
+   foreach ($result->users as $user)
    {
-      $result->success = true;
-      $result->operators = array();
-      
-      while ($row = $dbaseResult->fetch_assoc())
-      {
-         $userInfo = UserInfo::load($row["employeeNumber"]);
-         
-         if ($userInfo)
-         {
-            $operatorInfo = new stdClass();
-            $operatorInfo->employeeNumber = $userInfo->employeeNumber;
-            $operatorInfo->name = $userInfo->getFullName();
-            $result->operators[] = $operatorInfo;
-         }
-      }
-   }
-   else
-   {
-      $result->status = false;
-      $result->error = "No users found.";
+      $user->name = $user->getFullName();
+      $user->password = "";  // Redact
    }
    
    echo json_encode($result);
@@ -482,26 +465,22 @@ $router->add("users", function($params) {
 
 $router->add("userData", function($params) {
    $result = array();
-   
-   $database = PPTPDatabase::getInstance();
-   
-   if ($database && $database->isConnected())
-   {
-      $users = $database->getUsers();
+
+   $users = UserManager::getUsers();
       
-      // Populate data table.
-      foreach ($users as $user)
+   // Populate data table.
+   foreach ($users as $user)
+   {
+      // Turn roles bitset into a comma-separated string.
+      $roleIds = Role::getRolesFromBitset($user->roles);
+      $roleLabels = [];
+      foreach($roleIds as $roleId)
       {
-         $userInfo = UserInfo::load($user["employeeNumber"]);
-         if ($userInfo)
-         {
-            $user["name"] = $userInfo->getFullName();
-         }
-         
-         $user["roleLabel"] = Role::getRole(intval($user["roles"]))->roleName;
-         
-         $result[] = $user;
+         $roleLabels[] = Role::getLabel($roleId);
       }
+      $user->roleLabel = implode(", ", $roleLabels);
+      
+      $result[] = $user;
    }
    
    echo json_encode($result);
@@ -538,11 +517,16 @@ $router->add("saveUser", function($params) {
       $userInfo->firstName = $params["firstName"];
       $userInfo->lastName = $params["lastName"];
       $userInfo->email = $params["email"];
-      $userInfo->roles = intval($params["roles"]);
       $userInfo->username = $params["username"];
       $userInfo->password = $params["password"];
       $userInfo->authToken = $params["authToken"];
       $userInfo->defaultShiftHours = $params["defaultShiftHours"];
+      
+      $userInfo->roles = Role::NO_ROLES;
+      foreach ($params["roles"] as $roleId)
+      {
+         Role::setRoleInBitset(intval($roleId), $userInfo->roles);
+      }
       
       foreach (Permission::getPermissions() as $permission)
       {
@@ -1695,7 +1679,7 @@ $router->add("inspectionData", function($params) {
             if ($shipment)
             {
                $row["shipmentId"] = $shipment->shipmentId;
-               $row["ticketCode"] = ShipmentTicket::getShipmentTicketCode($shipment->shipmentId);
+               $row["ticketCode"] = ShipmentManager::getShipmentTicketCode($shipment->shipmentId);
             }
          }
          
@@ -3402,6 +3386,7 @@ $router->add("materialData", function($params) {
                $materialEntry->vendorName = $vendors[$materialEntry->materialHeatInfo->vendorId];
                $materialEntry->materialDescription = $materialEntry->materialHeatInfo->materialInfo->getMaterialDescription();
                $materialEntry->materialHeatInfo->materialInfo->typeLabel = MaterialType::getLabel($materialEntry->materialHeatInfo->materialInfo->type);
+               $materialEntry->materialHeatInfo->materialInfo->shapeLabel = MaterialShape::getLabel($materialEntry->materialHeatInfo->materialInfo->shape);
                $materialEntry->quantity = $materialEntry->getQuantity();
             }
                         

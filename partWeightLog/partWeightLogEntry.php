@@ -283,82 +283,12 @@ function getWeighDate()
 
 function getOperatorOptions()
 {
-   $options = "<option style=\"display:none\">";
-   
-   $operators = PPTPDatabase::getInstance()->getUsersByRole(Role::OPERATOR);
-   
-   // Create an array of employee numbers.
-   $employeeNumbers = array();
-   foreach ($operators as $operator)
-   {
-      $employeeNumbers[] = intval($operator["employeeNumber"]);
-   }
-   
-   $selectedOperator = getOperator();
-   
-   // Add selected job number, if not already in the array.
-   // Note: This handles the case of viewing an entry with an operator that is not assigned to the OPERATOR role.
-   if (($selectedOperator != UserInfo::UNKNOWN_EMPLOYEE_NUMBER) &&
-      (!in_array($selectedOperator, $employeeNumbers)))
-   {
-      $employeeNumbers[] = $selectedOperator;
-      sort($employeeNumbers);
-   }
-   
-   foreach ($employeeNumbers as $employeeNumber)
-   {
-      $userInfo = UserInfo::load($employeeNumber);
-      if ($userInfo)
-      {
-         $selected = ($employeeNumber == $selectedOperator) ? "selected" : "";
-         
-         $name = $employeeNumber . " - " . $userInfo->getFullName();
-         
-         $options .= "<option value=\"$employeeNumber\" $selected>$name</option>";
-      }
-   }
-   
-   return ($options);
+   return (UserManager::getOptions([Role::OPERATOR], [], getOperator()));
 }
 
 function getLaborerOptions()
 {
-   $options = "<option style=\"display:none\">";
-   
-   $laborers = PPTPDatabase::getInstance()->getUsersByRole(Role::LABORER);
-   
-   // Create an array of employee numbers.
-   $employeeNumbers = array();
-   foreach ($laborers as $laborer)
-   {
-      $employeeNumbers[] = intval($laborer["employeeNumber"]);
-   }
-   
-   $selectedLaborer = getLaborer();
-   
-   // Add selected laborer, if not already in the array.
-   // Note: This handles the case of viewing an entry with a laborer that is not assigned to the LABORER role.
-   if (($selectedLaborer != UserInfo::UNKNOWN_EMPLOYEE_NUMBER) &&
-      (!in_array($selectedLaborer, $employeeNumbers)))
-   {
-      $employeeNumbers[] = $selectedLaborer;
-      sort($employeeNumbers);
-   }
-   
-   foreach ($employeeNumbers as $employeeNumber)
-   {
-      $userInfo = UserInfo::load($employeeNumber);
-      if ($userInfo)
-      {
-         $selected = ($employeeNumber == $selectedLaborer) ? "selected" : "";
-         
-         $name = $employeeNumber . " - " . $userInfo->getFullName();
-         
-         $options .= "<option value=\"$employeeNumber\" $selected>$name</option>";
-      }
-   }
-   
-   return ($options);
+   return (UserManager::getOptions([Role::LABORER], [], getOperator()));
 }
 
 function getTimeCardId()

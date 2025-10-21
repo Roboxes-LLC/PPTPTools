@@ -1137,8 +1137,8 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "INSERT INTO shipment " .
-         "(parentShipmentId, childIndex, jobNumber, dateTime, author, inspectionId, quantity, packingListNumber, vendorPackingList, customerPackingList, location, vendorShippedDate, customerShippedDate) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(parentShipmentId, childIndex, jobNumber, dateTime, author, inspectionId, quantity, vendorPackingList, customerPackingList, location, vendorShippedDate, customerShippedDate) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -1149,7 +1149,6 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->author,
             $shipment->inspectionId,
             $shipment->quantity,
-            $shipment->packingListNumber,
             $shipment->vendorPackingList,
             $shipment->customerPackingList,
             $shipment->location,
@@ -1168,7 +1167,7 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "UPDATE shipment " .
-         "SET parentShipmentId = ?, childIndex = ?, jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, packingListNumber = ?, vendorPackingList = ?, customerPackingList = ?, location = ?, vendorShippedDate = ?, customerShippedDate = ? " .
+         "SET parentShipmentId = ?, childIndex = ?, jobNumber = ?, dateTime = ?, author = ?, inspectionId = ?, quantity = ?, vendorPackingList = ?, customerPackingList = ?, location = ?, vendorShippedDate = ?, customerShippedDate = ? " .
          "WHERE shipmentId = ?");
       
       $result = $statement->execute(
@@ -1180,7 +1179,6 @@ class PPTPDatabaseAlt extends PDODatabase
             $shipment->author,
             $shipment->inspectionId,
             $shipment->quantity,
-            $shipment->packingListNumber,
             $shipment->vendorPackingList,
             $shipment->customerPackingList,
             $shipment->location,

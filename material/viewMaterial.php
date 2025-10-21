@@ -493,7 +493,7 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label">Entered By</div>
                   <select id="employee-number-input" name="employeeNumber" form="input-form" oninput="" <?php echo getDisabled(MaterialInputField::ENTRY_USER); ?>>
-                     <?php echo UserInfo::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->enteredUserId], getMaterialEntry()->enteredUserId); ?>
+                     <?php echo UserManager::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->enteredUserId], getMaterialEntry()->enteredUserId); ?>
                   </select>
                </div>
                
@@ -653,7 +653,7 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label">Issued By</div>
                   <select id="issued-user-id-input" name="issuedUserId" form="input-form" oninput="" <?php echo getDisabled(MaterialInputField::ISSUED_USER); ?>>
-                     <?php echo UserInfo::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->issuedUserId], getMaterialEntry()->issuedUserId); ?>
+                     <?php echo UserManager::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->issuedUserId], getMaterialEntry()->issuedUserId); ?>
                   </select>
                </div>
                
@@ -681,7 +681,7 @@ if (!Authentication::isAuthenticated())
                <div class="form-item">
                   <div class="form-label-long">Acknowledged By</div>
                   <select id="acknowleged-user-id-input" name="acknowledgedUserId" form="input-form" oninput="" <?php echo getDisabled(MaterialInputField::ACKNOWLEDGED_USER); ?>>
-                     <?php echo UserInfo::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->acknowledgedUserId], getMaterialEntry()->acknowledgedUserId); ?>
+                     <?php echo UserManager::getOptions([Role::OPERATOR], [Authentication::getAuthenticatedUser()->employeeNumber, getMaterialEntry()->acknowledgedUserId], getMaterialEntry()->acknowledgedUserId); ?>
                   </select>
                </div>
             

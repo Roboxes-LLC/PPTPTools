@@ -58,8 +58,8 @@ class Permission
    const APPROVE_CORRECTIVE_ACTION = 52;
    const LAST                      = Permission::APPROVE_CORRECTIVE_ACTION;
    
-   const NO_PERMISSIONS = 0x0000000000000000;
-   const ALL_PERMISSIONS = 0xFFFFFFFFFFFFFFFF;
+   const NO_PERMISSIONS =  0x0000000000000;
+   const ALL_PERMISSIONS = 0xFFFFFFFFFFFFF;
    
    public $permissionId;
    

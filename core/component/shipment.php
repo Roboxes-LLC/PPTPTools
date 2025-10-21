@@ -20,7 +20,6 @@ class Shipment
    public $jobNumber;
    public $inspectionId;
    public $quantity;
-   public $packingListNumber;
    public $vendorPackingList;
    public $customerPackingList;
    public $location;
@@ -39,7 +38,6 @@ class Shipment
       $this->jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
       $this->inspectionId = Inspection::UNKNOWN_INSPECTION_ID;
       $this->quantity = 0;
-      $this->packingListNumber = Shipment::UNKNOWN_PACKING_LIST_NUMBER;
       $this->vendorPackingList = null;
       $this->customerPackingList = null;
       $this->location = ShipmentLocation::UNKNOWN;
@@ -61,7 +59,6 @@ class Shipment
       $this->jobNumber = $row["jobNumber"];
       $this->inspectionId = intval($row["inspectionId"]);
       $this->quantity = intval($row["quantity"]);
-      $this->packingListNumber = $row["packingListNumber"];
       $this->vendorPackingList = $row["vendorPackingList"];
       $this->customerPackingList = $row["customerPackingList"];
       $this->location = intval($row["location"]);
@@ -125,11 +122,11 @@ class Shipment
       return ($parent);
    }
    
-   public function getChildren()
+   public static function getChildren($shipmentId)
    {
       $children = [];
       
-      $result = PPTPDatabaseAlt::getInstance()->getChildShipments($this->shipmentId);
+      $result = PPTPDatabaseAlt::getInstance()->getChildShipments($shipmentId);
       
       foreach ($result as $row)
       {

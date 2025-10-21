@@ -1,8 +1,9 @@
 <?php
 
-require_once 'database.php';
-require_once 'permissions.php';
-require_once 'roles.php';
+if (!defined('ROOT')) require_once '../../../root.php';
+require_once ROOT.'/common/database.php';
+require_once ROOT.'/common/permissions.php';
+require_once ROOT.'/core/common/role.php';
 
 class UserInfo
 {
@@ -113,58 +114,6 @@ class UserInfo
       return ($userInfo);
    }
    
-   static public function getUsersByRole($role)
-   {
-      $users = array();
-      
-      $database = PPTPDatabase::getInstance();
-           
-      if ($database && $database->isConnected())
-      {
-         $result = $database->getUsersByRole($role);
-
-         if ($result)
-         {
-            while ($row = $result->fetch_assoc())
-            {
-               $userInfo = new UserInfo();
-               
-               $userInfo->initialize($row);
-               
-               $users[] = $userInfo;
-            }
-         }
-      }
-      
-      return ($users);
-   }
-   
-   static public function getUsersByRoles($roles)
-   {
-      $users = array();
-      
-      $database = PPTPDatabase::getInstance();
-      
-      if ($database && $database->isConnected())
-      {
-         $result = $database->getUsersByRoles($roles);
-         
-         if ($result)
-         {
-            while ($row = $result->fetch_assoc())
-            {
-               $userInfo = new UserInfo();
-               
-               $userInfo->initialize($row);
-               
-               $users[] = $userInfo;
-            }
-         }
-      }
-      
-      return ($users);
-   }
-   
    public static function getUsername($employeeeNumber)
    {
       $username = "";
@@ -202,37 +151,6 @@ class UserInfo
          $label = $userInfo->username;
          
          $html = "<a href=\"/user/viewUser.php?employeeNumber=$employeeNumber\">$label</a>";
-      }
-      
-      return ($html);
-   }
-   
-   public static function getOptions($roles, $includeUsers, $selectedEmployeeNumber)
-   {
-      $html = "<option style=\"display:none\">";
-      
-      $users = [];
-      
-      // Manually add any included users not covered under the specified roles.
-      foreach ($includeUsers as $employeeNumber)
-      {
-         $userInfo = UserInfo::load($employeeNumber);
-         if ($userInfo && !in_array($userInfo->roles, $roles))
-         {
-            $users[] = $userInfo;
-         }
-      }
-
-      // Merge that with all  users that match the roles.
-      $users = array_merge($users, UserInfo::getUsersByRoles($roles));
-
-      // Build the options.
-      foreach ($users as $userInfo)
-      {
-         $fullName = $userInfo->getFullName();
-         $selected = ($userInfo->employeeNumber == $selectedEmployeeNumber) ? "selected" : "";
-         
-         $html .= "<option value=\"$userInfo->employeeNumber\" $selected>$fullName</option>";
       }
       
       return ($html);
