@@ -142,7 +142,7 @@ function isEditable($field)
          if ($userInfo)
          {
             $isEditable &= (($userInfo->roles == Role::SUPER_USER) ||
-               ($userInfo->roles == Role::ADMIN));
+                            ($userInfo->roles == Role::ADMIN));
          }
          break;
       }
@@ -288,7 +288,7 @@ function getOperatorOptions()
 
 function getLaborerOptions()
 {
-   return (UserManager::getOptions([Role::LABORER], [], getOperator()));
+   return (UserManager::getOptions([Role::LABORER], [], getLaborer()));
 }
 
 function getTimeCardId()

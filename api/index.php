@@ -471,6 +471,8 @@ $router->add("userData", function($params) {
    // Populate data table.
    foreach ($users as $user)
    {
+      $user->name = $user->getFullName();
+      
       // Turn roles bitset into a comma-separated string.
       $roleIds = Role::getRolesFromBitset($user->roles);
       $roleLabels = [];

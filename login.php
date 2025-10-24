@@ -90,10 +90,12 @@ if (Authentication::isAuthenticated())
    }
    else
    {
-      $role = Role::getRole(Authentication::getAuthenticatedUser()->roles);
+      $roleIds = Role::getRolesFromBitset(Authentication::getAuthenticatedUser()->roles);
       
-      if ($role)
+      if (!empty($roleIds))
       {
+         $role = Role::getRole($roleIds[0]);
+         
          $appPage = AppPage::getAppPage($role->defaultAppPage);
          
          if ($appPage)

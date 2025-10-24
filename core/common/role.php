@@ -1,6 +1,7 @@
 <?php
 
 if (!defined('ROOT')) require_once '../../../root.php';
+require_once ROOT.'/app/common/appPage.php';
 require_once ROOT.'/common/permissions.php';
 
 class Role
@@ -50,6 +51,8 @@ class Role
    public $defaultPermissions;
    
    public $bits;
+   
+   public $defaultAppPage;
       
    public static function getRoles()
    {
@@ -57,15 +60,15 @@ class Role
       {
          Role::$roles = 
             array(
-               Role::SUPER_USER =>  new Role(Role::SUPER_USER,  "Super User",  Permission::ALL_PERMISSIONS),
-               Role::ADMIN =>       new Role(Role::ADMIN,       "Admin",       Permission::ALL_PERMISSIONS),
-               Role::OPERATOR =>    new Role(Role::OPERATOR,    "Operator",    Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::OPERATOR_PERMISSIONS)),
-               Role::LABORER =>     new Role(Role::LABORER,     "Laborer",     Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::LABORER_PERMISSIONS)),
-               Role::PART_WASHER => new Role(Role::PART_WASHER, "Part Washer", Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::PART_WASHER_PERMISSIONS)),
-               Role::SHIPPER =>     new Role(Role::SHIPPER,     "Shipper",     Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::SHIPPER_PERMISSIONS)),
-               Role::INSPECTOR =>   new Role(Role::INSPECTOR,   "Inspector",   Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::INSPECTOR_PERMISSIONS)),
-               Role::MAINTENANCE => new Role(Role::MAINTENANCE, "Maintenance", Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::MAINTENANCE_PERMISSIONS)),
-               Role::VENDOR =>      new Role(Role::VENDOR,      "Vendor",      Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::VENDOR_PERMISSIONS))
+               Role::SUPER_USER =>  new Role(Role::SUPER_USER,  "Super User",  Permission::ALL_PERMISSIONS,                                                                             AppPage::REPORT),
+               Role::ADMIN =>       new Role(Role::ADMIN,       "Admin",       Permission::ALL_PERMISSIONS,                                                                             AppPage::REPORT),
+               Role::OPERATOR =>    new Role(Role::OPERATOR,    "Operator",    Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::OPERATOR_PERMISSIONS),    AppPage::TIME_CARD),
+               Role::LABORER =>     new Role(Role::LABORER,     "Laborer",     Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::LABORER_PERMISSIONS),     AppPage::PART_WEIGHT),
+               Role::PART_WASHER => new Role(Role::PART_WASHER, "Part Washer", Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::PART_WASHER_PERMISSIONS), AppPage::PART_WASH),
+               Role::SHIPPER =>     new Role(Role::SHIPPER,     "Shipper",     Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::SHIPPER_PERMISSIONS),     AppPage::SHIPPING_CARD),
+               Role::INSPECTOR =>   new Role(Role::INSPECTOR,   "Inspector",   Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::INSPECTOR_PERMISSIONS),   AppPage::INSPECTION),
+               Role::MAINTENANCE => new Role(Role::MAINTENANCE, "Maintenance", Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::MAINTENANCE_PERMISSIONS), AppPage::MAINTENANCE_LOG),
+               Role::VENDOR =>      new Role(Role::VENDOR,      "Vendor",      Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::VENDOR_PERMISSIONS),      AppPage::SHIPMENT)
             );
       }
       
@@ -190,11 +193,12 @@ class Role
    
    private static $roles = null;
       
-   private function __construct($roleId, $label, $defaultPermissions)
+   private function __construct($roleId, $label, $defaultPermissions, $defaultAppPage)
    {
       $this->roleId = $roleId;
       $this->label = $label;
       $this->defaultPermissions = $defaultPermissions;
+      $this->defaultAppPage = $defaultAppPage;
       
       if ($roleId > ROLE::UNKNOWN)
       {

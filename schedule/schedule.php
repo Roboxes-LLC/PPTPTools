@@ -27,7 +27,7 @@ function getOperatorOptions()
 {
    $options = new stdClass();
    
-   $operators = UserManager::getOperators();
+   $operators = UserManager::getUsersByRoles([Role::OPERATOR]);
    
    foreach ($operators as $operator)
    {

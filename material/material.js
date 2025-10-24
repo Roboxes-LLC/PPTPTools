@@ -194,6 +194,19 @@ function onWCNumberChange()
    reloadJobNumbers();
 }
 
+function onEditVendorHeatButton()
+{
+   alert("Warning: Changing an existing vendor heat will affect all related material log entries.");
+   
+   enable("vendor-id-input");
+   enable("material-type-input");
+   enable("material-part-number-input");
+   enable("new-material-part-number-input");
+   enable("material-shape-input");
+   enable("material-size-input");
+   enable("material-length-input");
+}
+
 function onEditInternalHeatButton()
 {
    if (document.getElementById("internal-heat-number-input").disabled)
@@ -399,6 +412,7 @@ function updateVendorHeatInfo(vendorHeatInfo)
       disable("material-length-input");
       disable("internal-heat-number-input");
       hide("edit-internal-heat-number-button");
+      show("edit-vendor-heat-button", "block");
    }
    else
    {
@@ -425,6 +439,7 @@ function updateVendorHeatInfo(vendorHeatInfo)
       enable("material-length-input");
       disable("internal-heat-number-input");
       show("edit-internal-heat-number-button", "block");
+      hide("edit-vendor-heat-button");
    }
 }
 
@@ -467,11 +482,14 @@ function formattedDate(date)
 
 function validateMaterialEntry()
 {
+   // TODO:
+   // Customer requested relaxing of form validation so a material entry can be created with just an internal heat number. 
+   // (10/15 email "Re: PPTP Tools meeting, 10/5")
+
    let valid = false;
    
-   console.log(document.getElementById("wc-number-input").disabled);
    let issuingMaterial = !document.getElementById("wc-number-input").disabled;
-
+   
    if (!(document.getElementById("vendor-heat-number-input").validator.validate()))
    {
       alert("Please enter a valid vendor heat number.");    

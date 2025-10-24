@@ -499,10 +499,12 @@ if (!Authentication::isAuthenticated())
                
                <div class="form-section-header">Heat</div>
                
-               <div class="form-item">
+               <div class="form-item" style="margin-right: 25px">
                   <div class="form-label">Vendor Heat</div>
                   <input id="vendor-heat-number-input" type="text" name="vendorHeatNumber" form="input-form" oninput="this.validator.validate(); onVendorHeatNumberChange()" value="<?php echo getMaterialEntry()->vendorHeatNumber; ?>" <?php echo getDisabled(MaterialInputField::VENDOR_HEAT); ?> />
-               </div>  
+                  &nbsp;&nbsp;
+                  <button id="edit-vendor-heat-button" class="small-button accent-button" onclick="onEditVendorHeatButton()">Edit</button>
+               </div>
                
                <div class="form-item">
                   <div class="form-label">Vendor</div>
