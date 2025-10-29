@@ -232,7 +232,7 @@ function getOperatorOptions()
 
 function getShipperOptions()
 {
-   return (UserManager::getOptions([Role::SHIPPER], [], getOperator()));
+   return (UserManager::getOptions([Role::SHIPPER], [], getShipper()));
 }
 
 function getJobNumberOptions()

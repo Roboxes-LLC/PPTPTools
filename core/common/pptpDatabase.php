@@ -1387,14 +1387,15 @@ class PPTPDatabaseAlt extends PDODatabase
 
       $statement = $this->pdo->prepare(
          "INSERT INTO correctiveaction " .
-         "(occuranceDate, jobId, inspectionId, description, employee, batchSize, dimensionalDefectCount, platingDefectCount, otherDefectCount, disposition, rootCause, dmrNumber, initiator, location, status) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(occuranceDate, jobId, inspectionId, shipmentId, description, employee, batchSize, dimensionalDefectCount, platingDefectCount, otherDefectCount, disposition, rootCause, dmrNumber, initiator, location, status) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
    
       $result = $statement->execute(
          [
             $occuranceDate,
             $correctiveAction->jobId,
             $correctiveAction->inspectionId,
+            $correctiveAction->shipmentId,
             $correctiveAction->description,
             $correctiveAction->employee,
             $correctiveAction->batchSize,
@@ -1432,7 +1433,7 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "UPDATE correctiveaction " .
-          "SET occuranceDate = ?, jobId = ?, inspectionId = ?, description = ?, employee = ?, batchSize = ?, dimensionalDefectCount = ?, platingDefectCount = ?, otherDefectCount = ?, disposition = ?, rootCause = ?, dmrNumber = ?, initiator = ?, location = ?, status = ?, " .
+          "SET occuranceDate = ?, jobId = ?, inspectionId = ?, shipmentId = ?, description = ?, employee = ?, batchSize = ?, dimensionalDefectCount = ?, platingDefectCount = ?, otherDefectCount = ?, disposition = ?, rootCause = ?, dmrNumber = ?, initiator = ?, location = ?, status = ?, " .
           "shortTerm_description = ?, shortTerm_dueDate = ?, shortTerm_employee = ?, shortTerm_responsibleDetails = ?, " .
           "longTerm_description = ?, longTerm_dueDate = ?, longTerm_employee = ?, longTerm_responsibleDetails = ?, " .
           "reviewDate = ?, reviewer = ?, effectiveness = ?, reviewComments = ? " .
@@ -1443,6 +1444,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $occuranceDate,
             $correctiveAction->jobId,
             $correctiveAction->inspectionId,
+            $correctiveAction->shipmentId,
             $correctiveAction->description,
             $correctiveAction->employee,
             $correctiveAction->batchSize,

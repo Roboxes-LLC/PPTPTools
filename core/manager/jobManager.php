@@ -35,6 +35,22 @@ class JobManager
       return ($customer);
    }
    
+   public static function getCustomerFromJobNumber($jobNumber)
+   {
+      $customer = null;
+      
+      $partNumber = JobInfo::getJobPrefix($jobNumber);
+
+      $part = Part::load($partNumber, Part::USE_PPTP_NUMBER);
+         
+      if ($part)
+      {
+         $customer = Customer::load($part->customerId);
+      }
+      
+      return ($customer);
+   }
+   
    public static function saveCustomerPartNumber($pptpPartNumber, $customerPartNumber)
    {
       return (PPTPDatabaseAlt::getInstance()->saveCustomerPartNumber($pptpPartNumber, $customerPartNumber));

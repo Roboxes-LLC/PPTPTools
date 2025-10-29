@@ -65,52 +65,64 @@ class CorrectiveActionPage extends Page
           
           case "save_corrective_action":
           {
-             if (Page::requireParams($params, ["correctiveActionId", "jobId", "employeeNumber", "occuranceDate", "description"]))
+             if (Page::requireParams($params, ["correctiveActionId", "employeeNumber", "occuranceDate", "description"]))
              {
-                $correctiveActionId = $params->getInt("correctiveActionId");
-                $newCorrectiveAction = ($correctiveActionId == CorrectiveAction::UNKNOWN_CA_ID);
-
-                $correctiveAction = null;
-                if ($newCorrectiveAction)
+                // CARs are created manually by either selecting a job (via pan ticket code), or a shipment (via shipment ticket code).
+                if ($params->keyExists("jobId") || $params->keyExists("shipmentId"))
                 {
-                   $correctiveAction = new CorrectiveAction();
-                }
-                else
-                {
-                   $correctiveAction = CorrectiveAction::load($correctiveActionId);
-                   
-                   if (!$correctiveAction)
+                   $correctiveActionId = $params->getInt("correctiveActionId");
+                   $newCorrectiveAction = ($correctiveActionId == CorrectiveAction::UNKNOWN_CA_ID);
+   
+                   $correctiveAction = null;
+                   if ($newCorrectiveAction)
                    {
-                      $correctiveAction = null;
-                      $this->error("Invalid corrective action id [$correctiveActionId]");
-                   }
-                }
-                
-                if ($correctiveAction)
-                {
-                   CorrectiveActionPage::getCorrectiveActionParams($correctiveAction, $params);
-                   
-                   if (CorrectiveAction::save($correctiveAction))
-                   {
-                      $this->result->correctiveActionId = $correctiveAction->correctiveActionId;
-                      $this->result->correctiveAction = $correctiveAction;
-                      $this->result->success = true;
-                      
-                      if ($newCorrectiveAction)
-                      {
-                         $correctiveAction->open(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
-                      }
-                      
-                      ActivityLog::logComponentActivity(
-                         Authentication::getAuthenticatedUser()->employeeNumber,
-                         ($newCorrectiveAction ? ActivityType::ADD_CORRECTIVE_ACTION : ActivityType::EDIT_CORRECTIVE_ACTION),
-                         $correctiveAction->correctiveActionId,
-                         $correctiveAction->getCorrectiveActionNumber());
+                      $correctiveAction = new CorrectiveAction();
                    }
                    else
                    {
-                      $this->error("Database error");
+                      $correctiveAction = CorrectiveAction::load($correctiveActionId);
+                      
+                      if (!$correctiveAction)
+                      {
+                         $correctiveAction = null;
+                         $this->error("Invalid corrective action id [$correctiveActionId]");
+                      }
                    }
+                   
+                   if ($correctiveAction)
+                   {
+                      CorrectiveActionPage::getCorrectiveActionParams($correctiveAction, $params);
+                      
+                      if (CorrectiveAction::save($correctiveAction))
+                      {
+                         $this->result->correctiveActionId = $correctiveAction->correctiveActionId;
+                         $this->result->correctiveAction = $correctiveAction;
+                         $this->result->success = true;
+                         
+                         if ($newCorrectiveAction)
+                         {
+                            $correctiveAction->open(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null);
+                         }
+                         
+                         ActivityLog::logComponentActivity(
+                            Authentication::getAuthenticatedUser()->employeeNumber,
+                            ($newCorrectiveAction ? ActivityType::ADD_CORRECTIVE_ACTION : ActivityType::EDIT_CORRECTIVE_ACTION),
+                            $correctiveAction->correctiveActionId,
+                            $correctiveAction->getCorrectiveActionNumber());
+                      }
+                      else
+                      {
+                         $this->error("Database error");
+                      }
+                   }
+                   else
+                   {
+                      $this->error("Invalid corrective action id [$correctiveActionId]");
+                   }
+                }
+                else
+                {
+                   $this->error("Missing parameters [jobId, shipmentId]");
                 }
              }
              break;
@@ -606,12 +618,20 @@ class CorrectiveActionPage extends Page
     private function getCorrectiveActionParams(&$correctiveAction, $params)
     {
        // Required parameters.
-       $correctiveAction->jobId = $params->getInt("jobId");
        $correctiveAction->employee = $params->getInt("employeeNumber");
        $correctiveAction->occuranceDate = $params->get("occuranceDate");
        $correctiveAction->description = $params->get("description");
        
        // Optional parameters.
+       
+       if ($params->keyExists("jobId"))
+       {
+          $correctiveAction->jobId = $params->getInt("jobId");
+       }
+       else if ($params->keyExists("shipmentId"))
+       {
+          $correctiveAction->shipmentId = $params->getInt("shipmentId");
+       }
        
        if ($params->keyExists("batchSize"))
        {
@@ -694,7 +714,6 @@ class CorrectiveActionPage extends Page
        $customer = Customer::load($correctiveAction->getCustomerId());
        if ($customer)
        {
-          $correctiveAction->customerName = $customer->customerName;
           $correctiveAction->customerName = $customer->customerName;
        }
        

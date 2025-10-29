@@ -67,7 +67,7 @@ Turned Products</String>
 			<IsVariable>False</IsVariable>
 			<GroupID>-1</GroupID>
 			<IsOutlined>False</IsOutlined>
-			<HorizontalAlignment>Center</HorizontalAlignment>
+			<HorizontalAlignment>Right</HorizontalAlignment>
 			<VerticalAlignment>Top</VerticalAlignment>
 			<TextFitMode>ShrinkToFit</TextFitMode>
 			<UseFullFontHeight>True</UseFullFontHeight>
@@ -82,7 +82,7 @@ Turned Products</String>
 				</Element>
 			</StyledText>
 		</TextObject>
-		<Bounds X="3784" Y="315" Width="1275" Height="375" />
+		<Bounds X="3985.08108108108" Y="269.594594594595" Width="1275" Height="375" />
 	</ObjectInfo>
 	<ObjectInfo>
 		<TextObject>
@@ -287,7 +287,7 @@ Turned Products</String>
 			<IsVariable>False</IsVariable>
 			<GroupID>-1</GroupID>
 			<IsOutlined>False</IsOutlined>
-			<HorizontalAlignment>Left</HorizontalAlignment>
+			<HorizontalAlignment>Center</HorizontalAlignment>
 			<VerticalAlignment>Top</VerticalAlignment>
 			<TextFitMode>None</TextFitMode>
 			<UseFullFontHeight>True</UseFullFontHeight>
@@ -296,13 +296,13 @@ Turned Products</String>
 				<Element>
 					<String xml:space="preserve">Heat: </String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="True" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="12" Bold="True" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
 			</StyledText>
 		</TextObject>
-		<Bounds X="3516" Y="1020" Width="945" Height="345" />
+		<Bounds X="3963.56756756757" Y="773.513513513513" Width="945" Height="345" />
 	</ObjectInfo>
 	<ObjectInfo>
 		<TextObject>
@@ -315,8 +315,8 @@ Turned Products</String>
 			<IsVariable>False</IsVariable>
 			<GroupID>-1</GroupID>
 			<IsOutlined>False</IsOutlined>
-			<HorizontalAlignment>Left</HorizontalAlignment>
-			<VerticalAlignment>Top</VerticalAlignment>
+			<HorizontalAlignment>Center</HorizontalAlignment>
+			<VerticalAlignment>Middle</VerticalAlignment>
 			<TextFitMode>None</TextFitMode>
 			<UseFullFontHeight>True</UseFullFontHeight>
 			<Verticalized>False</Verticalized>
@@ -324,13 +324,13 @@ Turned Products</String>
 				<Element>
 					<String xml:space="preserve">%heat</String>
 					<Attributes>
-						<Font Family="Arial" Size="14" Bold="False" Italic="False" Underline="False" Strikeout="False" />
+						<Font Family="Arial" Size="10" Bold="False" Italic="False" Underline="False" Strikeout="False" />
 						<ForeColor Alpha="255" Red="0" Green="0" Blue="0" HueScale="100" />
 					</Attributes>
 				</Element>
 			</StyledText>
 		</TextObject>
-		<Bounds X="4339" Y="1020" Width="1110" Height="345" />
+		<Bounds X="3275.21621621622" Y="1052.43243243243" Width="2193.24324324324" Height="345" />
 	</ObjectInfo>
 	<ObjectInfo>
 		<ShapeObject Stroke="SolidLine">

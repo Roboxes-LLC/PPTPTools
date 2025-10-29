@@ -10,46 +10,20 @@ function onSaveInspection()
 {
    if (validateInspection())
    {
-      var form = document.querySelector('#input-form');
+      // Customer reported that users were clicking the save button multiple times during form submission.
+      disable("save-button");
       
-      var xhttp = new XMLHttpRequest();
-   
-      // Bind the form data.
-      var formData = new FormData(form);
-   
-      // Define what happens on successful data submission.
-      xhttp.addEventListener("load", function(event) {
-         try
+      submitForm("input-form", "/api/saveInspection/", function (response) {
+         if (response.success == true)
          {
-            var json = JSON.parse(event.target.responseText);
-   
-            if (json.success == true)
-            {
-               location.href = "viewInspections.php";
-            }
-            else
-            {
-               alert(json.error);
-            }
+            location.href = "viewInspections.php";
          }
-         catch (exception)
+         else
          {
-            console.log("JSON syntax error");
-            console.log(this.responseText);
+            alert(response.error);
+            enable("save-button");
          }
-      });
-   
-      // Define what happens on successful data submission.
-      xhttp.addEventListener("error", function(event) {
-        alert('Oops! Something went wrong.');
-      });
-   
-      // Set up our request
-      requestUrl = "../api/saveInspection/"
-      xhttp.open("POST", requestUrl, true);
-   
-      // The data sent is what the user provided in the form
-      xhttp.send(formData);
+      })
    }
 }
 

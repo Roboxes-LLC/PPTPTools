@@ -816,7 +816,7 @@ function getAuthorOptions()
 function getInspectorOptions()
 {
    // Multiple roles requested by customer in 10/2023.
-   $inspectorRoles = [Role::INSPECTOR, Role::ADMIN, Role::SUPER_USER];
+   $inspectorRoles = [Role::INSPECTOR, Role::OPERATOR, Role::ADMIN, Role::SUPER_USER];
    
    $options = UserManager::getOptions($inspectorRoles, [], getInspector());
    

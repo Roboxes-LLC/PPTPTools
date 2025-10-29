@@ -52,6 +52,7 @@ function getForm()
       <input type="hidden" name="request" value="save_corrective_action"/>
       <input type="hidden" name="correctiveActionId"/>
       <input id="job-id-input" type="hidden" name="jobId" data-validator="JobIdValidator"/>
+      <input id="shipment-id-input" type="hidden" name="shipmentId"/>
 
       <div class="flex-horizontal" style="justify-content: space-evenly">
          <div class="flex-vertical" style="margin-right: 20px;">
@@ -60,6 +61,12 @@ function getForm()
             <div class="form-item">
                <div class="form-label">Pan Ticket #</div>
                <input id="pan-ticket-code-input" type="text" style="width:50px;" name="panTicketCode" value="">
+            </div>
+
+            <div class="form-section-header">Inventory Ticket Entry</div>               
+            <div class="form-item">
+               <div class="form-label">Inventory Ticket #</div>
+               <input id="shipment-ticket-code-input" type="text" style="width:50px;" name="shipmentTicketCode" value="">
             </div>               
          
             <div class="form-section-header">Manual Entry</div>

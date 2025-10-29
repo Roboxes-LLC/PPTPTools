@@ -228,7 +228,7 @@ function getNotificationInputs()
       $html .=
 <<<HEREDOC
       <div class="flex-horizontal flex-v-center">
-         <input id="$id" type="checkbox" class="permission-checkbox" form="input-form" name="$name" $checked $disabled/>
+         <input id="$id" type="checkbox" class="notification-checkbox" form="input-form" name="$name" $checked $disabled/>
          <label for="$id" class="form-input-medium">$description</label>
       </div>
 HEREDOC;
@@ -296,75 +296,81 @@ if (!Authentication::isAuthenticated())
          
          <div class="flex-horizontal flex-left flex-wrap">
 
-            <div class="flex-vertical flex-top" style="margin-right: 50px;">
+            <div class="flex-horizontal flex-top">
+            
+               <div class="flex-vertical flex-top" style="margin-right: 50px">
       
-               <div class="form-section-header">Identity</div>
-      
-               <div class="form-item">
-                  <div class="form-label">Employee #</div>
-                  <input id="employee-number-input" type="text" name="employeeNumber" form="input-form" maxlength="5" style="width:150px;" value="<?php echo getUserInfo()->employeeNumber ? getUserInfo()->employeeNumber : null; ?>" oninput="this.validator.validate()" <?php echo !isEditable(UserInputField::EMPLOYEE_NUMBER) ? "disabled" : ""; ?>/>
+                  <div class="form-section-header">Identity</div>
+         
+                  <div class="form-item">
+                     <div class="form-label">Employee #</div>
+                     <input id="employee-number-input" type="text" name="employeeNumber" form="input-form" maxlength="5" style="width:150px;" value="<?php echo getUserInfo()->employeeNumber ? getUserInfo()->employeeNumber : null; ?>" oninput="this.validator.validate()" <?php echo !isEditable(UserInputField::EMPLOYEE_NUMBER) ? "disabled" : ""; ?>/>
+                  </div>
+         
+                  <div class="form-item">
+                     <div class="form-label">First Name</div>
+                     <input id="first-name-input" type="text" name="firstName" form="input-form" maxlength="16" style="width:150px;" value="<?php echo getUserInfo()->firstName; ?>" <?php echo !isEditable(UserInputField::FIRST_NAME) ? "disabled" : ""; ?> />
+                  </div>
+         
+                  <div class="form-item">
+                     <div class="form-label">Last Name</div>
+                     <input id="last-name-input" type="text" name="lastName" form="input-form" maxlength="16" style="width:150px;" value="<?php echo getUserInfo()->lastName; ?>" <?php echo !isEditable(UserInputField::LAST_NAME) ? "disabled" : ""; ?> />
+                  </div>
+         
+                  <div class="form-item">
+                     <div class="form-label">Email</div>
+                     <input id="email-input" type="text" name="email" form="input-form" maxlength="64" style="width:300px;" value="<?php echo getUserInfo()->email; ?>" <?php echo !isEditable(UserInputField::EMAIL) ? "disabled" : ""; ?> />
+                  </div>
+         
+                  <div class="form-item">
+                     <div class="form-label">Roles</div>
+                     <div><select id="role-input" name="roles[]" form="input-form" multiple style="height: 160px" <?php echo !isEditable(UserInputField::PERMISSIONS) ? "disabled" : ""; ?>><?php echo Role::getOptions(Role::getRolesFromBitset(getUserInfo()->roles)); ?></select></div>
+                  </div>
+         
+                  <div class="form-section-header">Login</div>
+         
+                  <div class="form-item">
+                     <div class="form-label">Username</div>
+                     <input id="user-name-input" type="text" name="username" form="input-form" maxlength="32" style="width:150px;" value="<?php echo getUserInfo()->username; ?>" <?php echo !isEditable(UserInputField::USERNAME) ? "disabled" : ""; ?> />
+                  </div>
+         
+                  <div class="form-item">
+                     <div class="form-label">Password</div>
+                     <input id="user-password-input" type="password" name="password" form="input-form" maxlength="32" style="width:150px;" value="<?php echo getUserInfo()->password; ?>" <?php echo !isEditable(UserInputField::PASSWORD) ? "disabled" : ""; ?> />
+                  </div>
+         
+                  <div class="form-item">
+                     <div class="form-label">Authentication token</div>
+                     <div class="flex-horizontal">
+                        <input id="auth-token-input" type="text" name="authToken" form="input-form" style="width:150px;" value="<?php echo getUserInfo()->authToken; ?>" readonly <?php echo !isEditable(UserInputField::AUTHENTICATION_TOKEN) ? "disabled" : ""; ?>/>
+                        &nbsp
+                        <button class="small-button <?php echo !isEditable(UserInputField::AUTHENTICATION_TOKEN) ? "disabled" : ""; ?>" onclick="refreshAuthToken()">Refresh</button>
+                        &nbsp
+                        <button class="small-button" onclick="copyToClipboard('auth-token-input')">Copy</button>
+                     </div>
+                  </div>
+                  
+                  <div class="form-section-header">Time Card</div>
+                  
+                  <div class="form-item">
+                     <div class="form-label">Default Shift Hours</div>
+                     <input id="default-shift-hours-input" type="number" name="defaultShiftHours" form="input-form" value="<?php echo getUserInfo()->defaultShiftHours; ?>" <?php echo !isEditable(UserInputField::DEFAULT_SHIFT_HOURS) ? "disabled" : ""; ?> />
+                  </div>
+                  
                </div>
-      
-               <div class="form-item">
-                  <div class="form-label">First Name</div>
-                  <input id="first-name-input" type="text" name="firstName" form="input-form" maxlength="16" style="width:150px;" value="<?php echo getUserInfo()->firstName; ?>" <?php echo !isEditable(UserInputField::FIRST_NAME) ? "disabled" : ""; ?> />
-               </div>
-      
-               <div class="form-item">
-                  <div class="form-label">Last Name</div>
-                  <input id="last-name-input" type="text" name="lastName" form="input-form" maxlength="16" style="width:150px;" value="<?php echo getUserInfo()->lastName; ?>" <?php echo !isEditable(UserInputField::LAST_NAME) ? "disabled" : ""; ?> />
-               </div>
-      
-               <div class="form-item">
-                  <div class="form-label">Email</div>
-                  <input id="email-input" type="text" name="email" form="input-form" maxlength="64" style="width:300px;" value="<?php echo getUserInfo()->email; ?>" <?php echo !isEditable(UserInputField::EMAIL) ? "disabled" : ""; ?> />
-               </div>
-      
-               <div class="form-item">
-                  <div class="form-label">Roles</div>
-                  <div><select id="role-input" name="roles[]" form="input-form" multiple style="height: 160px" <?php echo !isEditable(UserInputField::PERMISSIONS) ? "disabled" : ""; ?>><?php echo Role::getOptions(Role::getRolesFromBitset(getUserInfo()->roles)); ?></select></div>
-               </div>
-      
-               <div class="form-section-header">Login</div>
-      
-               <div class="form-item">
-                  <div class="form-label">Username</div>
-                  <input id="user-name-input" type="text" name="username" form="input-form" maxlength="32" style="width:150px;" value="<?php echo getUserInfo()->username; ?>" <?php echo !isEditable(UserInputField::USERNAME) ? "disabled" : ""; ?> />
-               </div>
-      
-               <div class="form-item">
-                  <div class="form-label">Password</div>
-                  <input id="user-password-input" type="password" name="password" form="input-form" maxlength="32" style="width:150px;" value="<?php echo getUserInfo()->password; ?>" <?php echo !isEditable(UserInputField::PASSWORD) ? "disabled" : ""; ?> />
-               </div>
-      
-               <div class="form-item">
-                  <div class="form-label">Authentication token</div>
-                  <div class="flex-horizontal">
-                     <input id="auth-token-input" type="text" name="authToken" form="input-form" style="width:150px;" value="<?php echo getUserInfo()->authToken; ?>" readonly <?php echo !isEditable(UserInputField::AUTHENTICATION_TOKEN) ? "disabled" : ""; ?>/>
-                     &nbsp
-                     <button class="small-button <?php echo !isEditable(UserInputField::AUTHENTICATION_TOKEN) ? "disabled" : ""; ?>" onclick="refreshAuthToken()">Refresh</button>
-                     &nbsp
-                     <button class="small-button" onclick="copyToClipboard('auth-token-input')">Copy</button>
+                  
+               <div class="flex-vertical" style="margin-right: 50px">
+                  <div class="form-section-header">Permissions</div>
+                  <div class="flex-vertical flex-top flex-wrap" style="height:700px">
+                     <?php echo getPermissionInputs(); ?>
                   </div>
                </div>
                
-               <div class="form-section-header">Time Card</div>
-               
-               <div class="form-item">
-                  <div class="form-label">Default Shift Hours</div>
-                  <input id="default-shift-hours-input" type="number" name="defaultShiftHours" form="input-form" value="<?php echo getUserInfo()->defaultShiftHours; ?>" <?php echo !isEditable(UserInputField::DEFAULT_SHIFT_HOURS) ? "disabled" : ""; ?> />
+               <div class="flex-vertical flex-top">
+                  <div class="form-section-header">Notifications</div>
+                  <?php echo getNotificationInputs(); ?>
                </div>
-      
-            </div>
-            
-            <div class="flex-vertical flex-top">
-               <div class="form-section-header">Permissions</div>
-               <?php echo getPermissionInputs(); ?>
-            </div>
-            
-            <div class="flex-vertical flex-top">
-               <div class="form-section-header">Notifications</div>
-               <?php echo getNotificationInputs(); ?>
+               
             </div>
             
          </div>

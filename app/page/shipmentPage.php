@@ -141,9 +141,12 @@ class ShipmentPage extends Page
             if ($this->authenticate([Permission::VIEW_SHIPMENT]))
             {
                // Fetch single component.
-               if (isset($params["shipmentId"]))
+               if (isset($params["shipmentId"]) || 
+                   isset($params["shipmentTicketCode"]))
                {
-                  $shipmentId = $params->getInt("shipmentId");
+                  $shipmentId = isset($params["shipmentId"]) ?
+                                   $params->getInt("shipmentId") :
+                                   hexdec($params->get("shipmentTicketCode"));
                   
                   $shipment = Shipment::load($shipmentId);
                   
@@ -152,7 +155,7 @@ class ShipmentPage extends Page
                      // Augment shipment.
                      ShipmentPage::augmentShipment($shipment);
                      
-                     $this->result->scheduleEntry = $shipment;
+                     $this->result->shipment = $shipment;
                      $this->result->success = true;
                   }
                   else

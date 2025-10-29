@@ -29,9 +29,11 @@ class CorrectiveAction
       // Input fields
       "CORRECTIVE_ACTION_ID_INPUT": "corrective-action-id-input",
       "JOB_ID_INPUT":           "job-id-input",
+      "SHIPMENT_ID_INPUT":      "shipment-id-input",
       "JOB_NUMBER_INPUT":       "job-number-input",
       "WC_NUMBER_INPUT":        "wc-number-input",
       "PAN_TICKET_CODE_INPUT":  "pan-ticket-code-input",
+      "SHIP_TICKET_CODE_INPUT": "shipment-ticket-code-input",
       "EMPLOYEE_NUMBER_INPUT":  "employee-number-input",
       "OCCURANCE_DATE_INPUT":   "occurance-date-input",
       "DIMENSIONAL_DEFECTS_INPUT": "dimensional-defects-input",
@@ -176,6 +178,13 @@ class CorrectiveAction
       {
          document.getElementById(CorrectiveAction.PageElements.PAN_TICKET_CODE_INPUT).addEventListener('change', function() {
             this.onPanTicketCodeChanged();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(CorrectiveAction.PageElements.SHIP_TICKET_CODE_INPUT) != null)
+      {
+         document.getElementById(CorrectiveAction.PageElements.SHIP_TICKET_CODE_INPUT).addEventListener('change', function() {
+            this.onShipmentTicketCodeChanged();
          }.bind(this));
       }
       
@@ -422,6 +431,7 @@ class CorrectiveAction
       if (panTicketCode == "")
       {
          // Enable fields.
+         enable(CorrectiveAction.PageElements.SHIP_TICKET_CODE_INPUT);
          enable(CorrectiveAction.PageElements.JOB_NUMBER_INPUT);
          enable(CorrectiveAction.PageElements.WC_NUMBER_INPUT);
          
@@ -445,6 +455,7 @@ class CorrectiveAction
       else
       {
          // Disable fields.
+         disable(CorrectiveAction.PageElements.SHIP_TICKET_CODE_INPUT);
          disable(CorrectiveAction.PageElements.JOB_NUMBER_INPUT);
          disable(CorrectiveAction.PageElements.WC_NUMBER_INPUT);
          
@@ -458,9 +469,12 @@ class CorrectiveAction
                
                this.updateJobOptions(new Array(response.jobNumber));
                this.updateWcOptions(new Array({wcNumber:response.wcNumber, label:response.wcLabel}));
+               
+               // Create CAR from jobId.
+               enable(CorrectiveAction.PageElements.JOB_ID_INPUT);
+               disable(CorrectiveAction.PageElements.SHIPMENT_ID_INPUT);
    
                set(CorrectiveAction.PageElements.JOB_ID_INPUT, response.timeCardInfo.jobId);
-               console.log("Set job id: " + response.timeCardInfo.jobId);
                set(CorrectiveAction.PageElements.JOB_NUMBER_INPUT, response.jobNumber);
                set(CorrectiveAction.PageElements.WC_NUMBER_INPUT, response.wcNumber);
                set(CorrectiveAction.PageElements.WC_NUMBER_INPUT, response.wcNumber);
@@ -470,6 +484,72 @@ class CorrectiveAction
             else
             {
                console.log("API call to retrieve time card info failed.");
+            }
+         }.bind(this));
+      }
+   }
+   
+   onShipmentTicketCodeChanged()
+   {
+      var shipmentTicketCode = document.getElementById(CorrectiveAction.PageElements.SHIP_TICKET_CODE_INPUT).value;
+      console.log(shipmentTicketCode);
+      
+      // Clear fields.
+      clear(CorrectiveAction.PageElements.JOB_NUMBER_INPUT);
+      clear(CorrectiveAction.PageElements.WC_NUMBER_INPUT);
+      clear(CorrectiveAction.PageElements.EMPLOYEE_NUMBER_INPUT);
+      clear(CorrectiveAction.PageElements.OCCURANCE_DATE_INPUT);
+      
+      if (shipmentTicketCode == "")
+      {
+         // Enable fields.
+         enable(CorrectiveAction.PageElements.PAN_TICKET_CODE_INPUT);
+         enable(CorrectiveAction.PageElements.JOB_NUMBER_INPUT);
+         enable(CorrectiveAction.PageElements.WC_NUMBER_INPUT);
+         
+         // Disable WC number, as it's dependent on the job number.
+         disable(CorrectiveAction.PageElements.WC_NUMBER_INPUT);
+         
+         // AJAX call to retrieve active jobs.
+         requestUrl = "../api/jobs/?onlyActive=true";
+         
+         ajaxRequest("../api/jobs/?onlyActive=true", function(response) {
+            if (response.success == true)
+            {
+               this.updateJobOptions(response.jobs);  
+            }
+            else
+            {
+               console.log("API call to retrieve jobs failed.");
+            }
+         }.bind(this));
+      }
+      else
+      {
+         // Disable fields.
+         disable(CorrectiveAction.PageElements.PAN_TICKET_CODE_INPUT);
+         disable(CorrectiveAction.PageElements.JOB_NUMBER_INPUT);
+         disable(CorrectiveAction.PageElements.WC_NUMBER_INPUT);
+         
+         // AJAX call to populate input fields based on pan ticket selection.
+         requestUrl = `/app/page/shipment/?request=fetch&shipmentTicketCode= ${shipmentTicketCode}`;
+         
+         ajaxRequest(requestUrl, function(response) {
+            if (response.success == true)
+            {
+               this.updateJobOptions(new Array(response.shipment.jobNumber));
+               this.updateWcOptions(new Array({}));
+               
+               // Create CAR from shipmentId.
+               enable(CorrectiveAction.PageElements.SHIPMENT_ID_INPUT);
+               disable(CorrectiveAction.PageElements.JOB_ID_INPUT);
+   
+               set(CorrectiveAction.PageElements.SHIPMENT_ID_INPUT, response.shipment.shipmentId);
+               set(CorrectiveAction.PageElements.JOB_NUMBER_INPUT, response.shipment.jobNumber);
+            }
+            else
+            {
+               console.log("API call to retrieve shipment failed.");
             }
          }.bind(this));
       }
@@ -519,8 +599,11 @@ class CorrectiveAction
          ajaxRequest(requestUrl, function(response) {
             if (response.success == true)
             {
+               // Create CAR from jobId.
+               enable(CorrectiveAction.PageElements.JOB_ID_INPUT);
+               disable(CorrectiveAction.PageElements.SHIPMENT_ID_INPUT);
+               
                set(CorrectiveAction.PageElements.JOB_ID_INPUT, response.jobInfo.jobId);
-               console.log("Set job id: " + response.jobInfo.jobId);
             }
             else
             {
@@ -983,13 +1066,14 @@ class JobIdValidator extends InputValidator
       this.input.setCustomValidity("");
       
       let jobId = parseInt(document.getElementById(CorrectiveAction.PageElements.JOB_ID_INPUT).value);
+      let shipmentId = parseInt(document.getElementById(CorrectiveAction.PageElements.SHIPMENT_ID_INPUT).value);
       
       // Verify a valid job has been determined.
-      let isValid = (jobId > 0);
+      let isValid = ((jobId > 0) || (shipmentId > 0));
       
       if (!isValid)
       {
-         alert("Start by selecting a valid pan ticket or active job.");
+         alert("Start by selecting a valid pan ticket, inventory ticket, or active job.");
       }
       
       // Verify a valid job has been determined.

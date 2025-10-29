@@ -73,6 +73,7 @@ class CorrectiveAction
    public $occuranceDate;
    public $jobId;
    public $inspectionId;
+   public $shipmentId;
    public $description;
    public $employee;  // TODO: More than one.
    public $batchSize;
@@ -140,7 +141,7 @@ class CorrectiveAction
       $this->occuranceDate = $row["occuranceDate"];  // Note: When reading from a MYSQL DATE field, Time::fromMySqlDate() is not required.
       $this->jobId = intval($row["jobId"]);
       $this->inspectionId = intval($row["inspectionId"]);
-      $this->inspectionId = intval($row["inspectionId"]);
+      $this->shipmentId = intval($row["shipmentId"]);
       $this->description = $row["description"];
       $this->employee = intval($row["employee"]);
       $this->batchSize = intval($row["batchSize"]);
@@ -178,7 +179,7 @@ class CorrectiveAction
          $correctiveAction->jobInfo = JobInfo::load($correctiveAction->jobId);
          $correctiveAction->customer = Customer::load($correctiveAction->getCustomerId());
          $correctiveAction->inspection = Customer::load($correctiveAction->inspectionId);
-         $correctiveAction->shipment = Customer::load($correctiveAction->shipmentId);
+         $correctiveAction->shipment = Shipment::load($correctiveAction->shipmentId);
          
          $correctiveAction->actions = CorrectiveAction::getActions($correctiveAction->correctiveActionId);
          $correctiveAction->attachments = CorrectiveAction::getAttachments($correctiveAction->correctiveActionId);
@@ -279,9 +280,23 @@ class CorrectiveAction
    {
       $customerId = Customer::UNKNOWN_CUSTOMER_ID;
       
-      if ($this->jobId != JobInfo::UNKNOWN_JOB_ID)
+      $jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
+
+      // Job id specified explicitly.
+      if ($this->jobInfo)
       {
-         $customer = JobManager::getCustomer($this->jobId);
+         $jobNumber = $this->jobInfo->jobNumber;
+      }
+      // Job id implied in shipment.
+      else if ($this->shipment)
+      {
+         $jobNumber = $this->shipment->jobNumber;
+      }
+      
+      if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
+      {
+         $customer = JobManager::getCustomerFromJobNumber($jobNumber);
+         
          if ($customer)
          {
             $customerId = $customer->customerId;

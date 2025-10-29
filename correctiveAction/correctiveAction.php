@@ -199,6 +199,50 @@ function getDescription()
    return ($description);
 }
 
+function getJobNumber()
+{
+   $jobNumber = JobInfo::UNKNOWN_JOB_NUMBER;
+   
+   $correctiveAction = getCorrectiveAction();
+   
+   if ($correctiveAction->jobId != JobInfo::UNKNOWN_JOB_ID)
+   {
+      $job = JobInfo::load($correctiveAction->jobId);
+      if ($job)
+      {
+         $jobNumber = $job->jobNumber;
+      }
+   }
+   else if ($correctiveAction->shipmentId != Shipment::UNKNOWN_SHIPMENT_ID)
+   {
+      $shipment = Shipment::load($correctiveAction->shipmentId);
+      if ($shipment)
+      {
+         $jobNumber = $shipment->jobNumber;
+      }
+   }
+   
+   return ($jobNumber);
+}
+
+function getPartNumbers(&$pptpPartNumber, &$customerPartNumber)
+{
+   $pptpPartNumber = null;
+   $customerPartNumber = null;
+   
+   $jobNumber = getJobNumber();
+   
+   if ($jobNumber != JobInfo::UNKNOWN_JOB_NUMBER)
+   {
+      $pptpPartNumber = JobInfo::getJobPrefix($jobNumber);
+      $part = Part::load($pptpPartNumber, false);  // Use PPTP number.
+      if ($part)
+      {
+         $customerPartNumber = $part->customerNumber;
+      }
+   }
+}
+
 function getRequestPanel()
 {
    global $getDisabled;
@@ -222,16 +266,7 @@ function getRequestPanel()
    
    $pptpPartNumber = null;
    $customerPartNumber = null;
-   $job = JobInfo::load($correctiveAction->jobId);
-   if ($job)
-   {
-      $pptpPartNumber = JobInfo::getJobPrefix($job->jobNumber);
-      $part = Part::load($pptpPartNumber, false);  // Use PPTP number.
-      if ($part)
-      {
-         $customerPartNumber = $part->customerNumber;
-      }
-   }
+   getPartNumbers($pptpPartNumber, $customerPartNumber);
    
    $dispositionOptions = Disposition::getOptions(Disposition::getDispositions($correctiveAction->disposition));
    

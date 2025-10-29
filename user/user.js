@@ -104,14 +104,7 @@ function onRoleChange()
     }
     
     var elements = document.getElementsByClassName("permission-checkbox");
-    
-    // Uncheck all.
-    for (element of elements)
-    {
-       element.checked = false;
-    }
-
-    
+        
     for (const roleId of selectedRoles)
     {
       var permissions = defaultPermissions[roleId - 1];
@@ -126,7 +119,7 @@ function onRoleChange()
          
          if (isSet)
          {
-            element.checked = true;
+            element.checked |= true;
          }
       }
    }
