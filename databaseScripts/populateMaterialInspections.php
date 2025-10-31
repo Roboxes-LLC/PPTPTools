@@ -32,7 +32,7 @@ foreach ($result as $row)
          echo "inspection updated";   
       
          $certFile = $materialEntry->materialHeatInfo->internalHeatNumber . ".pdf";
-         $certPath = $UPLOAD_PATH . $MATERIAL_CERTS_DIR . $certFile;
+         $certPath = $DOC_ROOT . $MATERIAL_CERTS_DIR . $certFile;
          
          if ($materialEntry->materialHeatInfo->certFile == $certFile)
          {

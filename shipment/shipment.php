@@ -223,23 +223,22 @@ function getPackingListInput($packingList)
    
    $disabled = getDisabled(InputField::PACKING_LIST);
    
-   if ($values[$packingList])
-   {
-      $packingListInput =
+   $name = $names[$packingList];
+   $value = $values[$packingList];
+   
+   $inputHidden = $values[$packingList] ? "display:none" : "";
+   $valueHidden = $values[$packingList] ? "" : "display:none";
+   
+   $packingListInput =
 <<<HEREDOC
-         <div class="flex-vertical flex-top">
-            <a href="{$PACKING_LISTS_DIR}{$values[$packingList]}" style="margin-bottom: 10px;" target="_blank">$values[$packingList]</a>
-            <input type="file" name="{$names[$packingList]}}" form="input-form" $disabled>
+      <div class="flex-vertical flex-top">
+         <div id="$name-value" class="flex-horizontal flex-v-center" style="margin-bottom:10px; $valueHidden">
+            <a href="{$PACKING_LISTS_DIR}$value" target="_blank" style="margin-right:5px">$value</a>
+            <i id="delete-$name-button" class="material-icons icon-button delete-packing-list-button" title="Delete" data-packinglist="$name">delete</i>
          </div>
+         <input id="$name-input" type="file" name="$name" form="input-form" style="$inputHidden" $disabled>
+      </div>
 HEREDOC;
-   }
-   else
-   {
-      $packingListInput =
-<<<HEREDOC
-         <input type="file" name="{$names[$packingList]}" form="input-form" $disabled>
-HEREDOC;
-   }
    
    return ($packingListInput);
 }

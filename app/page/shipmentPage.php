@@ -74,6 +74,17 @@ class ShipmentPage extends Page
                               $this->error("File upload failed! " . UploadStatus::toString($uploadStatus));
                            }
                         }
+                        else if ($shipment->vendorPackingList)
+                        {
+                           Upload::deletePackingList($shipment->vendorPackingList);
+                           
+                           $shipment->vendorPackingList = null;
+                           
+                           if (!Shipment::save($shipment))
+                           {
+                              $this->error("Database error");
+                           }
+                        }
                         
                         if (isset($_FILES["customerPackingList"]) && ($_FILES["customerPackingList"]["name"] != ""))
                         {
@@ -93,6 +104,17 @@ class ShipmentPage extends Page
                            else
                            {
                               $this->error("File upload failed! " . UploadStatus::toString($uploadStatus));
+                           }
+                        }
+                        else if ($shipment->customerPackingList)
+                        {
+                           Upload::deletePackingList($shipment->customerPackingList);
+                           
+                           $shipment->customerPackingList = null;
+                           
+                           if (!Shipment::save($shipment))
+                           {
+                              $this->error("Database error");
                            }
                         }
                         

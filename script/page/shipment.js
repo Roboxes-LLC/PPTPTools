@@ -13,6 +13,7 @@ class Shipment
       "ADD_BUTTON":        "add-button",
       "SAVE_BUTTON":       "save-button",
       "CANCEL_BUTTON":     "cancel-button",
+      "DELETE_PACKING_LIST_BUTTON": "delete-packing-list-button",
       // Input fields
       "SHIPMENT_LOCATION_INPUT": "shipment-location-input",
       "START_DATE_INPUT": "start-date-input",
@@ -108,6 +109,14 @@ class Shipment
             this.onChildQuantityChanged();
          }.bind(this));
       }
+      
+      let deleteButtons = document.getElementsByClassName(Shipment.PageElements.DELETE_PACKING_LIST_BUTTON);
+      for (let button of deleteButtons)
+      {
+         button.addEventListener('click', function(event) {
+            this.onDeletePackingListButton(event.target);
+         }.bind(this));
+      } 
    }      
    
    createTable(tableElementId)
@@ -515,6 +524,18 @@ class Shipment
       
       set(Shipment.PageElements.CHILD_QUANTITY_INPUT, childQuantity);
       set(Shipment.PageElements.PARENT_QUANTITY_INPUT, (quantity - childQuantity));
+   }
+   
+   onDeletePackingListButton(button)
+   {
+      let packingList = button.dataset.packinglist;
+      console.log(packingList);
+
+      let inputElementId = `${packingList}-input`;
+      let valueElementId = `${packingList}-value`;
+
+      hide(valueElementId);
+      show(inputElementId, "flex");
    }
       
    // **************************************************************************

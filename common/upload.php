@@ -54,12 +54,12 @@ class Upload
    
    static function uploadMaterialCert($file)
    {
-      global $UPLOAD_PATH;
+      global $DOC_ROOT;
       global $MATERIAL_CERTS_DIR;
       
       $returnStatus = UploadStatus::UPLOADED;
       
-      $target = $UPLOAD_PATH . $MATERIAL_CERTS_DIR . basename($file["name"]);
+      $target = $DOC_ROOT . $MATERIAL_CERTS_DIR . basename($file["name"]);
       
       if (!Upload::validateFileFormat($file, array("pdf")))
       {
@@ -131,12 +131,12 @@ class Upload
    
    static function uploadPackingList($file)
    {
-      global $UPLOAD_PATH;
+      global $DOC_ROOT;
       global $PACKING_LISTS_DIR;
       
       $returnStatus = UploadStatus::UPLOADED;
       
-      $target = $UPLOAD_PATH . $PACKING_LISTS_DIR . basename($file["name"]);
+      $target = $DOC_ROOT . $PACKING_LISTS_DIR . basename($file["name"]);
       
       if (!Upload::validateFileFormat($file, array("pdf")))
       {
@@ -182,6 +182,23 @@ class Upload
       $success = true;
       
       $target = $UPLOADS . $filename;
+      
+      if (file_exists($target))
+      {
+         $success = unlink($target);
+      }
+      
+      return ($success);
+   }
+   
+   static function deletePackingList($filename)
+   {
+      global $DOC_ROOT;
+      global $PACKING_LISTS_DIR;
+      
+      $success = true;
+      
+      $target = $DOC_ROOT . $PACKING_LISTS_DIR . $filename;
       
       if (file_exists($target))
       {
