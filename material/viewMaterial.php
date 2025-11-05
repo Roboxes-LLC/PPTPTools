@@ -133,6 +133,13 @@ function getMaterialEntry()
          $materialEntry->enteredDateTime = Time::now("Y-m-d H:i:s");
          $materialEntry->enteredUserId = Authentication::getAuthenticatedUser()->employeeNumber;
       }
+      
+      // As of version 1.74, it's possible to save a material entry without heat info.
+      // If that's the case here, provide a default heat info for populating the inputs.
+      if (!$materialEntry->materialHeatInfo)
+      {
+         $materialEntry->materialHeatInfo = new MaterialHeatInfo();
+      }
    }
    
    return ($materialEntry);
