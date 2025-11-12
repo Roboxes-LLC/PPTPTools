@@ -14,6 +14,9 @@ class Time
    // Date format required for initializing time inputs.
    public const MYSQL_DATE_FORMAT = "Y-m-d";
    
+   private const SATURDAY = 6;
+   private const SUNDAY = 0;
+   
    static public function init()
    {
       date_default_timezone_set(Time::DEFAULT_TIME_ZONE);
@@ -117,6 +120,13 @@ class Time
       $isNew = ($minutes <= $newThresholdMinutes);
       
       return ($isNew);
+   }
+   
+   public static function isWeekend($date)
+   {
+      $dayOfWeek = intval((new DateTime($date))->format('w'));
+      
+      return (($dayOfWeek === Time::SATURDAY) || ($dayOfWeek === Time::SUNDAY));
    }
 }
 

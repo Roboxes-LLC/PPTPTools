@@ -2237,7 +2237,7 @@ HEREDOC;
    
    public function getMaterialVendors()
    {
-      $query = "SELECT * FROM materialvendor;";
+      $query = "SELECT * FROM materialvendor ORDER BY name ASC;";
       
       $result = $this->query($query);
       

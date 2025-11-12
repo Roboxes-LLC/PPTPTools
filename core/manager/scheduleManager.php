@@ -11,13 +11,16 @@ class ScheduleManager
    {
       $entries = array();
       
-      $result = PPTPDatabaseAlt::getInstance()->getSchedule($mfgDate);
-      
-      foreach ($result as $row)
+      if (!Time::isWeekend($mfgDate))  // TODO: Add weekend configuration to job.
       {
-         $scheduleEntry = ScheduleEntry::load(intval($row["entryId"]));
+         $result = PPTPDatabaseAlt::getInstance()->getSchedule($mfgDate);
          
-         $entries[] = $scheduleEntry;
+         foreach ($result as $row)
+         {
+            $scheduleEntry = ScheduleEntry::load(intval($row["entryId"]));
+            
+            $entries[] = $scheduleEntry;
+         }
       }
       
       return ($entries);
@@ -47,7 +50,7 @@ class ScheduleManager
    {
       $result = PPTPDatabaseAlt::getInstance()->getScheduleForJob($jobId, $mfgDate);
       
-      return ($result && (count($result) > 0));
+      return ($result && (count($result) > 0) && !Time::isWeekend($mfgDate));  // TODO: Add weekend configuration to job.
    }
    
    public static function createTimeCard($scheduleEntryId)
