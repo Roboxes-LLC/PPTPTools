@@ -9,7 +9,7 @@ Required PHP variables:
 
    <div class="input-group flex-horizontal flex-v-center">
       <select id="shipment-location-input">
-         <?php echo ShipmentLocation::getOptions($filterLocation) ?>
+         <?php echo ShipmentLocation::getOptions($filterLocation, true) ?>
       </select>
    </div>
    &nbsp;&nbsp;&nbsp;

@@ -1088,10 +1088,21 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $dateClause = ($startDate && $endDate) ? "(dateTime BETWEEN '$startDate' AND '$endDate')" : "TRUE";
       
-      $statement = $this->pdo->prepare(
-         "SELECT * FROM shipment WHERE location = ? AND $dateClause ORDER BY shipmentId ASC;");
+      $locations = ($shipmentLocation == ShipmentLocation::ALL_ACTIVE) ?
+                      ShipmentLocation::$activeLocations :
+                      [$shipmentLocation];
       
-      $result = $statement->execute([$shipmentLocation]) ? $statement->fetchAll() : null;
+      $questionMarks = array();
+      for ($i = 0; $i < count($locations); $i++)
+      {
+         $questionMarks[] = "?";
+      }
+      $locationList = "(" . implode(", ", $questionMarks) . ")";
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM shipment WHERE location IN $locationList AND $dateClause ORDER BY shipmentId ASC;");
+      
+      $result = $statement->execute($locations) ? $statement->fetchAll() : null;
       
       return ($result);
    }
@@ -1646,6 +1657,196 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare("DELETE FROM attachment WHERE attachmentId = ?");
       
       $result = $statement->execute([$attachmentId]);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                Audit
+   
+   public function getAudit($auditId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM audit WHERE auditId = ?;");
+      
+      $result = $statement->execute([$auditId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getAudits($startDateTime, $endDateTime)
+   {
+      // Truncate to simple dates.
+      $startDate = Time::dateTimeObject($startDateTime)->format("Y-m-d");
+      $endDate = Time::dateTimeObject($endDateTime)->format("Y-m-d");
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM audit " .
+         "WHERE (scheduled BETWEEN ? AND ?) " .
+         "ORDER BY scheduled ASC;");
+      
+      $params = [$startDate, $endDate];
+      
+      $result = $statement->execute($params) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getAuditsByStatus($auditStatuses)
+   {
+      $questionMarks = array();
+      for ($i = 0; $i < count($auditStatuses); $i++)
+      {
+         $questionMarks[] = "?";
+      }
+      $statusList = "(" . implode(", ", $questionMarks) . ")";
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM audit " .
+         "WHERE status IN $statusList " .
+         "ORDER BY scheduled ASC;");
+      
+      $params = [];
+      $params = array_merge($params, $auditStatuses);
+      
+      $result = $statement->execute($params) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addAudit($audit)
+   {
+      $createdDateTime = $audit->created ? Time::toMySqlDate($audit->created) : null;
+      $scheduledDateTime = $audit->scheduled ? Time::toMySqlDate($audit->scheduled) : null;
+      
+      $statement = $this->pdo->prepare(
+         "INSERT INTO audit " .
+         "(auditName, created, author, scheduled, assigned, location, isAdHoc, notes, status) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $audit->siteId,
+            $audit->auditName,
+            $createdDateTime,
+            $audit->author,
+            $scheduledDateTime,
+            $audit->assigned,
+            $audit->location,
+            $audit->isAdHoc ? 1 : 0,
+            $audit->notes,
+            $audit->status
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateAudit($audit)
+   {
+      $createdDateTime = $audit->created ? Time::toMySqlDate($audit->created) : null;
+      $scheduledDateTime = $audit->scheduled ? Time::toMySqlDate($audit->scheduled) : null;
+      
+      $statement = $this->pdo->prepare(
+         "UPDATE audit " .
+         "SET siteId = ?, auditName = ?, created = ?, author = ?, scheduled = ?, assigned = ?, location = ?, isAdHoc = ?, notes = ?, status = ? " .
+         "WHERE auditId = ?");
+      
+      $result = $statement->execute(
+         [
+            $audit->siteId,
+            $audit->auditName,
+            $createdDateTime,
+            $audit->author,
+            $scheduledDateTime,
+            $audit->assigned,
+            $audit->location,
+            $audit->isAdHoc ? 1 : 0,
+            $audit->notes,
+            $audit->status,
+            $audit->auditId
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteAudit($auditId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM audit WHERE auditId = ?");
+      
+      $result = $statement->execute([$auditId]);
+      
+      // Delete audit lines associated with this audit.
+      $statement = $this->pdo->prepare("DELETE FROM auditline WHERE auditId = ?");
+      
+      $result &= $statement->execute([$auditId]);
+      
+      return ($result);
+   }
+   
+   // **************************************************************************
+   //                                Audit Line
+   
+   public function getAuditLine($auditLineId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM auditline WHERE auditLineId = ?;");
+      
+      $result = $statement->execute([$auditLineId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getAuditLines($auditId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM auditline WHERE auditId = ? ORDER BY auditLineId ASC;");
+      
+      $result = $statement->execute([$auditId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addAuditLine($auditLine)
+   {
+      $statement = $this->pdo->prepare(
+         "INSERT INTO auditline " .
+         "(auditId, shipmentId, recordedCount, adjustedCount) " .
+         "VALUES (?, ?, ?, ?)");
+      
+      $result = $statement->execute(
+         [
+            $auditLine->auditId,
+            $auditLine->shipmentId,
+            $auditLine->recordedCount,
+            $auditLine->adjustedCount
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateAuditLine($auditLine)
+   {
+      $statement = $this->pdo->prepare(
+         "UPDATE auditline " .
+         "SET shipmentId = ?, recordedCount =?, adjustedCount = ? " .
+         "WHERE auditLineId = ?");
+      
+      $result = $statement->execute(
+         [
+            $auditLine->shipmentId,
+            $auditLine->recordedCount,
+            $auditLine->adjustedCount,
+            $auditLine->auditLineId,
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteAuditLine($auditLineId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM auditline WHERE auditLineId = ?");
+      
+      $result = $statement->execute([$auditLineId]);
       
       return ($result);
    }

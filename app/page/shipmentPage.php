@@ -210,7 +210,7 @@ class ShipmentPage extends Page
                // Fetch all components.
                else
                {
-                  $shipmentLocation = ShipmentLocation::WIP;
+                  $shipmentLocation = ShipmentLocation::ALL_ACTIVE;
                   $startDate = null;
                   $endDate = null;
                   

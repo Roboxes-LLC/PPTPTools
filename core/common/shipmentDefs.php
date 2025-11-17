@@ -9,6 +9,7 @@ abstract class ShipmentLocation
    const FINISHED_GOODS = 3;
    const CUSTOMER = 4;
    const LAST = 5;
+   const ALL_ACTIVE = ShipmentLocation::LAST;
    const COUNT = ShipmentLocation::LAST - ShipmentLocation::FIRST;
    
    public static $values = array(ShipmentLocation::WIP, ShipmentLocation::VENDOR, ShipmentLocation::FINISHED_GOODS, ShipmentLocation::CUSTOMER);
@@ -22,9 +23,18 @@ abstract class ShipmentLocation
       return ($labels[$location]);
    }
    
-   public static function getOptions($selectedLocation)
+   public static function getOptions($selectedLocation, $includeAllActive = false)
    {
       $html = "<option style=\"display:none\">";
+      
+      if ($includeAllActive)
+      {
+         $label = "All Active";
+         $value = ShipmentLocation::ALL_ACTIVE;
+         $selected = ($value == $selectedLocation) ? "selected" : "";
+         
+         $html .= "<option value=\"$value\" $selected>$label</option>";
+      }
       
       foreach (ShipmentLocation::$values as $location)
       {
