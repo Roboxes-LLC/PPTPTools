@@ -4,6 +4,7 @@ if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/common/inspectionDefs.php';
 require_once ROOT.'/core/common/correctiveActionDefs.php';
 require_once ROOT.'/core/common/shipmentDefs.php';
+require_once ROOT.'/core/component/audit.php';
 require_once ROOT.'/core/component/contact.php';
 require_once ROOT.'/core/component/customer.php';
 require_once ROOT.'/core/component/quote.php';
@@ -23,6 +24,10 @@ UNKNOWN_QUOTE_ID = <?php echo Quote::UNKNOWN_QUOTE_ID ?>;
 UNKNOWN_SALES_ORDER_ID = <?php echo SalesOrder::UNKNOWN_SALES_ORDER_ID ?>;
 
 UNKNOWN_SHIPMENT_ID = <?php echo Shipment::UNKNOWN_SHIPMENT_ID ?>;
+
+UNKNOWN_AUDIT_ID = <?php echo Audit::UNKNOWN_AUDIT_ID ?>;
+
+UNKNOWN_SHIPMENT_LOCATION = <?php echo ShipmentLocation::UNKNOWN ?>;
 
 <?php echo QuoteStatus::getJavascript("QuoteStatus") . "\n" ?>
 

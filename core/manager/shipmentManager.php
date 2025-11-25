@@ -8,7 +8,7 @@ require_once ROOT.'/printer/printJob.php';
 
 class ShipmentManager
 {
-   public static function getShipments($shipmentLocation, $startDate, $endDate)
+   public static function getShipments($shipmentLocation, $startDate = null, $endDate = null)
    {
       $shipments = array();
       
@@ -139,11 +139,11 @@ class ShipmentManager
       return (array_values($heats));  // Simple trick to use a PHP map as a set.
    }
    
-   public static function getActiveShipmentsByPart($partNumber)
+   public static function getShipmentsByPart($location, $partNumber)
    {
       $shipments = [];
       
-      $result = PPTPDatabaseAlt::getInstance()->getActiveShipmentsByPart($partNumber);
+      $result = PPTPDatabaseAlt::getInstance()->getShipmentsByPart($location, $partNumber);
       
       foreach ($result as $row)
       {

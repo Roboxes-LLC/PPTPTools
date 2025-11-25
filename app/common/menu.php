@@ -112,8 +112,21 @@ $jsonMenu =
          "pageId": 14
       },
       {
-         "type":"menu-item",
-         "pageId": 22
+         "type":"submenu",
+         "menuId":"inventory",
+         "label":"Parts Inventory",
+         "icon":"inventory",
+         "permissions":44,
+         "menuItems": [
+            {
+               "type":"menu-item",
+               "pageId": 22
+            },
+            {
+               "type":"menu-item",
+               "pageId": 26
+            }
+         ]
       },
       {
          "type":"submenu",

@@ -199,7 +199,7 @@ class ShipmentPage extends Page
                   }
 
                   $this->result->success = true;
-                  $this->result->shipments = ShipmentManager::getActiveShipmentsByPart($partNumber);
+                  $this->result->shipments = ShipmentManager::getShipmentsByPart(ShipmentLocation::ALL_ACTIVE, $partNumber);
                   
                   // Augment shipment.
                   foreach ($this->result->shipments as $shipment)

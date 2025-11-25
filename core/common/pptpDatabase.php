@@ -1117,10 +1117,14 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
-   public function getActiveShipmentsByPart($partNumber)
+   public function getShipmentsByPart($location, $partNumber)
    {
+      $locations = ($location == ShipmentLocation::ALL_ACTIVE) ?
+                      ShipmentLocation::$activeLocations :
+                      [$location];
+      
       $questionMarks = array();
-      for ($i = 0; $i < count(ShipmentLocation::$activeLocations); $i++)
+      for ($i = 0; $i < count($locations); $i++)
       {
          $questionMarks[] = "?";
       }
@@ -1132,7 +1136,7 @@ class PPTPDatabaseAlt extends PDODatabase
          "EXISTS (SELECT 1 FROM job WHERE job.partNumber = ? AND job.jobNumber = shipment.jobNumber) " .
          "ORDER BY shipmentId ASC;");
             
-      $params = ShipmentLocation::$activeLocations;
+      $params = $locations;
       $params[] = $partNumber;
       
       $result = $statement->execute($params) ? $statement->fetchAll() : null;
@@ -1721,18 +1725,18 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "INSERT INTO audit " .
-         "(auditName, created, author, scheduled, assigned, location, isAdHoc, notes, status) " .
-         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+         "(auditName, created, author, scheduled, assigned, location, partNumber, isAdHoc, notes, status) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
-            $audit->siteId,
             $audit->auditName,
             $createdDateTime,
             $audit->author,
             $scheduledDateTime,
             $audit->assigned,
             $audit->location,
+            $audit->partNumber,
             $audit->isAdHoc ? 1 : 0,
             $audit->notes,
             $audit->status
@@ -1748,18 +1752,18 @@ class PPTPDatabaseAlt extends PDODatabase
       
       $statement = $this->pdo->prepare(
          "UPDATE audit " .
-         "SET siteId = ?, auditName = ?, created = ?, author = ?, scheduled = ?, assigned = ?, location = ?, isAdHoc = ?, notes = ?, status = ? " .
+         "SET auditName = ?, created = ?, author = ?, scheduled = ?, assigned = ?, location = ?, partNumber = ?, isAdHoc = ?, notes = ?, status = ? " .
          "WHERE auditId = ?");
       
       $result = $statement->execute(
          [
-            $audit->siteId,
             $audit->auditName,
             $createdDateTime,
             $audit->author,
             $scheduledDateTime,
             $audit->assigned,
             $audit->location,
+            $audit->partNumber,
             $audit->isAdHoc ? 1 : 0,
             $audit->notes,
             $audit->status,
@@ -1810,13 +1814,14 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "INSERT INTO auditline " .
-         "(auditId, shipmentId, recordedCount, adjustedCount) " .
-         "VALUES (?, ?, ?, ?)");
+         "(auditId, shipmentId, confirmed, recordedCount, adjustedCount) " .
+         "VALUES (?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
             $auditLine->auditId,
             $auditLine->shipmentId,
+            $auditLine->confirmed ? 1 : 0,
             $auditLine->recordedCount,
             $auditLine->adjustedCount
          ]);
@@ -1828,12 +1833,13 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "UPDATE auditline " .
-         "SET shipmentId = ?, recordedCount =?, adjustedCount = ? " .
+         "SET shipmentId = ?, confirmed = ?, recordedCount =?, adjustedCount = ? " .
          "WHERE auditLineId = ?");
       
       $result = $statement->execute(
          [
             $auditLine->shipmentId,
+            $auditLine->confirmed ? 1 : 0,
             $auditLine->recordedCount,
             $auditLine->adjustedCount,
             $auditLine->auditLineId,

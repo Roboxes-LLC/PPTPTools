@@ -54,9 +54,18 @@ class PartManager
       return ($part ? $part->pptpNumber : null);
    }
    
-   public static function getPptpPartNumberOptions($selectedPptpPartNumber)
+   public static function getPptpPartNumberOptions($selectedPptpPartNumber, $allowNull = false)
    {
-      $html = "<option style=\"display:none\">";
+      $html = "";
+      
+      if ($allowNull == true)
+      {
+         $html = "<option value=\"\"></option>";
+      }
+      else
+      {
+         $html = "<option style=\"display:none\">";
+      }
       
       $parts = PartManager::getParts();
       

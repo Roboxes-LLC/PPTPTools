@@ -26,6 +26,9 @@ class Session
    const CA_ACTIVE_ACTIONS = "correctiveAction.activeActions";
    const CA_START_DATE = "correctiveAction.startDate";
    const CA_END_DATE = "correctiveAction.endDate";
+   const AUDIT_ACTIVE_AUDITS = "audit.activeAudits";
+   const AUDIT_START_DATE = "audit.startDate";
+   const AUDIT_END_DATE = "audit.endDate";   
       
    public static function isset($key)
    {

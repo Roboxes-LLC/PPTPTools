@@ -56,7 +56,11 @@ class Permission
    const VIEW_CORRECTIVE_ACTION   = 50;
    const EDIT_CORRECTIVE_ACTION   = 51;
    const APPROVE_CORRECTIVE_ACTION = 52;
-   const LAST                      = Permission::APPROVE_CORRECTIVE_ACTION;
+   const VIEW_AUDIT               = 53;
+   const EDIT_AUDIT               = 54;
+   const PERFORM_AUDIT            = 55;
+   const APPLY_AUDIT              = 56;
+   const LAST                     = Permission::APPLY_AUDIT;
    
    const NO_PERMISSIONS =  0x0000000000000;
    const ALL_PERMISSIONS = 0xFFFFFFFFFFFFF;
@@ -124,6 +128,10 @@ class Permission
                   new Permission(Permission::VIEW_CORRECTIVE_ACTION,   "View corrective actions"),
                   new Permission(Permission::EDIT_CORRECTIVE_ACTION,   "Edit corrective actions"),
                   new Permission(Permission::APPROVE_CORRECTIVE_ACTION, "Approve corrective actions"),
+                  new Permission(Permission::VIEW_AUDIT,                "View inventory audit"),
+                  new Permission(Permission::EDIT_AUDIT,                "Edit inventory audit"),
+                  new Permission(Permission::PERFORM_AUDIT,             "Perform inventory audit"),
+                  new Permission(Permission::APPLY_AUDIT,               "Apply inventory audit"),
             );
       }
       
