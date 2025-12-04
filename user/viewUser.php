@@ -411,7 +411,7 @@ if (!Authentication::isAuthenticated())
          <?php
          foreach (Role::getRoles() as $role)
          {
-            echo $role->defaultPermissions . ", ";
+            echo $role->defaultPermissions . "n, ";
          }
          ?>   
       ];

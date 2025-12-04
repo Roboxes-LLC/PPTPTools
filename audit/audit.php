@@ -218,7 +218,7 @@ function getForm()
    $audit = getAudit();
    $createdDate = $audit->created ? Time::dateTimeObject($audit->created)->format("n/j/Y h:i A") : null;
    $authorName = getAuthorName();
-   $assignedOptions = UserManager::getOptions([Role::SHIPPER], [], $audit->assigned);
+   $assignedOptions = UserManager::getOptions([Role::AUDITOR], [$audit->assigned], $audit->assigned);
    $locationOptions = ShipmentLocation::getOptions($audit->location);
    $partNumberOptions = PartManager::getPptpPartNumberOptions($audit->partNumber, true);
    $isAdHoc = $audit->isAdHoc ? "checked" : "";

@@ -13,10 +13,10 @@ class Audit
       "AUDIT_NAME_INPUT":  "audit-name-input",
       "LOCATION_INPUT":    "location-input",
       "PART_NUMBER_INPUT": "part-number-input",
-      "COMPLETE_INPUT" :    "complete-input",
       // Buttons
       "ADD_BUTTON":      "add-button",
       "SAVE_BUTTON":     "save-button",
+      "SAVE_PROGRESS_BUTTON": "save-progress-button",
       "COMPLETE_BUTTON": "complete-button",
       "CANCEL_BUTTON":   "cancel-button",
       // Filters
@@ -24,15 +24,19 @@ class Audit
       "END_DATE_INPUT":         "end-date-input",
       "ACTIVE_AUDITS_INPUT":    "active-audits-input",
    };
+   
+   static PageMode = {
+      "EDIT_AUDIT": 0,
+      "PERFORM_AUDIT": 1
+   }
+   
+   static locationLabels =  ["", "WIP", "Vendor", "Finished Goods"];
 
-   constructor(location, isAdHoc)
+   constructor(pageMode, isAdHoc)
    {      
       this.table = null;
       
-      this.expectedTable = null;
-      this.unexpectedTable = null;
-      
-      this.location = location;
+      this.pageMode = pageMode;
       this.isAdHoc = isAdHoc;
       
       this.editedName = false;
@@ -87,6 +91,13 @@ class Audit
       {
          document.getElementById(Audit.PageElements.SAVE_BUTTON).addEventListener('click', function() {
             this.onSaveButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Audit.PageElements.SAVE_PROGRESS_BUTTON) != null)
+      {
+         document.getElementById(Audit.PageElements.SAVE_PROGRESS_BUTTON).addEventListener('click', function() {
+            this.onSaveProgressButton();
          }.bind(this));
       }
       
@@ -277,8 +288,31 @@ class Audit
             {title:"Customer",          field:"shipment.part.customerName"},
             {title:"Part #",            field:"shipment.part.customerNumber"},
             {title:"Job #",             field:"shipment.jobNumber"},
-            {title:"Quantity",          field:"shipment.quantity"}, 
+            {title:"Quantity",          field:"shipment.quantity", bottomCalc:"sum"},
+            {title:"Corrected<br>Quantity", field:"adjustedCount", editor:"number", 
+               editorParams:{
+                  min:0,
+                  max:9999,
+                  step:1,
+               },
+            }, 
             {title:"Location",          field:"shipment.locationLabel"},
+            {title:"Corrected<br>Location", field:"adjustedLocation", editor:"list", 
+               editorParams:{
+                  values:{
+                     0:"&nbsp",
+                     1:"WIP",
+                     2:"Vendor",
+                     3:"Finished Goods"
+                  },
+               },
+               formatter:function(cell, formatterParams, onRendered) {
+                  var location = parseInt(cell.getValue());
+                  var cellValue = Audit.locationLabels[location];
+
+                  return (cellValue);
+               }.bind(this)
+            }, 
             {title:"Confirmed",         field:"confirmed", formatter:"tickCross",
                formatterParams: {
                   allowEmpty: true,
@@ -407,30 +441,17 @@ class Audit
    
    onSaveButton()
    {
-      if (InputValidator.validateForm(document.getElementById(Audit.PageElements.INPUT_FORM)))
-      {
-         // TODO: Use Tabulator input submission.
-         this.createLineItemInputs();
-         
-         submitForm(Audit.PageElements.INPUT_FORM, "/app/page/audit", function (response) {
-            if (response.success == true)
-            {
-               location.href = "/audit/audits.php";
-            }
-            else
-            {
-               alert(response.error);
-               document.getElementById(Audit.PageElements.COMPLETE_INPUT).value = false;
-            }
-         })
-      }
+      this.saveAudit();
+   }
+   
+   onSaveProgressButton()
+   {
+      this.performAudit(false);
    }
    
    onCompleteButton()
    {
-      document.getElementById(Audit.PageElements.COMPLETE_INPUT).value = true;
-      
-      this.onSaveButton();
+      this.performAudit(true);
    }
    
    onCancelButton()
@@ -672,4 +693,84 @@ class Audit
 
       return (mm + "_" + dd + "_" + yyyy);
    }
-}
+   
+   saveAudit()
+   {
+      if (InputValidator.validateForm(document.getElementById(Audit.PageElements.INPUT_FORM)))
+      {
+         submitForm(Audit.PageElements.INPUT_FORM, "/app/page/audit", function (response) {
+            if (response.success == true)
+            {
+               location.href = "/audit/audits.php";
+            }
+            else
+            {
+               alert(response.error);
+            }
+         })
+      }
+   }
+   
+   performAudit(complete)
+   {
+      let params = new Object();
+      params.request = "perform_audit";
+      params.auditId = this.getAuditId();
+      params.complete = complete;
+      
+      this.submitTable(this.table, this.getTableQuery(), params, function (response) {
+         if (response.success == true)
+         {
+            location.href = "/audit/audits.php";
+         }
+         else
+         {
+            alert(response.error);
+         }
+      });
+   }
+   
+   async submitTable(table, url, params, callback)
+   {
+      params.data = table.getData();
+      
+      try 
+      {
+         const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(params),
+         });
+
+         const reponseText = await response.text();
+        
+         if (response.ok)
+         {
+            try
+            {
+               const responseObj = JSON.parse(reponseText);
+               
+               if (callback != null)
+               {
+                  callback(responseObj);
+               }
+            } 
+            catch (error)
+            {
+                console.log("JSON syntax error");
+                console.log(reponseText);
+                throw error;
+            }
+         }
+         else
+         {
+            console.log("Server error");
+         }
+      }
+      catch (error)
+      {
+          console.log("Server error");
+          throw error;
+      }
+   }
+}      

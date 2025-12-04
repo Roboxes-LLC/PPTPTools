@@ -15,7 +15,8 @@ abstract class ShipmentTicketLabelFields
    const JOB_NUMBER = 4;
    const HEAT_NUMBER = 5;
    const QUANTITY = 6;
-   const LAST = 7;
+   const BARCODE = 7;
+   const LAST = 8;
    const COUNT = ShipmentTicketLabelFields::LAST - ShipmentTicketLabelFields::FIRST;
    
    public static function getKeyword($shipmentTicketLabelField)
@@ -26,7 +27,8 @@ abstract class ShipmentTicketLabelFields
                         "%partNumber",
                         "%jobNumber", 
                         "%heat", 
-                        "%quantity", 
+                        "%quantity",
+                        "%ID"
       );
       
       return ($keywords[$shipmentTicketLabelField]);
@@ -240,6 +242,12 @@ HEREDOC;
                   case ShipmentTicketLabelFields::QUANTITY:
                   {
                      $xml = str_replace(ShipmentTicketLabelFields::getKeyword($field), $quantity, $xml);
+                     break;
+                  }
+                  
+                  case ShipmentTicketLabelFields::BARCODE:
+                  {
+                     $xml = str_replace(ShipmentTicketLabelFields::getKeyword($field), $shipmentId, $xml);
                      break;
                   }
                      

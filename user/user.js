@@ -107,16 +107,17 @@ function onRoleChange()
         
     for (const roleId of selectedRoles)
     {
+      // Note: BigInt arithmetic required due to using 64-bit integers to represent permission sets.
       var permissions = defaultPermissions[roleId - 1];
       
       for (element of elements)
       {
          var name = element.name;
-         var permissionId = parseInt(name.substring(name.indexOf("-") + 1));
+         var permissionId = BigInt(parseInt(name.substring(name.indexOf("-") + 1)));
          
-         var mask = (1 << (permissionId - 1));
+         var mask = (1n << (permissionId - 1n));
          var isSet = ((permissions & mask) != 0);
-         
+
          if (isSet)
          {
             element.checked |= true;

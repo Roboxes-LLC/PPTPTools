@@ -215,7 +215,7 @@ class ShipmentManager
                                                $shipment->parentShipmentId :
                                                $shipment->shipmentId;
          
-         $siblings = Shipment::getChildren($shipment->parentShipmentId);
+         $siblings = Shipment::getChildren($childShipment->parentShipmentId);
          $childShipment->childIndex = (count($siblings) > 0) ? (end($siblings)->childIndex + 1) : 0;
          
          $childShipment->dateTime = Time::now();

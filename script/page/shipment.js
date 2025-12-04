@@ -165,7 +165,7 @@ class Shipment
             {title:"Customer",          field:"part.customerName",   headerFilter:true},
             {title:"Part #",            field:"part.customerNumber", headerFilter:true},
             {title:"Job #",             field:"jobNumber",           headerFilter:true},
-            {title:"Quantity",          field:"quantity",            headerFilter:true},
+            {title:"Quantity",          field:"quantity",            headerFilter:true, bottomCalc:"sum"},
             {title:"Inspection",        field:"inspectionStatus",    headerFilter:true, hozAlign:"center",
                formatter:function(cell, formatterParams, onRendered) {
                   let cellValue = "";

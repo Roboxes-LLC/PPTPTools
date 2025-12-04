@@ -15,6 +15,7 @@ class AuditLine
    public $confirmed;
    public $recordedCount;
    public $adjustedCount;
+   public $adjustedLocation;
    
    public function __construct()
    {
@@ -24,6 +25,7 @@ class AuditLine
       $this->confirmed = false;
       $this->recordedCount = null;
       $this->adjustedCount = null;
+      $this->adjustedLocation = ShipmentLocation::UNKNOWN;
    }
    
    // **************************************************************************
@@ -76,6 +78,7 @@ class AuditLine
       $this->confirmed = filter_var($row['confirmed'], FILTER_VALIDATE_BOOLEAN);
       $this->recordedCount = !is_null($row['recordedCount']) ? intval($row['recordedCount']) : null;
       $this->adjustedCount = !is_null($row['adjustedCount']) ? intval($row['adjustedCount']) : null;
+      $this->adjustedLocation = intval($row['adjustedLocation']);
    }
 }
 

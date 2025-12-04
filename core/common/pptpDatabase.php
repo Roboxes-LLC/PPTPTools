@@ -1814,8 +1814,8 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "INSERT INTO auditline " .
-         "(auditId, shipmentId, confirmed, recordedCount, adjustedCount) " .
-         "VALUES (?, ?, ?, ?, ?)");
+         "(auditId, shipmentId, confirmed, recordedCount, adjustedCount, adjustedLocation) " .
+         "VALUES (?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [
@@ -1823,7 +1823,8 @@ class PPTPDatabaseAlt extends PDODatabase
             $auditLine->shipmentId,
             $auditLine->confirmed ? 1 : 0,
             $auditLine->recordedCount,
-            $auditLine->adjustedCount
+            $auditLine->adjustedCount,
+            $auditLine->adjustedLocation,
          ]);
       
       return ($result);
@@ -1833,7 +1834,7 @@ class PPTPDatabaseAlt extends PDODatabase
    {
       $statement = $this->pdo->prepare(
          "UPDATE auditline " .
-         "SET shipmentId = ?, confirmed = ?, recordedCount =?, adjustedCount = ? " .
+         "SET shipmentId = ?, confirmed = ?, recordedCount =?, adjustedCount = ?, adjustedLocation = ? " .
          "WHERE auditLineId = ?");
       
       $result = $statement->execute(
@@ -1842,6 +1843,7 @@ class PPTPDatabaseAlt extends PDODatabase
             $auditLine->confirmed ? 1 : 0,
             $auditLine->recordedCount,
             $auditLine->adjustedCount,
+            $auditLine->adjustedLocation,
             $auditLine->auditLineId,
          ]);
       

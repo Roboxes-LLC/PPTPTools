@@ -464,40 +464,23 @@ class AuditPage extends Page
    
    private static function getAuditLineParams(&$audit, $params)
    {
-      $shipments = [];
-      if ($audit->partNumber != null)
-      {
-         $shipments = ShipmentManager::getShipmentsByPart($audit->location, $audit->partNumber);
-      }
-      else
-      {
-         $shipments = ShipmentManager::getShipments($audit->location);
-      }
-      
-      foreach ($shipments as $shipment)
-      {
-         $name = "confirmed_" . $shipment->shipmentId;
-         
-         if (isset($params[$name]))
-         {
-            $confirmed = $params->getBool($name);
+      $tableData = $params->get("data");
             
-            if ($foundIt = $audit->findLineItem($shipment->shipmentId, Audit::FIND_BY_SHIPMENT_ID))
-            {
-               // Updated an existing line.
-               $foundIt->confirmed = $confirmed;
-            }
-            else
-            {
-               // Add a new line.                     
-               $auditLine = new AuditLine();
-               $auditLine->auditId = $audit->auditId;
-               $auditLine->shipmentId = $shipment->shipmentId;
-               $auditLine->confirmed = $confirmed;
-               
-               $audit->lineItems[] = $auditLine;
-            }
-         }
+      $audit->lineItems = [];
+      
+      foreach ($tableData as $tableRow)
+      {
+         $auditLine = new AuditLine();
+         
+         $auditLine->auditLineId = intval($tableRow->auditLineId);
+         $auditLine->auditId = $audit->auditId;
+         $auditLine->shipmentId = intval($tableRow->shipmentId);
+         $auditLine->confirmed = filter_var($tableRow->confirmed, FILTER_VALIDATE_BOOLEAN);
+         //$auditLine->recordedCount = intval($tableRow->recordedCount);
+         $auditLine->adjustedCount = intval($tableRow->adjustedCount);
+         $auditLine->adjustedLocation = intval($tableRow->adjustedLocation);
+         
+         $audit->lineItems[] = $auditLine;
       }
    }
    

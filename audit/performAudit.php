@@ -117,6 +117,7 @@ $root = ROOT;
 $versionQuery = versionQuery();
 $javascriptFile = "audit.js";
 $javascriptClass = "Audit";
+$isAdHoc = getAudit()->isAdHoc ? "true" : "false";
 $appPageId = AppPage::AUDIT;
 $heading = "Inventory Audit";
 $formId = "input-form";

@@ -17,7 +17,8 @@ class Role
    const INSPECTOR   = 7;
    const MAINTENANCE = 8;
    const VENDOR      = 9;
-   const LAST        = 10;
+   const AUDITOR     = 10;
+   const LAST        = 11;
    
    const NO_ROLES = 0x0;
    const ALL_ROLES = 0xFFF;
@@ -30,7 +31,8 @@ class Role
    const INSPECTOR_PERMISSIONS =   [Permission::VIEW_INSPECTION, Permission::EDIT_INSPECTION];
    const MAINTENANCE_PERMISSIONS = [Permission::VIEW_MAINTENANCE_LOG, Permission::EDIT_MAINTENANCE_LOG];
    const VENDOR_PERMISSIONS =      [];
-      
+   const ADUITOR_PERMISSIONS =     [Permission::VIEW_AUDIT, Permission::EDIT_AUDIT, Permission::PERFORM_AUDIT];
+   
    public static $values = 
       array(
          Role::SUPER_USER, 
@@ -42,6 +44,7 @@ class Role
          Role::INSPECTOR,
          Role::MAINTENANCE,
          Role::VENDOR,
+         Role::AUDITOR
       );   
    
    public $roleId;
@@ -68,7 +71,8 @@ class Role
                Role::SHIPPER =>     new Role(Role::SHIPPER,     "Shipper",     Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::SHIPPER_PERMISSIONS),     AppPage::SHIPPING_CARD),
                Role::INSPECTOR =>   new Role(Role::INSPECTOR,   "Inspector",   Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::INSPECTOR_PERMISSIONS),   AppPage::INSPECTION),
                Role::MAINTENANCE => new Role(Role::MAINTENANCE, "Maintenance", Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::MAINTENANCE_PERMISSIONS), AppPage::MAINTENANCE_LOG),
-               Role::VENDOR =>      new Role(Role::VENDOR,      "Vendor",      Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::VENDOR_PERMISSIONS),      AppPage::SHIPMENT)
+               Role::VENDOR =>      new Role(Role::VENDOR,      "Vendor",      Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::VENDOR_PERMISSIONS),      AppPage::SHIPMENT),
+               Role::AUDITOR =>     new Role(Role::AUDITOR,     "Auditor",     Permission::getBits(...Role::BASIC_PERMISSIONS) | Permission::getBits(...Role::ADUITOR_PERMISSIONS),     AppPage::AUDIT),
             );
       }
       

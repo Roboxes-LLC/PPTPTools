@@ -72,7 +72,7 @@ Required PHP variables:
          
          <div class="flex-horizontal flex-h-center">
             <button id="cancel-button">Cancel</button>&nbsp;&nbsp;&nbsp;
-            <button id="save-button" class="accent-button"><?php echo isset($saveButtonLabel) ? $saveButtonLabel : "Save" ?></button>&nbsp;&nbsp;&nbsp;
+            <button id="save-progress-button" class="accent-button"><?php echo isset($saveButtonLabel) ? $saveButtonLabel : "Save" ?></button>&nbsp;&nbsp;&nbsp;
             <button id="complete-button" class="accent-button">Complete</button>            
          </div>
          
@@ -86,7 +86,7 @@ Required PHP variables:
       var menu = new Menu("<?php echo Menu::MENU_ELEMENT_ID ?>");
       menu.setMenuItemSelected(<?php echo $appPageId ?>);  
          
-      var PAGE = new <?php echo $javascriptClass ?>();
+      var PAGE = new Audit(Audit.PageMode.PERFORM_AUDIT, <?php echo $isAdHoc ?>);
       PAGE.createAuditLineTable("audit-line-table");
 
       // Store the initial state of the form, for change detection.
