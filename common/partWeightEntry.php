@@ -70,7 +70,7 @@ class PartWeightEntry
       
       $jobInfo = JobInfo::load($jobId);
       
-      if ($jobInfo && ($jobInfo->part->sampleWeight > JobInfo::UNKNOWN_SAMPLE_WEIGHT))
+      if ($jobInfo && $jobInfo->part && ($jobInfo->part->sampleWeight > JobInfo::UNKNOWN_SAMPLE_WEIGHT))
       {
          $partCount = 
             ($this->weight - ($this->palletWeight + ($this->panCount * $this->panWeight))) / ($jobInfo->part->sampleWeight);
@@ -81,7 +81,7 @@ class PartWeightEntry
       return ($partCount);
    }
 
-   public function initializeFromDatabaseRow($row)
+   public function initialize($row)
    {
       $this->partWeightEntryId = intval($row['partWeightEntryId']);
       $this->dateTime = Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
@@ -113,7 +113,7 @@ class PartWeightEntry
          {
             $partWeightEntry = new PartWeightEntry();
             
-            $partWeightEntry->initializeFromDatabaseRow($row);
+            $partWeightEntry->initialize($row);
          }
       }
       

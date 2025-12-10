@@ -276,7 +276,7 @@ class WeeklySummaryReport
       for ($workDay = WorkDay::FIRST; $workDay < WorkDay::LAST; $workDay++)
       {
          $weeklySummaryReport->dailySummaryReports[$workDay] = 
-         DailySummaryReport::load(UserInfo::UNKNOWN_EMPLOYEE_NUMBER, $weeklySummaryReport->dates[$workDay], $useMaintenanceLogEntries);
+            DailySummaryReport::load(UserInfo::UNKNOWN_EMPLOYEE_NUMBER, $weeklySummaryReport->dates[$workDay], $useMaintenanceLogEntries, true);  // minimalProcessing
       }
       
       // Compile operator summaries.

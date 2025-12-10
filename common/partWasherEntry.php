@@ -72,7 +72,7 @@ class PartWasherEntry
       return ($panCount);
    }
    
-   public function initializeFromDatabaseRow($row)
+   public function initialize($row)
    {
       $this->partWasherEntryId = intval($row['partWasherEntryId']);
       $this->dateTime = Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
@@ -104,7 +104,7 @@ class PartWasherEntry
          {
             $partWasherEntry = new PartWasherEntry();
             
-            $partWasherEntry->initializeFromDatabaseRow($row);
+            $partWasherEntry->initialize($row);
          }
       }
       

@@ -165,7 +165,7 @@ class Inspection
       $this->inspectionResults = null;  // 2D array, indexed as [propertyId][sampleIndex]
    }
    
-   public function initializeFromDatabaseRow($row)
+   public function initialize($row)
    {
       $this->inspectionId = intval($row['inspectionId']);
       $this->templateId = intval($row['templateId']);
@@ -209,7 +209,7 @@ class Inspection
          {
             $inspection = new Inspection();
             
-            $inspection->initializeFromDatabaseRow($row);
+            $inspection->initialize($row);
             
             // Optionally load actual inspection results.
             if ($loadInspectionResults)
@@ -623,7 +623,7 @@ class Inspection
       while ($result && ($row = $result->fetch_assoc()))
       {
          $inspection = new Inspection();
-         $inspection->initializeFromDatabaseRow($row);
+         $inspection->initialize($row);
          
          $inspections[] = $inspection;
       }

@@ -204,28 +204,33 @@ class TimeCardInfo
          {
             $timeCardInfo = new TimeCardInfo();
             
-            $timeCardInfo->timeCardId = intval($row['timeCardId']);
-            $timeCardInfo->dateTime = Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
-            $timeCardInfo->manufactureDate = Time::fromMySqlDate($row['manufactureDate'], "Y-m-d H:i:s");
-            $timeCardInfo->employeeNumber = intval($row['employeeNumber']);
-            $timeCardInfo->jobId = $row['jobId'];
-            $timeCardInfo->materialNumber = intval($row['materialNumber']);
-            $timeCardInfo->shiftTime = $row['shiftTime'];
-            $timeCardInfo->setupTime = $row['setupTime'];
-            $timeCardInfo->runTime = $row['runTime'];
-            $timeCardInfo->panCount = intval($row['panCount']);
-            $timeCardInfo->partCount = intval($row['partCount']);
-            $timeCardInfo->scrapCount = intval($row['scrapCount']);
-            $timeCardInfo->commentCodes = intval($row['commentCodes']);
-            $timeCardInfo->comments = $row['comments'];
-            $timeCardInfo->runTimeApprovedBy = intval($row['runTimeApprovedBy']);
-            $timeCardInfo->runTimeApprovedDateTime = Time::fromMySqlDate($row['runTimeApprovedDateTime'], "Y-m-d H:i:s");            
-            $timeCardInfo->setupTimeApprovedBy = intval($row['setupTimeApprovedBy']);
-            $timeCardInfo->setupTimeApprovedDateTime = Time::fromMySqlDate($row['setupTimeApprovedDateTime'], "Y-m-d H:i:s");
+            $timeCardInfo->initialize($row);
          }
       }
       
       return ($timeCardInfo);
+   }
+   
+   public function initialize($row)
+   {
+      $this->timeCardId = intval($row['timeCardId']);
+      $this->dateTime = Time::fromMySqlDate($row['dateTime'], "Y-m-d H:i:s");
+      $this->manufactureDate = Time::fromMySqlDate($row['manufactureDate'], "Y-m-d H:i:s");
+      $this->employeeNumber = intval($row['employeeNumber']);
+      $this->jobId = $row['jobId'];
+      $this->materialNumber = intval($row['materialNumber']);
+      $this->shiftTime = $row['shiftTime'];
+      $this->setupTime = $row['setupTime'];
+      $this->runTime = $row['runTime'];
+      $this->panCount = intval($row['panCount']);
+      $this->partCount = intval($row['partCount']);
+      $this->scrapCount = intval($row['scrapCount']);
+      $this->commentCodes = intval($row['commentCodes']);
+      $this->comments = $row['comments'];
+      $this->runTimeApprovedBy = intval($row['runTimeApprovedBy']);
+      $this->runTimeApprovedDateTime = Time::fromMySqlDate($row['runTimeApprovedDateTime'], "Y-m-d H:i:s");
+      $this->setupTimeApprovedBy = intval($row['setupTimeApprovedBy']);
+      $this->setupTimeApprovedDateTime = Time::fromMySqlDate($row['setupTimeApprovedDateTime'], "Y-m-d H:i:s");
    }
    
    public static function save($timeCardInfo)

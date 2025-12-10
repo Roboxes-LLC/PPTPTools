@@ -64,7 +64,7 @@ class Part
       $part = null;
       
       $result = PPTPDatabaseAlt::getInstance()->getPart($partNumber, $useCustomerNumber);
-      
+
       if ($result && ($row = $result[0]))
       {
          $part = new Part();

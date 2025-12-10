@@ -1014,7 +1014,7 @@ $router->add("partWasherLogData", function($params) {
       foreach ($databaseResult as $row)
       {
          $partWasherEntry = new PartWasherEntry();
-         $partWasherEntry->initializeFromDatabaseRow($row);
+         $partWasherEntry->initialize($row);
          
          $userInfo = UserInfo::load($partWasherEntry->employeeNumber);
          if ($userInfo)
@@ -1304,7 +1304,7 @@ $router->add("partWeightLogData", function($params) {
       foreach ($databaseResult as $row)
       {
          $partWeightEntry = new PartWeightEntry();
-         $partWeightEntry->initializeFromDatabaseRow($row);
+         $partWeightEntry->initialize($row);
          
          $userInfo = UserInfo::load($partWeightEntry->employeeNumber);
          if ($userInfo)
@@ -1652,7 +1652,7 @@ $router->add("inspectionData", function($params) {
       foreach ($databaseResult as $row)
       {
          $inspection = new Inspection();
-         $inspection->initializeFromDatabaseRow($row);
+         $inspection->initialize($row);
          if (!$inspection->hasSummary())
          {
             $inspection->loadInspectionResults();
@@ -2023,7 +2023,7 @@ $router->add("inspectionTemplateData", function($params) {
       foreach ($databaseResult as $row)
       {
          $inspectionTemplate = new InspectionTemplate();
-         $inspectionTemplate->initializeFromDatabaseRow($row);
+         $inspectionTemplate->initialize($row);
          
          $inspectionTemplate->inspectionTypeLabel = InspectionType::getLabel($inspectionTemplate->inspectionType);
          

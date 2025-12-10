@@ -170,6 +170,10 @@ class ReportEntry
    public $machineHoursMade;  // part count / net parts-per-hour
    public $reportStatus;      // "worst" of the status flags
    
+   // Reduce processing times by skipping certain steps.
+   // Note: Used when generating weekly and quarterly reports.
+   public $minimalProcessing;
+   
    public function __construct()
    {
       // Source data.
@@ -196,9 +200,11 @@ class ReportEntry
       $this->machineHoursMade = 0;
       $this->pcOverG = 0;
       $this->reportStatus = ReportEntryStatus::UNKNOWN;
+      
+      $this->minimalProcessing = false;
    }
    
-   public static function load($timeCardId)
+   public static function load($timeCardInfo, $minimalProcessing = false)  // $minimalProcessing should be specified when loading for weekly/quarterly reporting.
    {
       $entry = new ReportEntry();
       
@@ -206,7 +212,7 @@ class ReportEntry
       // Load source data.
       //
       
-      $entry->timeCardInfo = TimeCardInfo::load($timeCardId);
+      $entry->timeCardInfo = $timeCardInfo;
       
       $entry->userInfo = UserInfo::load($entry->timeCardInfo->employeeNumber);
       
@@ -215,59 +221,74 @@ class ReportEntry
          $entry->jobInfo = JobInfo::load($entry->timeCardInfo->jobId);
       }
       
-      $database = PPTPDatabase::getInstance();
-      
-      if ($database && $database->isConnected())
+      if ($entry->timeCardInfo && $entry->userInfo && $entry->jobInfo)
       {
-         $result = $database->getPartWasherEntriesByTimeCard($timeCardId);
+         $database = PPTPDatabase::getInstance();
          
-         while ($result && $row = $result->fetch_assoc())
+         if ($database && $database->isConnected())
          {
-            $entry->partWasherEntries[] = PartWasherEntry::load(intval($row["partWasherEntryId"]));
+            $result = $database->getPartWasherEntriesByTimeCard($timeCardInfo->timeCardId);
+            
+            while ($result && $row = $result->fetch_assoc())
+            {
+               $partWasherEntry = new PartWasherEntry();
+               $partWasherEntry->initialize($row);
+               $entry->partWasherEntries[] = $partWasherEntry;
+            }
+            
+            $result = $database->getPartWeightEntriesByTimeCard($timeCardInfo->timeCardId);
+            
+            while ($result && $row = $result->fetch_assoc())
+            {
+               $partWeightEntry = new PartWeightEntry();
+               $partWeightEntry->initialize($row);
+               $entry->partWeightEntries[] = $partWeightEntry;
+            }
          }
          
-         $result = $database->getPartWeightEntriesByTimeCard($timeCardId);
+         // 
+         // Copy derived values.
+         //
          
-         while ($result && $row = $result->fetch_assoc())
+         $entry->panCount = $entry->getPanCountByWeightLog();
+         
+         $entry->partWeight = $entry->getTotalPartWeight();
+         
+         $entry->runTime = $entry->timeCardInfo->getApprovedRunTime();  // hours
+         
+         $entry->grossParts = Calculations::calculateGrossParts($entry->runTime, $entry->jobInfo->grossPartsPerHour);
+         
+         $entry->partCountByWeightLog = $entry->getPartCountByWeightLog();
+         
+         $entry->partCountByWasherLog = $entry->getPartCountByWasherLog();
+         
+         $entry->partCount = Calculations::estimatePartCount($entry->getPartCountByTimeCard(), 
+                                                             $entry->getPartCountByWeightLog(), 
+                                                             $entry->getPartCountByWasherLog(),
+                                                             $entry->grossParts);
+         
+         if (!$minimalProcessing)
          {
-            $entry->partWeightEntries[] = PartWeightEntry::load(intval($row["partWeightEntryId"]));
+            $entry->inProcessInspectionCount = $entry->getInProcessInspectionCount();
          }
+         
+         //
+         // Validate data
+         //
+         
+         $entry->validate();
+         
+         //
+         // Compute calculated values.
+         //
+   
+         $entry->recalculate();
       }
-      
-      // 
-      // Copy derived values.
-      //
-      
-      $entry->panCount = $entry->getPanCountByWeightLog();
-      
-      $entry->partWeight = $entry->getTotalPartWeight();
-      
-      $entry->runTime = $entry->timeCardInfo->getApprovedRunTime();  // hours
-      
-      $entry->grossParts = Calculations::calculateGrossParts($entry->runTime, $entry->jobInfo->grossPartsPerHour);
-      
-      $entry->partCountByWeightLog = $entry->getPartCountByWeightLog();
-      
-      $entry->partCountByWasherLog = $entry->getPartCountByWasherLog();
-      
-      $entry->partCount = Calculations::estimatePartCount($entry->getPartCountByTimeCard(), 
-                                                          $entry->getPartCountByWeightLog(), 
-                                                          $entry->getPartCountByWasherLog(),
-                                                          $entry->grossParts);
-      
-      $entry->inProcessInspectionCount = $entry->getInProcessInspectionCount();
-      
-      //
-      // Validate data
-      //
-      
-      $entry->validate();
-      
-      //
-      // Compute calculated values.
-      //
-
-      $entry->recalculate();
+      else
+      {
+         // Database error.  No entry could be created.
+         $entry = null;
+      }
       
       return ($entry);
    }
@@ -878,6 +899,10 @@ class DailySummaryReport
    public $dateTime;
    public $reportEntries;
    public $operatorSummaries;
+   
+   // Reduce processing times by skipping certain steps.
+   // Note: Used when generating weekly and quarterly reports.
+   public $minimalProcessing;
       
    public function __construct()
    {
@@ -886,11 +911,12 @@ class DailySummaryReport
       $this->operatorSummaries = array();  // indexed by [employee number]
    }
    
-   public static function load($employeeNumber, $dateTime, $useMaintenanceLogEntries)
+   public static function load($employeeNumber, $dateTime, $useMaintenanceLogEntries, $minimalProcessing = false)
    {
       $report = new DailySummaryReport();
       
       $report->dateTime = $dateTime;
+      $report->minimalProcessing = $minimalProcessing;
       
       $database = PPTPDatabase::getInstance();
       
@@ -905,16 +931,22 @@ class DailySummaryReport
          
          while ($result && $row = $result->fetch_assoc())
          {
-            $timeCardId = intval($row["timeCardId"]);
+            $timeCardInfo = new TimeCardInfo();
+            $timeCardInfo->initialize($row);
             
-            $index = intval($row["employeeNumber"]);
+            $index = $timeCardInfo->employeeNumber;
             
             if (!isset($report->reportEntries[$index]))
             {
                $report->reportEntries[$index] = array();
             }
             
-            $report->reportEntries[$index][] = ReportEntry::load($timeCardId);
+            $entry = ReportEntry::load($timeCardInfo, $report->minimalProcessing);
+            
+            if ($entry)
+            {
+               $report->reportEntries[$index][] = $entry;
+            }
          }
 
          // Maintenance Log
@@ -1027,8 +1059,11 @@ class DailySummaryReport
       // Hardcoded shiftId = 1
       $factoryStatsShiftId = 1;
       
-      $factoryStats = new FactoryStats();
-      $factoryStatsData = $factoryStats->getCount(null, $date, $factoryStatsShiftId);
+      if (!$this->minimalProcessing)
+      {
+         $factoryStats = new FactoryStats();
+         $factoryStatsData = $factoryStats->getCount(null, $date, $factoryStatsShiftId);
+      }
       
       // ***********************************************************************
       
@@ -1114,7 +1149,8 @@ class DailySummaryReport
             // *****************************************************************
             // Factory Stats integration
             
-            if (!$reportEntry->timeCardInfo->maintenanceLogEntry)
+            if (!$this->minimalProcessing && 
+                !$reportEntry->timeCardInfo->maintenanceLogEntry)
             {
                $row->factoryStats = new stdClass();
                $row->factoryStats->count = 0;

@@ -75,7 +75,7 @@ class InspectionTemplate
       $this->inspectionProperties = array();
    }
    
-   public function initializeFromDatabaseRow($row)
+   public function initialize($row)
    {
       $this->templateId = intval($row['templateId']);
       $this->inspectionType = intval($row['inspectionType']);
@@ -100,7 +100,7 @@ class InspectionTemplate
          {
             $inspectionTemplate = new InspectionTemplate();
             
-            $inspectionTemplate->initializeFromDatabaseRow($row);
+            $inspectionTemplate->initialize($row);
             
             // Optionally load actual inspection properties.
             if ($loadInspectionProperties)
