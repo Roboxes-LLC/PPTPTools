@@ -122,5 +122,10 @@ class JobManager
       
       return ($html);
    }
+   
+   public static function jobHasData($jobId)
+   {
+      return (PPTPDatabase::getInstance()->jobHasData($jobId));
+   }
 }
    

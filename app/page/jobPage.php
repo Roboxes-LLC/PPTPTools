@@ -130,20 +130,27 @@ class JobPage extends Page
                      
                      $job = JobInfo::load($jobId);
                      
-                     if ($jobId)
+                     if ($job)
                      {
-                        JobInfo::delete($jobId);
-                        
-                        $this->result->jobId = $jobId;
-                        $this->result->success = true;
-                        
-                        /*
-                         ActivityLog::logComponentActivity(
-                         Authentication::getAuthenticatedUser()->employeeNumber,
-                         ActivityType::DELETE_JOB,
-                         $job->jobId,
-                         $job->jobNumber);
-                         */
+                        if (!JobManager::jobHasData($jobId))
+                        {
+                           JobInfo::delete($jobId);
+                           
+                           $this->result->jobId = $jobId;
+                           $this->result->success = true;
+                           
+                           /*
+                            ActivityLog::logComponentActivity(
+                            Authentication::getAuthenticatedUser()->employeeNumber,
+                            ActivityType::DELETE_JOB,
+                            $job->jobId,
+                            $job->jobNumber);
+                            */
+                        }
+                        else
+                        {
+                           $this->error("Cannot delete job with associated data.");
+                        }
                      }
                      else
                      {

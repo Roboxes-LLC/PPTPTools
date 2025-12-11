@@ -1011,6 +1011,15 @@ class PPTPDatabase extends MySqlDatabase
       return ($result);
    }
    
+   public function jobHasData($jobId)
+   {
+      $query = "SELECT timecard.timecardId FROM timecard INNER JOIN job ON timecard.jobId = job.jobId WHERE timecard.jobId = $jobId;";
+      
+      $result = $this->query($query);
+      
+      return ($result->num_rows > 0);
+   }
+   
    public function newJob($jobInfo)
    {
       $dateTime = Time::toMySqlDate($jobInfo->dateTime);
