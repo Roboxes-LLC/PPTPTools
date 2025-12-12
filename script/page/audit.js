@@ -312,7 +312,7 @@ class Audit
 
                   return (cellValue);
                }.bind(this)
-            }, 
+            },
             {title:"Confirmed",         field:"confirmed", formatter:"tickCross",
                formatterParams: {
                   allowEmpty: true,
@@ -320,6 +320,8 @@ class Audit
                   crossElement: "<i class=\"material-icons icon-button\">check_box_outline_blank</i>"
                }
             },
+            {title:"Confirmed By",      field:"confirmedBy", visible:false},
+            {title:"Confirmed By",      field:"confirmedByLabel"},
             {title:"",             field:"delete",             hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");

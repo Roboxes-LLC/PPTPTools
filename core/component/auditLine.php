@@ -1,6 +1,7 @@
 <?php
 
 if (!defined('ROOT')) require_once '../../root.php';
+require_once ROOT.'/common/userInfo.php';
 require_once ROOT.'/core/common/pptpDatabase.php';
 require_once ROOT.'/core/component/audit.php';
 require_once ROOT.'/core/component/shipment.php';
@@ -13,6 +14,7 @@ class AuditLine
    public $auditId;
    public $shipmentId;
    public $confirmed;
+   public $confirmedBy;
    public $recordedCount;
    public $adjustedCount;
    public $adjustedLocation;
@@ -23,6 +25,7 @@ class AuditLine
       $this->auditId = Audit::UNKNOWN_AUDIT_ID;
       $this->shipmentId = Shipment::UNKNOWN_SHIPMENT_ID;
       $this->confirmed = false;
+      $this->confirmedBy = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
       $this->recordedCount = null;
       $this->adjustedCount = null;
       $this->adjustedLocation = ShipmentLocation::UNKNOWN;
@@ -76,6 +79,7 @@ class AuditLine
       $this->auditId = intval($row['auditId']);
       $this->shipmentId = intval($row['shipmentId']);
       $this->confirmed = filter_var($row['confirmed'], FILTER_VALIDATE_BOOLEAN);
+      $this->confirmedBy = intval($row['confirmedBy']);
       $this->recordedCount = !is_null($row['recordedCount']) ? intval($row['recordedCount']) : null;
       $this->adjustedCount = !is_null($row['adjustedCount']) ? intval($row['adjustedCount']) : null;
       $this->adjustedLocation = intval($row['adjustedLocation']);

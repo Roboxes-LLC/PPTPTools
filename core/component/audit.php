@@ -263,6 +263,15 @@ class Audit
       return ($foundIt);
    }
    
+   public function isConfirmed($shipmentId)
+   {
+      $lineItem = $this->findLineItem($shipmentId, Audit::FIND_BY_SHIPMENT_ID);
+      
+      $isConfirmed = $lineItem ? $lineItem->confirmed : false;
+      
+      return ($isConfirmed);
+   }
+   
    public static function getLink($auditId)
    {
       $html = "";

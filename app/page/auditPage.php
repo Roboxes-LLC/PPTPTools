@@ -138,9 +138,13 @@ class AuditPage extends Page
                   
                   $audit = Audit::load($auditId);
                   
+                  $prevAudit = clone $audit; 
+                  
                   if ($audit)
                   {
                      $this->getAuditLineParams($audit, $params);
+                     
+                     $this->updateConfirmedBy($prevAudit, $audit, Authentication::getAuthenticatedUser()->employeeNumber);
                      
                      $audit->status = AuditStatus::IN_PROGRESS;
 
@@ -476,11 +480,30 @@ class AuditPage extends Page
          $auditLine->auditId = $audit->auditId;
          $auditLine->shipmentId = intval($tableRow->shipmentId);
          $auditLine->confirmed = filter_var($tableRow->confirmed, FILTER_VALIDATE_BOOLEAN);
+         $auditLine->confirmedBy = intval($tableRow->confirmedBy);
          //$auditLine->recordedCount = intval($tableRow->recordedCount);
          $auditLine->adjustedCount = intval($tableRow->adjustedCount);
          $auditLine->adjustedLocation = intval($tableRow->adjustedLocation);
          
          $audit->lineItems[] = $auditLine;
+      }
+   }
+   
+   private function updateConfirmedBy($prevAudit, &$audit, $auditor)
+   {
+      foreach ($audit->lineItems as $auditLine)
+      {
+         $wasConfirmed = $prevAudit->isConfirmed($auditLine->shipmentId);
+         $isConfirmed = $auditLine->confirmed;
+         
+         if (!$wasConfirmed && $isConfirmed)
+         {
+            $auditLine->confirmedBy = $auditor;
+         }
+         else if (!$isConfirmed)
+         {
+            $auditLine->confirmedBy = UserInfo::UNKNOWN_EMPLOYEE_NUMBER;
+         }
       }
    }
    
@@ -528,19 +551,16 @@ class AuditPage extends Page
       {
          $auditLine->isExpected = ($shipment->location == $audit->location);  // TODO: Part number validation
       }
-      /*
-      // vendorName
-      $auditLine->inventoryItem->vendorName = Vendor::getVendorName($auditLine->inventoryItem->vendorId);
       
-      // categoryLabel
-      $auditLine->inventoryItem->categoryLabel = InventoryCategory::getCategoryName($auditLine->inventoryItem->categoryId);
-       
-      // unitsLabel
-      $auditLine->inventoryItem->unitsLabel = Units::getLabel($auditLine->inventoryItem->units);
-       
-      // count
-      $auditLine->count = InventoryManager::getInventoryCount($siteId, $auditLine->itemId);
-      */
+      $auditLine->confirmedByLabel = null;
+      if ($auditLine->confirmedBy)
+      {
+         $user = UserInfo::load($auditLine->confirmedBy);
+         if ($user)
+         {
+            $auditLine->confirmedByLabel = $user->getFullName();
+         }
+      }
    }
    
    private static function completeAudit($audit)
