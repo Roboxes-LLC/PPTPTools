@@ -1815,7 +1815,7 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare(
          "INSERT INTO auditline " .
          "(auditId, shipmentId, confirmed, confirmedBy, recordedCount, adjustedCount, adjustedLocation) " .
-         "VALUES (?, ?, ?, ?, ?, ?)");
+         "VALUES (?, ?, ?, ?, ?, ?, ?)");
       
       $result = $statement->execute(
          [

@@ -3,7 +3,7 @@ class Audit
    // HTML elements
    static PageElements = {
       //  Forms
-      "INPUT_FORM":      "input-form",
+      "INPUT_FORM":        "input-form",
       // Tables
       "EXPECTED_TABLE" :   "expected-table",
       "UNEXPECTED_TABLE" : "unexpected-table",
@@ -14,15 +14,16 @@ class Audit
       "LOCATION_INPUT":    "location-input",
       "PART_NUMBER_INPUT": "part-number-input",
       // Buttons
-      "ADD_BUTTON":      "add-button",
-      "SAVE_BUTTON":     "save-button",
+      "ADD_BUTTON":        "add-button",
+      "SAVE_BUTTON":       "save-button",
       "SAVE_PROGRESS_BUTTON": "save-progress-button",
-      "COMPLETE_BUTTON": "complete-button",
-      "CANCEL_BUTTON":   "cancel-button",
+      "COMPLETE_BUTTON":   "complete-button",
+      "APPLY_BUTTON":      "apply-button",
+      "CANCEL_BUTTON":     "cancel-button",
       // Filters
-      "START_DATE_INPUT":       "start-date-input",
-      "END_DATE_INPUT":         "end-date-input",
-      "ACTIVE_AUDITS_INPUT":    "active-audits-input",
+      "START_DATE_INPUT":    "start-date-input",
+      "END_DATE_INPUT":      "end-date-input",
+      "ACTIVE_AUDITS_INPUT": "active-audits-input",
    };
    
    static PageMode = {
@@ -32,16 +33,23 @@ class Audit
    
    static locationLabels =  ["", "WIP", "Vendor", "Finished Goods"];
 
-   constructor(pageMode, isAdHoc)
+   constructor(pageMode, auditStatus, isAdHoc, hasCorrections)
    {      
       this.table = null;
       
       this.pageMode = pageMode;
+      this.auditStatus = auditStatus;
+      this.hasCorrections = hasCorrections;
       this.isAdHoc = isAdHoc;
       
       this.editedName = false;
       
       this.setup();
+      
+      if (this.pageMode = Audit.PageMode.PERFORM_AUDIT)
+      {
+         this.updateControls();
+      }
    }
    
    setup()
@@ -105,6 +113,13 @@ class Audit
       {
          document.getElementById(Audit.PageElements.COMPLETE_BUTTON).addEventListener('click', function() {
             this.onCompleteButton();
+         }.bind(this));
+      }
+      
+      if (document.getElementById(Audit.PageElements.APPLY_BUTTON) != null)
+      {
+         document.getElementById(Audit.PageElements.APPLY_BUTTON).addEventListener('click', function() {
+            this.onApplyButton();
          }.bind(this));
       }
       
@@ -343,7 +358,7 @@ class Audit
       
       this.table.on("cellClick", function(e, cell) {
          let auditLineId = parseInt(cell.getRow().getData().auditLineId);
-         
+
          if (cell.getColumn().getField() == "delete")
          {
             this.onDeleteAuditLineButton(auditLineId);
@@ -513,6 +528,14 @@ class Audit
    onPartNumberChanged()
    {
       this.generateAuditName();
+   }
+   
+   onApplyButton()
+   {
+      if (confirm("Are you sure you want to apply corrections from this audit? This cannot be undone."))
+      {
+         this.applyAudit();
+      }
    }
    
    // **************************************************************************
@@ -732,6 +755,22 @@ class Audit
       });
    }
    
+   applyAudit()
+   {
+      let auditId = this.getAuditId();
+      
+      ajaxRequest(`/app/page/audit/?request=apply_audit&auditId=${auditId}`, function(response) {
+         if (response.success == true)
+         {
+            location.href = "/audit/audits.php";
+         }
+         else
+         {
+            alert(response.error);
+         }
+      }.bind(this));
+   }
+   
    async submitTable(table, url, params, callback)
    {
       params.data = table.getData();
@@ -773,6 +812,39 @@ class Audit
       {
           console.log("Server error");
           throw error;
+      }
+   }
+   
+   updateControls()
+   {
+      switch (this.auditStatus)
+      {
+         case AuditStatus.SCHEDULED:
+         case AuditStatus.IN_PROGRESS:
+         {
+            hide(Audit.PageElements.APPLY_BUTTON);
+            break;
+         }
+         
+         case AuditStatus.COMPLETE:
+         {
+            hide(Audit.PageElements.SAVE_PROGRESS_BUTTON);
+            hide(Audit.PageElements.COMPLETE_BUTTON);
+            
+            if (!this.hasCorrections)
+            {
+               hide(Audit.PageElements.APPLY_BUTTON);
+            }
+            break;
+         }
+         
+         case AuditStatus.APPLIED:
+         {
+            hide(Audit.PageElements.SAVE_PROGRESS_BUTTON);
+            hide(Audit.PageElements.COMPLETE_BUTTON);
+            hide(Audit.PageElements.APPLY_BUTTON);
+            break;
+         }
       }
    }
 }      

@@ -41,4 +41,6 @@ UNKNOWN_SHIPMENT_LOCATION = <?php echo ShipmentLocation::UNKNOWN ?>;
 
 <?php echo CorrectiveActionStatus::getJavascript("CorrectiveActionStatus") . "\n" ?>
 
+<?php echo AuditStatus::getJavascript("AuditStatus") . "\n" ?>
+
 

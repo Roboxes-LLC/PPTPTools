@@ -42,7 +42,7 @@ abstract class AuditStatus
       foreach (AuditStatus::$values as $auditStatus)
       {
          $html .= "{$varNames[$auditStatus]}: $auditStatus";
-         $html .= ($auditStatus < (PoStatus::LAST - 1) ? ", " : "");
+         $html .= ($auditStatus < (AuditStatus::LAST - 1) ? ", " : "");
       }
       
       $html .= "};";
@@ -270,6 +270,23 @@ class Audit
       $isConfirmed = $lineItem ? $lineItem->confirmed : false;
       
       return ($isConfirmed);
+   }
+   
+   public function hasCorrections()
+   {
+      $hasCorrections = false;
+      
+      foreach ($this->lineItems as $auditLine)
+      {
+         if (($auditLine->adjustedCount != null) ||
+             ($auditLine->adjustedLocation != ShipmentLocation::UNKNOWN))
+         {
+            $hasCorrections = true;
+            break;
+         }
+      }
+      
+      return ($hasCorrections);
    }
    
    public static function getLink($auditId)

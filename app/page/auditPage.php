@@ -229,7 +229,6 @@ class AuditPage extends Page
             break;
          }
          
-         /*
          case "apply_audit":
          {
             if ($this->authenticate([Permission::APPLY_AUDIT]))
@@ -244,10 +243,7 @@ class AuditPage extends Page
                   {
                      if ($audit->status == AuditStatus::COMPLETE)
                      {
-                        if (InventoryManager::applyAudit(
-                               Authentication::getSite(), 
-                               Authentication::getAuthenticatedUser()->userId, 
-                               $auditId))
+                        if (ShipmentManager::applyAudit($auditId))
                         {
                            $audit->status = AuditStatus::APPLIED;
                            Audit::save($audit);
@@ -255,12 +251,14 @@ class AuditPage extends Page
                            $this->result->auditId = $audit->auditId;
                            $this->result->success = true;
                            
+                           /*
                            ActivityLog::logApplyAudit(
                               Authentication::getSite(),
                               Authentication::getAuthenticatedUser()->userId,
                               $audit->auditId,
                               $audit->auditName,
                               count($audit->lineItems));
+                           */
                         }
                         else
                         {
@@ -280,7 +278,6 @@ class AuditPage extends Page
             }
             break;
          }
-         */
          
          case "fetch_audit_line":
          {
@@ -576,6 +573,22 @@ class AuditPage extends Page
             $auditLine->recordedCount = InventoryManager::getInventoryCount($audit->siteId, $auditLine->itemId);
          }
          */
+      }
+   }
+   
+   private static function applyAudit($audit)
+   {
+      if ($audit)
+      {
+         $audit->status = AuditStatus::APPLIED;
+         
+         /*
+          // Record the current inventory counts for each item, freezing it in time.
+          foreach ($audit->lineItems as $auditLine)
+          {
+          $auditLine->recordedCount = InventoryManager::getInventoryCount($audit->siteId, $auditLine->itemId);
+          }
+          */
       }
    }
 }

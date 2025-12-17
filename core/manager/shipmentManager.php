@@ -238,6 +238,40 @@ class ShipmentManager
       
       return ($childShipmentId);
    }
+   
+   public static function applyAudit($auditId)
+   {
+      $success = false;
+      
+      $audit = Audit::load($auditId);
+      
+      if ($audit)
+      {
+         $success = true;
+         
+         foreach ($audit->lineItems as $auditLine)
+         {
+            $shipment = Shipment::load($auditLine->shipmentId);
+            
+            if ($shipment)
+            {
+               if ($auditLine->adjustedLocation != ShipmentLocation::UNKNOWN)
+               {
+                  $shipment->location = $auditLine->adjustedLocation;
+               }
+               
+               if (!is_null($auditLine->adjustedCount))
+               {
+                  $shipment->quantity = $auditLine->adjustedCount;
+               }
+               
+               Shipment::save($shipment);
+            }
+         }
+      }
+      
+      return ($success);
+   }
 }
 
 ?>
