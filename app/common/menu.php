@@ -125,6 +125,10 @@ $jsonMenu =
             {
                "type":"menu-item",
                "pageId": 26
+            },
+            {
+               "type":"menu-item",
+               "pageId": 27
             }
          ]
       },

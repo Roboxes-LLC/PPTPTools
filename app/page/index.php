@@ -8,6 +8,7 @@ require_once ROOT.'/app/page/customerPage.php';
 require_once ROOT.'/app/page/jobPage.php';
 require_once ROOT.'/app/page/notificationPage.php';
 require_once ROOT.'/app/page/partPage.php';
+require_once ROOT.'/app/page/prospiraDocPage.php';
 require_once ROOT.'/app/page/quotePage.php';
 require_once ROOT.'/app/page/salesOrderPage.php';
 require_once ROOT.'/app/page/schedulePage.php';
@@ -44,6 +45,10 @@ $router->add("notification", function($params) {
 
 $router->add("part", function($params) {
    (new PartPage())->handleRequest($params);
+});
+
+$router->add("prospiraDoc", function($params) {
+   (new ProspiraDocPage())->handleRequest($params);
 });
 
 $router->add("user", function($params) {

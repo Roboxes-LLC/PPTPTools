@@ -1860,6 +1860,72 @@ class PPTPDatabaseAlt extends PDODatabase
       
       return ($result);
    }
+   
+   // **************************************************************************
+   //                                Prospira Doc
+   
+   public function getProspiraDoc($docId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM prospiradoc WHERE docId = ?;");
+      
+      $result = $statement->execute([$docId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getProspiraDocs($startDateTime, $endDateTime)
+   {
+      // Truncate to simple dates.
+      $startDate = Time::dateTimeObject($startDateTime)->format("Y-m-d");
+      $endDate = Time::dateTimeObject($endDateTime)->format("Y-m-d");
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM prospiradoc " .
+         "INNER JOIN shipment ON shipment.shipmentId = prospiradoc.shipmentId " .
+         "WHERE (shipment.dateTime BETWEEN ? AND ?) " .
+         "ORDER BY docId ASC;");
+      
+      $result = $statement->execute([$startDate, $endDate]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addUpdateProspiraDoc($prospiraDoc)
+   {
+      $time = $prospiraDoc->time ? Time::toMySqlDate($prospiraDoc->time) : null;
+      
+      $statement = $this->pdo->prepare(
+            "INSERT INTO prospiradoc (docId, shipmentId, clockNumber, lotNumber, serialNumber) " .
+            "VALUES (?, ?, ?, ?, ?)" .
+            "ON DUPLICATE KEY UPDATE shipmentId = ?, clockNumber = ?, lotNumber = ?, serialNumber = ?");
+      
+      $result = $statement->execute(
+         [
+            // Add
+            $prospiraDoc->docId,
+            $prospiraDoc->shipmentId,
+            $prospiraDoc->clockNumber,
+            $prospiraDoc->lotNumber,
+            $prospiraDoc->serialNumber,
+            // Update
+            $prospiraDoc->shipmentId,
+            $prospiraDoc->clockNumber,
+            $prospiraDoc->lotNumber,
+            $prospiraDoc->serialNumber
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteProspiraDoc($docId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM prospiradoc WHERE docId = ?");
+      
+      $result = $statement->execute([$docId]);
+      
+      return ($result);
+   }
       
    // **************************************************************************
    

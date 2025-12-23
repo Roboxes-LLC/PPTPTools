@@ -33,7 +33,8 @@ class AppPage
    const PART = 24;
    const CORRECTIVE_ACTION = 25;
    const AUDIT = 26;
-   const LAST = 27;
+   const PROSPIRA_DOC = 27;
+   const LAST = 28;
    
    public $pageId;
    public $label;
@@ -76,7 +77,8 @@ class AppPage
       AppPage::SALES_ORDER,
       AppPage::PART,
       AppPage::CORRECTIVE_ACTION,
-      AppPage::AUDIT      
+      AppPage::AUDIT,
+      AppPage::PROSPIRA_DOC
    );
    
    private static $pages = null;
@@ -111,7 +113,8 @@ class AppPage
             AppPage::SALES_ORDER =>         new AppPage(AppPage::SALES_ORDER,         "Sales Orders",         null,                   Permission::VIEW_SALES_ORDER,         "/salesOrder/salesOrders.php"),
             AppPage::PART =>                new AppPage(AppPage::PART,                "Parts",                null,                   Permission::VIEW_JOB,                 "/part/parts.php"),
             AppPage::CORRECTIVE_ACTION =>   new AppPage(AppPage::CORRECTIVE_ACTION,   "CA Requests",          null,                   Permission::VIEW_CORRECTIVE_ACTION,   "/correctiveAction/correctiveActions.php"),
-            AppPage::AUDIT =>               new AppPage(AppPage::AUDIT,               "Audits",               null,                   Permission::VIEW_AUDIT,               "/audit/audits.php")
+            AppPage::AUDIT =>               new AppPage(AppPage::AUDIT,               "Audits",               null,                   Permission::VIEW_AUDIT,               "/audit/audits.php"),
+            AppPage::PROSPIRA_DOC =>        new AppPage(AppPage::PROSPIRA_DOC,        "Prospira Docs",        null,                   Permission::VIEW_SHIPMENT,            "/prospiraDoc/prospiraDocs.php")
          );
       }
       

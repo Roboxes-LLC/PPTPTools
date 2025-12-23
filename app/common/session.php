@@ -28,7 +28,10 @@ class Session
    const CA_END_DATE = "correctiveAction.endDate";
    const AUDIT_ACTIVE_AUDITS = "audit.activeAudits";
    const AUDIT_START_DATE = "audit.startDate";
-   const AUDIT_END_DATE = "audit.endDate";   
+   const AUDIT_END_DATE = "audit.endDate";
+   const PROSPIRA_DOC_LOCATION = "prospiraDoc.shipmentLocation";
+   const PROSPIRA_DOC_START_DATE = "prospiraDoc.startDate";
+   const PROSPIRA_DOC_END_DATE = "prospiraDoc.endDate";
       
    public static function isset($key)
    {
