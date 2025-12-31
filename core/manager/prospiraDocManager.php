@@ -3,6 +3,8 @@
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/core/common/pptpDatabase.php';
 require_once ROOT.'/core/component/prospiraDoc.php';
+require_once ROOT.'/core/manager/customerManager.php';
+require_once ROOT.'/core/manager/jobManager.php';
 
 class ProspiraDocManager
 {
@@ -44,6 +46,62 @@ class ProspiraDocManager
       }
       
       return ($success);
+   }
+   
+   public static function getProspiraCustomerId()
+   {
+      static $customerId = Customer::UNKNOWN_CUSTOMER_ID;
+      
+      if ($customerId == Customer::UNKNOWN_CUSTOMER_ID)
+      {
+         $customers = CustomerManager::getCustomers();
+         
+         foreach ($customers as $customer)
+         {
+            if (strpos(strtolower($customer->customerName), "prospira") !== false)
+            {
+               $customerId = $customer->customerId;
+            }
+         }
+      }
+      
+      return ($customerId);
+   }
+   
+   public static function isProspiraShipment($shipmentId)
+   {
+      $isProspiraShipment = false;
+      
+      $shipment = Shipment::load($shipmentId);
+      
+      if ($shipment)
+      {
+         $customer = JobManager::getCustomerFromJobNumber($shipment->jobNumber);
+         
+         if ($customer &&
+             ($customer->customerId == ProspiraDocManager::getProspiraCustomerId()))
+         {
+            $isProspiraShipment = true;
+         }
+      }
+      
+      return ($isProspiraShipment);
+   }
+   
+   public static function onShipmentCreated($shipmentId)
+   {
+      if (ProspiraDocManager::isProspiraShipment($shipmentId))
+      {
+         $shipment = Shipment::load($shipmentId);
+         
+         if ($shipment)
+         {
+            $prospiraDoc = new ProspiraDoc();
+            $prospiraDoc->shipmentId = $shipmentId;
+            
+            ProspiraDoc::save($prospiraDoc);
+         }
+      }
    }
 }
 

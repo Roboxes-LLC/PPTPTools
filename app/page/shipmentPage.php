@@ -118,6 +118,11 @@ class ShipmentPage extends Page
                            }
                         }
                         
+                        if ($newShipment)
+                        {
+                           ProspiraDocManager::onShipmentCreated($shipment->shipmentId);
+                        }
+                        
                         /*
                          ActivityLog::logComponentActivity(
                             Authentication::getAuthenticatedUser()->employeeNumber,

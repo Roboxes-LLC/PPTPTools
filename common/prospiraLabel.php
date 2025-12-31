@@ -89,8 +89,6 @@ class ProspiraLabel
          
          $mfgDate = Time::dateTimeObject($shipment->dateTime)->format("n/j/y");
          $mfgTime = Time::dateTimeObject($shipment->dateTime)->format("h:i A");
-
-         $partNumber = JobManager::getCustomerPartNumber($jobInfo->partNumber);
          
          $quantity = $shipment->quantity;
          
@@ -102,7 +100,7 @@ class ProspiraLabel
                ProspiraLabel::SUPPLIER_NAME, 
                $shipment->dateTime, 
                $jobInfo->partNumber, 
-               $prospiraDoc->lotNumber, 
+               $prospiraDoc->getLotNumber(),
                $prospiraDoc->serialNumber);
          
          $file = fopen(ProspiraLabel::LABEL_TEMPLATE_FILENAME, "r");
@@ -162,7 +160,7 @@ class ProspiraLabel
                   
                   case ProspiraLabelField::LOT_NUMBER:
                   {
-                     $xml = str_replace(ProspiraLabelField::getKeyword($field), $prospiraDoc->lotNumber, $xml);
+                     $xml = str_replace(ProspiraLabelField::getKeyword($field), $prospiraDoc->getLotNumber(), $xml);
                      break;
                   }
                   

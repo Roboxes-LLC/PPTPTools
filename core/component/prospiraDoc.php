@@ -9,14 +9,12 @@ class ProspiraDoc
    const UNKNOWN_DOC_ID = 0;
    
    const NULL_CLOCK_NUMBER = 0;
-   const NULL_LOT_NUMBER = 0;
    const NULL_SERIAL_NUMBER = 0;
    
    public $docId;
    public $shipmentId;
    public $clockNumber;   
    public $time;
-   public $lotNumber;
    public $serialNumber;
 
    // Fields duplicated in Shipment.  Maybe not needed?
@@ -35,7 +33,6 @@ class ProspiraDoc
       $this->bapmPartNumber = null;
       $this->clockNumber = ProspiraDoc::NULL_CLOCK_NUMBER;
       $this->time = null;
-      $this->lotNumber = ProspiraDoc::NULL_LOT_NUMBER;
       $this->serialNumber = ProspiraDoc::NULL_SERIAL_NUMBER;
    }
    
@@ -49,7 +46,6 @@ class ProspiraDoc
                        Time::fromMySqlDate($row["time"]) :
                        null;
       $this->quantity = intval($row["quantity"]);
-      $this->lotNumber = intval($row["lotNumber"]);
       $this->serialNumber = $row["serialNumber"];
       
       if ($this->shipmentId != Shipment::UNKNOWN_SHIPMENT_ID)
@@ -100,4 +96,8 @@ class ProspiraDoc
    
    // **************************************************************************
    
+   public function getLotNumber()
+   {
+      return ($this->shipment->getShipmentTicketCode());
+   }
 }

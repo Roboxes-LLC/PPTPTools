@@ -16,7 +16,7 @@ class ProspiraDocPage extends Page
          {
             if ($this->authenticate([Permission::EDIT_SHIPMENT]))
             {
-               if (Page::requireParams($params, ["docId", "clockNumber", "lotNumber", "serialNumber"]))
+               if (Page::requireParams($params, ["docId", "clockNumber", "serialNumber"]))
                {
                   $docId = $params->getInt("docId");
                   $newDoc = ($docId == ProspiraDoc::UNKNOWN_DOC_ID);
@@ -205,7 +205,6 @@ class ProspiraDocPage extends Page
    private function getDocParams(&$prospiraDoc, $params)
    {
       $prospiraDoc->clockNumber = $params->get("clockNumber");
-      $prospiraDoc->lotNumber = $params->get("lotNumber");
       $prospiraDoc->serialNumber = $params->get("serialNumber");
    }
    
@@ -215,6 +214,7 @@ class ProspiraDocPage extends Page
       $prospiraDoc->shipment->locationLabel = ShipmentLocation::getLabel($prospiraDoc->shipment->location);
       $prospiraDoc->shipment->formattedDate = ($prospiraDoc->shipment->dateTime) ? Time::dateTimeObject($prospiraDoc->shipment->dateTime)->format("n/j/Y") : null;
       $prospiraDoc->shipment->formattedTime = ($prospiraDoc->shipment->dateTime) ? Time::dateTimeObject($prospiraDoc->shipment->dateTime)->format("h:i A") : null;
+      $prospiraDoc->lotNumber = $prospiraDoc->getLotNumber();
       
       // Part
       $pptpPartNumber = JobInfo::getJobPrefix($prospiraDoc->shipment->jobNumber);

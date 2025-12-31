@@ -183,7 +183,7 @@ function getForm()
 
       <div class="form-item" style="margin-right:25px">
          <div class="form-label">Lot #</div>
-         <input type="text" name="lotNumber" maxlength="12" style="width:150px;" value="$prospiraDoc->lotNumber"/>
+         <input type="text" name="lotNumber" maxlength="12" style="width:150px;" value="{$prospiraDoc->getLotNumber()}" disabled />
       </div>
 
       <div class="form-item" style="margin-right:25px">

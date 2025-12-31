@@ -1874,11 +1874,10 @@ class PPTPDatabaseAlt extends PDODatabase
       return ($result);
    }
    
-   public function getProspiraDocs($startDateTime, $endDateTime)
+   public function getProspiraDocs($startDate, $endDate)
    {
-      // Truncate to simple dates.
-      $startDate = Time::dateTimeObject($startDateTime)->format("Y-m-d");
-      $endDate = Time::dateTimeObject($endDateTime)->format("Y-m-d");
+      $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
+      $endDate = $endDate ? Time::toMySqlDate(Time::endOfDay($endDate)) : null;
       
       $statement = $this->pdo->prepare(
          "SELECT * FROM prospiradoc " .
@@ -1896,9 +1895,9 @@ class PPTPDatabaseAlt extends PDODatabase
       $time = $prospiraDoc->time ? Time::toMySqlDate($prospiraDoc->time) : null;
       
       $statement = $this->pdo->prepare(
-            "INSERT INTO prospiradoc (docId, shipmentId, clockNumber, lotNumber, serialNumber) " .
-            "VALUES (?, ?, ?, ?, ?)" .
-            "ON DUPLICATE KEY UPDATE shipmentId = ?, clockNumber = ?, lotNumber = ?, serialNumber = ?");
+            "INSERT INTO prospiradoc (docId, shipmentId, clockNumber, serialNumber) " .
+            "VALUES (?, ?, ?, ?)" .
+            "ON DUPLICATE KEY UPDATE shipmentId = ?, clockNumber = ?, serialNumber = ?");
       
       $result = $statement->execute(
          [
@@ -1906,12 +1905,10 @@ class PPTPDatabaseAlt extends PDODatabase
             $prospiraDoc->docId,
             $prospiraDoc->shipmentId,
             $prospiraDoc->clockNumber,
-            $prospiraDoc->lotNumber,
             $prospiraDoc->serialNumber,
             // Update
             $prospiraDoc->shipmentId,
             $prospiraDoc->clockNumber,
-            $prospiraDoc->lotNumber,
             $prospiraDoc->serialNumber
          ]);
       

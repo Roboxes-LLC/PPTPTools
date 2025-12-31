@@ -135,4 +135,22 @@ class Shipment
       
       return ($children);
    }
+   
+   public function getShipmentTicketCode()
+   {
+      $shipmentTicketCode = null;
+      
+      if ($this->parentShipmentId != Shipment::UNKNOWN_SHIPMENT_ID)
+      {
+         // <hex ancestorId>.<childIndex>
+         $shipmentTicketCode = sprintf('%04X', $this->parentShipmentId) . "." . ($this->childIndex + 1);
+      }
+      else
+      {
+         // <hex shipmentId>
+         $shipmentTicketCode = sprintf('%04X', $this->shipmentId);
+      }
+      
+      return ($shipmentTicketCode);
+   }
 }

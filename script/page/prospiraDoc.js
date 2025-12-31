@@ -122,9 +122,15 @@ class ProspiraDoc
             {title:"Clock #",           field:"clockNumber",         headerFilter:true},
             {title:"Lot #",             field:"lotNumber",           headerFilter:true},
             {title:"Serial #",          field:"serialNumber",        headerFilter:true},
-             {title:"",                 field:"printLabels",         hozAlign:"center", print:false,
+            {title:"",                  field:"printLabels",         hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   let cellValue =`<button class=\"small-button accent-button\" style=\"width:75px;\">Print Labels</button>`;
+                  return (cellValue);
+               }
+            },
+            {title:"",                  field:"printSheet",          hozAlign:"center", print:false,
+               formatter:function(cell, formatterParams, onRendered){
+                  let cellValue =`<button class=\"small-button accent-button\" style=\"width:75px;\">Print Sheet</button>`;
                   return (cellValue);
                }
             },
@@ -143,13 +149,18 @@ class ProspiraDoc
          let docId = parseInt(cell.getRow().getData().docId);
          let shipmentId = parseInt(cell.getRow().getData().shipment.shipmentId);
          
-         if (cell.getColumn().getField() == "shipmentTicketCode")
+         if (cell.getColumn().getField() == "shipment.shipmentTicketCode")
          {
             document.location = `/shipment/printShipmentTicket.php?shipmentTicketId=${shipmentId}`;
          }
          else if (cell.getColumn().getField() == "printLabels")
          {
             document.location = `/prospiraDoc/printProspiraLabel.php?docId=${docId}`;
+         }
+         else if (cell.getColumn().getField() == "printSheet")
+         {
+            let docId = parseInt(cell.getRow().getData().docId);
+            this.printSheet(docId);
          }
          else if (cell.getColumn().getField() == "delete")
          {
@@ -303,6 +314,18 @@ class ProspiraDoc
          .catch(function(error){
             // Handle error loading data
          });
+      }
+   }
+   
+   printSheet(docId)
+   {
+      let url = `/prospiraDoc/prospiraSheet.php?docId=${docId}`;
+      
+      let printWindow = window.open(url, '_blank');
+      
+      printWindow.onload = function() {
+         printWindow.focus();
+         printWindow.print()
       }
    }
    

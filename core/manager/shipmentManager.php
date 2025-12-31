@@ -4,6 +4,7 @@ if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/common/database.php';
 require_once ROOT.'/core/common/pptpDatabase.php';
 require_once ROOT.'/core/component/shipment.php';
+require_once ROOT.'/core/manager/prospiraDocManager.php';
 require_once ROOT.'/printer/printJob.php';
 
 class ShipmentManager
@@ -62,6 +63,8 @@ class ShipmentManager
          $shipment->location = ShipmentLocation::WIP;
          
          Shipment::save($shipment);
+         
+         ProspiraDocManager::onShipmentCreated($shipment->shipmentId);
       }
    }
    
