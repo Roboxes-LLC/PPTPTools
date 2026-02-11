@@ -22,6 +22,7 @@ class UserInfo
    public $authToken;
    public $defaultShiftHours;
    public $notifications;
+   public $deleted;
    
    public function __construct()
    {
@@ -35,6 +36,7 @@ class UserInfo
       $this->authToken = null;
       $this->defaultShiftHours = 0;
       $this->notifications = 0;  // Notification::NO_NOTIFICATIONS;
+      $this->deleted = false;
    }
    
    public static function load($employeeNumber)
@@ -73,6 +75,17 @@ class UserInfo
       $this->authToken = $row['authToken'];
       $this->defaultShiftHours = intval($row['defaultShiftHours']);
       $this->notifications = intval($row['notifications']);
+      $this->deleted = filter_var($row['deleted'], FILTER_VALIDATE_BOOLEAN);
+   }
+
+   public static function markAsDeleted($employeeeNumber)
+   {
+      $userInfo = UserInfo::load($employeeeNumber);
+      if ($userInfo)
+      {
+         $userInfo->deleted = true;
+         UserInfo::save(userInfo);
+      }
    }
    
    public static function getSystemUser()
