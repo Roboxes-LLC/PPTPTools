@@ -467,10 +467,10 @@ class PPTPDatabase extends MySqlDatabase
    public function getUsers($includeDeleted = false)
    {
       $deletedClause = $includeDeleted ?
-                          "WHERE deleted = false" :
-                          "TRUE";
+                          "TRUE" :
+                          "deleted = FALSE";
 
-      $query = "SELECT * FROM user $deletedClause ORDER BY firstName ASC;";
+      $query = "SELECT * FROM user WHERE $deletedClause ORDER BY firstName ASC;";
       
       $result = $this->query($query);
       
