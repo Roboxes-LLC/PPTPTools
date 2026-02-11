@@ -191,7 +191,8 @@ $router->add("timeCardData", function($params) {
             {
                $timeCard["setupTimeApprovedByName"] = $userInfo->getFullName();
             }
-            
+
+            $timeCard["comments"] = $timeCardInfo->comments;
             $timeCard["partsTakenEarly"] = $timeCardInfo->hasCommentCode(CommentCode::PARTS_TAKEN_EARLY_CODE_ID);
                      
             $result[] = $timeCard;

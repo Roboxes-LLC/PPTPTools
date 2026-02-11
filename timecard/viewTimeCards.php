@@ -456,6 +456,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                   return (parseFloat(cell.getValue()).toFixed(2) + "%");
                 }
             },
+            {title:"Comments",   field:"comments", tooltip:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = cell.getValue();
+
+                  if (cellValue != null)
+                  {
+                     cellValue = (cellValue.length > 25) ? cellValue.substr(0, 25) + "..." : cellValue; 
+                  }
+
+                  return (cellValue);
+               }
+            },
             {title:"Parts Taken<br>Early", field:"partsTakenEarly", hozAlign:"center", formatter:"tickCross", formatterParams:{crossElement:""}},
             {title:"", field:"delete", hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){

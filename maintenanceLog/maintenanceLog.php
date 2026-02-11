@@ -232,7 +232,18 @@ if (!Authentication::isAuthenticated())
                }
             },
             {title:"Part #",      field:"partNumber",                headerFilter:true},
-            {title:"Comments",    field:"comments"},
+            {title:"Comments",    field:"comments", tooltip:true,
+               formatter:function(cell, formatterParams, onRendered){
+                  var cellValue = cell.getValue();
+
+                  if (cellValue != null)
+                  {
+                     cellValue = (cellValue.length > 25) ? cellValue.substr(0, 25) + "..." : cellValue; 
+                  }
+
+                  return (cellValue);
+               }
+            },
             {title:"", field:"delete",                               hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");

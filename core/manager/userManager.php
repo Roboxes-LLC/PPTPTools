@@ -23,11 +23,11 @@ class UserManager
       return ($users);
    }
    
-   public static function getUsersByRoles($roleIds)
+   public static function getUsersByRoles($roleIds, $includeDeleted = false)
    {
       $users = array();
       
-      $result = PPTPDatabase::getInstance()->getUsers();
+      $result = PPTPDatabase::getInstance()->getUsers($includeDeleted);
       
       while ($result && ($row = $result->fetch_assoc()))
       {
