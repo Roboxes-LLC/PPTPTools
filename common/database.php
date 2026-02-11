@@ -127,7 +127,7 @@ class PPTPDatabase extends MySqlDatabase
    public function __construct()
    {
       global $SERVER, $USER, $PASSWORD, $DATABASE;
-      
+
       parent::__construct($SERVER, $USER, $PASSWORD, $DATABASE);
    }
    
@@ -1912,7 +1912,7 @@ HEREDOC;
    public function deleteMaintenanceType($typeId)
    {
       $UNKNOWN_TYPE_ID = MaintenanceEntry::UNKNOWN_TYPE_ID;
-      $UNKNOWN_CATEGORY_ID = MaintenanceEntry::UNKNOWN__CATEGORY_ID;
+      $UNKNOWN_CATEGORY_ID = MaintenanceEntry::UNKNOWN_CATEGORY_ID;
       $UNKNOWN_SUBCATEGORY_ID = MaintenanceEntry::UNKNOWN_SUBCATEGORY_ID;
 
       /*   

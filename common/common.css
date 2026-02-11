@@ -721,7 +721,7 @@ form.show-invalid select:invalid
    outline: solid 2px red;
 }
 
-.inspection-status {
+.inspection-status, .machine-state {
    display: flex;
    flex-direction: row;
    align-items: center;
@@ -762,4 +762,12 @@ form.show-invalid select:invalid
    font-size: 48px;
    font-weight: bold;
    color: #417cb8
+}
+
+.machine-state.running {
+   background-color: green;
+}
+
+.machine-state.down {
+   background-color: red;
 }

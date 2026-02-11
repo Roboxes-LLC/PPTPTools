@@ -524,12 +524,12 @@ if (!Authentication::isAuthenticated())
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-   <link rel="stylesheet" type="text/css" href="/thirdParty/tabulator/css/tabulator.min.css<?php echo versionQuery();?>"/>
+   <link rel="stylesheet" type="text/css" href="/thirdParty/tabulator/dist/css/tabulator.min.css<?php echo versionQuery();?>"/>
    
    <link rel="stylesheet" type="text/css" href="/common/theme.css<?php echo versionQuery();?>"/>
    <link rel="stylesheet" type="text/css" href="/common/common.css<?php echo versionQuery();?>"/>
    
-   <script src="/thirdParty/tabulator/js/tabulator.min.js<?php echo versionQuery();?>"></script>
+   <script src="/thirdParty/tabulator/dist/js/tabulator.min.js<?php echo versionQuery();?>"></script>
    <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/common.js<?php echo versionQuery();?>"></script>
@@ -707,6 +707,7 @@ if (!Authentication::isAuthenticated())
                
                <div class="form-col">
                   <div class="form-section-header">Maintenance Log</div>
+                  <button id="maintenance-request-button" class="small-button accent-button" style="width:125px; height: 30px; margin-bottom: 15px;">Request Maintenance</button>
                   <div class="form-item">
                      <div id="maintenance-log-table"></div>
                   </div>
@@ -768,6 +769,14 @@ if (!Authentication::isAuthenticated())
          .catch(function(error){
             // Handle error loading data
          });
+      }
+
+      function onMaintenanceRequest()
+      {
+         let wcNumber =  document.getElementById("wc-number-input").value;
+         let jobNumber =  document.getElementById("job-number-input").value;
+
+         document.location = `/maintenanceTicket/newMaintenanceTicket.php?wcNumber=${wcNumber}&jobNumber=${jobNumber}`;
       }
 
       var url = getTableQuery();
@@ -862,6 +871,7 @@ if (!Authentication::isAuthenticated())
       document.getElementById("cancel-button").onclick = function(){onCancel();};
       document.getElementById("save-button").onclick = function(){onSaveTimeCard();};      
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
+      document.getElementById("maintenance-request-button").onclick = function(){onMaintenanceRequest();};
 
       // Store the initial state of the form, for change detection.
       setInitialFormState("input-form");

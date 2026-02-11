@@ -6,6 +6,7 @@ require_once ROOT.'/app/page/auditPage.php';
 require_once ROOT.'/app/page/correctiveActionPage.php';
 require_once ROOT.'/app/page/customerPage.php';
 require_once ROOT.'/app/page/jobPage.php';
+require_once ROOT.'/app/page/maintenanceTicketPage.php';
 require_once ROOT.'/app/page/notificationPage.php';
 require_once ROOT.'/app/page/partPage.php';
 require_once ROOT.'/app/page/prospiraDocPage.php';
@@ -21,7 +22,7 @@ require_once ROOT.'/app/page/userPage.php';
 session_start();
 
 $router = new Router();
-$router->setLogging(false);
+$router->setLogging(true);
 
 $router->add("audit", function($params) {
    (new AuditPage())->handleRequest($params);
@@ -37,6 +38,10 @@ $router->add("customer", function($params) {
 
 $router->add("job", function($params) {
    (new JobPage())->handleRequest($params);
+});
+
+$router->add("maintenanceTicket", function($params) {
+   (new MaintenanceTicketPage())->handleRequest($params);
 });
 
 $router->add("notification", function($params) {

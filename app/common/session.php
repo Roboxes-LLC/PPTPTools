@@ -32,6 +32,9 @@ class Session
    const PROSPIRA_DOC_LOCATION = "prospiraDoc.shipmentLocation";
    const PROSPIRA_DOC_START_DATE = "prospiraDoc.startDate";
    const PROSPIRA_DOC_END_DATE = "prospiraDoc.endDate";
+   const MAINTENANCE_TICKET_START_DATE = "maintenanceTicket.startDate";
+   const MAINTENANCE_TICKET_END_DATE = "maintenanceTicket.endDate";
+   const MAINTENANCE_TICKET_ACTIVE_TICKETS = "maintenanceTicket.activeTickets";
       
    public static function isset($key)
    {
