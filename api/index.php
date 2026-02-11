@@ -604,17 +604,8 @@ $router->add("deleteUser", function($params) {
       
       if ($userInfo)
       {
-         $dbaseResult = $database->deleteUser($employeeNumber);
-         
-         if ($dbaseResult)
-         {
-            $result->success = true;
-         }
-         else
-         {
-            $result->success = false;
-            $result->error = "Database query failed.";
-         }
+         // Don't actually delete users, as that would invalidate all entered data.
+         UserInfo::markAsDeleted($employeeNumber);
       }
       else
       {

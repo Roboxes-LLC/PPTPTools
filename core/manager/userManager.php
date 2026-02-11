@@ -6,11 +6,11 @@ require_once ROOT.'/common/userInfo.php';
 
 class UserManager
 {
-   public static function getUsers()
+   public static function getUsers($includeDeleted = false)
    {
       $users = array();
 
-      $result = PPTPDatabase::getInstance()->getUsers();
+      $result = PPTPDatabase::getInstance()->getUsers($includeDeleted);
       
       while ($result && ($row = $result->fetch_assoc()))
       {
