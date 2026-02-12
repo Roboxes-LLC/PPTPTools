@@ -85,7 +85,7 @@ Optional PHP variables:
       PAGE.createTable("data-table");
 
       // Setup event handling on all DOM elements.
-      document.getElementById("download-link").onclick = function(){PAGE.table.download("csv", "<?php echo $reportFileName ?>", {delimiter:"."})};
+      document.getElementById("download-link").onclick = function(){PAGE.table.download("csv", "<?php echo $reportFileName ?>", {delimiter:","})};
       document.getElementById("print-link").onclick = function(){PAGE.table.print("active", true);};
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
    </script>
