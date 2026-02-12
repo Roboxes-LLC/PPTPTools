@@ -30,6 +30,8 @@ class MaintenanceTicketPage extends Page
                         $maintenanceTicket = new MaintenanceTicket();
                         $maintenanceTicket->author = Authentication::getAuthenticatedUser()->employeeNumber;
                         $maintenanceTicket->posted = Time::now();
+                        $maintenanceTicket->status = MaintenanceTicketStatus::REPORTED;
+
                      }
                      else
                      {

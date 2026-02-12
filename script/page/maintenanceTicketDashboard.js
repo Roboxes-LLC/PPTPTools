@@ -80,12 +80,15 @@ class Dashboard
       {
          let rowElement = this.templateElement.cloneNode(true);
 
+         var truncatedDescription = (maintenanceTicket.description.length > 20) ? maintenanceTicket.description.substr(0, 20) + "..." : maintenanceTicket.description; 
+
          this.setCell(rowElement, Dashboard.PageElements.POSTED_DATE, maintenanceTicket.formattedDate);
          this.setCell(rowElement, Dashboard.PageElements.POSTED_TIME, maintenanceTicket.formattedTime);
          this.setCell(rowElement, Dashboard.PageElements.WC_NUMBER, maintenanceTicket.wcLabel);
          this.setCell(rowElement, Dashboard.PageElements.JOB_NUMBER, maintenanceTicket.jobNumber);
          this.setCell(rowElement, Dashboard.PageElements.MACHINE_STATUS, maintenanceTicket.machineStateLabel);
-         this.setCell(rowElement, Dashboard.PageElements.DESCRIPTION, maintenanceTicket.description);
+         this.setCellClass(rowElement, Dashboard.PageElements.MACHINE_STATUS, maintenanceTicket.machineStateClass);         
+         this.setCell(rowElement, Dashboard.PageElements.DESCRIPTION, truncatedDescription);
          this.setCell(rowElement, Dashboard.PageElements.ASSIGNED, maintenanceTicket.assignedName);
          this.setCell(rowElement, Dashboard.PageElements.STATUS, maintenanceTicket.statusLabel);
 
@@ -102,6 +105,16 @@ class Dashboard
       if (cellElement != null)
       {
          cellElement.innerHTML = value;
+      }
+   }
+
+   setCellClass(rowElement, dataField, cssClass)
+   {
+      let cellElement = rowElement.querySelector(`[data-${Dashboard.PageElements.COL}="${dataField}"]`);
+
+      if (cellElement != null)
+      {
+         cellElement.classList.add(cssClass);
       }
    }
 }
