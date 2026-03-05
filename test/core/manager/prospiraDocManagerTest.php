@@ -18,6 +18,8 @@ class ProspiraDocManagerTest
       $test->testGetProspiraCustomerId();
       
       $test->testIsProspiraShipment();
+
+      $test->testGetNextSerialNumber();
    }
    
    private static function testGetProspiraCustomerId()
@@ -40,6 +42,13 @@ class ProspiraDocManagerTest
       $isProspiraShipment = ProspiraDocManager::isProspiraShipment(ProspiraDocManagerTest::NON_PROSPIRA_SHIPMENT_ID) ? "is" : "is not";
       
       echo "Shipment " .  ProspiraDocManagerTest::NON_PROSPIRA_SHIPMENT_ID . " $isProspiraShipment a Prospira shippment.<br>";
+   }
+
+   private static function testGetNextSerialNumber()
+   {
+      echo "ProspiraDocManager::getNextSerialNumber()<br>";
+      
+      echo  "Next serial number is: " . ProspiraDocManager::getNextSerialNumber() . ".<br>";
    }
 }
       

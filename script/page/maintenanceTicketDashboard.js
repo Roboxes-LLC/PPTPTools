@@ -45,6 +45,8 @@ class Dashboard
       this.updateTable();
 
       setInterval(function () {this.updateTable()}.bind(this), 10000);  // 10 second refresh
+
+      setInterval(function() {this.updateElapsedTime()}.bind(this), 1000);  // 1 second refresh
    }
 
    updateTable()
@@ -52,7 +54,7 @@ class Dashboard
       console.log("udpateTable()");
 
          // AJAX call to delete the component.
-         let requestUrl = `/app/page/maintenanceTicket/?request=fetch&activeTickets=true`;
+         let requestUrl = `/app/page/maintenanceTicket/?request=fetch&activeTickets=true&prioritySort=true`;
          
          ajaxRequest(requestUrl, function(response) {
             if (response.success == true)
@@ -67,6 +69,64 @@ class Dashboard
                alert(response.error);
             }
          }.bind(this));
+   }
+
+   updateElapsedTime()
+   {
+      let elements = document.querySelectorAll(`[data-col="${Dashboard.PageElements.ELAPSED_TIME}"]`);
+
+      for (let element of elements)
+      {
+         if (!element.parentNode.classList.contains("template"))
+         {
+            element.innerHTML = this.getUpdateTimeString(element.dataset.updateTime);
+         }
+      }
+   }
+
+   getUpdateTimeString(updateTime)
+   {
+      var updateTimeString = "----";
+
+      if (updateTime)
+      {
+         var now = new Date(Date.now());
+         var lastUpdate = new Date(Date.parse(updateTime));
+         
+         // Verify lastCountTime is for this work day.
+         if (lastUpdate &&
+             ((lastUpdate.getYear() == now.getYear()) &&
+              (lastUpdate.getMonth() == now.getMonth()) &&
+              (lastUpdate.getDay() == now.getDay())))
+         {
+            var diff = new Date(now - lastUpdate);
+            
+            var millisInHour = (1000 * 60 * 60);
+            var millisInMinute = (1000 * 60);
+            var millisInSecond = 1000;
+            
+            var hours = Math.floor(diff / millisInHour);
+            var minutes = Math.floor((diff % millisInHour) / millisInMinute);
+            var seconds = Math.round((diff % millisInMinute) / millisInSecond);
+            var tenths = Math.round((diff % millisInSecond) / 10);
+            
+            if (hours > 0)
+            {
+               updateTimeString = this.padNumber(hours) + ":" + this.padNumber(minutes) + ":" + this.padNumber(seconds);
+            }
+            else
+            {
+               updateTimeString = this.padNumber(minutes) + ":" + this.padNumber(seconds);
+            }
+         }
+      }
+
+      return (updateTimeString);
+   }
+
+   padNumber(number)
+   {
+      return ((number < 10 ? '0' : '') + number);
    }
 
    clearTable()
@@ -91,6 +151,8 @@ class Dashboard
          this.setCell(rowElement, Dashboard.PageElements.DESCRIPTION, truncatedDescription);
          this.setCell(rowElement, Dashboard.PageElements.ASSIGNED, maintenanceTicket.assignedName);
          this.setCell(rowElement, Dashboard.PageElements.STATUS, maintenanceTicket.statusLabel);
+         this.setCell(rowElement, Dashboard.PageElements.ELAPSED_TIME, this.getUpdateTimeString(maintenanceTicket.updateTime));
+         this.setCellData(rowElement, Dashboard.PageElements.ELAPSED_TIME, "updateTime", maintenanceTicket.updateTime);
 
          rowElement.classList.remove("template");
 
@@ -115,6 +177,16 @@ class Dashboard
       if (cellElement != null)
       {
          cellElement.classList.add(cssClass);
+      }
+   }
+
+   setCellData(rowElement, dataField, dataLabel, dataValue)
+   {
+      let cellElement = rowElement.querySelector(`[data-${Dashboard.PageElements.COL}="${dataField}"]`);
+
+      if (cellElement != null)
+      {
+         cellElement.dataset[dataLabel] = dataValue;
       }
    }
 }

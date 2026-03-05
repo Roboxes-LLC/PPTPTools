@@ -25,4 +25,49 @@ class MaintenanceTicketManager
       
       return ($maintenanceTickets);
    }
+
+   public static function getMaintenanceDescriptions()
+   {
+      $descriptions = array();
+      
+      $result = PPTPDatabaseAlt::getInstance()->getMaintenanceDescriptions();
+      
+      foreach ($result as $row)
+      {
+         $descriptions[intval($row["descriptionId"])] = $row["label"];
+      }
+      
+      return ($descriptions);
+   }
+
+   public static function getNextPriority()
+   {
+      $nextPriority = 0;
+
+      $maintenanceTickets = MaintenanceTicketManager::getMaintenanceTickets(null, null, true);
+
+      usort($maintenanceTickets, [MaintenanceTicketManager::class, "priorityComparator"]);
+
+      $nextPriority = empty($maintenanceTickets) ? 
+                         MaintenanceTicket::HIGHEST_PRIORITY : 
+                         (end($maintenanceTickets)->priority + 1);
+
+      return ($nextPriority);
+   }
+   
+   public static function priorityComparator($a, $b)
+   {
+      $returnStatus = 0;
+
+      if ($a->priority == $b->priority)
+      {
+        $returnStatus = 0;
+      }
+      else
+      {
+         $returnStatus = ($a->priority < $b->priority) ? -1 : 1;
+      }
+
+      return ($returnStatus);
+   }
 }

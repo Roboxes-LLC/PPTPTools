@@ -9,6 +9,7 @@ require_once ROOT.'/common/version.php';
 require_once ROOT.'/core/common/maintenanceTicketDefs.php';
 require_once ROOT.'/core/common/role.php';
 require_once ROOT.'/core/manager/jobManager.php';
+require_once ROOT.'/core/manager/maintenanceTicketManager.php';
 require_once ROOT.'/core/manager/userManager.php';
 
 function getParams()
@@ -68,6 +69,26 @@ function getAuthorName()
    return ($authorName);
 }
 
+function getDescriptionInputs()
+{
+   $inputs = "";
+
+   $descriptions = MaintenanceTicketManager::getMaintenanceDescriptions();
+
+   foreach ($descriptions as $index => $label)
+   {
+      $inputs .=
+<<< HEREDOC
+      <div class="flex-horizontal flex-v-center" style="margin-right: 15px">
+         <input class="description-option-input" type="checkbox" data-label="$label" style="margin-right: 5px">
+         <div>$label</div>
+      </div>
+HEREDOC;      
+   }
+
+   return ($inputs);
+}
+
 function getForm()
 {   
    $posted = Time::toJavascriptDate(Time::now());
@@ -77,6 +98,7 @@ function getForm()
    $wcNumberOptions = $wcNumberOptions = JobInfo::getWcNumberOptions(getJobNumber(), getWcNumber());
    $assignedOptions = UserManager::getOptions([Role::MAINTENANCE], [], null);
    $machineStateOptions = MachineState::getOptions(MachineState::UNKNOWN);
+   $descriptionInputs = getDescriptionInputs();
    
    $html = 
 <<< HEREDOC
@@ -90,6 +112,11 @@ function getForm()
             <div class="form-item">
                <div class="form-label">Posted By</div>
                <input type="text" value="$authorName" disabled>
+            </div>
+
+            <div class="form-item" style="margin-right: 25px">
+               <div class="form-label">Occured</div>
+               <input type="date" class="form-input-medium" name="occured">
             </div>
 
             <div class="form-item">
@@ -122,8 +149,13 @@ function getForm()
 
             <div class="form-item">
                <div class="form-label">Description</div>
-               <input type="text" style="width:500px;" name="description" value="" required>
-            </div>               
+               <input id="description-input" type="text" style="width:500px;" name="description" value="" required>
+            </div>
+            
+            <div class="form-item">
+               $descriptionInputs
+            </div> 
+
 
             <div class="form-item">
                <div class="form-label">Details</div>

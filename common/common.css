@@ -771,3 +771,25 @@ form.show-invalid select:invalid
 .machine-state.down {
    background-color: red;
 }
+
+/* *********************** Maintenance Ticket Action Panel ****************** */
+
+#action-panel-header {
+   background: var(--main-color);
+   padding: 10px;
+   width: 100%;
+   margin-left: 0;
+   margin-right: 0;
+   font-size: 24px;
+   font-weight: bold;
+   color: white;
+   margin-bottom: 25px;
+}
+
+#action-panel .modal-content {
+   width: 550px;
+}
+
+#action-notes-input {
+   width: 500px;
+}

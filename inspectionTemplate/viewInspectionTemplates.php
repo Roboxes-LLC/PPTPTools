@@ -46,12 +46,12 @@ if (!Authentication::isAuthenticated())
    <meta name="viewport" content="width=device-width, initial-scale=1">
 
    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
-   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/css/tabulator.min.css"/>
+   <link rel="stylesheet" type="text/css" href="../thirdParty/tabulator/dist/css/tabulator.min.css"/>
    
    <link rel="stylesheet" type="text/css" href="../common/theme.css"/>
    <link rel="stylesheet" type="text/css" href="../common/common.css"/>
    
-   <script src="../thirdParty/tabulator/js/tabulator.min.js"></script>
+   <script src="../thirdParty/tabulator/dist/js/tabulator.min.js"></script>
    
    <script src="/common/common.js"></script>
    <script src="/script/common/common.js<?php echo versionQuery();?>"></script>

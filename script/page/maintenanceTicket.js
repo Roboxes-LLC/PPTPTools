@@ -4,6 +4,9 @@ class MaintenanceTicket
    static PageElements = {
       // Forms
       "INPUT_FORM":           "input-form",
+      "UPDATE_FORM":          "update-form",
+      "HISTORY_FORM":         "history-form",
+      "ATTACHMENTS_FORM":     "attachments-form",
       // Filters
       // Tables
       "DATA_TABLE":           "data-table",
@@ -11,16 +14,33 @@ class MaintenanceTicket
       "ADD_BUTTON":           "add-button",
       "SAVE_BUTTON":          "save-button",
       "CANCEL_BUTTON":        "cancel-button",
+      "ACTION_CANCEL_BUTTON": "action-cancel-button",
+      "ACTION_OK_BUTTON":     "action-ok-button",
+      "UPDATE_BUTTON":        "update-button",
+      "COMMENT_BUTTON":       "comment-button",
+      "ATTACH_BUTTON":        "attach-button",
       // Input fields
       "START_DATE_INPUT":     "start-date-input",
       "END_DATE_INPUT":       "end-date-input",
       "ACTIVE_TICKETS_INPUT": "active-tickets-input",
       "TICKET_ID_INPUT":      "doc-id-input",
+      "DESCRIPTION_INPUT":    "description-input",
+      "DESCRIPTION_OPTION_INPUT": "description-option-input",
+      "SORT_BUTTON_UP":       "sort-button-up",
+      "SORT_BUTTON_DOWN":     "sort-button-down",
+      // Panels
+      "ACTION_PANEL":         "action-panel",
+      "ACTION_PANEL_TITLE":  "action-panel-title"
    };
 
    constructor()
    {      
       this.table = null;
+      this.status = null;
+
+      // Action commands.
+      this.apiCommand = null;
+      this.ticketId = 0;
       
       this.setup();
    }
@@ -73,6 +93,50 @@ class MaintenanceTicket
             history.back();
          }.bind(this));
       }
+
+      if (document.getElementById(MaintenanceTicket.PageElements.ACTION_CANCEL_BUTTON) != null)
+      {
+         document.getElementById(MaintenanceTicket.PageElements.ACTION_CANCEL_BUTTON).addEventListener('click', function() {
+            hideModal(MaintenanceTicket.PageElements.ACTION_PANEL);
+         }.bind(this));
+      }
+
+      if (document.getElementById(MaintenanceTicket.PageElements.ACTION_OK_BUTTON) != null)
+      {
+         document.getElementById(MaintenanceTicket.PageElements.ACTION_OK_BUTTON).addEventListener('click', function() {
+            hideModal(MaintenanceTicket.PageElements.ACTION_PANEL);
+            this.onActionOkButton();
+         }.bind(this));
+      }
+
+      if (document.getElementById(MaintenanceTicket.PageElements.UPDATE_BUTTON) != null)
+      {
+         document.getElementById(MaintenanceTicket.PageElements.UPDATE_BUTTON).addEventListener('click', function() {
+            this.onUpdateButton();
+         }.bind(this));
+      }
+
+      let elements = document.getElementsByClassName(MaintenanceTicket.PageElements.DESCRIPTION_OPTION_INPUT);
+      for (let element of elements)
+      {
+         element.addEventListener('change', function(event) {
+            this.onDescriptionOption(event.target, event.target.checked);
+         }.bind(this));
+      }
+
+      if (document.getElementById(MaintenanceTicket.PageElements.COMMENT_BUTTON) != null)
+      {
+         document.getElementById(MaintenanceTicket.PageElements.COMMENT_BUTTON).addEventListener('click', function() {
+            this.onCommentButton();
+         }.bind(this));
+      }
+
+      if (document.getElementById(MaintenanceTicket.PageElements.ATTACH_BUTTON) != null)
+      {
+         document.getElementById(MaintenanceTicket.PageElements.ATTACH_BUTTON).addEventListener('click', function() {
+            this.onAttachButton();
+         }.bind(this));
+      }
    }      
    
    createTable(tableElementId)
@@ -102,9 +166,14 @@ class MaintenanceTicket
             vertAlign:"middle"
          },
          persistence:false,
+         // Movable rows
+         movableRows: true,
+         rowHeader:{headerSort:false, resizable: false, minWidth:30, width:30, rowHandle:true, formatter:"handle"},
          // Columns
          columns:[
             {                           field:"ticketId",           visible:false},
+            {                           field:"priority",           visible:false},
+            {title:"Ticket #",          field:"ticketNumber",       headerFilter:true},
             {title:"Posted Date",       field:"formattedDate",      headerFilter:true},
             {title:"Posted Time",       field:"formattedTime",      headerFilter:true},
             {title:"Posted By",         field:"authorName",         headerFilter:true},
@@ -122,26 +191,38 @@ class MaintenanceTicket
             {title:"Assigned",          field:"assignedName",       headerFilter:true},
             {title:"",                  field:"action",         hozAlign:"center",    print:false,
                formatter:function(cell, formatterParams, onRendered){
-                  let cellValue =`<button class=\"small-button accent-button\" style=\"width:75px;\">Action</button>`;
+                  let cellValue = null;
+                  let nextAction = cell.getRow().getData().nextAction;
+                  if (nextAction)
+                  {
+                     let nextActionLabel = cell.getRow().getData().nextActionLabel;
+                     let nextActionApiCommand = cell.getRow().getData().nextActionApiCommand;
+                     cellValue =`<button class=\"small-button accent-button\" style=\"width:100px;\">${nextActionLabel}</button>`;
+                  }
                   return (cellValue);
                }
             },
-            {title:"Resolve Time",      field:"formattedResolveTime", headerFilter:true},
+            {title:"Resolve Time",      field:"formattedResolveTime"},
             {title:"",                  field:"delete", tooltip:"Delete", hozAlign:"center", print:false,
                formatter:function(cell, formatterParams, onRendered){
                   return ("<i class=\"material-icons icon-button\">delete</i>");
                }
             }
-         ],
-         initialSort:[
-            {column:"ticketId", dir:"desc"}
          ]
       });
       
       this.table.on("cellClick", function(e, cell) {
          let ticketId = parseInt(cell.getRow().getData().ticketId);
          
-         if (cell.getColumn().getField() == "delete")
+         if (cell.getColumn().getField() == "action")
+         {
+            let actionLabel = cell.getRow().getData().nextActionLabel;
+            let apiCommand = cell.getRow().getData().nextActionApiCommand;
+
+            this.showActionPanel(actionLabel, ticketId, apiCommand);
+            e.stopPropagation();
+         }
+         else if (cell.getColumn().getField() == "delete")
          {
             this.onDeleteButton(ticketId);
             e.stopPropagation();
@@ -151,6 +232,17 @@ class MaintenanceTicket
             document.location = `/maintenanceTicket/maintenanceTicket.php?ticketId=${ticketId}`;
          }
       }.bind(this));
+
+      this.table.on("rowMoved", function() {
+         this.onRowMoved();
+      }.bind(this));
+   }
+
+   setStatus(status)
+   {
+      this.status = status;
+      
+      this.updateControls();
    }
    
    // **************************************************************************
@@ -197,6 +289,8 @@ class MaintenanceTicket
       }
       
       this.onFilterUpdate();
+
+      this.sortTable();
       
       setSession("maintenanceTicket.activeTickets", (activeTickets ? "true" : "false"));
    }
@@ -248,6 +342,118 @@ class MaintenanceTicket
          showInvalid(MaintenanceTicket.PageElements.INPUT_FORM);
       }
    }
+
+   onActionOkButton()
+   {
+      // AJAX call to delete the component.
+      let requestUrl = `/app/page/maintenanceTicket/?request=${this.apiCommand}&ticketId=${this.ticketId}&notes=`;
+
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            location.reload();
+         }
+         else
+         {
+            alert(response.error);
+         }
+      }.bind(this));
+   }
+
+   onUpdateButton()
+   {
+      if (this.validateRequestForm())
+      {
+         submitForm(MaintenanceTicket.PageElements.UPDATE_FORM, "/app/page/maintenanceTicket", function (response) {
+            if (response.success == true)
+            {
+               location.reload();
+            }
+            else
+            {
+               alert(response.error);
+            }
+         })
+      }      
+   }
+
+   onCommentButton()
+   {
+      submitForm(MaintenanceTicket.PageElements.HISTORY_FORM, "/app/page/maintenanceTicket", function (response) {
+         if (response.success == true)
+         {
+            location.reload();
+         }
+         else
+         {
+            alert(response.error);
+         }
+      })
+   }
+
+   onAttachButton()
+   {
+      if (this.validateRequestForm())
+      {
+         submitForm(MaintenanceTicket.PageElements.ATTACHMENTS_FORM, "/app/page/maintenanceTicket", function (response) {
+            if (response.success == true)
+            {
+               location.reload();
+            }
+            else
+            {
+               alert(response.error);
+            }
+         })
+      }      
+   }
+
+   onDescriptionOption(element, isChecked)
+   {
+      let label = element.dataset.label;
+      let descriptionInput = document.getElementById(MaintenanceTicket.PageElements.DESCRIPTION_INPUT);
+
+      if (isChecked)
+      {
+         let seperator = (descriptionInput.value.length == 0) ? "" : "; ";
+         descriptionInput.value += (seperator + label);
+      }
+      else
+      {
+         let regex = new RegExp(`; ${label}`, "g");
+         descriptionInput.value = descriptionInput.value.replace(regex, "");
+
+         regex = new RegExp(`${label}`, "g");
+         descriptionInput.value = descriptionInput.value.replace(regex, "");
+      }
+   }
+
+   onRowMoved()
+   {
+      let priority = 1;
+      for (let row of this.table.getRows())
+      {
+         let ticketId = row.getData().ticketId;
+         this.setPriority(ticketId, priority++);
+      }
+   }
+
+   onRaisePriorityButton(ticketId)
+   {
+         // AJAX call to delete the component.
+         let requestUrl = `/app/page/maintenanceTicket/?request=prioritize&ticketId=${ticketId}&raisePriority=true`;
+         
+         ajaxRequest(requestUrl, function(response) {
+            if (response.success == true)
+            {
+               this.onFilterUpdate();
+            }
+            else
+            {
+               console.log(response.error);
+            }
+         }.bind(this));
+   }
       
    // **************************************************************************
       
@@ -296,6 +502,50 @@ class MaintenanceTicket
             // Handle error loading data
          });
       }
+   }
+
+   validateRequestForm()
+   {
+      return (true);
+   }
+
+   setPriority(ticketId, priority)
+   {
+      // AJAX call to delete the component.
+      let requestUrl = `/app/page/maintenanceTicket/?request=set_priority&ticketId=${ticketId}&priority=${priority}`;
+      
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            //  No action.
+         }
+         else
+         {
+            console.log(response.error);
+         }
+      }.bind(this));
+   }
+
+   sortTable()
+   {
+      if (document.getElementById(MaintenanceTicket.PageElements.ACTIVE_TICKETS_INPUT).checked)
+      {
+         this.table.setSort([{column:"priority", dir:"asc"}]);
+      }
+      else
+      {
+         this.table.setSort([{column:"ticketId", dir:"desc"}]);
+      }
+   }
+
+   showActionPanel(actionLabel, ticketId, apiCommand)
+   {
+      document.getElementById(MaintenanceTicket.PageElements.ACTION_PANEL_TITLE).innerHTML = actionLabel;
+      
+      this.ticketId = ticketId;
+      this.apiCommand = apiCommand;
+
+      showModal(MaintenanceTicket.PageElements.ACTION_PANEL, "block");
    }
    
    // **************************************************************************

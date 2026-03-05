@@ -48,6 +48,6 @@ $filterEndDate = getFilterDate(Session::MAINTENANCE_TICKET_END_DATE);
 $newButtonLabel = "New ticket";
 $reportFileName = "maintenanceTickets.csv";
 
-include ROOT.'/templates/tablePageTemplate.php'
+include ROOT.'/templates/maintenanceTicketsPageTemplate.php'
       
 ?>

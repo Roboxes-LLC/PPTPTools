@@ -45,19 +45,20 @@ abstract class MaintenanceTicketStatus
    const UNKNOWN = 0;
    const FIRST = 1;
    const REPORTED = MaintenanceTicketStatus::FIRST;
-   const ACKNOWLEDGED = 2;
-   const UNDER_REPAIR = 3;
-   const REPAIRED = 4;
-   const CONFIRMED = 5;
-   const CLOSED = 6;
-   const LAST = 7;
+   const ASSIGNED = 2;
+   const ACKNOWLEDGED = 3;
+   const UNDER_REPAIR = 4;
+   const REPAIRED = 5;
+   const CONFIRMED = 6;
+   const CLOSED = 7;
+   const LAST = 8;
    const COUNT = MaintenanceTicketStatus::LAST - MaintenanceTicketStatus::FIRST;
 
-   public static $values = array(MaintenanceTicketStatus::REPORTED, MaintenanceTicketStatus::ACKNOWLEDGED, MaintenanceTicketStatus::UNDER_REPAIR, MaintenanceTicketStatus::REPAIRED, MaintenanceTicketStatus::CONFIRMED, MaintenanceTicketStatus::CLOSED);
+   public static $values = array(MaintenanceTicketStatus::REPORTED, MaintenanceTicketStatus::ASSIGNED, MaintenanceTicketStatus::ACKNOWLEDGED, MaintenanceTicketStatus::UNDER_REPAIR, MaintenanceTicketStatus::REPAIRED, MaintenanceTicketStatus::CONFIRMED, MaintenanceTicketStatus::CLOSED);
 
    public static function getLabel($status)
    {
-      $labels = array("", "Reported", "Acknowledged", "Under Repair", "Repaired", "Confirmed", "Closed");
+      $labels = array("", "Reported", "Assigned", "Acknowledged", "Under Repair", "Repaired", "Confirmed", "Closed");
 
       return ($labels[$status]);
    }
@@ -86,7 +87,7 @@ abstract class MaintenanceTicketStatus
    public static function getJavascript($enumName)
    {
       // Note: Keep synced with enum.
-      $varNames = array("UNKNOWN", "REPORTED", "ACKNOWLEDGED", "UNDER_REPAIR", "REPAIRED", "CONFIRMED", "CLOSED");
+      $varNames = array("UNKNOWN", "REPORTED", "ASSIGNED", "ACKNOWLEDGED", "UNDER_REPAIR", "REPAIRED", "CONFIRMED", "CLOSED");
       
       $html = "$enumName = {";
       
@@ -102,6 +103,50 @@ abstract class MaintenanceTicketStatus
       
       return ($html);
    } 
+}
+
+abstract class MaintenanceTicketAction
+{
+   const UNKNOWN = 0;
+   const FIRST = 1;
+   const REPORT = MaintenanceTicketAction::FIRST;
+   const ASSIGN = 2;
+   const ACKNOWLEDGE = 3;
+   const BEGIN_REPAIR = 4;
+   const COMPLETE_REPAIR = 5;
+   const CONFIRM = 6;
+   const CLOSE = 7;
+   const LAST = 8;
+   const COUNT = MaintenanceTicketAction::LAST - MaintenanceTicketAction::FIRST;
+
+   public static $values = array(MaintenanceTicketAction::REPORT, MaintenanceTicketAction::ASSIGN, MaintenanceTicketAction::ACKNOWLEDGE, MaintenanceTicketAction::BEGIN_REPAIR, MaintenanceTicketAction::COMPLETE_REPAIR, MaintenanceTicketAction::CONFIRM, MaintenanceTicketAction::CLOSE);
+
+   public static function getLabel($action)
+   {
+      $labels = array("", "Report", "Assign", "Acknowledge", "Begin Repair", "Complete Repair", "Confirm", "Close");
+
+      return ($labels[$action]);
+   }
+
+   public static function getApiCommand($action)
+   {
+      $commands = array("", "report", "assign", "acknowledge", "begin_repair", "complete_repair", "confirm", "close");
+
+      return ($commands[$action]);
+   }
+
+   public static function getNextAction($status)
+   {
+      $action = MaintenanceTicketAction::UNKNOWN;
+
+      if (($status >= MaintenanceTicketStatus::UNKNOWN) &&
+          ($status < MaintenanceTicketStatus::CLOSED))
+      {
+         $action = MaintenanceTicketAction::$values[$status];
+      }
+
+      return ($action);
+   }
 }
 
 ?>

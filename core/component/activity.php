@@ -441,6 +441,122 @@ class Activity
             $description = "$authorUsername: \"$comments\"";
             break;
          }
+
+         case ActivityType::ADD_MAINTENANCE_TICKET:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername reported maintenance ticket $correctiveActionNumber";
+            break;
+         }
+            
+         case ActivityType::EDIT_MAINTENANCE_TICKET:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername edited maintenance ticket $maintenanceTicketNumber";
+            break;
+         }
+            
+         case ActivityType::DELETE_MAINTENANCE_TICKET:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername deleted maintenance ticket $maintenanceTicketNumber";
+            break;
+         }
+
+         case ActivityType::ADD_MAINTENANCE_TICKET_ATTACHMENT:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            
+            $filename = $this->objects[2];
+            if (strlen($filename) > Activity::MAX_FILENAME_LENGTH)
+            {
+               // Turn "toolongfilename.txt" into "tool...txt".
+               $filename = substr($filename, 0, (Activity::MAX_FILENAME_LENGTH - 6)) .  // first 4 characters
+               "..." .                                                      // ellipses
+               substr($filename, -3);                                       // extension
+            }
+            
+            $description = "User $authorUsername attached \"$filename\" to maintenance ticket $maintenanceTicketNumber";
+            break;
+         }
+            
+         case ActivityType::DELETE_MAINTENANCE_TICKET_ATTACHMENT:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            
+            $filename = $this->objects[2];
+            if (strlen($filename) > Activity::MAX_FILENAME_LENGTH)
+            {
+               // Turn "toolongfilename.txt" into "tool...txt".
+               $filename = substr($filename, 0, (Activity::MAX_FILENAME_LENGTH - 6)) .  // first 4 characters
+               "..." .                                                      // ellipses
+               substr($filename, -3);                                       // extension
+            }
+            
+            $description = "User $authorUsername removed \"$filename\" from maintenance ticket $maintenanceTicketNumber";
+            break;
+         }
+         
+         case ActivityType::ASSIGN_MAINTENANCE_TICKET:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            $assignedUsername = UserInfo::getLink(intval($this->objects[1]));
+            
+            $description = "User $authorUsername assigned maintenance ticket $maintenanceTicketNumber to $assignedUsername";
+            break;
+         }
+            
+         case ActivityType::ACKNOWLEDGE_MAINTENANCE_TICKET:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername acknowledged $maintenanceTicketNumber";
+            break;
+         }
+
+         case ActivityType::BEGIN_REPAIR:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername began repair for maintenance ticket $maintenanceTicketNumber";
+            break;
+         }
+
+         case ActivityType::COMPLETE_REPAIR:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername completed repair for maintenance ticket $maintenanceTicketNumber";
+            break;
+         }
+
+         case ActivityType::CONFIRM_REPAIR:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername confirmed the repair for maintenance ticket $maintenanceTicketNumber";
+            break;
+         }
+
+         case ActivityType::CLOSE_MAINTENANCE_TICKET:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername closed maintenance ticket $maintenanceTicketNumber";
+            break;
+         }
+         
+         case ActivityType::ANNOTATE_MAINTENANCE_TICKET:
+         {
+            $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
+            $comments = $this->objects[1];
+            
+            $description = "$authorUsername: \"$comments\"";
+            break;
+         }
             
          default:
          {

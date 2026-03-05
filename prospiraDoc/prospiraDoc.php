@@ -52,6 +52,7 @@ function getProspiraDoc()
       else
       {
          $prospiraDoc = new ProspiraDoc();
+         $prospiraDoc->serialNumber = ProspiraDocManager::getNextSerialNumber();
       }
    }
    
