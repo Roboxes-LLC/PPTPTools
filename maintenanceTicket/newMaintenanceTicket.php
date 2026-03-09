@@ -92,11 +92,12 @@ HEREDOC;
 function getForm()
 {   
    $posted = Time::toJavascriptDate(Time::now());
+   $occured = Time::toJavascriptDate(Time::now());
    $author = Authentication::getAuthenticatedUser()->employeeNumber;
    $authorName = getAuthorName();
    $jobNumberOptions = JobManager::getJobNumberOptions(getJobNumber(), true);
    $wcNumberOptions = $wcNumberOptions = JobInfo::getWcNumberOptions(getJobNumber(), getWcNumber());
-   $assignedOptions = UserManager::getOptions([Role::MAINTENANCE], [], null);
+   $assignedOptions = UserManager::getOptions([Role::MAINTENANCE, Role::OPERATOR], [], null);
    $machineStateOptions = MachineState::getOptions(MachineState::UNKNOWN);
    $descriptionInputs = getDescriptionInputs();
    
@@ -116,7 +117,7 @@ function getForm()
 
             <div class="form-item" style="margin-right: 25px">
                <div class="form-label">Occured</div>
-               <input type="date" class="form-input-medium" name="occured">
+               <input type="date" class="form-input-medium" name="occured" value="$occured">
             </div>
 
             <div class="form-item">

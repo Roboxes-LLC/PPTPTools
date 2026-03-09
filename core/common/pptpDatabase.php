@@ -1978,9 +1978,15 @@ class PPTPDatabaseAlt extends PDODatabase
       $dateField = "posted";
       switch ($dateType)
       {
-         case FilterDateType::OCCURANCE_DATE:
+         case FilterDateType::POSTED_DATE:
          {
             $dateField = "posted";
+            break;
+         }
+
+         case FilterDateType::OCCURANCE_DATE:
+         {
+            $dateField = "occured";
             break;
          }
 
@@ -1991,8 +1997,8 @@ class PPTPDatabaseAlt extends PDODatabase
          }
       }
       
-      $startDate = $startDate ? Time::dateTimeObject($startDate)->format(Time::MYSQL_DATE_FORMAT) : null;
-      $endDate = $endDate ? Time::dateTimeObject($endDate)->format(Time::MYSQL_DATE_FORMAT) : null;
+      $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
+      $endDate = $endDate ? Time::toMySqlDate(Time::endOfDay($endDate)) : null;
       
       $dateClause = ($startDate && $endDate && !$allActive) ? "($dateField BETWEEN '$startDate' AND '$endDate')" : "TRUE";
       $statusClause = (!$allActive) ? "TRUE" : "(status != " . MaintenanceTicketStatus::CLOSED . ")";
