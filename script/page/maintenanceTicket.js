@@ -23,6 +23,7 @@ class MaintenanceTicket
       "START_DATE_INPUT":     "start-date-input",
       "END_DATE_INPUT":       "end-date-input",
       "ACTIVE_TICKETS_INPUT": "active-tickets-input",
+      "DATE_TYPE_INPUT":      "date-type-input",
       "TICKET_ID_INPUT":      "doc-id-input",
       "DESCRIPTION_INPUT":    "description-input",
       "DESCRIPTION_OPTION_INPUT": "description-option-input",
@@ -70,6 +71,13 @@ class MaintenanceTicket
       {
          document.getElementById(MaintenanceTicket.PageElements.ACTIVE_TICKETS_INPUT).addEventListener('change', function() {
             this.onActiveTicketsChanged();
+         }.bind(this));
+      }
+
+      if (document.getElementById(MaintenanceTicket.PageElements.DATE_TYPE_INPUT) != null)
+      {
+         document.getElementById(MaintenanceTicket.PageElements.DATE_TYPE_INPUT).addEventListener('change', function() {
+            this.onDateTypeChanged();
          }.bind(this));
       }
       
@@ -174,8 +182,8 @@ class MaintenanceTicket
             {                           field:"ticketId",           visible:false},
             {                           field:"priority",           visible:false},
             {title:"Ticket #",          field:"ticketNumber",       headerFilter:true},
-            {title:"Posted Date",       field:"formattedDate",      headerFilter:true},
-            {title:"Posted Time",       field:"formattedTime",      headerFilter:true},
+            {title:"Occured",           field:"formattedOccured",   headerFilter:true},
+            {title:"Posted",            field:"formattedDate",      headerFilter:true},
             {title:"Posted By",         field:"authorName",         headerFilter:true},
             {title:"Status",            field:"statusLabel",        headerFilter:true}, 
             {title:"WC #",              field:"wcLabel",            headerFilter:true},
@@ -281,11 +289,13 @@ class MaintenanceTicket
       {
          disable(MaintenanceTicket.PageElements.START_DATE_INPUT);
          disable(MaintenanceTicket.PageElements.END_DATE_INPUT);
+         disable(MaintenanceTicket.PageElements.DATE_TYPE_INPUT);
       }
       else
       {
          enable(MaintenanceTicket.PageElements.START_DATE_INPUT);
          enable(MaintenanceTicket.PageElements.END_DATE_INPUT);
+         enable(MaintenanceTicket.PageElements.DATE_TYPE_INPUT);
       }
       
       this.onFilterUpdate();
@@ -293,6 +303,13 @@ class MaintenanceTicket
       this.sortTable();
       
       setSession("maintenanceTicket.activeTickets", (activeTickets ? "true" : "false"));
+   }
+
+   onDateTypeChanged()
+   {
+      this.onFilterUpdate();
+      
+      setSession("maintenanceTicket.dateType", document.getElementById(MaintenanceTicket.PageElements.DATE_TYPE_INPUT).value);
    }
             
    onAddButton()
@@ -470,6 +487,8 @@ class MaintenanceTicket
       params.startDate =  document.getElementById(MaintenanceTicket.PageElements.START_DATE_INPUT).value;   
 
       params.endDate =  document.getElementById(MaintenanceTicket.PageElements.END_DATE_INPUT).value;
+
+      params.dateType =  document.getElementById(MaintenanceTicket.PageElements.DATE_TYPE_INPUT).value;
 
       if (document.getElementById(MaintenanceTicket.PageElements.ACTIVE_TICKETS_INPUT).checked)
       {

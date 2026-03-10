@@ -6,11 +6,11 @@ require_once ROOT.'/core/common/pptpDatabase.php';
 
 class MaintenanceTicketManager
 {
-   public static function getMaintenanceTickets($startDate = null, $endDate = null, $allActive = false)
+   public static function getMaintenanceTickets($dateType, $startDate = null, $endDate = null, $allActive = false)
    {
       $maintenanceTickets = array();
       
-      $result = PPTPDatabaseAlt::getInstance()->getMaintenanceTickets(FilterDateType::OCCURANCE_DATE, $startDate, $endDate, $allActive);
+      $result = PPTPDatabaseAlt::getInstance()->getMaintenanceTickets($dateType, $startDate, $endDate, $allActive);
       
       foreach ($result as $row)
       {
@@ -44,7 +44,7 @@ class MaintenanceTicketManager
    {
       $nextPriority = 0;
 
-      $maintenanceTickets = MaintenanceTicketManager::getMaintenanceTickets(null, null, true);
+      $maintenanceTickets = MaintenanceTicketManager::getMaintenanceTickets(FilterDateType::POSTED_DATE, null, null, true);
 
       usort($maintenanceTickets, [MaintenanceTicketManager::class, "priorityComparator"]);
 

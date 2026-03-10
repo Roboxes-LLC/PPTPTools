@@ -22,7 +22,7 @@ require_once ROOT.'/app/page/userPage.php';
 session_start();
 
 $router = new Router();
-$router->setLogging(false);
+$router->setLogging(true);
 
 $router->add("audit", function($params) {
    (new AuditPage())->handleRequest($params);

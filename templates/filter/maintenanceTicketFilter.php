@@ -7,6 +7,10 @@ Required PHP variables:
 
 <div class="flex-horizontal flex-top flex-left">
    <div class="input-group">
+      <select id="date-type-input"><?php echo FilterDateType::getOptions([FilterDateType::POSTED_DATE, FilterDateType::OCCURANCE_DATE], $filterDateType) ?></select>
+   </div>
+   &nbsp;&nbsp;&nbsp;
+   <div class="input-group">
       <label>Start</label>
       <input id="start-date-input" type="date" value="<?php echo $filterStartDate ?>">
    </div>

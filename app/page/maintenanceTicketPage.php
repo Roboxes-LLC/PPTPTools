@@ -442,46 +442,52 @@ class MaintenanceTicketPage extends Page
                // Fetch all components.
                else
                {
-                   $dateTime = Time::dateTimeObject(null);
-                   
-                   $endDate = Time::endOfDay($dateTime->format(Time::STANDARD_FORMAT));
-                   $startDate = Time::startofDay($dateTime->modify("-1 month")->format(Time::STANDARD_FORMAT));
-                   $activeTickets = false;
-                   $prioritySort = false;
-                   
-                   if (isset($params["startDate"]))
-                   {
-                      $startDate = Time::startOfDay($params["startDate"]);
-                   }
-                   
-                   if (isset($params["endDate"]))
-                   {
-                      $endDate = Time::endOfDay($params["endDate"]);
-                   }
-                   
-                   if (isset($params["activeTickets"]))
-                   {
-                      $activeTickets = $params->getBool("activeTickets");
-                   }      
-                   
-                   if (isset($params["prioritySort"]))
-                   {
-                      $prioritySort = $params->getBool("prioritySort");
-                   } 
-                   
-                   $this->result->success = true;
-                   $this->result->maintenanceTickets = MaintenanceTicketManager::getMaintenanceTickets($startDate, $endDate, $activeTickets);
+                  $dateTime = Time::dateTimeObject(null);
 
-                   if ($prioritySort)
-                   {
-                     usort($this->result->maintenanceTickets, [MaintenanceTicketManager::class, "priorityComparator"]);
-                   }
-                   
-                   // Augment data.
-                   foreach ($this->result->maintenanceTickets as $maintenanceTicket)
-                   {
-                      MaintenanceTicketPage::augmentTicket($maintenanceTicket);
-                   }
+                  $endDate = Time::endOfDay($dateTime->format(Time::STANDARD_FORMAT));
+                  $startDate = Time::startofDay($dateTime->modify("-1 month")->format(Time::STANDARD_FORMAT));
+                  $dateType = FilterDateType::POSTED_DATE;
+                  $activeTickets = false;
+                  $prioritySort = false;
+
+                  if (isset($params["startDate"]))
+                  {
+                     $startDate = Time::startOfDay($params["startDate"]);
+                  }
+
+                  if (isset($params["endDate"]))
+                  {
+                     $endDate = Time::endOfDay($params["endDate"]);
+                  }
+
+                  if (isset($params["dateType"]))
+                  {
+                     $dateType = $params->getInt("dateType");
+                  }
+
+                  if (isset($params["activeTickets"]))
+                  {
+                     $activeTickets = $params->getBool("activeTickets");
+                  }      
+
+                  if (isset($params["prioritySort"]))
+                  {
+                     $prioritySort = $params->getBool("prioritySort");
+                  } 
+
+                  $this->result->success = true;
+                  $this->result->maintenanceTickets = MaintenanceTicketManager::getMaintenanceTickets($dateType, $startDate, $endDate, $activeTickets);
+
+                  if ($prioritySort)
+                  {
+                  usort($this->result->maintenanceTickets, [MaintenanceTicketManager::class, "priorityComparator"]);
+                  }
+
+                  // Augment data.
+                  foreach ($this->result->maintenanceTickets as $maintenanceTicket)
+                  {
+                     MaintenanceTicketPage::augmentTicket($maintenanceTicket);
+                  }
                }
                break;
             }
@@ -515,6 +521,8 @@ class MaintenanceTicketPage extends Page
       
       $maintenanceTicket->formattedDate = ($maintenanceTicket->posted) ? Time::dateTimeObject($maintenanceTicket->posted)->format("n/j/Y") : null;
       $maintenanceTicket->formattedTime = ($maintenanceTicket->posted) ? Time::dateTimeObject($maintenanceTicket->posted)->format("h:i A") : null;
+
+      $maintenanceTicket->formattedOccured = ($maintenanceTicket->occured) ? Time::dateTimeObject($maintenanceTicket->occured)->format("n/j/Y") : null;
 
       $userInfo = UserInfo::load($maintenanceTicket->author);
       $maintenanceTicket->authorName = $userInfo ? $userInfo->getFullName() : "";

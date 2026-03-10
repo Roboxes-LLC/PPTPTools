@@ -35,6 +35,7 @@ class Session
    const MAINTENANCE_TICKET_START_DATE = "maintenanceTicket.startDate";
    const MAINTENANCE_TICKET_END_DATE = "maintenanceTicket.endDate";
    const MAINTENANCE_TICKET_ACTIVE_TICKETS = "maintenanceTicket.activeTickets";
+   const MAINTENANCE_TICKET_DATE_TYPE = "maintenanceTicket.dateType";
       
    public static function isset($key)
    {
