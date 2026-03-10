@@ -498,7 +498,7 @@ class PPTPDatabase extends MySqlDatabase
 
       $query =
       "UPDATE user " .
-      "SET username = '$userInfo->username', password = '$userInfo->password', roles = '$userInfo->roles', permissions = '$userInfo->permissions', firstName = '$userInfo->firstName', lastName = '$userInfo->lastName', email = '$userInfo->email', authToken = '$userInfo->authToken', defaultShiftHours = '$userInfo->defaultShiftHours', notifications = $userInfo->notifications, $deleted " .
+      "SET username = '$userInfo->username', password = '$userInfo->password', roles = '$userInfo->roles', permissions = '$userInfo->permissions', firstName = '$userInfo->firstName', lastName = '$userInfo->lastName', email = '$userInfo->email', authToken = '$userInfo->authToken', defaultShiftHours = '$userInfo->defaultShiftHours', notifications = $userInfo->notifications, deleted = $deleted " .
       "WHERE employeeNumber = '$userInfo->employeeNumber';";
       
       $result = $this->query($query);

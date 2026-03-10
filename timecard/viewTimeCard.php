@@ -29,7 +29,8 @@ abstract class TimeCardInputField
    const PART_COUNT = 10;
    const SCRAP_COUNT = 11;
    const COMMENTS = 12;
-   const LAST = 13;
+   const MAINTENANCE_BUTTON = 13;
+   const LAST = 14;
    const COUNT = TimeCardInputField::LAST - TimeCardInputField::FIRST;
 }
 
@@ -97,6 +98,12 @@ function isEditable($field)
          // Edit status determined by job number selection.
          $isEditable &= (getJobNumber() != JobInfo::UNKNOWN_JOB_NUMBER);
          break;
+      }
+
+      case TimeCardInputField::MAINTENANCE_BUTTON:
+      {
+         // Edit status determined by permissions.
+         $isEditable = Authentication::checkPermissions(Permission::EDIT_MAINTENANCE_TICKET);
       }
          
       default:
@@ -707,7 +714,7 @@ if (!Authentication::isAuthenticated())
                
                <div class="form-col">
                   <div class="form-section-header">Maintenance Log</div>
-                  <button id="maintenance-request-button" class="small-button accent-button" style="width:125px; height: 30px; margin-bottom: 15px;">Request Maintenance</button>
+                  <button id="maintenance-request-button" class="small-button accent-button" style="width:125px; height: 30px; margin-bottom: 15px;" <?php echo getDisabled(TimeCardInputField::MAINTENANCE_BUTTON); ?>>Request Maintenance</button>
                   <div class="form-item">
                      <div id="maintenance-log-table"></div>
                   </div>
