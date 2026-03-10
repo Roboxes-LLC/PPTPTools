@@ -141,7 +141,7 @@ if (!Authentication::isAuthenticated())
 
       // Setup event handling on all DOM elements.
       document.getElementById("add-user-button").onclick = function(){location.href = 'viewUser.php';};
-      document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};
+      document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:","})};
       document.getElementById("print-link").onclick = function(){table.print("active", true);};
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
    </script>

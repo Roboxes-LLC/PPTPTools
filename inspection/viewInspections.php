@@ -526,7 +526,7 @@ if (!Authentication::isAuthenticated())
       document.getElementById("today-button").onclick = filterToday;
       document.getElementById("yesterday-button").onclick = filterYesterday;
       document.getElementById("new-inspection-button").onclick = function(){location.href = 'selectInspection.php';};
-      document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:"."})};
+      document.getElementById("download-link").onclick = function(){table.download("csv", "<?php echo getReportFilename() ?>", {delimiter:","})};
       document.getElementById("print-link").onclick = function(){table.print("active", true);};
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
       

@@ -188,8 +188,7 @@ class Shipment
                   
                   if (filename != null)
                   {
-                     var truncatedFilename = (filename.length > 20) ? filename.substr(0, 20) + "..." : filename; 
-                     cellValue = `<a href="${url}" target="_blank">${truncatedFilename}</a>`;
+                     cellValue = `<a href="${url}" target="_blank">${filename}</a>`;
                   }
                   
                   return (cellValue);
@@ -204,8 +203,7 @@ class Shipment
                   
                   if (filename != null)
                   {
-                     var truncatedFilename = (filename.length > 20) ? filename.substr(0, 20) + "..." : filename; 
-                     cellValue = `<a href="${url}" target="_blank">${truncatedFilename}</a>`;
+                     cellValue = `<a href="${url}" target="_blank">${filename}</a>`;
                   }
                   
                   return (cellValue);

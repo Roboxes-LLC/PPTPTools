@@ -191,7 +191,8 @@ $router->add("timeCardData", function($params) {
             {
                $timeCard["setupTimeApprovedByName"] = $userInfo->getFullName();
             }
-            
+
+            $timeCard["comments"] = $timeCardInfo->comments;
             $timeCard["partsTakenEarly"] = $timeCardInfo->hasCommentCode(CommentCode::PARTS_TAKEN_EARLY_CODE_ID);
                      
             $result[] = $timeCard;
@@ -604,17 +605,8 @@ $router->add("deleteUser", function($params) {
       
       if ($userInfo)
       {
-         $dbaseResult = $database->deleteUser($employeeNumber);
-         
-         if ($dbaseResult)
-         {
-            $result->success = true;
-         }
-         else
-         {
-            $result->success = false;
-            $result->error = "Database query failed.";
-         }
+         // Don't actually delete users, as that would invalidate all entered data.
+         UserInfo::markAsDeleted($employeeNumber);
       }
       else
       {

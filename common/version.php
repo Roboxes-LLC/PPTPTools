@@ -1,5 +1,5 @@
 <?php
-$VERSION = "1.79";
+$VERSION = "1.80";
 
 function versionQuery()
 {

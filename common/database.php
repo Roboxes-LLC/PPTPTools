@@ -464,9 +464,13 @@ class PPTPDatabase extends MySqlDatabase
       return ($result);
    }
    
-   public function getUsers()
+   public function getUsers($includeDeleted = false)
    {
-      $query = "SELECT * FROM user ORDER BY firstName ASC;";
+      $deletedClause = $includeDeleted ?
+                          "TRUE" :
+                          "deleted = FALSE";
+
+      $query = "SELECT * FROM user WHERE $deletedClause ORDER BY firstName ASC;";
       
       $result = $this->query($query);
       
@@ -475,11 +479,13 @@ class PPTPDatabase extends MySqlDatabase
       
    public function newUser($userInfo)
    {
+      $deleted = $userInfo->deleted ? 1 : 0;
+
       $query =
       "INSERT INTO user " .
-      "(employeeNumber, username, password, roles, permissions, firstName, lastName, email, authToken, defaultShiftHours, notifications) " .
+      "(employeeNumber, username, password, roles, permissions, firstName, lastName, email, authToken, defaultShiftHours, notifications, deleted) " .
       "VALUES " .
-      "('$userInfo->employeeNumber', '$userInfo->username', '$userInfo->password', '$userInfo->roles', '$userInfo->permissions', '$userInfo->firstName', '$userInfo->lastName', '$userInfo->email', '$userInfo->authToken', '$userInfo->defaultShiftHours', $userInfo->notifications);";
+      "('$userInfo->employeeNumber', '$userInfo->username', '$userInfo->password', '$userInfo->roles', '$userInfo->permissions', '$userInfo->firstName', '$userInfo->lastName', '$userInfo->email', '$userInfo->authToken', '$userInfo->defaultShiftHours', $userInfo->notifications, $deleted);";
  
       $result = $this->query($query);
       
@@ -488,9 +494,11 @@ class PPTPDatabase extends MySqlDatabase
    
    public function updateUser($userInfo)
    {
+      $deleted = $userInfo->deleted ? 1 : 0;
+
       $query =
       "UPDATE user " .
-      "SET username = '$userInfo->username', password = '$userInfo->password', roles = '$userInfo->roles', permissions = '$userInfo->permissions', firstName = '$userInfo->firstName', lastName = '$userInfo->lastName', email = '$userInfo->email', authToken = '$userInfo->authToken', defaultShiftHours = '$userInfo->defaultShiftHours', notifications = $userInfo->notifications " .
+      "SET username = '$userInfo->username', password = '$userInfo->password', roles = '$userInfo->roles', permissions = '$userInfo->permissions', firstName = '$userInfo->firstName', lastName = '$userInfo->lastName', email = '$userInfo->email', authToken = '$userInfo->authToken', defaultShiftHours = '$userInfo->defaultShiftHours', notifications = $userInfo->notifications, $deleted " .
       "WHERE employeeNumber = '$userInfo->employeeNumber';";
       
       $result = $this->query($query);
