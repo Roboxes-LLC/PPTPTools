@@ -25,7 +25,7 @@ Required PHP variables:
    <link rel="stylesheet" type="text/css" href="/css/modal.css<?php echo $versionQuery ?>"/>
    <link rel="stylesheet" type="text/css" href="/css/pinPad.css<?php echo $versionQuery ?>"/>
    
-   <script src="/thirdParty/tabulator/js/tabulator.min.js"></script>
+   <script src="/thirdParty/tabulator/dist/js/tabulator.min.js"></script>
    <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
    
    <script src="/common/common.js<?php echo $versionQuery ?>"></script>

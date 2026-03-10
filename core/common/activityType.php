@@ -43,6 +43,19 @@ abstract class ActivityType
    const APPROVE_CORRECTIVE_ACTION = 34;
    const UNAPPROVE_CORRECTIVE_ACTION = 35;
    const ANNOTATE_CORRECTIVE_ACTION = 36;
+   // Maintenance Ticket
+   const ADD_MAINTENANCE_TICKET = 37;
+   const EDIT_MAINTENANCE_TICKET = 38;
+   const DELETE_MAINTENANCE_TICKET = 39;
+   const ANNOTATE_MAINTENANCE_TICKET = 40;
+   const ADD_MAINTENANCE_TICKET_ATTACHMENT = 41;
+   const DELETE_MAINTENANCE_TICKET_ATTACHMENT = 42;
+   const ASSIGN_MAINTENANCE_TICKET = 43;
+   const ACKNOWLEDGE_MAINTENANCE_TICKET = 44;
+   const BEGIN_REPAIR = 45;
+   const COMPLETE_REPAIR = 46;
+   const CONFIRM_REPAIR = 47;
+   const CLOSE_MAINTENANCE_TICKET = 48;
    //
    const LAST = 37;
    const COUNT = ActivityType::LAST - ActivityType::FIRST;
@@ -63,7 +76,7 @@ abstract class ActivityType
          ActivityType::ANNOTATE_QUOTE,
       );
       
-   public static $correctiveActionActivites =
+   public static $correctiveActionActivities =
       array(
          ActivityType::ADD_CORRECTIVE_ACTION,
          ActivityType::EDIT_CORRECTIVE_ACTION,
@@ -73,6 +86,22 @@ abstract class ActivityType
          ActivityType::APPROVE_CORRECTIVE_ACTION,
          ActivityType::UNAPPROVE_CORRECTIVE_ACTION,
          ActivityType::ANNOTATE_CORRECTIVE_ACTION,
+         ActivityType::ADD_MAINTENANCE_TICKET_ATTACHMENT,
+         ActivityType::DELETE_MAINTENANCE_TICKET_ATTACHMENT
+      );
+
+   public static $maintenanceTicketActivities =
+      array(
+         ActivityType::ADD_MAINTENANCE_TICKET,
+         ActivityType::EDIT_MAINTENANCE_TICKET,
+         ActivityType::DELETE_MAINTENANCE_TICKET,
+         ActivityType::ADD_MAINTENANCE_TICKET_ATTACHMENT,
+         ActivityType::DELETE_MAINTENANCE_TICKET_ATTACHMENT,
+         ActivityType::ASSIGN_MAINTENANCE_TICKET,
+         ActivityType::BEGIN_REPAIR,
+         ActivityType::COMPLETE_REPAIR,
+         ActivityType::CLOSE_MAINTENANCE_TICKET,
+         ActivityType::ANNOTATE_MAINTENANCE_TICKET
       );
       
    public static $activitiesWithNotes =

@@ -72,6 +72,23 @@ class ActivityLog
       
       return ($activities);
    }
+
+   public static function getActivitiesForMaintenanceTicket($ticketId)
+   {
+      $activities = array();
+      
+      $result = PPTPDatabaseAlt::getInstance()->getActivitiesForMaintenanceTicket($ticketId);
+      
+      foreach ($result as $row)
+      {
+         $activity = new Activity();
+         $activity->initialize($row);
+         
+         $activities[] = $activity;
+      }
+      
+      return ($activities);
+   }
       
    public static function logComponentActivity($author, $activityType, $componentId, $componentLabel = null)
    {

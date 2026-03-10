@@ -103,6 +103,11 @@ class ProspiraDocManager
          }
       }
    }
+
+   public static function getNextSerialNumber()
+   {
+      return (PPTPDatabaseAlt::getInstance()->getNextProspiraSerialNumber());
+   }
 }
 
 ?>

@@ -15,7 +15,7 @@ class Action
 
    public $actionId;
    public $componentType;
-   public $componenetId;
+   public $componentId;
    public $status;
    public $dateTime;
    public $userId;

@@ -34,7 +34,8 @@ class AppPage
    const CORRECTIVE_ACTION = 25;
    const AUDIT = 26;
    const PROSPIRA_DOC = 27;
-   const LAST = 28;
+   const MAINTENANCE_TICKET = 28;
+   const LAST = 29;
    
    public $pageId;
    public $label;
@@ -78,8 +79,8 @@ class AppPage
       AppPage::PART,
       AppPage::CORRECTIVE_ACTION,
       AppPage::AUDIT,
-      AppPage::PROSPIRA_DOC
-   );
+      AppPage::PROSPIRA_DOC,
+      AppPage::MAINTENANCE_TICKET);
    
    private static $pages = null;
    
@@ -102,7 +103,7 @@ class AppPage
             AppPage::REPORT =>              new AppPage(AppPage::REPORT,              "Daily",                null,                   Permission::VIEW_REPORT,              "/report/viewDailySummaryReport.php"),
             AppPage::WEEKLY_REPORT =>       new AppPage(AppPage::WEEKLY_REPORT,       "Weekly",               null,                   Permission::VIEW_REPORT,              "/report/viewWeeklySummaryReport.php"),
             AppPage::QUARTERLY_REPORT =>    new AppPage(AppPage::QUARTERLY_REPORT,    "Quarterly",            null,                   Permission::VIEW_REPORT,              "/report/viewQuarterlySummaryReport.php"),
-            AppPage::MAINTENANCE_LOG =>     new AppPage(AppPage::MAINTENANCE_LOG,     "Maintenance Log",      "build",                Permission::VIEW_MAINTENANCE_LOG,     "/maintenanceLog/maintenanceLog.php"),
+            AppPage::MAINTENANCE_LOG =>     new AppPage(AppPage::MAINTENANCE_LOG,     "Log",                  null,                   Permission::VIEW_MAINTENANCE_LOG,     "/maintenanceLog/maintenanceLog.php"),
             AppPage::SHIPPING_CARD =>       new AppPage(AppPage::SHIPPING_CARD,       "Shipping Cards",       "",                     Permission::VIEW_SHIPPING_CARD,       "/shippingCard/viewShippingCards.php"),
             AppPage::CUSTOMER =>            new AppPage(AppPage::CUSTOMER,            "Customers",            null,                   Permission::VIEW_CUSTOMER,            "/customer/customers.php"),
             AppPage::CONTACT =>             new AppPage(AppPage::CONTACT,             "Contacts",             null,                   Permission::VIEW_CUSTOMER,            "/customer/contacts.php"),
@@ -114,7 +115,8 @@ class AppPage
             AppPage::PART =>                new AppPage(AppPage::PART,                "Parts",                null,                   Permission::VIEW_JOB,                 "/part/parts.php"),
             AppPage::CORRECTIVE_ACTION =>   new AppPage(AppPage::CORRECTIVE_ACTION,   "CA Requests",          null,                   Permission::VIEW_CORRECTIVE_ACTION,   "/correctiveAction/correctiveActions.php"),
             AppPage::AUDIT =>               new AppPage(AppPage::AUDIT,               "Audits",               null,                   Permission::VIEW_AUDIT,               "/audit/audits.php"),
-            AppPage::PROSPIRA_DOC =>        new AppPage(AppPage::PROSPIRA_DOC,        "Prospira Docs",        null,                   Permission::VIEW_SHIPMENT,            "/prospiraDoc/prospiraDocs.php")
+            AppPage::PROSPIRA_DOC =>        new AppPage(AppPage::PROSPIRA_DOC,        "Prospira Docs",        null,                   Permission::VIEW_SHIPMENT,            "/prospiraDoc/prospiraDocs.php"),
+            AppPage::MAINTENANCE_TICKET =>  new AppPage(AppPage::MAINTENANCE_TICKET,  "Tickets",              null,                   Permission::VIEW_MAINTENANCE_TICKET,  "/maintenanceTicket/maintenanceTickets.php")
          );
       }
       

@@ -1,0 +1,6 @@
+[submodule "thirdParty/mailin-api-php"]
+	path = thirdParty/mailin-api-php
+	url = https://github.com/mailin-api/mailin-api-php.git
+[submodule "thirdParty/tabulator"]
+	path = thirdParty/tabulator
+	url = https://github.com/olifolkerd/tabulator.git

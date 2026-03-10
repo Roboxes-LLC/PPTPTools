@@ -1,0 +1,81 @@
+@CHARSET "ISO-8859-1";
+
+/* ***** Flexbox ***** */
+
+.flex-horizontal {
+   display: flex;
+   flex-direction: row;
+}
+
+.flex-horizontal.stretch {
+   width: 100%;
+}
+
+.flex-vertical {
+   display: flex;
+   flex-direction: column;
+}
+
+.flex-vertical.stretch {
+   height: 100%;
+}
+
+.flex-horizontal.flex-h-center {
+   justify-content: center;
+}
+
+.flex-horizontal.flex-v-center {
+   align-items: center;
+}
+
+.flex-horizontal.flex-left {
+   justify-content: flex-start;
+}
+
+.flex-horizontal.flex-right {
+   justify-content: flex-end;
+}
+
+.flex-horizontal.flex-top {
+   align-items: flex-start;
+}
+
+.flex-horizontal.flex-bottom {
+   align-items: flex-end;
+}
+
+.flex-vertical.flex-h-center {
+   align-items: center;
+}
+
+.flex-vertical.flex-v-center {
+   justify-content: center;
+}
+
+.flex-vertical.flex-left {
+   align-items: flex-start;
+}
+
+.flex-vertical.flex-right {
+   align-items: flex-end;
+}
+
+.flex-vertical.flex-top {
+   justify-content: flex-start;
+}
+
+.flex-vertical.flex-bottom {
+   justify-content: flex-end;
+}
+
+.flex-stretch {
+   align-items: stretch;
+}
+
+.flex-space-between {
+	justify-content: space-between;
+}
+
+.flex-wrap {
+   flex-wrap: wrap;
+}

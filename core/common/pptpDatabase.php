@@ -2,6 +2,7 @@
 
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/common/time.php';
+require_once ROOT.'/core/common/activityType.php';
 require_once ROOT.'/core/common/database.php';
 
 class PPTPDatabaseAlt extends PDODatabase
@@ -121,7 +122,7 @@ class PPTPDatabaseAlt extends PDODatabase
       $order = $orderAscending ? "ASC" : "DESC";
       
       $questionMarks = array();
-      for ($i = 0; $i < count(ActivityType::$correctiveActionActivites); $i++)
+      for ($i = 0; $i < count(ActivityType::$correctiveActionActivities); $i++)
       {
          $questionMarks[] = "?";
       }
@@ -133,13 +134,37 @@ class PPTPDatabaseAlt extends PDODatabase
          "ORDER BY dateTime $order;");
       
       $params = [$correctiveActionId];
-      $params = array_merge($params, ActivityType::$correctiveActionActivites);
+      $params = array_merge($params, ActivityType::$correctiveActionActivities);
       
       $result = $statement->execute($params) ? $statement->fetchAll() : null;
       
       return ($result);
    }
-   
+
+   public function getActivitiesForMaintenanceTicket($ticketId, $orderAscending = true)
+   {
+      $order = $orderAscending ? "ASC" : "DESC";
+      
+      $questionMarks = array();
+      for ($i = 0; $i < count(ActivityType::$maintenanceTicketActivities); $i++)
+      {
+         $questionMarks[] = "?";
+      }
+      $activityList = "(" . implode(", ", $questionMarks) . ")";
+      
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM activity " .
+         "WHERE object_0 = ? AND activityType IN $activityList " .
+         "ORDER BY dateTime $order;");
+      
+      $params = [$ticketId];
+      $params = array_merge($params, ActivityType::$maintenanceTicketActivities);
+      
+      $result = $statement->execute($params) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+
    public function addActivity($activity)
    {
       $statement = $this->pdo->prepare(
@@ -1539,7 +1564,7 @@ class PPTPDatabaseAlt extends PDODatabase
    public function addAction($action)
    {
       $dateTime = ($action->dateTime) ?
-      Time::toMySqlDate($action->dateTime) :
+                     Time::toMySqlDate($action->dateTime) :
                      null;
       
       $statement = $this->pdo->prepare(
@@ -1920,6 +1945,165 @@ class PPTPDatabaseAlt extends PDODatabase
       $statement = $this->pdo->prepare("DELETE FROM prospiradoc WHERE docId = ?");
       
       $result = $statement->execute([$docId]);
+      
+      return ($result);
+   }
+
+   public function getNextProspiraSerialNumber()
+   {
+      $statement = $this->pdo->prepare("SELECT MAX(serialNumber) AS lastSerialNumber FROM prospiradoc;");
+
+      $result = $statement->execute([]);
+
+      $nextSerialNumber = $result ? $statement->fetch()["lastSerialNumber"] + 1 : 0;
+
+      return ($nextSerialNumber);
+   }
+
+   // **************************************************************************
+   //                           Maintenance Ticket
+   
+   public function getMaintenanceTicket($ticketId)
+   {
+      $statement = $this->pdo->prepare(
+         "SELECT * FROM maintenanceticket WHERE ticketId = ?;");
+      
+      $result = $statement->execute([$ticketId]) ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function getMaintenanceTickets($dateType, $startDate, $endDate, $allActive)
+   {
+      $dateField = "posted";
+      switch ($dateType)
+      {
+         case FilterDateType::POSTED_DATE:
+         {
+            $dateField = "posted";
+            break;
+         }
+
+         case FilterDateType::OCCURANCE_DATE:
+         {
+            $dateField = "occured";
+            break;
+         }
+
+         // TODO: Add other date filters.
+         default:
+         {
+            break;
+         }
+      }
+      
+      $startDate = $startDate ? Time::toMySqlDate(Time::startOfDay($startDate)) : null;
+      $endDate = $endDate ? Time::toMySqlDate(Time::endOfDay($endDate)) : null;
+      
+      $dateClause = ($startDate && $endDate && !$allActive) ? "($dateField BETWEEN '$startDate' AND '$endDate')" : "TRUE";
+      $statusClause = (!$allActive) ? "TRUE" : "(status != " . MaintenanceTicketStatus::CLOSED . ")";
+      
+      $statement = $this->pdo->prepare("SELECT * FROM maintenanceticket WHERE $dateClause AND $statusClause ORDER BY $dateField ASC;");
+      
+      $result = $statement->execute() ? $statement->fetchAll() : null;
+      
+      return ($result);
+   }
+   
+   public function addMaintenanceTicket($maintenanceTicket)
+   {
+      $postedDateTime = $maintenanceTicket->posted ? Time::toMySqlDate($maintenanceTicket->posted) : null;
+
+      $occuredDateTime = $maintenanceTicket->occured ? Time::toMySqlDate($maintenanceTicket->occured) : null;
+
+      $statement = $this->pdo->prepare(
+         "INSERT INTO maintenanceticket " .
+         "(author, posted, occured, wcNumber, jobNumber, machineState, description, details, assigned, status, priority) " .
+         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+      $result = $statement->execute(
+         [
+            $maintenanceTicket->author,
+            $postedDateTime,
+            $occuredDateTime,
+            $maintenanceTicket->wcNumber,
+            $maintenanceTicket->jobNumber,
+            $maintenanceTicket->machineState,
+            $maintenanceTicket->description,
+            $maintenanceTicket->details,
+            $maintenanceTicket->assigned,
+            $maintenanceTicket->status,
+            $maintenanceTicket->priority
+         ]);
+      
+      return ($result);
+   }
+   
+   public function updateMaintenanceTicket($maintenanceTicket)
+   {
+      $postedDateTime = $maintenanceTicket->posted ? Time::toMySqlDate($maintenanceTicket->posted) : null;
+
+      $occuredDateTime = $maintenanceTicket->occured ? Time::toMySqlDate($maintenanceTicket->occured) : null;
+
+      $statement = $this->pdo->prepare(
+         "UPDATE maintenanceticket " .
+         "SET author = ?, posted = ?, occured = ?, wcNumber = ?, jobNumber = ?, machineState = ?, description = ?, details = ?, assigned = ?, status = ?, priority = ? " .
+         "WHERE ticketId = ?");
+      
+      $result = $statement->execute(
+         [
+            $maintenanceTicket->author,
+            $postedDateTime,
+            $occuredDateTime,
+            $maintenanceTicket->wcNumber,
+            $maintenanceTicket->jobNumber,
+            $maintenanceTicket->machineState,
+            $maintenanceTicket->description,
+            $maintenanceTicket->details,
+            $maintenanceTicket->assigned,
+            $maintenanceTicket->status,
+            $maintenanceTicket->priority,
+            $maintenanceTicket->ticketId
+         ]);
+      
+      return ($result);
+   }
+
+   public function updateMaintenanceTicketStatus($ticketId, $status)
+   {
+      $statement = $this->pdo->prepare(
+         "UPDATE maintenanceticket SET status = ? WHERE ticketId = ?");
+      
+      $result = $statement->execute(
+         [
+            $status,
+            $ticketId
+         ]);
+      
+      return ($result);
+   }
+   
+   public function deleteMaintenanceTicket($ticketId)
+   {
+      $statement = $this->pdo->prepare("DELETE FROM maintenanceticket WHERE ticketId = ?");
+      
+      $result = $statement->execute([$ticketId]);
+
+      $statement = $this->pdo->prepare("DELETE FROM action WHERE componentType = ? AND componentId = ?");
+
+      $result = $statement->execute([ComponentType::MAINTENANCE_TICKET, $ticketId]);
+      
+      return ($result);
+   }
+
+   // **************************************************************************
+   //                           Maintenance Description
+
+   public function getMaintenanceDescriptions()
+   {
+      $statement = $this->pdo->prepare("SELECT * FROM maintenancedescription");
+
+      $result = $statement->execute([]) ? $statement->fetchAll() : null;
       
       return ($result);
    }

@@ -108,8 +108,21 @@ $jsonMenu =
          ]
       },
       {
-         "type":"menu-item",
-         "pageId": 14
+         "type":"submenu",
+         "menuId":"maintenance",
+         "label":"Maintenance",
+         "icon":"build",
+         "permissions":57,
+         "menuItems": [
+            {
+               "type":"menu-item",
+               "pageId": 14
+            },
+            {
+               "type":"menu-item",
+               "pageId": 28
+            }
+         ]
       },
       {
          "type":"submenu",

@@ -7,6 +7,7 @@ require_once ROOT.'/core/common/shipmentDefs.php';
 require_once ROOT.'/core/component/audit.php';
 require_once ROOT.'/core/component/contact.php';
 require_once ROOT.'/core/component/customer.php';
+require_once ROOT.'/core/component/prospiraDoc.php';
 require_once ROOT.'/core/component/quote.php';
 require_once ROOT.'/core/component/salesOrder.php';
 require_once ROOT.'/core/component/shipment.php';
@@ -28,6 +29,8 @@ UNKNOWN_SHIPMENT_ID = <?php echo Shipment::UNKNOWN_SHIPMENT_ID ?>;
 UNKNOWN_AUDIT_ID = <?php echo Audit::UNKNOWN_AUDIT_ID ?>;
 
 UNKNOWN_SHIPMENT_LOCATION = <?php echo ShipmentLocation::UNKNOWN ?>;
+
+UNKNOWN_DOC_ID = <?php echo ProspiraDoc::UNKNOWN_DOC_ID ?>;
 
 <?php echo QuoteStatus::getJavascript("QuoteStatus") . "\n" ?>
 

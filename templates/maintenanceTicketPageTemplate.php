@@ -6,13 +6,9 @@ Required PHP variables:
    $appPageId
    $timeline
    $historyPanel
-   $requestPanel
+
    $attachmentsPanel
-   $estimatesPanel
-   $approvePanel
-   $sendPanel
-   $acceptPanel
-   $quoteStatus
+   $status
  -->
 
 <html>
@@ -25,8 +21,8 @@ Required PHP variables:
    
    <link rel="stylesheet" type="text/css" href="/common/theme.css<?php echo $versionQuery ?>"/>
    <link rel="stylesheet" type="text/css" href="/common/common.css<?php echo $versionQuery ?>"/>
+   <link rel="stylesheet" type="text/css" href="/css/correctiveAction.css<?php echo $versionQuery ?>"/>
    <link rel="stylesheet" type="text/css" href="/css/modal.css<?php echo $versionQuery ?>"/>
-   <link rel="stylesheet" type="text/css" href="/css/pinPad.css<?php echo $versionQuery ?>"/>
    
    <script src="/thirdParty/tabulator/dist/js/tabulator.min.js"></script>
    <script src="/thirdParty/luxon/luxon.min.js<?php echo versionQuery();?>"></script>
@@ -35,8 +31,7 @@ Required PHP variables:
    <script src="/script/common/common.js<?php echo $versionQuery ?>"></script>
    <script src="/script/common/commonDefs.php<?php echo $versionQuery ?>"></script>
    <script src="/script/common/menu.js<?php echo $versionQuery ?>"></script>
-   <script src="/script/common/modal.js<?php echo $versionQuery ?>"></script>
-   <script src="/script/common/pinPad.js<?php echo $versionQuery ?>"></script>   
+   <script src="/script/common/validator.js<?php echo $versionQuery ?>"></script>
    <script src="/script/page/<?php echo $javascriptFile ?>"></script>
       
 </head>
@@ -64,20 +59,12 @@ Required PHP variables:
             
             <div class="flex-vertical">
                <?php echo $requestPanel ?>
-               
-               <?php echo $attachmentsPanel ?>
-               
-               <?php echo $estimatesPanel ?>
-               
-               <?php echo $approvePanel ?>
-               
-               <?php echo $sendPanel ?>
-               
-               <?php echo $acceptPanel ?>
             </div>
             
             <div class="flex-vertical flex-top flex-left">
                <?php echo $historyPanel ?>
+               <br><br>
+               <?php echo $attachmentsPanel ?>
             </div>
 
          </div>
@@ -85,16 +72,7 @@ Required PHP variables:
       </div> <!-- content -->
       
    </div> <!-- main -->
-   
-   <div id="pin-confirm-modal" class="modal">
-      <div class="flex-vertical modal-content" style="width:300px;">
-         <?php 
-            $errorMessage = "";
-            include ROOT.'/templates/pinPad.php'
-          ?>
-      </div>    
-   </div>
-   
+     
    <script>
       preserveSession();
    
@@ -102,29 +80,13 @@ Required PHP variables:
       menu.setMenuItemSelected(<?php echo $appPageId ?>);  
          
       var PAGE = new <?php echo $javascriptClass ?>();
-      PAGE.setQuoteStatus(<?php echo $quoteStatus ?>);
+      PAGE.setStatus(<?php echo $status ?>);
 
       // Setup event handling on all DOM elements.
       document.getElementById("help-icon").onclick = function(){document.getElementById("description").classList.toggle('shown');};
 
       // Store the initial state of the form, for change detection.
-      //setInitialFormState(TODO);
-      
-      PINPAD.onPin = function(pin) {
-         var url = "/app/page/user/?request=confirm_pin&confirmPin=" + pin;  // Note: Don't name parameter "pin".  It results in re-authentication.
-         
-         ajaxRequest(url, function(response) {
-            console.log(response);
-            if (response.confirmed)
-            {
-               PAGE.onPinConfirmed();
-            }
-            else
-            {
-               PINPAD.setErrorMessage("Incorrect PIN");
-            }         
-         });
-      }                 
+      //setInitialFormState(TODO);      
       
    </script>
    
