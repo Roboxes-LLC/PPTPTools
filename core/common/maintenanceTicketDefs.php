@@ -147,6 +147,13 @@ abstract class MaintenanceTicketAction
 
       return ($action);
    }
+
+   public static function isPermissable($action, $permissions)
+   {
+      $elevatedActions = array(MaintenanceTicketAction::ASSIGN);
+
+      return (!in_array($action, $elevatedActions) || Permission::getPermission(Permission::MANAGE_MAINTENANCE_TICKET)->isSetIn($permissions));
+   }
 }
 
 ?>

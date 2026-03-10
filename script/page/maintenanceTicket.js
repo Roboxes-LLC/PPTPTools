@@ -201,11 +201,12 @@ class MaintenanceTicket
                formatter:function(cell, formatterParams, onRendered){
                   let cellValue = null;
                   let nextAction = cell.getRow().getData().nextAction;
+                  let hidden = cell.getRow().getData().nextActionPermissable ? "" : "hidden";
                   if (nextAction)
                   {
                      let nextActionLabel = cell.getRow().getData().nextActionLabel;
                      let nextActionApiCommand = cell.getRow().getData().nextActionApiCommand;
-                     cellValue =`<button class=\"small-button accent-button\" style=\"width:100px;\">${nextActionLabel}</button>`;
+                     cellValue =`<button class=\"small-button accent-button\" style=\"width:100px;\" ${hidden}>${nextActionLabel}</button>`;
                   }
                   return (cellValue);
                }
@@ -222,7 +223,8 @@ class MaintenanceTicket
       this.table.on("cellClick", function(e, cell) {
          let ticketId = parseInt(cell.getRow().getData().ticketId);
          
-         if (cell.getColumn().getField() == "action")
+         if ((cell.getColumn().getField() == "action") &&
+             (cell.getRow().getData().nextActionPermissable))
          {
             let actionLabel = cell.getRow().getData().nextActionLabel;
             let apiCommand = cell.getRow().getData().nextActionApiCommand;
@@ -384,6 +386,7 @@ class MaintenanceTicket
          submitForm(MaintenanceTicket.PageElements.UPDATE_FORM, "/app/page/maintenanceTicket", function (response) {
             if (response.success == true)
             {
+               alert("Updated.");
                location.reload();
             }
             else

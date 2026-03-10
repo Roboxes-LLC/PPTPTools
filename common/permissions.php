@@ -62,7 +62,8 @@ class Permission
    const APPLY_AUDIT              = 56;
    const VIEW_MAINTENANCE_TICKET  = 57;
    const EDIT_MAINTENANCE_TICKET  = 58;
-   const LAST                     = Permission::EDIT_MAINTENANCE_TICKET;
+   const MANAGE_MAINTENANCE_TICKET = 59;
+   const LAST                      = Permission::MANAGE_MAINTENANCE_TICKET;
    
    const NO_PERMISSIONS =  0x0000000000000;
    const ALL_PERMISSIONS = 0xFFFFFFFFFFFFF;
@@ -135,7 +136,8 @@ class Permission
                   new Permission(Permission::PERFORM_AUDIT,             "Perform inventory audit"),
                   new Permission(Permission::APPLY_AUDIT,               "Apply inventory audit"),
                   new Permission(Permission::VIEW_MAINTENANCE_TICKET,   "View maintenance tickets"),
-                  new Permission(Permission::EDIT_MAINTENANCE_TICKET,   "Edit maintenance tickets")
+                  new Permission(Permission::EDIT_MAINTENANCE_TICKET,   "Edit maintenance tickets"),
+                  new Permission(Permission::MANAGE_MAINTENANCE_TICKET, "Manage maintenance tickets")
             );
       }
       

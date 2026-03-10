@@ -46,6 +46,9 @@ class MaintenanceTicketPage extends Page
                      
                      if ($maintenanceTicket)
                      {
+                        // Remember previous assignment.
+                        $prevAssigned = $maintenanceTicket->assigned;
+
                         MaintenanceTicketPage::getTicketParams($maintenanceTicket, $params);
                         
                         if (MaintenanceTicket::save($maintenanceTicket))
@@ -58,11 +61,35 @@ class MaintenanceTicketPage extends Page
                            {
                               $maintenanceTicket->report($maintenanceTicket->author, null);
                            }
-                           
-                           ActivityLog::logComponentActivity(
-                              Authentication::getAuthenticatedUser()->employeeNumber,
-                              ($isNew ? ActivityType::ADD_MAINTENANCE_TICKET : ActivityType::EDIT_MAINTENANCE_TICKET),
-                              $maintenanceTicket->ticketId);
+
+                           $isAssigned = ($maintenanceTicket->assigned != $prevAssigned);
+                           if ($isAssigned)
+                           {
+                              $maintenanceTicket->assign(Authentication::getAuthenticatedUser()->employeeNumber, $maintenanceTicket->assigned, null);
+                           }
+
+                           if ($isNew)
+                           {
+                                 ActivityLog::logComponentActivity(
+                                    Authentication::getAuthenticatedUser()->employeeNumber,
+                                    ActivityType::ADD_MAINTENANCE_TICKET,
+                                    $maintenanceTicket->ticketId);
+
+                                 if ($isAssigned)
+                                 {
+                                    ActivityLog::logComponentActivity(
+                                       Authentication::getAuthenticatedUser()->employeeNumber,
+                                       ActivityType::ASSIGN_MAINTENANCE_TICKET,
+                                       $maintenanceTicket->ticketId);
+                                 }
+                           }
+                           else
+                           {
+                              ActivityLog::logComponentActivity(
+                                 Authentication::getAuthenticatedUser()->employeeNumber,
+                                 ($isAssigned ? ActivityType::ASSIGN_MAINTENANCE_TICKET : ActivityType::EDIT_MAINTENANCE_TICKET),
+                                 $maintenanceTicket->ticketId);
+                           }
                         }
                         else
                         {
@@ -76,7 +103,7 @@ class MaintenanceTicketPage extends Page
             
             case "delete_ticket":
             {  
-               if (Page::authenticate([Permission::EDIT_MAINTENANCE_TICKET]))
+               if (Page::authenticate([Permission::MANAGE_MAINTENANCE_TICKET]))
                {
                   if (Page::requireParams($params, ["ticketId"]))
                   {
@@ -107,7 +134,7 @@ class MaintenanceTicketPage extends Page
 
             case "set_priority":
             {
-               if (Page::authenticate([Permission::EDIT_MAINTENANCE_TICKET]))
+               if (Page::authenticate([Permission::MANAGE_MAINTENANCE_TICKET]))
                {
                   if (Page::requireParams($params, ["ticketId", "priority"]))
                   {
@@ -133,7 +160,7 @@ class MaintenanceTicketPage extends Page
 
             case "assign":
             {
-               if (Page::authenticate([Permission::EDIT_MAINTENANCE_TICKET]))
+               if (Page::authenticate([Permission::MANAGE_MAINTENANCE_TICKET]))
                {
                   //if (Page::requireParams($params, ["ticketId", "assigned", "notes"]))
                   {
@@ -294,7 +321,7 @@ class MaintenanceTicketPage extends Page
 
             case "close":
             {
-               if (Page::authenticate([Permission::EDIT_MAINTENANCE_TICKET]))
+               if (Page::authenticate([Permission::MANAGE_MAINTENANCE_TICKET]))
                {
                   if (Page::requireParams($params, ["ticketId", "notes"]))
                   {
@@ -326,27 +353,30 @@ class MaintenanceTicketPage extends Page
 
             case "add_comment":
             {
-               if (Page::requireParams($params, ["ticketId", "comments"]))
+               if (Page::authenticate([Permission::EDIT_MAINTENANCE_TICKET]))
                {
-                  $ticketId = $params->getInt("ticketId");
-                  $comments = $params->get("comments");
-                  
-                  $maintenanceTicket = MaintenanceTicket::load($ticketId);
-                  
-                  if ($maintenanceTicket)
+                  if (Page::requireParams($params, ["ticketId", "comments"]))
                   {
-                     ActivityLog::logComponentActivity(
-                        Authentication::getAuthenticatedUser()->employeeNumber,
-                        ActivityType::ANNOTATE_MAINTENANCE_TICKET,
-                        $maintenanceTicket->ticketId,
-                        $comments);
+                     $ticketId = $params->getInt("ticketId");
+                     $comments = $params->get("comments");
                      
-                     $this->result->ticketId = $maintenanceTicket->ticketId;
-                     $this->result->success = true;
-                  }
-                  else
-                  {
-                     $this->error("Invalid ticket id [$ticketId]");
+                     $maintenanceTicket = MaintenanceTicket::load($ticketId);
+                     
+                     if ($maintenanceTicket)
+                     {
+                        ActivityLog::logComponentActivity(
+                           Authentication::getAuthenticatedUser()->employeeNumber,
+                           ActivityType::ANNOTATE_MAINTENANCE_TICKET,
+                           $maintenanceTicket->ticketId,
+                           $comments);
+                        
+                        $this->result->ticketId = $maintenanceTicket->ticketId;
+                        $this->result->success = true;
+                     }
+                     else
+                     {
+                        $this->error("Invalid ticket id [$ticketId]");
+                     }
                   }
                }
                break;
@@ -354,67 +384,70 @@ class MaintenanceTicketPage extends Page
 
             case "attach_file":
             {
-               if (Page::requireParams($params, ["ticketId", "filename", "description"]))
+               if (Page::authenticate([Permission::EDIT_MAINTENANCE_TICKET]))
                {
-                  if (isset($_FILES["attachment"]) &&
-                           ($_FILES["attachment"]["name"] != ""))
+                  if (Page::requireParams($params, ["ticketId", "filename", "description"]))
                   {
-                     $ticketId = $params->getInt("ticketId");
-                     $file = $_FILES["attachment"];
-                     $filename = $params->get("filename");
-                     $description = $params->get("description");
-                     
-                     // Use the actual filename if an alternate wasn't provided.
-                     if (empty($filename))
+                     if (isset($_FILES["attachment"]) &&
+                              ($_FILES["attachment"]["name"] != ""))
                      {
-                        $filename = $_FILES["attachment"]["name"];
-                     }
-                     
-                     // Constrain the filename to an appropriate size.
-                     $filename = Upload::shortenFilename($filename, Attachment::MAX_FILENAME_SIZE);
-                     
-                     $storedFilename = null;
-                     $uploadStatus = Upload::uploadAttachment($file, $storedFilename);
-                     
-                     switch ($uploadStatus)
-                     {
-                        case UploadStatus::UPLOADED:
+                        $ticketId = $params->getInt("ticketId");
+                        $file = $_FILES["attachment"];
+                        $filename = $params->get("filename");
+                        $description = $params->get("description");
+                        
+                        // Use the actual filename if an alternate wasn't provided.
+                        if (empty($filename))
                         {
-                           $attachment = new Attachment();
-                           $attachment->componentId = $ticketId;
-                           $attachment->componentType = ComponentType::MAINTENANCE_TICKET;
-                           $attachment->filename = $filename;
-                           $attachment->storedFilename = $storedFilename;
-                           $attachment->description = $description;
-                           
-                           if (Attachment::save($attachment))
+                           $filename = $_FILES["attachment"]["name"];
+                        }
+                        
+                        // Constrain the filename to an appropriate size.
+                        $filename = Upload::shortenFilename($filename, Attachment::MAX_FILENAME_SIZE);
+                        
+                        $storedFilename = null;
+                        $uploadStatus = Upload::uploadAttachment($file, $storedFilename);
+                        
+                        switch ($uploadStatus)
+                        {
+                           case UploadStatus::UPLOADED:
                            {
-                              $this->result->success = true;
-                              $this->result->ticketId = $ticketId;
-                              $this->result->attachment = $attachment;
+                              $attachment = new Attachment();
+                              $attachment->componentId = $ticketId;
+                              $attachment->componentType = ComponentType::MAINTENANCE_TICKET;
+                              $attachment->filename = $filename;
+                              $attachment->storedFilename = $storedFilename;
+                              $attachment->description = $description;
                               
-                              ActivityLog::logAddCorrectiveActionAttachment(
-                                 Authentication::getAuthenticatedUser()->employeeNumber,
-                                 $attachment->componentId,
-                                 $attachment->attachmentId,
-                                 $attachment->filename);
+                              if (Attachment::save($attachment))
+                              {
+                                 $this->result->success = true;
+                                 $this->result->ticketId = $ticketId;
+                                 $this->result->attachment = $attachment;
+                                 
+                                 ActivityLog::logAddCorrectiveActionAttachment(
+                                    Authentication::getAuthenticatedUser()->employeeNumber,
+                                    $attachment->componentId,
+                                    $attachment->attachmentId,
+                                    $attachment->filename);
+                              }
+                              else
+                              {
+                                 $this->error("Database error");
+                              }
+                              break;
                            }
-                           else
+                              
+                           default:
                            {
-                              $this->error("Database error");
+                              $this->error("Upload error [" . UploadStatus::toString($uploadStatus) . "]");
                            }
-                           break;
-                        }
-                           
-                        default:
-                        {
-                           $this->error("Upload error [" . UploadStatus::toString($uploadStatus) . "]");
                         }
                      }
-                  }
-                  else
-                  {
-                     $this->error("Failed to upload file");
+                     else
+                     {
+                        $this->error("Failed to upload file");
+                     }
                   }
                }
                break;
@@ -546,6 +579,7 @@ class MaintenanceTicketPage extends Page
       $maintenanceTicket->nextAction = MaintenanceTicketAction::getNextAction($maintenanceTicket->status);
       $maintenanceTicket->nextActionLabel = MaintenanceTicketAction::getLabel($maintenanceTicket->nextAction);
       $maintenanceTicket->nextActionApiCommand = MaintenanceTicketAction::getApiCommand($maintenanceTicket->nextAction);
+      $maintenanceTicket->nextActionPermissable = MaintenanceTicketAction::isPermissable($maintenanceTicket->nextAction, Authentication::getPermissions());
    }
 
    private static function formatResolveTime($resolveTime)

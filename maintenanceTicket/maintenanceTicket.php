@@ -15,33 +15,19 @@ require_once ROOT.'/common/version.php';
 abstract class InputField
 {
    const FIRST = 0;
-   const DESCRIPTION = 3;
-   const POSTED_DATE = 4;
-   const OCCURED_DATE = 4;
-   const EMPLOYEE = 5;
-   const DEFECT_COUNT = 6;
-   const TOTAL_DEFECT_COUNT = 7;
-   const DISPOSITION = 8;
-   const ROOT_CAUSE = 9;
-   const DMR_NUMBER = 10;
-   const INITIATOR = 11;
-   const LOCATION = 12;
-   const MAINTENANCE_TICKET_NUMBER = 12;
-   const ATTACHMENT = 13;   
-   const CORRECTION_DESCRIPTION = 14;
-   const DUE_DATE = 15;
-   const RESPONSIBLE_EMPLOYEE = 16;
-   const RESPONSIBLE_DETAILS = 17;
-   const APPROVE_BUTTON = 18;
-   const REVIEW_DATE = 19;
-   const REVIEWER = 20;
-   const EFFECTIVENESS = 21;
-   const REVIEW_COMMENTS = 22;
-   const ACCEPT_BUTTON = 23;
-   const REJECT_BUTTON = 24;
-   const CLOSE_BUTTON = 25;
-   const REOPEN_BUTTON = 26;
-   const LAST = 27;
+   const MAINTENANCE_TICKET_NUMBER = InputField::FIRST;
+   const OCCURED_DATE = 1;
+   const POSTED_DATE = 2;
+   const AUTHOR = 3;
+   const WC_NUMBER = 4;
+   const JOB_NUMBER = 5;
+   const MACHINE_STATE = 6;
+   const ASSIGNED = 7;
+   const DESCRIPTION = 8;  
+   const DETAILS = 9;     
+   const ATTACHMENT = 10;   
+   const ANNOTATE_BUTTON = 11;
+   const LAST = 12;
    const COUNT = InputField::LAST - InputField::FIRST;
 }
 
@@ -141,18 +127,18 @@ function isEditable($field)
    switch ($field)
    {  
       case InputField::MAINTENANCE_TICKET_NUMBER:
+      case InputField::POSTED_DATE:
+      case InputField::AUTHOR:
       {
          $isEditable = false;
          break;
       }
-      
-      /*
-      case InputField::CUSTOMER_ID:
+
+      case InputField::ASSIGNED:
       {
-         //$isEditable &= (getMaintenanceTicket()->jobId == JobInfo::UNKNOWN_JOB_ID);
+         $isEditable = Authentication::checkPermissions(Permission::MANAGE_MAINTENANCE_TICKET);
          break;
       }
-         */
       
       default:
       {
@@ -231,6 +217,7 @@ function getRequestPanel()
    <div id="request-panel" class="collapsible-panel">
       <form id="update-form" style="display:block">
          <input id="ticket-id-input" type="hidden" name="ticketId" value="$maintenanceTicket->ticketId"/>
+         <input type="hidden" name="assigned" value="$maintenanceTicket->assigned"/>
          <input type="hidden" name="request" value="save_ticket"/>
 
          <div class="flex-horizontal flex-v-center collapsible-panel-header">
@@ -258,45 +245,45 @@ function getRequestPanel()
 
             <div class="form-item">
                <div class="form-label">Posted By</div>
-               <input type="text" value="$authorName" disabled>
+               <input type="text" value="$authorName" {$getDisabled(InputField::AUTHOR)}>
             </div>
 
             <div class="form-item">
                <div class="form-label">Work Center</div>
-               <select name="wcNumber" required>
+               <select name="wcNumber" required {$getDisabled(InputField::WC_NUMBER)}>
                   $wcNumberOptions
                </select>
             </div>
 
             <div class="form-item">
                <div class="form-label">Job</div>
-               <select name="jobNumber">
+               <select name="jobNumber" {$getDisabled(InputField::JOB_NUMBER)}>
                   $jobNumberOptions
                </select>
             </div>
 
             <div class="form-item">
                <div class="form-label">Machine State</div>
-               <select name="machineState" required>
+               <select name="machineState" required {$getDisabled(InputField::MACHINE_STATE)}>
                   $machineStateOptions
                </select>
             </div>
 
             <div class="form-item">
                <div class="form-label">Assigned To</div>
-               <select name="assigned">
+               <select name="assigned" {$getDisabled(InputField::ASSIGNED)}>
                   $assignedOptions
                </select>
             </div>
 
             <div class="form-item">
                <div class="form-label">Description</div>
-               <input id="description-input" type="text" style="width:400px;" name="description" value="$maintenanceTicket->description" required>
+               <input id="description-input" type="text" style="width:400px;" name="description" value="$maintenanceTicket->description" required {$getDisabled(InputField::DESCRIPTION)}>
             </div>
 
             <div class="form-item">
                <div class="form-label">Details</div>
-               <textarea class="details-input" type="text" name="details" rows="4" maxlength="256" style="width:400px">$maintenanceTicket->details</textarea>
+               <textarea class="details-input" type="text" name="details" rows="4" maxlength="256" style="width:400px" {$getDisabled(InputField::DETAILS)}>$maintenanceTicket->details</textarea>
             </div>
 
             <br>
