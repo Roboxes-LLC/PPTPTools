@@ -291,7 +291,8 @@ class CorrectiveActionPage extends Page
                    
                    if ($correctiveAction)
                    {
-                      if ($correctiveAction->status != CorrectiveActionStatus::APPROVED)
+                      if (!(($correctiveAction->status == CorrectiveActionStatus::APPROVED) ||
+                            ($correctiveAction->status == CorrectiveActionStatus::REOPENED)))
                       {
                          $this->error("Incorrect state for review");
                       }
@@ -353,6 +354,48 @@ class CorrectiveActionPage extends Page
                          $this->result->success = true;
                          
                          ActivityLog::logCloseCorrectiveAction(
+                               Authentication::getAuthenticatedUser()->employeeNumber,
+                               $correctiveAction->correctiveActionId,
+                               $correctiveAction->getCorrectiveActionNumber(),
+                               null);
+                      }
+                      else
+                      {
+                         $this->error("Database error");
+                      }
+                   }
+                   else
+                   {
+                      $this->error("Invalid corrective action id [$correctiveActionId]");
+                   }
+                }
+             }
+             break;
+          }
+
+          case "reopen_corrective_action":
+          {
+             if (Page::authenticate([Permission::APPROVE_CORRECTIVE_ACTION]))
+             {
+                if (Page::requireParams($params, ["correctiveActionId"]))
+                {
+                   $correctiveActionId = $params->getInt("correctiveActionId");
+                   
+                   $correctiveAction = CorrectiveAction::load($correctiveActionId);
+                   
+                   if ($correctiveAction)
+                   {
+                      if ($correctiveAction->status != CorrectiveActionStatus::CLOSED)
+                      {
+                         $this->error("Incorrect state for reopening");
+                      }
+                      else if ($correctiveAction->reopen(Time::now(), Authentication::getAuthenticatedUser()->employeeNumber, null))
+                      {
+                         $this->result->correctiveActionId = $correctiveAction->correctiveActionId;
+                         $this->result->correctiveAction = $correctiveAction;
+                         $this->result->success = true;
+                         
+                         ActivityLog::logReopenCorrectiveAction(
                                Authentication::getAuthenticatedUser()->employeeNumber,
                                $correctiveAction->correctiveActionId,
                                $correctiveAction->getCorrectiveActionNumber(),

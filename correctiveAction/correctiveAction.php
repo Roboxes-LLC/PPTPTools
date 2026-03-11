@@ -144,6 +144,12 @@ function isEditable($field)
          $isEditable &= (getCorrectiveAction()->jobId == JobInfo::UNKNOWN_JOB_ID);
          break;
       }
+
+      case InputField::REOPEN_BUTTON:
+      {
+         $isEditable = (getCorrectiveAction()->status == CorrectiveActionStatus::CLOSED);
+         break;
+      }
       
       default:
       {

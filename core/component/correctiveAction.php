@@ -330,6 +330,11 @@ class CorrectiveAction
    {
       return ($this->addAction(CorrectiveActionStatus::CLOSED, $dateTime, $userId, $notes));
    }
+
+   public function reopen($dateTime, $userId, $notes)
+   {
+      return ($this->addAction(CorrectiveActionStatus::REOPENED, $dateTime, $userId, $notes));
+   }
    
    public function addDisposition($disposition)
    {

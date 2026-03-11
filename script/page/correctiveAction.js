@@ -148,6 +148,13 @@ class CorrectiveAction
             this.onCloseButton();
          }.bind(this));
       }
+
+      if (document.getElementById(CorrectiveAction.PageElements.REOPEN_BUTTON) != null)
+      {
+         document.getElementById(CorrectiveAction.PageElements.REOPEN_BUTTON).addEventListener('click', function() {
+            this.onReopenButton();
+         }.bind(this));
+      }
       
       let buttons = document.getElementsByClassName(CorrectiveAction.PageElements.UPDATE_CORRECTION_BUTTON);
       for (let button of buttons)
@@ -864,6 +871,25 @@ class CorrectiveAction
          }
       });
    }
+
+   onReopenButton()
+   {
+      let correctiveActionId = parseInt(get(CorrectiveAction.PageElements.CORRECTIVE_ACTION_ID_INPUT));
+      
+      // AJAX call to compmlete the review.
+      let requestUrl = `/app/page/correctiveAction/?request=reopen_corrective_action&correctiveActionId=${correctiveActionId}`;
+      
+      ajaxRequest(requestUrl, function(response) {
+         if (response.success == true)
+         {
+            location.reload();
+         }
+         else
+         {
+            alert(response.error);
+         }
+      });
+   }
    
    onCommentButton()
    {
@@ -962,6 +988,7 @@ class CorrectiveAction
          }
          
          case CorrectiveActionStatus.APPROVED:
+         case CorrectiveActionStatus.REOPENED:
          {
             this.collapsePanel(CorrectiveAction.PageElements.REQUEST_PANEL);
             this.collapsePanel(CorrectiveAction.PageElements.SHORT_TERM_CORRECTION_PANEL);

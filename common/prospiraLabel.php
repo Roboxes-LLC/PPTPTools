@@ -44,7 +44,7 @@ class ProspiraLabel
 {
    const UNKNOWN_SHIPMENT_TICKET_ID = Shipment::UNKNOWN_SHIPMENT_ID;
    
-   const LABEL_TEMPLATE_FILENAME = ROOT."/prospiraDoc/ProspiraLabelTemplate_8.6.label";
+   const LABEL_TEMPLATE_FILENAME = ROOT."/prospiraDoc/ProspiraLabelTemplate_XL_8.6.label";
    
    const SUPPLIER_NAME = "PGH PRECISION";
    

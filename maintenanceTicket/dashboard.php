@@ -18,6 +18,8 @@ if (!Authentication::isAuthenticated())
    exit;
 }
 
+$versionQuery = versionQuery();
+
 include ROOT.'/templates/maintenanceTicketDashboardTemplate.php'
 
 ?>

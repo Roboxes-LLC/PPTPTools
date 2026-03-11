@@ -157,12 +157,17 @@ class ActivityLog
    
    public static function logReviewCorrectiveAction($author, $componentId, $componentLabel, $notes)
    {
-      //return (ActivityLog::createLogEntry($author, ActivityType::UNAPPROVE_CORRECTIVE_ACTION, array($componentId, $componentLabel, $notes)));
+      return (ActivityLog::createLogEntry($author, ActivityType::REVIEW_CORRECTIVE_ACTION, array($componentId, $componentLabel, $notes)));
    }
    
    public static function logCloseCorrectiveAction($author, $componentId, $componentLabel, $notes)
    {
-      //return (ActivityLog::createLogEntry($author, ActivityType::UNAPPROVE_CORRECTIVE_ACTION, array($componentId, $componentLabel, $notes)));
+      return (ActivityLog::createLogEntry($author, ActivityType::CLOSE_CORRECTIVE_ACTION, array($componentId, $componentLabel, $notes)));
+   }
+
+   public static function logReopenCorrectiveAction($author, $componentId, $componentLabel, $notes)
+   {
+      return (ActivityLog::createLogEntry($author, ActivityType::REOPEN_CORRECTIVE_ACTION, array($componentId, $componentLabel, $notes)));
    }
    
    public static function deleteActivity($activityId)

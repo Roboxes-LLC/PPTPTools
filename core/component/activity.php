@@ -442,11 +442,35 @@ class Activity
             break;
          }
 
+         case ActivityType::REVIEW_CORRECTIVE_ACTION:
+         {
+            $correctiveActionNumber = CorrectiveAction::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername signed off on corrective action request $correctiveActionNumber.";
+            break;
+         }
+
+         case ActivityType::CLOSE_CORRECTIVE_ACTION:
+         {
+            $correctiveActionNumber = CorrectiveAction::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername closed corrective action request $correctiveActionNumber.";
+            break;
+         }
+         
+         case ActivityType::REOPEN_CORRECTIVE_ACTION:
+         {
+            $correctiveActionNumber = CorrectiveAction::getLink(intval($this->objects[0]));
+            
+            $description = "User $authorUsername reopened corrective action request $correctiveActionNumber.";
+            break;
+         }
+
          case ActivityType::ADD_MAINTENANCE_TICKET:
          {
             $maintenanceTicketNumber = MaintenanceTicket::getLink(intval($this->objects[0]));
             
-            $description = "User $authorUsername reported maintenance ticket $correctiveActionNumber";
+            $description = "User $authorUsername reported maintenance ticket $maintenanceTicketNumber";
             break;
          }
             

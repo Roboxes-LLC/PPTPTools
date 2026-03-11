@@ -8,14 +8,15 @@ abstract class CorrectiveActionStatus
    const APPROVED = 2;
    const REVIEWED = 3;
    const CLOSED = 4;
-   const LAST = 5;
+   const REOPENED = 5;
+   const LAST = 6;
    const COUNT = CorrectiveActionStatus::LAST - CorrectiveActionStatus::FIRST;
 
-   public static $values = array(CorrectiveActionStatus::OPEN, CorrectiveActionStatus::APPROVED, CorrectiveActionStatus::REVIEWED, CorrectiveActionStatus::CLOSED);
+   public static $values = array(CorrectiveActionStatus::OPEN, CorrectiveActionStatus::APPROVED, CorrectiveActionStatus::REVIEWED, CorrectiveActionStatus::CLOSED, CorrectiveActionStatus::REOPENED);
 
    public static function getLabel($status)
    {
-      $labels = array("", "Open", "Approved", "Reviewed", "Closed");
+      $labels = array("", "Open", "Approved", "Reviewed", "Closed", "Open");
 
       return ($labels[$status]);
    }
@@ -44,7 +45,7 @@ abstract class CorrectiveActionStatus
    public static function getJavascript($enumName)
    {
       // Note: Keep synced with enum.
-      $varNames = array("UNKNOWN", "OPEN", "APPROVED", "REVIEWED", "CLOSED");
+      $varNames = array("UNKNOWN", "OPEN", "APPROVED", "REVIEWED", "CLOSED", "REOPENED");
       
       $html = "$enumName = {";
       

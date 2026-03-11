@@ -43,21 +43,24 @@ abstract class ActivityType
    const APPROVE_CORRECTIVE_ACTION = 34;
    const UNAPPROVE_CORRECTIVE_ACTION = 35;
    const ANNOTATE_CORRECTIVE_ACTION = 36;
+   const REVIEW_CORRECTIVE_ACTION = 37;
+   const CLOSE_CORRECTIVE_ACTION = 38;
+   const REOPEN_CORRECTIVE_ACTION = 39;
    // Maintenance Ticket
-   const ADD_MAINTENANCE_TICKET = 37;
-   const EDIT_MAINTENANCE_TICKET = 38;
-   const DELETE_MAINTENANCE_TICKET = 39;
-   const ANNOTATE_MAINTENANCE_TICKET = 40;
-   const ADD_MAINTENANCE_TICKET_ATTACHMENT = 41;
-   const DELETE_MAINTENANCE_TICKET_ATTACHMENT = 42;
-   const ASSIGN_MAINTENANCE_TICKET = 43;
-   const ACKNOWLEDGE_MAINTENANCE_TICKET = 44;
-   const BEGIN_REPAIR = 45;
-   const COMPLETE_REPAIR = 46;
-   const CONFIRM_REPAIR = 47;
-   const CLOSE_MAINTENANCE_TICKET = 48;
+   const ADD_MAINTENANCE_TICKET = 40;
+   const EDIT_MAINTENANCE_TICKET = 41;
+   const DELETE_MAINTENANCE_TICKET = 42;
+   const ANNOTATE_MAINTENANCE_TICKET = 43;
+   const ADD_MAINTENANCE_TICKET_ATTACHMENT = 44;
+   const DELETE_MAINTENANCE_TICKET_ATTACHMENT = 45;
+   const ASSIGN_MAINTENANCE_TICKET = 46;
+   const ACKNOWLEDGE_MAINTENANCE_TICKET = 47;
+   const BEGIN_REPAIR = 48;
+   const COMPLETE_REPAIR = 49;
+   const CONFIRM_REPAIR = 50;
+   const CLOSE_MAINTENANCE_TICKET = 51;
    //
-   const LAST = 37;
+   const LAST = 52;
    const COUNT = ActivityType::LAST - ActivityType::FIRST;
    
    public static $quoteActivites = 
@@ -85,9 +88,10 @@ abstract class ActivityType
          ActivityType::DELETE_CORRECTIVE_ACTION_ATTACHMENT,
          ActivityType::APPROVE_CORRECTIVE_ACTION,
          ActivityType::UNAPPROVE_CORRECTIVE_ACTION,
-         ActivityType::ANNOTATE_CORRECTIVE_ACTION,
-         ActivityType::ADD_MAINTENANCE_TICKET_ATTACHMENT,
-         ActivityType::DELETE_MAINTENANCE_TICKET_ATTACHMENT
+         ActivityType::REVIEW_CORRECTIVE_ACTION,
+         ActivityType::CLOSE_CORRECTIVE_ACTION,
+         ActivityType::REOPEN_CORRECTIVE_ACTION,
+         ActivityType::ANNOTATE_CORRECTIVE_ACTION
       );
 
    public static $maintenanceTicketActivities =
@@ -101,7 +105,7 @@ abstract class ActivityType
          ActivityType::BEGIN_REPAIR,
          ActivityType::COMPLETE_REPAIR,
          ActivityType::CLOSE_MAINTENANCE_TICKET,
-         ActivityType::ANNOTATE_MAINTENANCE_TICKET
+         ActivityType::ANNOTATE_MAINTENANCE_TICKET,
       );
       
    public static $activitiesWithNotes =
