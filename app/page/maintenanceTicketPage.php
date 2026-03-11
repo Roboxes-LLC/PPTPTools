@@ -9,7 +9,7 @@ class MaintenanceTicketPage extends Page
 {
    public function handleRequest($params)
    {
-      if (Page::authenticate([Permission::VIEW_MAINTENANCE_TICKET]))
+      //if (Page::authenticate([Permission::VIEW_MAINTENANCE_TICKET]))
       {
          $request = $this->getRequest($params);
          
@@ -162,10 +162,10 @@ class MaintenanceTicketPage extends Page
             {
                if (Page::authenticate([Permission::MANAGE_MAINTENANCE_TICKET]))
                {
-                  //if (Page::requireParams($params, ["ticketId", "assigned", "notes"]))
+                  if (Page::requireParams($params, ["ticketId", "assigned", "notes"]))
                   {
                      $ticketId = $params->getInt("ticketId");
-                     $assigned = 1975;//$params->getInt("assigned");
+                     $assigned = $params->getInt("assigned");
                      $notes = $params->getInt("notes");
                      
                      $maintenanceTicket = MaintenanceTicket::load($ticketId);

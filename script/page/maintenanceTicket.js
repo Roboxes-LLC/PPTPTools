@@ -29,9 +29,12 @@ class MaintenanceTicket
       "DESCRIPTION_OPTION_INPUT": "description-option-input",
       "SORT_BUTTON_UP":       "sort-button-up",
       "SORT_BUTTON_DOWN":     "sort-button-down",
+      "ASSIGNED_INPUT":       "assigned-input",
+      "NOTES_INPUT":          "notes-input",
       // Panels
       "ACTION_PANEL":         "action-panel",
-      "ACTION_PANEL_TITLE":  "action-panel-title"
+      "ACTION_PANEL_TITLE":  "action-panel-title",
+      "ASSIGNED_INPUT_CONTAINER": "assigned-input-container",
    };
 
    constructor()
@@ -40,6 +43,7 @@ class MaintenanceTicket
       this.status = null;
 
       // Action commands.
+      this.action = MaintenanceTicketAction.UNKNOWN;
       this.apiCommand = null;
       this.ticketId = 0;
       
@@ -226,10 +230,11 @@ class MaintenanceTicket
          if ((cell.getColumn().getField() == "action") &&
              (cell.getRow().getData().nextActionPermissable))
          {
+            let action = parseInt(cell.getRow().getData().nextAction);
             let actionLabel = cell.getRow().getData().nextActionLabel;
             let apiCommand = cell.getRow().getData().nextActionApiCommand;
 
-            this.showActionPanel(actionLabel, ticketId, apiCommand);
+            this.showActionPanel(ticketId, action, actionLabel, apiCommand);
             e.stopPropagation();
          }
          else if (cell.getColumn().getField() == "delete")
@@ -363,9 +368,16 @@ class MaintenanceTicket
    }
 
    onActionOkButton()
-   {
-      // AJAX call to delete the component.
-      let requestUrl = `/app/page/maintenanceTicket/?request=${this.apiCommand}&ticketId=${this.ticketId}&notes=`;
+   {  
+      let notes = encodeURIComponent(document.getElementById(MaintenanceTicket.PageElements.NOTES_INPUT).value);
+
+      let requestUrl = `/app/page/maintenanceTicket/?request=${this.apiCommand}&ticketId=${this.ticketId}&notes=${notes}`;
+      if (this.action == MaintenanceTicketAction.ASSIGN)
+      {
+         let assigned = document.getElementById(MaintenanceTicket.PageElements.ASSIGNED_INPUT).value;
+
+         requestUrl += `&assigned=${assigned}&notes=${notes}`;
+      }
 
       ajaxRequest(requestUrl, function(response) {
          if (response.success == true)
@@ -560,12 +572,22 @@ class MaintenanceTicket
       }
    }
 
-   showActionPanel(actionLabel, ticketId, apiCommand)
+   showActionPanel(ticketId, action, actionLabel, apiCommand)
    {
       document.getElementById(MaintenanceTicket.PageElements.ACTION_PANEL_TITLE).innerHTML = actionLabel;
       
       this.ticketId = ticketId;
+      this.action = action;
       this.apiCommand = apiCommand;
+
+      if (action == MaintenanceTicketAction.ASSIGN)
+      {
+         show("assigned-input-container", "flex");
+      }
+      else
+      {
+         hide("assigned-input-container");
+      }
 
       showModal(MaintenanceTicket.PageElements.ACTION_PANEL, "block");
    }

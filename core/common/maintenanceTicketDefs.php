@@ -154,6 +154,26 @@ abstract class MaintenanceTicketAction
 
       return (!in_array($action, $elevatedActions) || Permission::getPermission(Permission::MANAGE_MAINTENANCE_TICKET)->isSetIn($permissions));
    }
+
+   public static function getJavascript($enumName)
+   {
+      // Note: Keep synced with enum.
+      $varNames = array("UNKNOWN", "REPORT", "ASSIGN", "ACKNOWLEDGE", "BEGIN_REPAIR", "COMPLETE_REPAIR", "CONFIRM", "CLOSE");
+      
+      $html = "$enumName = {";
+      
+      $html .= "{$varNames[MaintenanceTicketAction::UNKNOWN]}: " . MaintenanceTicketAction::UNKNOWN . ", ";
+      
+      foreach (MaintenanceTicketAction::$values as $status)
+      {
+         $html .= "{$varNames[$status]}: $status";
+         $html .= ($status < (MaintenanceTicketAction::LAST - 1) ? ", " : "");
+      }
+      
+      $html .= "};";
+      
+      return ($html);
+   } 
 }
 
 ?>

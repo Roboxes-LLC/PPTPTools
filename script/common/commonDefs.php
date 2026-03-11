@@ -3,6 +3,7 @@
 if (!defined('ROOT')) require_once '../../root.php';
 require_once ROOT.'/common/inspectionDefs.php';
 require_once ROOT.'/core/common/correctiveActionDefs.php';
+require_once ROOT.'/core/common/maintenanceTicketDefs.php';
 require_once ROOT.'/core/common/shipmentDefs.php';
 require_once ROOT.'/core/component/audit.php';
 require_once ROOT.'/core/component/contact.php';
@@ -45,5 +46,7 @@ UNKNOWN_DOC_ID = <?php echo ProspiraDoc::UNKNOWN_DOC_ID ?>;
 <?php echo CorrectiveActionStatus::getJavascript("CorrectiveActionStatus") . "\n" ?>
 
 <?php echo AuditStatus::getJavascript("AuditStatus") . "\n" ?>
+
+<?php echo MaintenanceTicketAction::getJavascript("MaintenanceTicketAction") . "\n" ?>
 
 

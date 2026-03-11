@@ -81,8 +81,14 @@ Optional PHP variables:
       <div class="flex-vertical modal-content flex-h-center">
          <div id="action-panel-header" class="flex-horizontal flex-h-center flex-v-center"><div id="action-panel-title"></div></div>
          <div class="flex-vertical">
+            <div id="assigned-input-container" class="flex-vertical">
+               <div class="input-label" style="margin-bottom:5px">Assignment:</div>
+               <select id="assigned-input" style="margin-bottom:20px">
+                  <?php echo $assignedOptions ?>
+               </select>
+            </div>
             <div class="input-label" style="margin-bottom:5px">Notes:</div>
-            <textarea id="action-notes-input" style="margin-bottom:25px" rows="5" maxlength="256"></textarea>
+            <textarea id="notes-input" style="margin-bottom:25px" rows="5" maxlength="256"></textarea>
          </div>
          <div class="flex-horizontal">
             <button id="action-cancel-button" style="margin-right:15px">Cancel</button>

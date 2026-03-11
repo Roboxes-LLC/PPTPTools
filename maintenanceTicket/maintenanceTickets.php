@@ -35,6 +35,11 @@ function getFilterDate($filterVar)
    return ($dateTime);
 }
 
+function getAssignedOptions()
+{
+   return (UserManager::getOptions([Role::MAINTENANCE, Role::OPERATOR], [], UserInfo::UNKNOWN_EMPLOYEE_NUMBER));
+}
+
 // ********************************** BEGIN ************************************
 
 Time::init();
@@ -61,6 +66,7 @@ $filterEndDate = getFilterDate(Session::MAINTENANCE_TICKET_END_DATE);
 $filterDateType = getFilterDateType(Session::MAINTENANCE_TICKET_DATE_TYPE);
 $newButtonLabel = "New ticket";
 $reportFileName = "maintenanceTickets.csv";
+$assignedOptions = getAssignedOptions();
 
 include ROOT.'/templates/maintenanceTicketsPageTemplate.php'
       

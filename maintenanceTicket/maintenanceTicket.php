@@ -206,10 +206,8 @@ function getRequestPanel()
    $postedDateTime = $maintenanceTicket->posted ? Time::toJavascriptDateTime($maintenanceTicket->posted) : null;
    $authorName = getAuthorName();
    $assignedOptions = UserManager::getOptions([Role::MAINTENANCE, Role::OPERATOR], [$maintenanceTicket->assigned], $maintenanceTicket->assigned);
-
    $jobNumberOptions = JobManager::getJobNumberOptions($maintenanceTicket->jobNumber, true);
    $wcNumberOptions = $wcNumberOptions = JobInfo::getWcNumberOptions(JobInfo::UNKNOWN_JOB_NUMBER, $maintenanceTicket->wcNumber);
-   $assignedOptions = UserManager::getOptions([Role::MAINTENANCE], [], $maintenanceTicket->assigned);
    $machineStateOptions = MachineState::getOptions($maintenanceTicket->machineState);
    
    $html = 
